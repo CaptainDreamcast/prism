@@ -4,13 +4,13 @@
 #include "physics.h"
 
 typedef struct {
-	Position mTopLeft;
-	Position mBottomRight;
+  Position mTopLeft;
+  Position mBottomRight;
 } CollisionRect;
 
 typedef struct {
-	Position mCenter;
-	double mRadius;	
+  Position mCenter;
+  double mRadius;
 } CollisionCirc;
 
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect);

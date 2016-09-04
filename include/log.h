@@ -14,13 +14,13 @@
 #define logErrorString(x) logString(x)
 
 #ifdef DEBUG
-	#define debugLog(x) log(x)
-	#define debugInteger(x) logInteger(x)
-	#define debugDouble(x) logDouble(x)
+#define debugLog(x) log(x)
+#define debugInteger(x) logInteger(x)
+#define debugDouble(x) logDouble(x)
 #else
-	#define debugLog(x) {}
-	#define debugInteger(x) {}
-	#define debugDouble(x) {}
+#define debugLog(x) {}
+#define debugInteger(x) {}
+#define debugDouble(x) {}
 #endif	
 
 #endif

@@ -3,7 +3,7 @@
 #include "include/animation.h"
 #include "include/physics.h"
 
-void setFramerate(Framerate tFramerate){
-	setAnimationFramerate(tFramerate);
-	setPhysicsFramerate(tFramerate);
+void setFramerate(Framerate tFramerate) {
+  setAnimationFramerate(tFramerate);
+  setPhysicsFramerate(tFramerate);
 }
