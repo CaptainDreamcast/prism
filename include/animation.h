@@ -8,11 +8,11 @@
 typedef double Duration;
 typedef uint32_t Frame;
 
-typedef struct{
-	Duration mNow;
-	Duration mDuration;
-	Frame mFrame;
-	Frame mFrameAmount;
+typedef struct {
+  Duration mNow;
+  Duration mDuration;
+  Frame mFrame;
+  Frame mFrameAmount;
 } Animation;
 
 int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration);

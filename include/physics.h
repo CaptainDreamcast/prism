@@ -3,11 +3,10 @@
 
 #include "framerate.h"
 
-
 typedef struct {
-	double x;
-	double y;
-	double z;
+  double x;
+  double y;
+  double z;
 } Vector3D;
 
 typedef Vector3D Position;
@@ -15,10 +14,10 @@ typedef Vector3D Velocity;
 typedef Vector3D Acceleration;
 typedef Vector3D Gravity;
 
-typedef struct{
-	Position mPosition;
-	Velocity mVelocity;
-	Acceleration mAcceleration;
+typedef struct {
+  Position mPosition;
+  Velocity mVelocity;
+  Acceleration mAcceleration;
 } PhysicsObject;
 
 void handlePhysics(PhysicsObject* tObject);

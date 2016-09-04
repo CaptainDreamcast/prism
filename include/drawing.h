@@ -5,22 +5,22 @@
 #include "texture.h"
 
 typedef struct {
-	int x;
-	int y;
+  int x;
+  int y;
 } TexturePosition;
 
 typedef struct {
-	TexturePosition topLeft;
-	TexturePosition bottomRight;
+  TexturePosition topLeft;
+  TexturePosition bottomRight;
 } Rectangle;
 
-typedef enum{
-	COLOR_BLACK,
-	COLOR_RED,
-	COLOR_GREEN,
-	COLOR_BLUE,
-	COLOR_YELLOW,
-	COLOR_WHITE
+typedef enum {
+  COLOR_BLACK,
+  COLOR_RED,
+  COLOR_GREEN,
+  COLOR_BLUE,
+  COLOR_YELLOW,
+  COLOR_WHITE
 } Color;
 
 typedef int TextSize;
@@ -30,6 +30,5 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor);
 void waitForScreen();
 void startDrawing();
 void stopDrawing();
-
 
 #endif
