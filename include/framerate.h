@@ -6,6 +6,10 @@ typedef enum {
   SIXTY_HERTZ = 60
 } Framerate;
 
+#define FRAMERATE_AMOUNT 2
+
 void setFramerate(Framerate tFramerate);
+double getFramerateFactor();
+double getInverseFramerateFactor();
 
 #endif

@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#include "framerate.h"
-
 typedef double Duration;
 typedef uint32_t Frame;
 
@@ -18,6 +16,5 @@ typedef struct {
 int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration);
 void animate(Animation* tAnimation);
 void resetAnimation(Animation* tAnimation);
-void setAnimationFramerate(Framerate tFramerate);
 
 #endif

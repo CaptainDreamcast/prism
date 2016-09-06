@@ -10,6 +10,8 @@ cont_state_t* gState;
 void updateInput() {
   if ((gCont = maple_enum_dev(0, 0)) != NULL) {
     gState = (cont_state_t *) maple_dev_status(gCont);
+  } else {
+    gState = (cont_state_t*)0;
   }
 }
 

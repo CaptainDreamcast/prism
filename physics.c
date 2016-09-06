@@ -4,12 +4,7 @@
 #include <math.h>
 
 #include "include/log.h"
-
-Framerate gFramerate;
-
-void setPhysicsFramerate(Framerate tFramerate) {
-  gFramerate = tFramerate;
-}
+#include "include/framerate.h"
 
 Velocity gMaxVelocity;
 
@@ -36,11 +31,13 @@ void handlePhysics(PhysicsObject* tObject) {
   tObject->mPosition.y += tObject->mVelocity.y;
   tObject->mPosition.z += tObject->mVelocity.z;
 
-  tObject->mVelocity.x += tObject->mAcceleration.x;
-  tObject->mVelocity.y += tObject->mAcceleration.y;
-  tObject->mVelocity.z += tObject->mAcceleration.z;
+  double f = getFramerateFactor();
+  tObject->mVelocity.x += tObject->mAcceleration.x*f;
+  tObject->mVelocity.y += tObject->mAcceleration.y*f;
+  tObject->mVelocity.z += tObject->mAcceleration.z*f;
 
-  tObject->mVelocity.x = fmax(-gMaxVelocity.x, fmin(gMaxVelocity.x, tObject->mVelocity.x));
+  //TODO: fix velocity increase problem for 50Hz
+  tObject->mVelocity.x = fmax(-gMaxVelocity.x*f, fmin(gMaxVelocity.x*f, tObject->mVelocity.x));
   tObject->mVelocity.y = fmax(-gMaxVelocity.y, fmin(gMaxVelocity.y, tObject->mVelocity.y));
   tObject->mVelocity.z = fmax(-gMaxVelocity.x, fmin(gMaxVelocity.z, tObject->mVelocity.z));
 
@@ -73,6 +70,14 @@ void initPhysics() {
 
 double length(Velocity tVelocity) {
   return sqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
+}
+
+Position makePosition(double x, double y, double z){
+  Position pos;
+  pos.x = x;
+  pos.y = y;
+  pos.z = z;
+  return pos;
 }
 
 int isEmptyVelocity(Velocity tVelocity) {

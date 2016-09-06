@@ -1,10 +1,10 @@
 #include "include/animation.h"
 
-Framerate gFramerate;
+#include "include/framerate.h"
 
 int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration) {
   (*tNow)++;
-  if ((*tNow) >= tDuration) {
+  if ((*tNow) >= (tDuration * getInverseFramerateFactor())) {
     return 1;
   }
 
@@ -24,8 +24,4 @@ void animate(Animation* tAnimation) {
 void resetAnimation(Animation* tAnimation) {
   tAnimation->mNow = 0;
   tAnimation->mFrame = 0;
-}
-
-void setFramerate(Framerate tFramerate) {
-  gFramerate = tFramerate;
 }

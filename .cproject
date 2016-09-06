@@ -35,6 +35,9 @@
 									<listOptionValue builtIn="false" value="../usr/include"/>
 									<listOptionValue builtIn="false" value="/home/captaindc/dc/sh-elf/sh-elf/include"/>
 								</option>
+								<option id="org.eclipse.cdt.build.core.settings.holder.symbols.1859934944" superClass="org.eclipse.cdt.build.core.settings.holder.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_arch_dreamcast"/>
+								</option>
 								<inputType id="org.eclipse.cdt.build.core.settings.holder.inType.463648794" languageId="org.eclipse.cdt.core.gcc" languageName="GNU C" sourceContentType="org.eclipse.cdt.core.cSource,org.eclipse.cdt.core.cHeader" superClass="org.eclipse.cdt.build.core.settings.holder.inType"/>
 							</tool>
 						</toolChain>

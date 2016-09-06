@@ -1,9 +1,22 @@
 #include "include/framerate.h"
 
-#include "include/animation.h"
-#include "include/physics.h"
+#include "include/log.h"
+
+Framerate gFramerate;
 
 void setFramerate(Framerate tFramerate) {
-  setAnimationFramerate(tFramerate);
-  setPhysicsFramerate(tFramerate);
+  log("Set framerate");
+  logInteger(tFramerate);
+  gFramerate = tFramerate;
+}
+
+double getFramerateFactor() {
+  if (!gFramerate) return 1;
+  else {
+    return 60.0 / gFramerate;
+  }
+}
+
+double getInverseFramerateFactor() {
+  return 1.0 / getFramerateFactor();
 }

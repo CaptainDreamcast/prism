@@ -1,8 +1,6 @@
 #ifndef TARI_PHYSICS
 #define TARI_PHYSICS
 
-#include "framerate.h"
-
 typedef struct {
   double x;
   double y;
@@ -21,12 +19,13 @@ typedef struct {
 } PhysicsObject;
 
 void handlePhysics(PhysicsObject* tObject);
-void setPhysicsFramerate(Framerate tFramerate);
 void setMaxVelocity(Velocity tVelocity);
 void setGravity(Gravity tGravity);
 void resetPhysicsObject(PhysicsObject* tObject);
 void resetPhysics();
 void initPhysics();
+
+Position makePosition(double x, double y, double z);
 
 int isEmptyVelocity(Velocity tVelocity);
 Velocity normalizeVelocity(Velocity tVelocity);
