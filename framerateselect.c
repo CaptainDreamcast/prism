@@ -12,14 +12,14 @@ typedef struct {
   int PositionX;
   int PositionY;
   int FontSize;
-} FightMenuPointStruct;
+} FramerateSelectMenuPointStruct;
 
 typedef struct {
   char ArrayToBePrinted[100];
   int PositionX;
   int PositionY;
   int FontSize;
-} LargerArrayStruct;
+} FramerateSelectLargerArrayStruct;
 
 #define FRAMERATE_WARNING_ARRAY_AMOUNT 2
 
@@ -66,13 +66,13 @@ int hasToSetFramerate() {
 
 FramerateSelectReturnType selectFramerate() {
 
-//  if (!hasToSetFramerate()) {
-//    return FRAMERATE_SCREEN_RETURN_NORMAL;
-//  }
+  if (!hasToSetFramerate()) {
+    return FRAMERATE_SCREEN_RETURN_NORMAL;
+  }
 
-  FightMenuPointStruct selectableArray[FRAMERATE_AMOUNT];
-  LargerArrayStruct currentOptionArray;
-  LargerArrayStruct warningArray[FRAMERATE_AMOUNT];
+  FramerateSelectMenuPointStruct selectableArray[FRAMERATE_AMOUNT];
+  FramerateSelectLargerArrayStruct currentOptionArray;
+  FramerateSelectLargerArrayStruct warningArray[FRAMERATE_AMOUNT];
 
   uint8 i;
   uint8 whichArraySelected = NTSC_INDEX;
