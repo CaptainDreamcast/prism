@@ -26,6 +26,9 @@ void resetPhysics();
 void initPhysics();
 
 Position makePosition(double x, double y, double z);
+double vecLength(Vector3D v);
+Vector3D vecAdd(Vector3D v1, Vector3D v2);
+Vector3D vecScale(Vector3D v, double tFactor);
 
 int isEmptyVelocity(Velocity tVelocity);
 Velocity normalizeVelocity(Velocity tVelocity);

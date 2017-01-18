@@ -68,9 +68,27 @@ void initPhysics() {
   resetPhysics();
 }
 
-double length(Velocity tVelocity) {
+double vecLength(Velocity tVelocity) {
   return sqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
 }
+
+Vector3D vecAdd(Vector3D v1, Vector3D v2){
+	Vector3D ret;
+	ret.x = v1.x+v2.x;
+	ret.y = v1.y+v2.y;
+	ret.z = v1.z+v2.z;
+	return ret;
+}
+
+Vector3D vecScale(Vector3D v, double tFactor){
+	Vector3D ret;
+	ret.x = v.x*tFactor;
+	ret.y = v.y*tFactor;
+	ret.z = v.z*tFactor;
+	return ret;
+}
+
+
 
 Position makePosition(double x, double y, double z){
   Position pos;
@@ -84,7 +102,7 @@ int isEmptyVelocity(Velocity tVelocity) {
   return tVelocity.x == 0 && tVelocity.y == 0 && tVelocity.z == 0;
 }
 Velocity normalizeVelocity(Velocity tVelocity) {
-  double l = length(tVelocity);
+  double l = vecLength(tVelocity);
   if (l == 0) {
     logError("Empty vector length; return original vector");
     return tVelocity;
