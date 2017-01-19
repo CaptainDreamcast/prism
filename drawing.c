@@ -181,3 +181,12 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
 
 }
 
+
+Rectangle makeRectangle(int x, int y, int w, int h){
+	Rectangle ret;
+	ret.topLeft.x = x;
+	ret.topLeft.y = y;
+	ret.bottomRight.x = x+w;
+	ret.bottomRight.y = y+h;
+	return ret;
+}

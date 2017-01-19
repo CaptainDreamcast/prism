@@ -31,4 +31,6 @@ void waitForScreen();
 void startDrawing();
 void stopDrawing();
 
+Rectangle makeRectangle(int x, int y, int w, int h);
+
 #endif
