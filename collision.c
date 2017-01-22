@@ -60,6 +60,9 @@ int checkCollisionCirc(CollisionCirc tCirc1, CollisionCirc tCirc2){
 	return l < tCirc1.mRadius+tCirc2.mRadius;
 }
 
+int checkCollisionCircRect(CollisionCirc tCirc, CollisionRect tRect){
+	return checkIntersectCircRect(tCirc, tRect);
+}
 
 CollisionObjectRect makeCollisionObjectRect(Position tTopLeft, Position tBottomRight, PhysicsObject* tPhysics){
 	CollisionObjectRect ret;
@@ -85,18 +88,44 @@ CollisionObjectCirc makeCollisionObjectCirc(Position tCenter, double tRadius, Ph
 
 }
 
+CollisionCirc adjustCollisionObjectCirc(CollisionObjectCirc* tObj){
+	CollisionCirc c = tObj->mCol;
+	if(tObj->mIsPositionInColRelative) {
+		c.mCenter = vecAdd(tObj->mCol.mCenter, tObj->mPhysics->mPosition);
+	}
+	return c;
+}
+
 int checkCollisionObjectCirc(CollisionObjectCirc tObj1, CollisionObjectCirc tObj2){
 
-	CollisionCirc c1 = tObj1.mCol;	
-	CollisionCirc c2 = tObj2.mCol;	
-
-	if(tObj1.mIsPositionInColRelative) {
-		c1.mCenter = vecAdd(tObj1.mCol.mCenter, tObj1.mPhysics->mPosition);
-	}
-
-	if(tObj2.mIsPositionInColRelative) {
-		c2.mCenter = vecAdd(tObj1.mCol.mCenter, tObj1.mPhysics->mPosition);
-	}
+	CollisionCirc c1 = adjustCollisionObjectCirc(&tObj1);
+	CollisionCirc c2 = adjustCollisionObjectCirc(&tObj2);
 
 	return checkCollisionCirc(c1, c2);
+}
+
+CollisionRect adjustCollisionObjectRect(CollisionObjectRect* tObj){
+	CollisionRect c = tObj->mCol;
+	if(tObj->mIsPositionInColRelative) {
+		c.mTopLeft = vecAdd(tObj->mCol.mTopLeft, tObj->mPhysics->mPosition);
+		c.mBottomRight = vecAdd(tObj->mCol.mBottomRight, tObj->mPhysics->mPosition);
+	}
+	return c;
+}
+
+int checkCollisionObjectRect(CollisionObjectRect tObj1, CollisionObjectRect tObj2){
+
+	CollisionRect c1 = adjustCollisionObjectRect(&tObj1);
+	CollisionRect c2 = adjustCollisionObjectRect(&tObj2);
+
+	return checkCollision(c1, c2);
+}
+
+
+int checkCollisionObjectCircRect(CollisionObjectCirc tObj1, CollisionObjectRect tObj2){
+
+	CollisionCirc c1 = adjustCollisionObjectCirc(&tObj1);
+	CollisionRect c2 = adjustCollisionObjectRect(&tObj2);
+
+	return checkCollisionCircRect(c1, c2);
 }

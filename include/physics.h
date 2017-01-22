@@ -1,13 +1,8 @@
 #ifndef TARI_PHYSICS
 #define TARI_PHYSICS
 
-typedef struct {
-  double x;
-  double y;
-  double z;
-} Vector3D;
+#include "geometry.h"
 
-typedef Vector3D Position;
 typedef Vector3D Velocity;
 typedef Vector3D Acceleration;
 typedef Vector3D Gravity;
@@ -24,11 +19,6 @@ void setGravity(Gravity tGravity);
 void resetPhysicsObject(PhysicsObject* tObject);
 void resetPhysics();
 void initPhysics();
-
-Position makePosition(double x, double y, double z);
-double vecLength(Vector3D v);
-Vector3D vecAdd(Vector3D v1, Vector3D v2);
-Vector3D vecScale(Vector3D v, double tFactor);
 
 int isEmptyVelocity(Velocity tVelocity);
 Velocity normalizeVelocity(Velocity tVelocity);

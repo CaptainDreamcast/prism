@@ -2,16 +2,12 @@
 #define TARI_COLLISION
 
 #include "physics.h"
+#include "geometry.h"
 
-typedef struct {
-  Position mTopLeft;
-  Position mBottomRight;
-} CollisionRect;
+typedef GeoRectangle CollisionRect;
+typedef Circle CollisionCirc;
 
-typedef struct {
-  Position mCenter;
-  double mRadius;
-} CollisionCirc;
+
 
 
 // TODO: work around this with polymorphism
@@ -30,11 +26,16 @@ typedef struct {
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect);
 int checkCollision(CollisionRect tRect1, CollisionRect tRect2);
 int checkCollisionCirc(CollisionCirc tCirc1, CollisionCirc tCirc2);
+int checkCollisionCircRect(CollisionCirc tCirc1, CollisionRect tCirc2);
+
 
 CollisionObjectRect makeCollisionObjectRect(Position tTopLeft, Position tBottomRight, PhysicsObject* tPhysics);
 CollisionObjectCirc makeCollisionObjectCirc(Position tCenter, double tRadius, PhysicsObject* tPhysics);
 
 int checkCollisionObjectCirc(CollisionObjectCirc tObj1, CollisionObjectCirc tObj2);
+int checkCollisionObjectRect(CollisionObjectRect tObj1, CollisionObjectRect tObj2);
+int checkCollisionObjectCircRect(CollisionObjectCirc tObj1, CollisionObjectRect tObj2);
+
 
 
 #endif

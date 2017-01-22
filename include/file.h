@@ -6,6 +6,7 @@
 #include "stdint.h"
 
 typedef struct {
+  int isOwned;
   uint32_t length;
   void* data;
 } Buffer;
@@ -20,6 +21,7 @@ typedef struct {
 #define fileUnlink(x) fs_unlink(x)
 #define fileMemoryMap(x) fs_mmap(x)
 Buffer fileToBuffer(char* path);
+void freeBuffer(Buffer buffer);
 
 char* getPureFileName(char* path);
 
