@@ -88,6 +88,20 @@ CollisionObjectCirc makeCollisionObjectCirc(Position tCenter, double tRadius, Ph
 
 }
 
+CollisionRect makeCollisionRect(Position tTopLeft, Position tBottomRight){
+	CollisionRect ret;
+	ret.mTopLeft = tTopLeft; 
+	ret.mBottomRight = tBottomRight;
+	return ret;
+}
+
+CollisionCirc makeCollisionCirc(Position tCenter, double tRadius){
+	CollisionCirc ret;
+	ret.mCenter = tCenter; 
+	ret.mRadius = tRadius;
+	return ret;
+}
+
 CollisionCirc adjustCollisionObjectCirc(CollisionObjectCirc* tObj){
 	CollisionCirc c = tObj->mCol;
 	if(tObj->mIsPositionInColRelative) {

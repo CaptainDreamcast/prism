@@ -43,3 +43,12 @@ void resetAnimation(Animation* tAnimation) {
   tAnimation->mNow = 0;
   tAnimation->mFrame = 0;
 }
+
+Animation createEmptyAnimation(){
+  Animation ret;
+  ret.mFrame = 0;
+  ret.mFrameAmount = 0;
+  ret.mNow = 0;
+  ret.mFrame = 0;
+  return ret;
+}

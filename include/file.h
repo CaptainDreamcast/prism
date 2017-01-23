@@ -11,7 +11,7 @@ typedef struct {
   void* data;
 } Buffer;
 
-#define fileOpen(x,y) fs_open(x,y)
+int fileOpen(char* tPath, int tFlags);
 #define fileRead(x,y,z) fs_read(x,y,z)
 #define fileWrite(x,y,z) fs_write(x,y,z)
 #define fileSeek(x,y,z) fs_seek(x,y,z)
@@ -22,6 +22,8 @@ typedef struct {
 #define fileMemoryMap(x) fs_mmap(x)
 Buffer fileToBuffer(char* path);
 void freeBuffer(Buffer buffer);
+void initFileSystem();
+void setFileSystem(char* path);
 
 char* getPureFileName(char* path);
 

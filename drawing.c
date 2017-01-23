@@ -12,6 +12,11 @@ void applyDrawingMatrix(pvr_vertex_t* tVert) {
   mat_trans_single(tVert->x, tVert->y, tVert->z);
 }
 
+void initDrawing(){
+	log("Initiate drawing.");
+	setDrawingParametersToIdentity();
+}
+
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
 
   debugLog("Draw Sprite");
@@ -181,6 +186,22 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
 
 }
 
+void scaleDrawing(double tFactor, Position tScalePosition){
+	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
+  	mat_scale(tFactor, tFactor, 1);
+	mat_translate(-tScalePosition.x, -tScalePosition.x, -tScalePosition.x);
+}
+
+void scaleDrawing3D(Vector3D tFactor, Position tScalePosition){
+	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
+  	mat_scale(tFactor.x, tFactor.y, tFactor.z);
+	mat_translate(-tScalePosition.x, -tScalePosition.x, -tScalePosition.x);
+}
+
+void setDrawingParametersToIdentity(){
+	mat_identity();
+}
+
 
 Rectangle makeRectangle(int x, int y, int w, int h){
 	Rectangle ret;
@@ -189,4 +210,17 @@ Rectangle makeRectangle(int x, int y, int w, int h){
 	ret.bottomRight.x = x+w;
 	ret.bottomRight.y = y+h;
 	return ret;
+}
+
+void printRectangle(Rectangle r){
+	log("Rectangle");
+	logDouble(r.topLeft.x);
+	logDouble(r.topLeft.y);
+	logDouble(r.bottomRight.x);
+	logDouble(r.bottomRight.y);
+
+}
+
+Rectangle makeRectangleFromTexture(TextureData tTexture){
+	return makeRectangle(0, 0, tTexture.mTextureSize.x - 1, tTexture.mTextureSize.y- 1);
 }

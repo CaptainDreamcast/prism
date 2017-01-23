@@ -22,5 +22,6 @@ int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration);
 AnimationResult animateWithoutLoop(Animation* tAnimation);
 void animate(Animation* tAnimation);
 void resetAnimation(Animation* tAnimation);
+Animation createEmptyAnimation();
 
 #endif

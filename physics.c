@@ -7,13 +7,13 @@
 #include "include/log.h"
 #include "include/framerate.h"
 
-Velocity gMaxVelocity;
+static Velocity gMaxVelocity;
 
 void setMaxVelocity(Velocity tVelocity) {
   gMaxVelocity = tVelocity;
 }
 
-Gravity gGravity;
+static Gravity gGravity;
 
 void setGravity(Gravity tGravity) {
   gGravity = tGravity;

@@ -17,10 +17,12 @@
 #define debugLog(x) log(x)
 #define debugInteger(x) logInteger(x)
 #define debugDouble(x) logDouble(x)
+#define debugString(x) logString(x)
 #else
 #define debugLog(x) {}
 #define debugInteger(x) {}
 #define debugDouble(x) {}
+#define debugString(x) {}
 #endif	
 
 #endif

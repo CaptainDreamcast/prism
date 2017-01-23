@@ -32,6 +32,9 @@ int checkCollisionCircRect(CollisionCirc tCirc1, CollisionRect tCirc2);
 CollisionObjectRect makeCollisionObjectRect(Position tTopLeft, Position tBottomRight, PhysicsObject* tPhysics);
 CollisionObjectCirc makeCollisionObjectCirc(Position tCenter, double tRadius, PhysicsObject* tPhysics);
 
+CollisionRect makeCollisionRect(Position tTopLeft, Position tBottomRight);
+CollisionCirc makeCollisionCirc(Position tCenter, double tRadius);
+
 int checkCollisionObjectCirc(CollisionObjectCirc tObj1, CollisionObjectCirc tObj2);
 int checkCollisionObjectRect(CollisionObjectRect tObj1, CollisionObjectRect tObj2);
 int checkCollisionObjectCircRect(CollisionObjectCirc tObj1, CollisionObjectRect tObj2);
