@@ -1,5 +1,6 @@
 #include "include/texture.h"
 
+#include <kos.h>
 #include <kos/string.h>
 
 // TODO: remove quicklz and remove it with something suitable
@@ -122,4 +123,8 @@ FontCharacterData getFontCharacterData(char tChar) {
     i = tChar - ' ';
 
   return gFontCharacterData[i];
+}
+
+int getAvailableTextureMemory() {
+	return pvr_mem_available();
 }

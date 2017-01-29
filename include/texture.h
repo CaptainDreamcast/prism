@@ -29,4 +29,6 @@ TextureData getFontTexture();
 FontCharacterData getFontCharacterData(char tChar);
 void setFont(char tFileDirHeader[], char tFileDirTexture[]);
 
+int getAvailableTextureMemory();
+
 #endif

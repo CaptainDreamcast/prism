@@ -71,6 +71,20 @@ int hasPressedDown() {
   return ((gState->buttons & CONT_DPAD_DOWN) || (gState->joyy >= 64));
 }
 
+int hasPressedL() {
+  if (!gState)
+    return 0;
+
+  return (gState->ltrig >= 64);
+}
+
+int hasPressedR() {
+  if (!gState)
+    return 0;
+
+  return (gState->rtrig >= 64);
+}
+
 int hasPressedStart() {
   if (!gState)
     return 0;
@@ -137,6 +151,16 @@ int hasPressedUpFlank() {
 int gDownFlank = 0;
 int hasPressedDownFlank() {
   return hasPressedFlank(hasPressedDown(), &gDownFlank);
+}
+
+int gLFlank = 0;
+int hasPressedLFlank() {
+  return hasPressedFlank(hasPressedL(), &gLFlank);
+}
+
+int gRFlank = 0;
+int hasPressedRFlank() {
+  return hasPressedFlank(hasPressedR(), &gRFlank);
 }
 
 int gStartFlank = 0;

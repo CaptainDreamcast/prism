@@ -2,20 +2,24 @@
 
 #include <string.h>
 #include <math.h>
+#include <kos.h>
 
 #include "include/log.h"
 #include "include/framerate.h"
 
-Velocity gMaxVelocity;
+static struct {
+	Velocity mMaxVelocity;
+	Gravity mGravity;
+	int mIsPaused;
+} gData;
 
 void setMaxVelocity(Velocity tVelocity) {
-  gMaxVelocity = tVelocity;
+  gData.mMaxVelocity = tVelocity;
 }
 
-Gravity gGravity;
 
 void setGravity(Gravity tGravity) {
-  gGravity = tGravity;
+  gData.mGravity = tGravity;
 }
 
 double fmin(double a, double b) {
@@ -27,6 +31,7 @@ double fmax(double a, double b) {
 }
 
 void handlePhysics(PhysicsObject* tObject) {
+  if(gData.mIsPaused) return;
   tObject->mPosition.x += tObject->mVelocity.x;
   tObject->mPosition.y += tObject->mVelocity.y;
   tObject->mPosition.z += tObject->mVelocity.z;
@@ -37,13 +42,13 @@ void handlePhysics(PhysicsObject* tObject) {
   tObject->mVelocity.z += tObject->mAcceleration.z*f;
 
   //TODO: fix velocity increase problem for 50Hz
-  tObject->mVelocity.x = fmax(-gMaxVelocity.x*f, fmin(gMaxVelocity.x*f, tObject->mVelocity.x));
-  tObject->mVelocity.y = fmax(-gMaxVelocity.y, fmin(gMaxVelocity.y, tObject->mVelocity.y));
-  tObject->mVelocity.z = fmax(-gMaxVelocity.x, fmin(gMaxVelocity.z, tObject->mVelocity.z));
+  tObject->mVelocity.x = fmax(-gData.mMaxVelocity.x*f, fmin(gData.mMaxVelocity.x*f, tObject->mVelocity.x));
+  tObject->mVelocity.y = fmax(-gData.mMaxVelocity.y, fmin(gData.mMaxVelocity.y, tObject->mVelocity.y));
+  tObject->mVelocity.z = fmax(-gData.mMaxVelocity.x, fmin(gData.mMaxVelocity.z, tObject->mVelocity.z));
 
-  tObject->mAcceleration.x = gGravity.x;
-  tObject->mAcceleration.y = gGravity.y;
-  tObject->mAcceleration.z = gGravity.z;
+  tObject->mAcceleration.x = gData.mGravity.x;
+  tObject->mAcceleration.y = gData.mGravity.y;
+  tObject->mAcceleration.z = gData.mGravity.z;
 }
 
 void resetPhysicsObject(PhysicsObject* tObject) {
@@ -62,29 +67,26 @@ void resetPhysics() {
   gravity.y = 0;
   gravity.z = 0;
   setGravity(gravity);
+
+  gData.mIsPaused = 0;
 }
 
 void initPhysics() {
   resetPhysics();
 }
 
-double length(Velocity tVelocity) {
-  return sqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
+void pausePhysics() {
+	gData.mIsPaused = 1;
 }
-
-Position makePosition(double x, double y, double z){
-  Position pos;
-  pos.x = x;
-  pos.y = y;
-  pos.z = z;
-  return pos;
+void resumePhysics() {
+	gData.mIsPaused = 0;
 }
 
 int isEmptyVelocity(Velocity tVelocity) {
   return tVelocity.x == 0 && tVelocity.y == 0 && tVelocity.z == 0;
 }
 Velocity normalizeVelocity(Velocity tVelocity) {
-  double l = length(tVelocity);
+  double l = vecLength(tVelocity);
   if (l == 0) {
     logError("Empty vector length; return original vector");
     return tVelocity;
@@ -96,4 +98,5 @@ Velocity normalizeVelocity(Velocity tVelocity) {
 
   return tVelocity;
 }
+
 

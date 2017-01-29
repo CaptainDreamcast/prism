@@ -11,6 +11,8 @@ int hasPressedLeft();
 int hasPressedRight();
 int hasPressedUp();
 int hasPressedDown();
+int hasPressedL();
+int hasPressedR();
 int hasPressedStart();
 int hasPressedAbort();
 
@@ -22,6 +24,8 @@ int hasPressedLeftFlank();
 int hasPressedRightFlank();
 int hasPressedUpFlank();
 int hasPressedDownFlank();
+int hasPressedLFlank();
+int hasPressedRFlank();
 int hasPressedStartFlank();
 int hasPressedAbortFlank();
 
