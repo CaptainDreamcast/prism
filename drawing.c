@@ -7,6 +7,15 @@
 
 #include "include/log.h"
 
+static struct {
+
+	double a;
+	double r;
+	double g;
+	double b;
+
+} gData;
+
 void applyDrawingMatrix(pvr_vertex_t* tVert) {
   (void) tVert;
   mat_trans_single(tVert->x, tVert->y, tVert->z);
@@ -48,7 +57,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
 
-  vert.argb = PVR_PACK_COLOR(1.0f, 1.0f, 1.0f, 1.0f);
+  vert.argb = PVR_PACK_COLOR(gData.a, gData.r, gData.g, gData.b);
   vert.oargb = 0;
   vert.flags = PVR_CMD_VERTEX;
 
@@ -189,17 +198,33 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
 void scaleDrawing(double tFactor, Position tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor, tFactor, 1);
-	mat_translate(-tScalePosition.x, -tScalePosition.x, -tScalePosition.x);
+	mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
 }
 
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor.x, tFactor.y, tFactor.z);
-	mat_translate(-tScalePosition.x, -tScalePosition.x, -tScalePosition.x);
+	mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
+}
+
+void setDrawingBaseColor(Color tColor){
+	getRGBFromColor(tColor, &gData.r, &gData.g, &gData.b);
+}
+
+void setDrawingTransparency(double tAlpha){
+	gData.a = tAlpha;
+}
+
+void setDrawingRotationZ(double tAngle, Position tPosition){
+	mat_translate(tPosition.x, tPosition.y, tPosition.z);
+	mat_rotate_z(tAngle);
+	mat_translate(-tPosition.x, -tPosition.y, -tPosition.z);
 }
 
 void setDrawingParametersToIdentity(){
 	mat_identity();
+	setDrawingBaseColor(COLOR_WHITE);
+	setDrawingTransparency(1.0);
 }
 
 
@@ -223,4 +248,8 @@ void printRectangle(Rectangle r){
 
 Rectangle makeRectangleFromTexture(TextureData tTexture){
 	return makeRectangle(0, 0, tTexture.mTextureSize.x - 1, tTexture.mTextureSize.y- 1);
+}
+
+Position getTextureMiddlePosition(TextureData tTexture){
+	return makePosition(tTexture.mTextureSize.x / 2, tTexture.mTextureSize .y/ 2, 0);
 }

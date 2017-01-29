@@ -13,6 +13,10 @@
 #define logErrorInteger(x) logInteger(x)
 #define logErrorString(x) logString(x)
 
+#define logWarning(x) log(x)
+#define logWarningInteger(x) logInteger(x)
+#define logWarningString(x) logString(x)
+
 #ifdef DEBUG
 #define debugLog(x) log(x)
 #define debugInteger(x) logInteger(x)
@@ -24,5 +28,13 @@
 #define debugDouble(x) {}
 #define debugString(x) {}
 #endif	
+
+#ifdef DEBUG
+void logTextureMemoryState();
+void logMemoryState();
+#else
+#define logTextureMemoryState() {}
+#define logMemoryState() {}
+#endif
 
 #endif

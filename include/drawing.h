@@ -34,10 +34,16 @@ void stopDrawing();
 
 void scaleDrawing(double tFactor, Position tScalePosition);
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition);
+void setDrawingBaseColor(Color tColor);
+void setDrawingTransparency(double tAlpha);
+void setDrawingRotationZ(double tAngle, Position tPosition);
 void setDrawingParametersToIdentity();
 
 Rectangle makeRectangle(int x, int y, int w, int h);
 Rectangle makeRectangleFromTexture(TextureData tTexture);
+Position getTextureMiddlePosition(TextureData tTexture);
 void printRectangle(Rectangle r);
+
+
 
 #endif

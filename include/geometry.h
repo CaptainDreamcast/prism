@@ -28,15 +28,21 @@ typedef struct{
 int dot3D(Vector3D p1, Vector3D p2);
 
 Position makePosition(double x, double y, double z);
+Position variatePosition(Position tBase);
+
 double vecLength(Vector3D v);
 Vector3D vecAdd(Vector3D v1, Vector3D v2);
 Vector3D vecScale(Vector3D v, double tFactor);
 Position getDirection(Position tFrom, Position tTo);
 Line makeLine(Vector3D tStart, Vector3D tEnd);
 
+double getAngleFromDirection(Vector3D tDirection);
+
 int checkIntersectLineCircle(Line tLine, Circle tCircle);
 
 int checkPointInCircle(Circle tCirc, Position tPoint);
 int checkPointInRectangle(GeoRectangle tRect, Position tPoint);
 int checkIntersectCircRect(Circle tCirc, GeoRectangle tRect);
+
+
 #endif

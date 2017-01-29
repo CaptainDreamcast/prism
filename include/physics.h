@@ -19,6 +19,8 @@ void setGravity(Gravity tGravity);
 void resetPhysicsObject(PhysicsObject* tObject);
 void resetPhysics();
 void initPhysics();
+void pausePhysics();
+void resumePhysics();
 
 int isEmptyVelocity(Velocity tVelocity);
 Velocity normalizeVelocity(Velocity tVelocity);

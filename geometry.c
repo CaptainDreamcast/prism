@@ -1,6 +1,10 @@
 #include "include/geometry.h"
 
 #include <kos.h>
+#include <math.h>
+
+#include "include/math.h"
+
 
 int dot3D(Vector3D p1, Vector3D p2){
 	return p1.x*p2.x + p1.y*p2.y + p1.z*p2.z;
@@ -34,6 +38,14 @@ Position makePosition(double x, double y, double z){
   return pos;
 }
 
+Position variatePosition(Position tBase) {
+	Position ret;
+	ret.x = randfrom(-tBase.x, tBase.x);
+	ret.y = randfrom(-tBase.y, tBase.y);
+	ret.z = randfrom(-tBase.z, tBase.z);
+	return ret;
+}
+
 Position getDirection(Position tFrom, Position tTo){
 	Position ret;
 	ret.x = tTo.x-tFrom.x;
@@ -47,6 +59,11 @@ Line makeLine(Vector3D tStart, Vector3D tEnd){
 	ret.mP1 = tStart;
 	ret.mP2 = tEnd;
 	return ret;
+}
+
+
+double getAngleFromDirection(Vector3D tDirection){
+	return -fatan2(tDirection.y, tDirection.x)+M_PI;
 }
 
 // TODO: refactor and/or add intersection position test;
