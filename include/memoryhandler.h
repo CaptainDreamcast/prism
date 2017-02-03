@@ -11,4 +11,7 @@ void popMemoryStack();
 void pushTextureMemoryStack();
 void popTextureMemoryStack();
 
+void initMemoryHandler();
+void shutdownMemoryHandler();
+
 #endif

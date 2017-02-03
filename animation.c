@@ -3,6 +3,7 @@
 #include "include/framerate.h"
 #include "include/log.h"
 #include "include/datastructures.h"
+#include "include/memoryhandler.h"
 
 static struct {
 	int mIsPaused;
@@ -150,7 +151,7 @@ static void emptyAnimationHandler(){
 
 static int playAnimationInternal(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller, int tIsLooped){
 	
-	AnimationElement* e = malloc(sizeof(AnimationElement));
+	AnimationElement* e = allocMemory(sizeof(AnimationElement));
 	e->mCaller = tCaller;
 	e->mCB = tOptionalCB;
 	e->mIsLooped = tIsLooped;

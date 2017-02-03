@@ -1,82 +1,53 @@
 #include "include/timer.h"
 
-typedef struct TimerElement_internal{
+#include "include/memoryhandler.h"
+#include "include/datastructures.h"
 
-	int mID;
+typedef struct TimerElement_internal{
 	Duration mNow;
 	Duration mDuration;
 	TimerCB mCB;
 	void* mCaller;
 
-	struct TimerElement_internal* mNext;
-
 } TimerElement;
 
-typedef struct {
-
-	TimerElement* mFirst;
-	int mSize;
-
-} TimerList;
-
 static struct {
-	int gIDs;
-	TimerList mList;
+	List mList;
 } gData;
 
 int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller){
-	TimerElement* e = malloc(sizeof(TimerElement));
-	e->mID = gData.gIDs++;
+	TimerElement* e = allocMemory(sizeof(TimerElement));
 	e->mNow = 0;
 	e->mDuration = tDuration;
 	e->mCB = tCB;
 	e->mCaller = tCaller;
-	
-	TimerElement* next = gData.mList.mFirst;
-	gData.mList.mFirst = e;
-	e->mNext = next;
-	gData.mList.mSize++;
 
-	return e->mID;
+	return list_push_front_owned(&gData.mList, (void*)e);
 }
 
 void setupTimer(){
-	gData.gIDs = 0;
-	gData.mList.mSize = 0;
-	gData.mList.mFirst = NULL;
+	gData.mList = new_list();
 }
 
-static void eraseTimerElement(TimerElement* e){
-		if(gData.mList.mFirst == e) {
-			gData.mList.mFirst = e->mNext;
-		}
-		free(e);
-		gData.mList.mSize--;
-		
+static int updateCB(void* tCaller, void* tData) {
+	(void) tCaller;
+	TimerElement* cur = tData;
+	int isOver = handleDurationAndCheckIfOver(&cur->mNow, cur->mDuration);
+
+	if(isOver) {
+		cur->mCB(cur->mCaller);
+		return 1;
+	}
+
+	return 0;
 }
 
 void updateTimer(){
-	int left = gData.mList.mSize;
-	TimerElement* cur = gData.mList.mFirst;
-	while(left--){
-		TimerElement* next = cur->mNext;	
-		int isOver = handleDurationAndCheckIfOver(&cur->mNow, cur->mDuration);
-		if(isOver) {
-			cur->mCB(cur->mCaller);
-			eraseTimerElement(cur);
-		}
-		cur = next;
-	}
+	list_remove_predicate(&gData.mList, updateCB, NULL);
 }
 
 void clearTimer(){
-	int left = gData.mList.mSize;
-	TimerElement* cur = gData.mList.mFirst;
-	while(left--){
-		TimerElement* next = cur->mNext;		
-		eraseTimerElement(cur);
-		cur = next;
-	}
+	list_empty(&gData.mList);
 }
 
 void shutdownTimer(){

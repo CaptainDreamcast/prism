@@ -33,7 +33,7 @@ int list_size(List* tList);
 List new_list();
 void delete_list(List* tList);
 
-
+/*
 Vector new_vector();
 void delete_vector(Vector* tVector);
 void vector_push_back(Vector* tVector, void* tData);
@@ -42,6 +42,6 @@ void vector_get(Vector* tVector, int tIndex);
 void vector_remove(List* tList, int tIndex);
 void* vector_pop_back(Vector* tVector);
 int vector_size(Vector* tVector);
-
+*/
 
 #endif

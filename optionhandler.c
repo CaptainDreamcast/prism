@@ -6,6 +6,7 @@
 #include "include/datastructures.h"
 #include "include/drawing.h"
 #include "include/input.h"
+#include "include/memoryhandler.h"
 
 static struct {
 	List mOptionList;
@@ -54,7 +55,7 @@ void disableOptionHandler() {
 }
 
 int addOption(Position tPosition, char* tText, OptionCB tCB, void* tCaller){
-	HandledOption* o = malloc(sizeof(HandledOption));
+	HandledOption* o = allocMemory(sizeof(HandledOption));
 	o->mPosition = tPosition;
 	strcpy(o->mText, tText);
 	o->mCB = tCB;

@@ -1,9 +1,11 @@
 #include "include/datastructures.h"
 
+#include "include/memoryhandler.h"
+
 #include <stdlib.h>
 
 static int list_push_front_internal(List* tList, void* tData, int tIsOwned) {
-	ListElement* e = malloc(sizeof(ListElement));
+	ListElement* e = allocMemory(sizeof(ListElement));
 	e->mID = tList->mIDs++;
 	e->mData = tData;
 	e->mIsDataOwned = tIsOwned;
@@ -45,10 +47,10 @@ static void removeListElement(List* tList, ListElement* e){
 	}
 
 	if(e->mIsDataOwned) {
-		free(e->mData);
+		freeMemory(e->mData);
 	}
 
-	free(e);
+	freeMemory(e);
 	tList->mSize--;
 }
 

@@ -1,6 +1,7 @@
 #include "include/file.h"
 
 #include "include/log.h"
+#include "include/memoryhandler.h"
 
 
 static struct {
@@ -51,7 +52,7 @@ void freeBuffer(Buffer buffer){
 	if(buffer.isOwned){
 		debugLog("Freeing owned memory");
 		debugInteger(buffer.length);
-		free(buffer.data);
+		freeMemory(buffer.data);
 	} 
 	buffer.data = NULL;
 	buffer.length = 0;
