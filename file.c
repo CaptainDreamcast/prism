@@ -2,6 +2,7 @@
 
 #include "include/log.h"
 #include "include/memoryhandler.h"
+#include "include/system.h"
 
 
 static struct {
@@ -15,6 +16,29 @@ char* getPureFileName(char* path){
 
 	if(pos == NULL) return path;
 	else return pos+1;
+}
+
+char* getFileExtension(char* tPath){
+	char* pos = strrchr(tPath,'.');
+
+	if(pos == NULL) {
+		logError("Unable to find file ending.");
+		abortSystem();
+	}
+
+	return pos+1;
+}
+
+void getPathWithNumberAffixedFromAssetPath(char* tDest, char* tSrc, int i) {
+	char* pos = strrchr(tSrc,'.');
+	if(pos == NULL) {
+		sprintf(tDest, "%s%d", tSrc, i);
+	} else {
+		pos[0] = '\0';
+		sprintf(tDest, "%s%d%s", tSrc, i, pos+1);
+		pos[0] = '.';
+	}
+
 }
 
 Buffer fileToBuffer(char* tFileDir){
@@ -38,9 +62,9 @@ Buffer fileToBuffer(char* tFileDir){
 
 	mipMapData = fileMemoryMap(file);
 
-	ret.isOwned = 0;
-	ret.data = mipMapData;
-	ret.length = bufferLength;
+	ret.mIsOwned = 0;
+	ret.mData = mipMapData;
+	ret.mLength = bufferLength;
 
 	fileClose(file);
 
@@ -49,14 +73,14 @@ Buffer fileToBuffer(char* tFileDir){
 
 void freeBuffer(Buffer buffer){
 	debugLog("Freeing buffer.");
-	if(buffer.isOwned){
+	if(buffer.mIsOwned){
 		debugLog("Freeing owned memory");
-		debugInteger(buffer.length);
-		freeMemory(buffer.data);
+		debugInteger(buffer.mLength);
+		freeMemory(buffer.mData);
 	} 
-	buffer.data = NULL;
-	buffer.length = 0;
-	buffer.isOwned = 0;
+	buffer.mData = NULL;
+	buffer.mLength = 0;
+	buffer.mIsOwned = 0;
 }
 
 void initFileSystem(){
@@ -91,3 +115,23 @@ int fileOpen(char* tPath, int tFlags){
 
 	return fs_open(path, tFlags);
 }
+
+void mountRomdisk(char* tFilePath, char* tMountPath) {
+	file_t romDiskFile;
+	uint8* romDiskBuffer;
+	long romDiskSize;
+
+	romDiskFile = fileOpen(tFilePath, O_RDONLY);
+	romDiskSize = fileTotal(romDiskFile);
+
+	romDiskBuffer = malloc(romDiskSize);
+	fileRead(romDiskFile, romDiskBuffer, romDiskSize);
+	fs_romdisk_mount(tMountPath, romDiskBuffer, 1);
+
+	fileClose(romDiskFile);
+}
+
+void unmountRomdisk(char* tMountPath) {
+	fs_romdisk_unmount(tMountPath);
+}
+

@@ -23,6 +23,7 @@ typedef struct {  // TODO: refactor completely from Dolmexica
 } FontCharacterData;
 
 TextureData loadTexturePKG(char tFileDir[]);
+TextureData loadTexture(char tFileDir[]);
 void unloadTexture(TextureData tTexture);
 
 TextureData getFontTexture();

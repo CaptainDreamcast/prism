@@ -3,16 +3,15 @@
 
 typedef void (*LoadScreenFunction)();
 typedef void (*UpdateScreenFunction)();
-typedef void (*GetNewScreenFunction)();
 typedef void (*DrawScreenFunction)();
-typedef void (*ShutdownScreenFunction)();
+typedef void (*UnloadScreenFunction)();
 
 typedef struct Screen_internal{
 	LoadScreenFunction mLoad;
 	UpdateScreenFunction mUpdate;
 	DrawScreenFunction mDraw;
-	ShutdownScreenFunction mShutdown;
-	struct Screen_internal* (*mGetScreen)();
+	UnloadScreenFunction mUnload;
+	struct Screen_internal* (*mGetNextScreen)();
 } Screen;
 
 void initTariWrapperWithDefaultFlags();
@@ -24,5 +23,6 @@ void drawScreenFunctionality();
 void shutdownScreenFunctionality();
 
 void startScreenHandling(Screen* tScreen);
+void abortScreenHandling();
 
 #endif 

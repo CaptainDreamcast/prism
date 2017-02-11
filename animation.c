@@ -88,6 +88,9 @@ typedef struct AnimationElement_internal {
 	Animation mAnimation;
 	int mIsLooped;
 
+	Position* mScreenPositionReference;
+	Position* mBasePositionReference;
+
 	struct AnimationElement_internal* mPrev;
 	struct AnimationElement_internal* mNext;
 
@@ -138,7 +141,16 @@ static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 	(void) tCaller;
 	AnimationElement* cur = tData;
 	int frame = cur->mAnimation.mFrame;
-	drawSprite(cur->mTextureData[frame], cur->mPosition, cur->mTexturePosition);	
+	Position p = cur->mPosition;
+	if(cur->mScreenPositionReference != NULL) {
+		vecAdd(p, vecScale(*cur->mScreenPositionReference, -1));
+	}
+
+	if(cur->mBasePositionReference != NULL) {
+		vecAdd(p, *(cur->mBasePositionReference));
+	}
+
+	drawSprite(cur->mTextureData[frame], p, cur->mTexturePosition);	
 }
 
 void drawHandledAnimations() {
@@ -160,6 +172,8 @@ static int playAnimationInternal(Position tPosition, TextureData* tTextures, Ani
 	e->mTexturePosition = tTexturePosition;
 	e->mTextureData = tTextures;
 	e->mAnimation = tAnimation;
+	e->mScreenPositionReference = NULL;
+	e->mBasePositionReference = NULL;
 
 	return list_push_front_owned(&gAnimationHandler.mList, (void*)e);
 }
@@ -172,6 +186,17 @@ int playAnimation(Position tPosition, TextureData* tTextures, Animation tAnimati
 
 int playAnimationLoop(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition){
 	return playAnimationInternal(tPosition, tTextures, tAnimation, tTexturePosition, NULL, NULL, 1);
+}
+
+void setAnimationScreenPositionReference(int tID, Position* tScreenPositionReference) {
+	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	e->mScreenPositionReference = tScreenPositionReference;
+
+}
+
+void setAnimationBasePositionReference(int tID, Position* tBasePositionReference) {
+	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	e->mBasePositionReference = tBasePositionReference;
 }
 
 void removeHandledAnimation(int tID) {

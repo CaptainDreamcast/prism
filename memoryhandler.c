@@ -30,6 +30,7 @@ static struct {
 
 typedef void* (*MallocFunc)(size_t tSize);
 typedef void (*FreeFunc)(void* tSize);
+typedef void* (*ReallocFunc)(void* tPointer, size_t tSize);
 
 
 static void* addMemoryToMemoryList(MemoryList* tList, int tSize, MallocFunc tFunc) {
@@ -57,12 +58,32 @@ static void removeMemoryElementFromMemoryList(MemoryList* tList, MemoryListEleme
 	tList->mSize--;
 }
 
+static void* resizeMemoryElementOnMemoryList(MemoryListElement* e, int tSize, ReallocFunc tFunc) {
+	e->mData = tFunc(e->mData, tSize);
+	return e->mData;
+}
+
 static int removeMemoryFromMemoryList(MemoryList* tList, void* tData, FreeFunc tFunc) {
 	int amount = tList->mSize;
 	MemoryListElement* cur = tList->mFirst;
 	while(amount--) {
 		if(cur->mData == tData) {
 			removeMemoryElementFromMemoryList(tList, cur, tFunc);
+			return 1;
+		}
+
+		cur = cur->mNext;
+	}
+
+	return 0;
+}
+
+static int resizeMemoryOnMemoryList(MemoryList* tList, void* tData, int tSize, ReallocFunc tFunc, void** tOutput) {
+	int amount = tList->mSize;
+	MemoryListElement* cur = tList->mFirst;
+	while(amount--) {
+		if(cur->mData == tData) {
+			*tOutput = resizeMemoryElementOnMemoryList(cur, tSize, tFunc);
 			return 1;
 		}
 
@@ -125,6 +146,32 @@ static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData
 	abortSystem();
 }
 
+static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData, int tSize, ReallocFunc tFunc) {
+	if(!gData.mActive) {
+		return tFunc(tData, tSize);
+	}
+
+	if(tStack->mHead < 0) {
+		logError("Invalid stack head position");
+		logErrorInteger(tStack->mHead);
+		abortSystem();
+	}
+
+	int tempHead = tStack->mHead;
+	void* output;
+	while(tempHead-- >= 0) {
+		if(resizeMemoryOnMemoryList(&tStack->mLists[tempHead], tData, tSize, tFunc, &output)) {
+			return output;
+		}
+	}
+
+	logError("Reallocating invalid memory address");
+	logErrorHex(tData);
+	abortSystem();
+
+	return NULL;
+}
+
 static void popMemoryStackInternal(MemoryListStack* tStack, FreeFunc tFunc) {
 	if(tStack->mHead < 0) {
 		logError("No stack layer left to pop.");
@@ -146,11 +193,23 @@ void* allocMemory(int tSize) {
 
 	return addMemoryToMemoryListStack(&gData.mMemoryStack, tSize, malloc);
 }
+
 void freeMemory(void* tData) {
 	if(tData == NULL) return;
 
 	removeMemoryFromMemoryListStack(&gData.mMemoryStack, tData, free);
 }
+
+void* reallocMemory(void* tData, int tSize) {
+	if(!tSize) {
+		if(tData != NULL) freeMemory(tData);
+		return NULL;
+	}
+	if(tData == NULL) return allocMemory(tSize);
+	
+	return resizeMemoryOnMemoryListStack(&gData.mMemoryStack, tData, tSize, realloc);
+}
+
 void* allocTextureMemory(int tSize)  {
 	if(!tSize) return NULL;
 

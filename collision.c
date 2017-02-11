@@ -1,6 +1,11 @@
 #include "include/collision.h"
 
+#include <string.h>
+
 #include "include/log.h"
+#include "include/memoryhandler.h"
+#include "include/system.h"
+
 
 // TODO: use something better; this will likely cause vibrations
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect) {
@@ -143,3 +148,51 @@ int checkCollisionObjectCircRect(CollisionObjectCirc tObj1, CollisionObjectRect 
 
 	return checkCollisionCircRect(c1, c2);
 }
+
+
+int checkCollisionCollider(Collider tCollider1, Collider tCollider2) {
+	if(tCollider1.mType == COLLISION_RECT && tCollider2.mType == COLLISION_RECT) {
+		CollisionRect r1 = *((CollisionRect*)tCollider1.mData);
+		CollisionRect r2 = *((CollisionRect*)tCollider2.mData);
+		return checkCollision(r1, r2);
+	} else if(tCollider1.mType == COLLISION_CIRC && tCollider2.mType == COLLISION_RECT) {
+		CollisionCirc c1 = *((CollisionCirc*)tCollider1.mData);
+		CollisionRect r2 = *((CollisionRect*)tCollider2.mData);
+		return checkCollisionCircRect(c1, r2);
+	} else if(tCollider1.mType == COLLISION_RECT && tCollider2.mType == COLLISION_CIRC) {
+		return checkCollisionCollider(tCollider2, tCollider1);
+	}  else if(tCollider1.mType == COLLISION_CIRC && tCollider2.mType == COLLISION_CIRC) {
+		CollisionCirc c1 = *((CollisionCirc*)tCollider1.mData);
+		CollisionCirc c2 = *((CollisionCirc*)tCollider2.mData);
+		return checkCollisionCirc(c1, c2);
+	} else {
+		logError("Unrecognized collider types");			
+		logErrorInteger(tCollider1.mType);
+		logErrorInteger(tCollider2.mType);
+		abortSystem();
+		return 0;
+	}
+
+}
+
+static Collider makeCollider_internal(int tType, void* tData, int tDataSize) {
+	Collider ret;
+	ret.mType = tType;
+	ret.mData = allocMemory(tDataSize);
+	memcpy(ret.mData, tData, tDataSize);
+	ret.mBasePosition = NULL;
+	return ret;
+}
+
+Collider makeColliderFromRect(CollisionRect tRect) {
+	return makeCollider_internal(COLLISION_RECT, &tRect, sizeof(CollisionRect));
+}
+
+void setColliderBasePosition(Collider* tCollider, Position* tBasePosition) {
+	tCollider->mBasePosition = tBasePosition;
+}
+
+void destroyCollider(Collider* tCollider) {
+	freeMemory(tCollider->mData);
+}
+

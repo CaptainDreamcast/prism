@@ -2,7 +2,7 @@ TARGET = libtari.a
 OBJS = animation.o physics.o framerate.o drawing.o texture.o \
 collision.o input.o pvr.o framerateselect.o file.o math.o geometry.o \
 system.o log.o timer.o optionhandler.o datastructures.o memoryhandler.o \
-wrapper.o \
+wrapper.o physicshandler.o script.o stagehandler.o collisionhandler.o \
 quicklz.o
 
 defaultall: create_addons_link $(OBJS) subdirs linklib

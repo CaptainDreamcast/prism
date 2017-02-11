@@ -35,6 +35,8 @@ void updateAnimationHandler();
 void drawHandledAnimations();
 int playAnimation(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller);
 int playAnimationLoop(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
+void setAnimationScreenPositionReference(int tID, Position* tScreenPositionReference);
+void setAnimationBasePositionReference(int tID, Position* tBasePositionReference);
 void removeHandledAnimation(int tID);
 void shutdownAnimationHandler();
 #endif

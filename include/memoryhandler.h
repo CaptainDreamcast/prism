@@ -3,6 +3,7 @@
 
 void* allocMemory(int tSize);
 void freeMemory(void* tData);
+void* reallocMemory(void* tData, int tSize);
 void* allocTextureMemory(int tSize);
 void freeTextureMemory(void* tData);
 

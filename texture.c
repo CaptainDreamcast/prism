@@ -10,11 +10,12 @@
 
 #include "include/log.h"
 #include "include/memoryhandler.h"
+#include "include/system.h"
 
 #define HEADER_SIZE_KMG 64
 // TODO: use kmg.h from KOS
 
-TextureData loadTexturePKG(char tFileDir[]) {
+TextureData loadTexturePKG(char* tFileDir) {
 
   TextureData returnData;
 
@@ -62,6 +63,20 @@ TextureData loadTexturePKG(char tFileDir[]) {
   freeMemory(kmgData);
 
   return returnData;
+}
+
+TextureData loadTexture(char* tFileDir) {
+	char* fileExt = getFileExtension(tFileDir);
+
+	if(!strcmp("pkg", fileExt)) {
+		return loadTexturePKG(tFileDir);
+	} else {
+		logError("Unable to identify texture file type.");
+		logErrorString(fileExt);
+		abortSystem();
+		TextureData errData;
+		return errData;
+	}
 }
 
 void unloadTexture(TextureData tTexture) {
