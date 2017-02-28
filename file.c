@@ -147,7 +147,7 @@ void setWorkingDirectory(char* path) {
 	}
 }
 
-static void getFullPath(char* tDest, char* tPath) {
+void getFullPath(char* tDest, char* tPath) {
 	if(tPath[0] == '$') sprintf(tDest, "%s", tPath+1);
 	else if(tPath[0] == '/') sprintf(tDest, "%s%s", gData.fileSystem, tPath);
 	else sprintf(tDest, "%s%s%s", gData.fileSystem, gData.cwd, tPath);

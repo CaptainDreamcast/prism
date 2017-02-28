@@ -6,7 +6,7 @@
 #include "include/drawing.h"
 #include "include/log.h"
 #include "include/memoryhandler.h"
-
+#include "include/sound.h"
 
 #include "include/timer.h"
 #include "include/animation.h"
@@ -15,6 +15,7 @@
 #include "include/stagehandler.h"
 #include "include/collisionhandler.h"
 #include "include/collisionanimation.h"
+#include "include/soundeffect.h"
 #include "include/system.h"
 
 void initTariWrapperWithDefaultFlags() {
@@ -24,6 +25,7 @@ void initTariWrapperWithDefaultFlags() {
 	initPhysics();
 	initFileSystem();
 	initDrawing();
+	initSound();
 	setFont("$/rd/fonts/dolmexica.hdr", "$/rd/fonts/dolmexica.pkg");
 	
 }
@@ -62,6 +64,8 @@ static void loadScreen(Screen* tScreen) {
 	setupCollisionHandler();
 	log("Setting up Collisionanimationhandling");
 	setupCollisionAnimationHandler();
+	log("Setting up Soundeffecthandling");
+	setupSoundEffectHandler();
 	
 	log("Loading user screen data");
 	tScreen->mLoad();
@@ -72,6 +76,8 @@ static void unloadScreen(Screen* tScreen) {
 	log("Unloading user screen data");
 	tScreen->mUnload();
 
+	log("Shutting down Soundeffecthandling");
+	shutdownSoundEffectHandler();
 	log("Shutting down Collisionanimationhandling");
 	shutdownCollisionAnimationHandler();
 	log("Shutting down Collisionhandling");
