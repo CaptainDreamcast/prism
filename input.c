@@ -4,8 +4,8 @@
 
 #include "include/log.h"
 
-maple_device_t* gCont;
-cont_state_t* gState;
+static maple_device_t* gCont;
+static cont_state_t* gState;
 
 void updateInput() {
   if ((gCont = maple_enum_dev(0, 0)) != NULL) {
@@ -13,6 +13,21 @@ void updateInput() {
   } else {
     gState = (cont_state_t*)0;
   }
+}
+
+void resetInput() {
+	hasPressedAFlank();
+	hasPressedBFlank();
+	hasPressedXFlank();
+	hasPressedYFlank();
+	hasPressedLFlank();
+	hasPressedRFlank();
+	hasPressedLeftFlank();
+	hasPressedRightFlank();
+	hasPressedUpFlank();
+	hasPressedDownFlank();
+	hasPressedStartFlank();
+	hasPressedAbortFlank();
 }
 
 int hasPressedA() {
@@ -100,7 +115,7 @@ int hasPressedAbort() {
   return ((gState->buttons & exitCode) == exitCode);
 }
 
-int hasPressedFlank(int tCurrent, int* tFlank) {
+static int hasPressedFlank(int tCurrent, int* tFlank) {
   int returnValue = 0;
 
   debugInteger(tCurrent);
@@ -113,62 +128,62 @@ int hasPressedFlank(int tCurrent, int* tFlank) {
   return returnValue;
 }
 
-int gAFlank = 0;
+static int gAFlank = 0;
 int hasPressedAFlank() {
   return hasPressedFlank(hasPressedA(), &gAFlank);
 }
 
-int gBFlank = 0;
+static int gBFlank = 0;
 int hasPressedBFlank() {
   return hasPressedFlank(hasPressedB(), &gBFlank);
 }
 
-int gXFlank = 0;
+static int gXFlank = 0;
 int hasPressedXFlank() {
   return hasPressedFlank(hasPressedX(), &gXFlank);
 }
 
-int gYFlank = 0;
+static int gYFlank = 0;
 int hasPressedYFlank() {
   return hasPressedFlank(hasPressedY(), &gYFlank);
 }
 
-int gLeftFlank = 0;
+static int gLeftFlank = 0;
 int hasPressedLeftFlank() {
   return hasPressedFlank(hasPressedLeft(), &gLeftFlank);
 }
 
-int gRightFlank = 0;
+static int gRightFlank = 0;
 int hasPressedRightFlank() {
   return hasPressedFlank(hasPressedRight(), &gRightFlank);
 }
 
-int gUpFlank = 0;
+static int gUpFlank = 0;
 int hasPressedUpFlank() {
   return hasPressedFlank(hasPressedUp(), &gUpFlank);
 }
 
-int gDownFlank = 0;
+static int gDownFlank = 0;
 int hasPressedDownFlank() {
   return hasPressedFlank(hasPressedDown(), &gDownFlank);
 }
 
-int gLFlank = 0;
+static int gLFlank = 0;
 int hasPressedLFlank() {
   return hasPressedFlank(hasPressedL(), &gLFlank);
 }
 
-int gRFlank = 0;
+static int gRFlank = 0;
 int hasPressedRFlank() {
   return hasPressedFlank(hasPressedR(), &gRFlank);
 }
 
-int gStartFlank = 0;
+static int gStartFlank = 0;
 int hasPressedStartFlank() {
   return hasPressedFlank(hasPressedStart(), &gStartFlank);
 }
 
-int gAbortFlank = 0;
+static int gAbortFlank = 0;
 int hasPressedAbortFlank() {
   debugLog("check abort flank");
   return hasPressedFlank(hasPressedAbort(), &gAbortFlank);

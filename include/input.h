@@ -2,6 +2,7 @@
 #define INPUT_TARI
 
 void updateInput();
+void resetInput();
 
 int hasPressedA();
 int hasPressedB();

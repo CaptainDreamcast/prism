@@ -66,6 +66,8 @@ static void loadScreen(Screen* tScreen) {
 	setupCollisionAnimationHandler();
 	log("Setting up Soundeffecthandling");
 	setupSoundEffectHandler();
+	log("Setting up input flanks");
+	resetInput();
 	
 	log("Loading user screen data");
 	tScreen->mLoad();
