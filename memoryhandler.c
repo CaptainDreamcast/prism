@@ -3,6 +3,9 @@
 #include "include/log.h"
 #include "include/system.h"
 
+#include <stdlib.h>
+#include <kos.h>
+
 #define MEMORY_STACK_MAX 10
 
 typedef struct MemoryListElement_internal{
