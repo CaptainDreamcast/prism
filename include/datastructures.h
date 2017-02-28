@@ -39,7 +39,7 @@ List new_list();
 void delete_list(List* tList);
 ListIterator list_iterator_begin(List* tList);
 void* list_iterator_get(ListIterator tIterator);
-void list_iterator_increase(ListIterator tIterator);
+void list_iterator_increase(ListIterator* tIterator);
 int list_has_next(ListIterator tIterator);
 
 typedef struct {
@@ -65,6 +65,7 @@ void* vector_get(Vector* tVector, int tIndex);
 void vector_remove(Vector* tVector, int tIndex);
 void* vector_pop_back(Vector* tVector);
 int vector_size(Vector* tVector);
+void vector_map(Vector* tVector, mapCB tCB, void* tCaller);
 
 
 #endif

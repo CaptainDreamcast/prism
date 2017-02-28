@@ -15,4 +15,6 @@ void popTextureMemoryStack();
 void initMemoryHandler();
 void shutdownMemoryHandler();
 
+void debugPrintMemoryStack();
+
 #endif

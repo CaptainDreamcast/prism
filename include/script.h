@@ -30,7 +30,7 @@ ScriptPosition getNextScriptDouble(ScriptPosition tPos, double* tDest);
 ScriptPosition getNextScriptInteger(ScriptPosition tPos, int* tDest);
 ScriptRegion getScriptRegion(Script tScript, char* tName);
 ScriptPosition getScriptRegionStart(ScriptRegion tRegion);
-ScriptPosition getPositionAfterScriptRegion(ScriptRegion tRegion);
+ScriptPosition getPositionAfterScriptRegion(ScriptRegion tRegion, ScriptRegion tSkippedRegion);
 ScriptRegion getScriptRegionAtPosition(ScriptPosition tPos);
 int hasNextScriptWord(ScriptPosition tPos);
 ScriptPosition getNextScriptInstruction(ScriptPosition tPos);

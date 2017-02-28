@@ -161,6 +161,7 @@ List new_list() {
 	List l;
 	l.mSize = 0;
 	l.mFirst = NULL;
+	l.mLast = NULL;
 	l.mIDs = 0;
 	return l;
 }
@@ -177,12 +178,12 @@ void* list_iterator_get(ListIterator tIterator) {
 	return tIterator->mData;
 }
 
-void list_iterator_increase(ListIterator tIterator) {
-	if(tIterator->mNext == NULL) {
+void list_iterator_increase(ListIterator* tIterator) {
+	if((*tIterator)->mNext == NULL) {
 		logError("Trying to increase end iterator.");
 		abortSystem();
 	}
-	tIterator = tIterator->mNext;
+	*tIterator = (*tIterator)->mNext;
 }
 
 int list_has_next(ListIterator tIterator)  {
@@ -245,4 +246,11 @@ void* vector_get(Vector* tVector, int tIndex) {
 
 int vector_size(Vector* tVector) {
 	return tVector->mSize;
+}
+
+void vector_map(Vector* tVector, mapCB tCB, void* tCaller) {
+	int i;
+	for(i = 0; i < tVector->mSize; i++) {
+		tCB(tCaller, tVector->mData[i].mData);
+	}
 }

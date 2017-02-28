@@ -20,10 +20,14 @@ int fileOpen(char* tPath, int tFlags);
 #define fileClose(x) fs_close(x)
 #define fileUnlink(x) fs_unlink(x)
 #define fileMemoryMap(x) fs_mmap(x)
+
 Buffer fileToBuffer(char* path);
 void freeBuffer(Buffer buffer);
+void appendTerminationSymbolToBuffer(Buffer* tBuffer);
+
 void initFileSystem();
 void setFileSystem(char* path);
+void setWorkingDirectory(char* path);
 
 void mountRomdisk(char* tFilePath, char* tMountPath);
 void unmountRomdisk(char* tMountPath);
@@ -31,5 +35,7 @@ void unmountRomdisk(char* tMountPath);
 char* getPureFileName(char* path);
 char* getFileExtension(char* tPath);
 void  getPathWithNumberAffixedFromAssetPath(char* tDest, char* tSrc, int i);
+
+void printDirectory(char* tPath);
 
 #endif

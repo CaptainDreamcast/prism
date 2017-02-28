@@ -16,6 +16,8 @@ typedef struct Screen_internal{
 
 void initTariWrapperWithDefaultFlags();
 void shutdownTariWrapper();
+void pauseWrapper();
+void resumeWrapper();
 
 void loadScreenFunctionality();
 void updateScreenFunctionality();

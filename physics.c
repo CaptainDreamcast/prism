@@ -11,15 +11,39 @@ static struct {
 	Velocity mMaxVelocity;
 	Gravity mGravity;
 	int mIsPaused;
+	Vector3D mOneMinusDragCoefficient;
 } gData;
 
 void setMaxVelocity(Velocity tVelocity) {
   gData.mMaxVelocity = tVelocity;
 }
 
+void setMaxVelocityDouble(double tVelocity) {
+   gData.mMaxVelocity = makePosition(tVelocity, tVelocity, tVelocity); // TODO: change this here and below to enforce vector length tVelocity
+}
+
+void resetMaxVelocity() {
+  Velocity maxVelocity;
+  maxVelocity.x = INFINITY;
+  maxVelocity.y = INFINITY;
+  maxVelocity.z = INFINITY;
+  setMaxVelocity(maxVelocity);
+}
+
+void setDragCoefficient(Vector3D tDragCoefficient) {
+  gData.mOneMinusDragCoefficient = vecAdd(makePosition(1, 1, 1), vecScale(tDragCoefficient, -1));
+}
+
+void resetDragCoefficient() {
+	gData.mOneMinusDragCoefficient = makePosition(1,1,1);
+}
 
 void setGravity(Gravity tGravity) {
   gData.mGravity = tGravity;
+}
+
+Gravity getGravity() {
+	return gData.mGravity;
 }
 
 double fmin(double a, double b) {
@@ -41,6 +65,10 @@ void handlePhysics(PhysicsObject* tObject) {
   tObject->mVelocity.y += tObject->mAcceleration.y*f;
   tObject->mVelocity.z += tObject->mAcceleration.z*f;
 
+  tObject->mVelocity.x *= gData.mOneMinusDragCoefficient.x;
+  tObject->mVelocity.y *= gData.mOneMinusDragCoefficient.y;
+  tObject->mVelocity.z *= gData.mOneMinusDragCoefficient.z;
+
   //TODO: fix velocity increase problem for 50Hz
   tObject->mVelocity.x = fmax(-gData.mMaxVelocity.x*f, fmin(gData.mMaxVelocity.x*f, tObject->mVelocity.x));
   tObject->mVelocity.y = fmax(-gData.mMaxVelocity.y, fmin(gData.mMaxVelocity.y, tObject->mVelocity.y));
@@ -56,11 +84,8 @@ void resetPhysicsObject(PhysicsObject* tObject) {
 }
 
 void resetPhysics() {
-  Velocity maxVelocity;
-  maxVelocity.x = INFINITY;
-  maxVelocity.y = INFINITY;
-  maxVelocity.z = INFINITY;
-  setMaxVelocity(maxVelocity);
+  resetMaxVelocity();
+  resetDragCoefficient();
 
   Gravity gravity;
   gravity.x = 0;
@@ -86,17 +111,7 @@ int isEmptyVelocity(Velocity tVelocity) {
   return tVelocity.x == 0 && tVelocity.y == 0 && tVelocity.z == 0;
 }
 Velocity normalizeVelocity(Velocity tVelocity) {
-  double l = vecLength(tVelocity);
-  if (l == 0) {
-    logError("Empty vector length; return original vector");
-    return tVelocity;
-  }
-
-  tVelocity.x /= l;
-  tVelocity.y /= l;
-  tVelocity.z /= l;
-
-  return tVelocity;
+	return vecNormalize(tVelocity);
 }
 
 

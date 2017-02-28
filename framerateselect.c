@@ -6,6 +6,7 @@
 #include "include/drawing.h"
 #include "include/physics.h"
 #include "include/input.h"
+#include "include/system.h"
 
 typedef struct {
   char ArrayToBePrinted[17];
@@ -23,21 +24,21 @@ typedef struct {
 
 #define FRAMERATE_WARNING_ARRAY_AMOUNT 2
 
-void setFramerateEverywhere(Framerate tFramerate, int tDM) {
-  setFramerate(tFramerate);
-  vid_set_mode(tDM, PM_RGB565);
-}
-
 void setFramerateSixty() {
-  setFramerateEverywhere(SIXTY_HERTZ, DM_640x480_NTSC_IL);
+
+  setFramerate(SIXTY_HERTZ);
+  setScreenFramerate(60);
 }
 
 void setFramerateVGA() {
-  setFramerateEverywhere(SIXTY_HERTZ, DM_640x480_VGA);
+  setFramerate(SIXTY_HERTZ);
+  setScreenFramerate(60);
+  setVGA();
 }
 
 void setFramerateFifty() {
-  setFramerateEverywhere(FIFTY_HERTZ, DM_640x480_PAL_IL);
+  setFramerate(FIFTY_HERTZ);
+  setScreenFramerate(50);
 }
 
 int hasToSetFramerate() {
@@ -59,6 +60,11 @@ int hasToSetFramerate() {
     }
   }
   return 0;
+}
+
+static double getScreenFactor() {
+	ScreenSize sz = getScreenSize();
+	return sz.x / 640.0;
 }
 
 #define PAL_INDEX 0
@@ -85,26 +91,26 @@ FramerateSelectReturnType selectFramerate() {
   sprintf(warningArray[1].ArrayToBePrinted, "USE 60HZ IF POSSIBLE!");
 
   for (i = 0; i < FRAMERATE_AMOUNT; i++) {
-    selectableArray[i].FontSize = 50;
-    selectableArray[i].PositionY = 150;
+    selectableArray[i].FontSize = 50*getScreenFactor();
+    selectableArray[i].PositionY = 150*getScreenFactor();
   }
 
-  selectableArray[0].PositionX = 80;
-  selectableArray[1].PositionX = 360;
+  selectableArray[0].PositionX = 80*getScreenFactor();
+  selectableArray[1].PositionX = 360*getScreenFactor();
 
-  currentOptionArray.PositionX = 40;
-  currentOptionArray.PositionY = 335;
-  currentOptionArray.FontSize = 20;
+  currentOptionArray.PositionX = 40*getScreenFactor();
+  currentOptionArray.PositionY = 335*getScreenFactor();
+  currentOptionArray.FontSize = 20*getScreenFactor();
 
   for (i = 0; i < FRAMERATE_WARNING_ARRAY_AMOUNT; i++) {
-    warningArray[i].FontSize = 11;
+    warningArray[i].FontSize = 11*getScreenFactor();
   }
 
-  warningArray[0].PositionX = 40;
-  warningArray[0].PositionY = 375;
+  warningArray[0].PositionX = 40*getScreenFactor();
+  warningArray[0].PositionY = 375*getScreenFactor();
 
-  warningArray[1].PositionX = 205;
-  warningArray[1].PositionY = 390;
+  warningArray[1].PositionX = 205*getScreenFactor();
+  warningArray[1].PositionY = 390*getScreenFactor();
 
   setFramerateFifty();
   isRunning = 1;

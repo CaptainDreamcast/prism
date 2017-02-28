@@ -6,7 +6,9 @@
 
 Script loadScript(char* tPath) {
 	Script ret;
+
 	ret.mBuffer = fileToBuffer(tPath);
+	appendTerminationSymbolToBuffer(&ret.mBuffer);
 	return ret;
 }
 
@@ -14,16 +16,15 @@ void executeOnScriptRegion(ScriptRegion tRegion, ScriptExecuteCB tFunc, void* tC
 	ScriptPosition pos = getScriptRegionStart(tRegion);
 	while(pos.mPointer != NULL) {
 		pos = tFunc(tCaller, pos);
+		if(pos.mPointer == NULL) break;
 		pos = getNextScriptInstruction(pos);
 	}
 }
 
 static ScriptPosition updateScriptPositionValidity(ScriptPosition tPos) {
-	int positionsRead;	
-	char testChar;
 
-	sscanf(tPos.mPointer, "%c%n", &testChar, &positionsRead);
-	if(!positionsRead || (testChar == '}' && tPos.mPointer + positionsRead >= tPos.mRegion.mEnd)) {
+	
+	if((tPos.mPointer >= tPos.mRegion.mEnd)) {
 		tPos.mPointer = NULL;
 	}
 
@@ -34,6 +35,20 @@ ScriptPosition getNextScriptString(ScriptPosition tPos, char* tDest) {
 	int positionsRead;	
 	sscanf(tPos.mPointer, "%s%n", tDest, &positionsRead);
 	tPos.mPointer += positionsRead;
+	tPos = updateScriptPositionValidity(tPos);
+	
+	return tPos;
+}
+
+static ScriptPosition skipNextScriptString(ScriptPosition tPos) {
+	char buf[100];
+	tPos = getNextScriptString(tPos, buf);
+	return tPos;
+}
+
+static ScriptPosition getNextScriptRawCharacter(ScriptPosition tPos, char* tDest) {	
+	tDest[0] = *tPos.mPointer;
+	tPos.mPointer++;
 	tPos = updateScriptPositionValidity(tPos);
 	
 	return tPos;
@@ -87,6 +102,14 @@ static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, ch
 		tPos = next;
 	}
 
+	if(*tWord == '}') {
+		// TODO: unhack
+		tPos.mPointer = tPos.mRegion.mEnd;
+		return tPos;
+	}
+
+	
+
 	logError("Unable to find word");
 	logString(tPos.mPointer);
 	logString(tWord);
@@ -94,10 +117,33 @@ static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, ch
 	return tPos;
 }
 
+static ScriptPosition findNextCharacterScriptOccurenceOnSameLevel(ScriptPosition tPos, char tChar) {
+	char w[100];
+
+	int isInside = 0;
+
+	while(tPos.mPointer != NULL) {
+		ScriptPosition next;
+		next = getNextScriptRawCharacter(tPos, w);
+		if(!isInside && tChar == *w) {
+			return tPos;
+		}
+
+		if(!strcmp("{",  w)) isInside++;
+		if(!strcmp("}",  w)) isInside--;
+
+		tPos = next;
+	}
+
+	logError("Unable to find char");
+	logString(tPos.mPointer);
+	logInteger(tChar);
+	abortSystem();
+	return tPos;
+}
+
 static ScriptPosition findScriptRegionEnd(ScriptPosition tPos) {
 	tPos = findNextScriptOccurenceOnSameLevel(tPos, "}");
-	char w[100];
-	tPos = getNextScriptString(tPos, w);
 	return tPos;
 }
 
@@ -134,6 +180,7 @@ ScriptRegion getScriptRegion(Script tScript, char* tName) {
 	ScriptPosition p0 = getScriptRegionStart(r);
 	ScriptPosition p1 = findScriptRegionStart(p0, tName);
 	ScriptPosition p2 = findScriptRegionEnd(p1);
+	p2.mPointer--;
 
 	return makeScriptRegion(tScript, p1.mPointer, p2.mPointer);
 }
@@ -149,15 +196,15 @@ ScriptPosition getScriptRegionStart(ScriptRegion tRegion) {
 	return makeScriptPosition(tRegion, tRegion.mStart);
 
 }
-ScriptPosition getPositionAfterScriptRegion(ScriptRegion tRegion) {
-	ScriptPosition ret = makeScriptPosition(tRegion, tRegion.mStart);
-	ret.mPointer++;
+ScriptPosition getPositionAfterScriptRegion(ScriptRegion tRegion, ScriptRegion tSkippedRegion) {
+	ScriptPosition ret = makeScriptPosition(tRegion, tSkippedRegion.mEnd);
+	ret = skipNextScriptString(ret);
 	return ret;
 }
 
 ScriptRegion getScriptRegionAtPosition(ScriptPosition tPos) {
 	ScriptPosition start = findNextScriptOccurenceOnSameLevel(tPos, "{");
-	start.mPointer++;
+	start = skipNextScriptString(start);
 	ScriptPosition end = findNextScriptOccurenceOnSameLevel(start, "}");
 
 	return makeScriptRegion(tPos.mRegion.mScript, start.mPointer, end.mPointer);
@@ -168,8 +215,11 @@ int hasNextScriptWord(ScriptPosition tPos) {
 }
 
 ScriptPosition getNextScriptInstruction(ScriptPosition tPos) {
-	tPos = findNextScriptOccurenceOnSameLevel(tPos, "\n");
+	if(tPos.mPointer == NULL) return tPos;
+
+	tPos = findNextCharacterScriptOccurenceOnSameLevel(tPos, '\n');
 	tPos.mPointer++;
+	tPos = updateScriptPositionValidity(tPos);
 	return tPos;
 }
 

@@ -32,8 +32,33 @@ typedef void* (*MallocFunc)(size_t tSize);
 typedef void (*FreeFunc)(void* tSize);
 typedef void* (*ReallocFunc)(void* tPointer, size_t tSize);
 
+static void printMemoryList(MemoryList* tList) {
+	logInteger(tList->mSize);
+	int amount = tList->mSize;
+	MemoryListElement* cur = tList->mFirst;
+	while(amount--) {
+		logHex(cur->mData);
+
+		cur = cur->mNext;
+	}
+
+}
+
+static void printMemoryListStack(MemoryListStack* tStack) {
+	logInteger(tStack->mHead);
+	int current;
+	for(current = tStack->mHead; current >= 0; current--) {
+		logInteger(current);
+		printMemoryList(&tStack->mLists[current]);
+	}
+}
+
+void debugPrintMemoryStack() {
+	printMemoryListStack(&gData.mMemoryStack);
+}
 
 static void* addMemoryToMemoryList(MemoryList* tList, int tSize, MallocFunc tFunc) {
+
 	MemoryListElement* e = malloc(sizeof(MemoryListElement));
 
 	e->mPrev = NULL;
@@ -44,11 +69,12 @@ static void* addMemoryToMemoryList(MemoryList* tList, int tSize, MallocFunc tFun
 	tList->mFirst = e;
 
 	tList->mSize++;
-
+	
 	return e->mData;
 }
 
 static void removeMemoryElementFromMemoryList(MemoryList* tList, MemoryListElement* e, FreeFunc tFunc) {
+
 	if(tList->mFirst == e) tList->mFirst = e->mNext;
 	if(e->mNext != NULL) e->mNext->mPrev = e->mPrev;
 	if(e->mPrev != NULL) e->mPrev->mNext = e->mNext;
@@ -134,11 +160,11 @@ static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData
 		abortSystem();
 	}
 
-	int tempHead = tStack->mHead;
-	while(tempHead-- >= 0) {
+	int tempHead;
+	for(tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
 		if(removeMemoryFromMemoryList(&tStack->mLists[tempHead], tData, tFunc)) {
 			return;
-		}
+		}		
 	}
 
 	logError("Freeing invalid memory address");
@@ -157,9 +183,9 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 		abortSystem();
 	}
 
-	int tempHead = tStack->mHead;
 	void* output;
-	while(tempHead-- >= 0) {
+	int tempHead;
+	for(tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
 		if(resizeMemoryOnMemoryList(&tStack->mLists[tempHead], tData, tSize, tFunc, &output)) {
 			return output;
 		}
@@ -256,6 +282,7 @@ void initMemoryHandler() {
 	gData.mActive = 1;
 	gData.mMemoryStack.mHead = -1;	
 	gData.mTextureMemoryStack.mHead = -1;
+	pushMemoryStack();
 	pushTextureMemoryStack();
 }
 

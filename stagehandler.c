@@ -25,6 +25,7 @@ typedef struct {
 typedef struct {
 	double mScrollingFactor;
 	PhysicsObject mPhysics;
+	double mZ;
 	List mPatchList;
 	ListIterator mCurrentStartPatch;
 	ListIterator mCurrentEndPatch;
@@ -84,23 +85,30 @@ static void unloadStagePatchIfNecessary(BackgroundPatchData* tData) {
 	}
 
 	tData->mIsLoaded = 0;
+
 }
 
 static void updateSingleStage(void* tCaller, void* tData) {
 	(void) tCaller;
 	SingleBackgroundData* data = tData;
- 
-	handlePhysics(&data->mPhysics);
 
-	while(list_has_next(data->mCurrentEndPatch) && !isStagePatchOutOfBounds(list_iterator_get(data->mCurrentEndPatch), data)) {
+	setDragCoefficient(makePosition(0.1, 0.1, 0.1));
+	handlePhysics(&data->mPhysics);
+	resetDragCoefficient();
+
+	while(data->mCurrentEndPatch != NULL && !isStagePatchOutOfBounds(list_iterator_get(data->mCurrentEndPatch), data)) {
 		loadStagePatchIfNecessary(list_iterator_get(data->mCurrentEndPatch), data);
-		list_iterator_increase(data->mCurrentEndPatch);
+
+		if(list_has_next(data->mCurrentEndPatch)) list_iterator_increase(&data->mCurrentEndPatch);
+		else data->mCurrentEndPatch = NULL;
+			
 	}
 
-
-	while(list_has_next(data->mCurrentStartPatch) && isStagePatchOutOfBounds(list_iterator_get(data->mCurrentStartPatch), data)) {
+	while(data->mCurrentStartPatch != NULL && isStagePatchOutOfBounds(list_iterator_get(data->mCurrentStartPatch), data)) {
 		unloadStagePatchIfNecessary(list_iterator_get(data->mCurrentStartPatch));
-		list_iterator_increase(data->mCurrentStartPatch);
+
+		if(list_has_next(data->mCurrentStartPatch)) list_iterator_increase(&data->mCurrentStartPatch);
+		else data->mCurrentStartPatch = NULL;
 	}
 }
 
@@ -112,10 +120,12 @@ int addScrollingBackground(double tScrollingFactor, double tZ) {
 	SingleBackgroundData* data = allocMemory(sizeof(SingleBackgroundData));
 	data->mScrollingFactor = tScrollingFactor;
 	resetPhysicsObject(&data->mPhysics);
-	data->mPhysics.mPosition = makePosition(0, 0, tZ);
+	data->mPhysics.mPosition = makePosition(0, 0, 0);
+	data->mZ = tZ;
 	data->mPatchList = new_list();
 	data->mCurrentStartPatch = NULL;
 	data->mCurrentEndPatch = NULL;
+
 	return list_push_front_owned(&gData.mList, data);
 }
 
@@ -125,12 +135,16 @@ int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Ani
 	BackgroundPatchData* pData = allocMemory(sizeof(BackgroundPatchData));
 	pData->mIsLoaded = 0;
 	pData->mPosition = tPosition;
+	pData->mPosition.z = data->mZ;
 	pData->mAnimation = tAnimation;
 	strcpy(pData->mPath, tPath);
+
 	int id = list_push_back_owned(&data->mPatchList, pData);	
 
 	if(data->mCurrentStartPatch == NULL) data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
 		
+
+
 	return id;
 }
 

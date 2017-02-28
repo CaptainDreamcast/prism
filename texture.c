@@ -21,33 +21,21 @@ TextureData loadTexturePKG(char* tFileDir) {
 
   qlz_state_decompress *state_decompress = (qlz_state_decompress *) allocMemory(sizeof(qlz_state_decompress));
   size_t bufferLength;
-  file_t pkgFile;
-  char* mipMapData;
   char* kmgData;
+  Buffer pkgBuffer;
 
-  pkgFile = fileOpen(tFileDir, O_RDONLY);
+  pkgBuffer = fileToBuffer(tFileDir);
 
-  if (pkgFile == FILEHND_INVALID) {
-    logError("Couldn't open file: Try returning to menu...");
-    logErrorString(tFileDir);
-    arch_menu();
-  }
-
-  bufferLength = fileTotal(pkgFile);
-  debugInteger(bufferLength);
-
-  mipMapData = fileMemoryMap(pkgFile);
-
-  bufferLength = qlz_size_decompressed(mipMapData);
+  bufferLength = qlz_size_decompressed(pkgBuffer.mData);
   debugInteger(bufferLength);
 
   kmgData = (char*) allocMemory(bufferLength);
 
   // decompress and write result
-  bufferLength = qlz_decompress(mipMapData, kmgData, state_decompress);
+  bufferLength = qlz_decompress(pkgBuffer.mData, kmgData, state_decompress);
   debugInteger(bufferLength);
 
-  fileClose(pkgFile);
+  freeBuffer(pkgBuffer);
   freeMemory(state_decompress);
 
   returnData.mTextureSize.x = 0;

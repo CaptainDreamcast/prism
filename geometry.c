@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "include/math.h"
+#include "include/log.h"
 
 
 int dot3D(Vector3D p1, Vector3D p2){
@@ -30,6 +31,17 @@ Vector3D vecScale(Vector3D v, double tFactor){
 	return ret;
 }
 
+Vector3D vecNormalize(Vector3D tVector) {
+	double l = vecLength(tVector);
+	if (l == 0) {
+		return tVector;
+	}
+	tVector.x /= l;
+	tVector.y /= l;
+	tVector.z /= l;
+	return tVector;
+}
+
 Position makePosition(double x, double y, double z){
   Position pos;
   pos.x = x;
@@ -38,12 +50,28 @@ Position makePosition(double x, double y, double z){
   return pos;
 }
 
+Vector3DI makeVector3DI(int x, int y, int z){
+  Vector3DI v;
+  v.x = x;
+  v.y = y;
+  v.z = z;
+  return v;
+}
+
 Position variatePosition(Position tBase) {
 	Position ret;
 	ret.x = randfrom(-tBase.x, tBase.x);
 	ret.y = randfrom(-tBase.y, tBase.y);
 	ret.z = randfrom(-tBase.z, tBase.z);
 	return ret;
+}
+
+void printPosition(char* tName, Position tPosition) {
+	logString(tName);
+	logDouble(tPosition.x);
+	logDouble(tPosition.y);
+	logDouble(tPosition.z);
+
 }
 
 Position getDirection(Position tFrom, Position tTo){
