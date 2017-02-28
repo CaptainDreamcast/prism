@@ -40,3 +40,10 @@ double fatan2(double y, double x){
 	return atan;
 }
 
+double getLinearInterpolationFactor(double a, double b, double p) {
+	return (p - a) / (b - a);
+}
+
+double interpolateLinear(double a, double b, double t) {
+	return a + t * (b-a);
+}

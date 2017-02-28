@@ -7,6 +7,12 @@ typedef struct {
   double z;
 } Vector3D;
 
+typedef struct {
+  int x;
+  int y;
+  int z;
+} Vector3DI;
+
 typedef Vector3D Position;
 
 typedef struct {
@@ -27,12 +33,15 @@ typedef struct{
 
 int dot3D(Vector3D p1, Vector3D p2);
 
+Vector3DI makeVector3DI(int x, int y, int z);
 Position makePosition(double x, double y, double z);
 Position variatePosition(Position tBase);
+void printPosition(char* tName, Position tPosition);
 
 double vecLength(Vector3D v);
 Vector3D vecAdd(Vector3D v1, Vector3D v2);
 Vector3D vecScale(Vector3D v, double tFactor);
+Vector3D vecNormalize(Vector3D tVector);
 Position getDirection(Position tFrom, Position tTo);
 Line makeLine(Vector3D tStart, Vector3D tEnd);
 

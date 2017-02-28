@@ -2,6 +2,8 @@
 
 #include "include/log.h"
 
+// TODO: Refactor into system
+
 Framerate gFramerate;
 
 void setFramerate(Framerate tFramerate) {

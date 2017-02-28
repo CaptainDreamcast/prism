@@ -9,44 +9,34 @@
 #include "include/file.h"
 
 #include "include/log.h"
+#include "include/memoryhandler.h"
+#include "include/system.h"
 
 #define HEADER_SIZE_KMG 64
 // TODO: use kmg.h from KOS
 
-TextureData loadTexturePKG(char tFileDir[]) {
+TextureData loadTexturePKG(char* tFileDir) {
 
   TextureData returnData;
 
-  qlz_state_decompress *state_decompress = (qlz_state_decompress *) malloc(sizeof(qlz_state_decompress));
+  qlz_state_decompress *state_decompress = (qlz_state_decompress *) allocMemory(sizeof(qlz_state_decompress));
   size_t bufferLength;
-  file_t pkgFile;
-  char* mipMapData;
   char* kmgData;
+  Buffer pkgBuffer;
 
-  pkgFile = fileOpen(tFileDir, O_RDONLY);
+  pkgBuffer = fileToBuffer(tFileDir);
 
-  if (pkgFile == FILEHND_INVALID) {
-    logError("Couldn't open file: Try returning to menu...");
-    logErrorString(tFileDir);
-    arch_menu();
-  }
-
-  bufferLength = fileTotal(pkgFile);
+  bufferLength = qlz_size_decompressed(pkgBuffer.mData);
   debugInteger(bufferLength);
 
-  mipMapData = fileMemoryMap(pkgFile);
-
-  bufferLength = qlz_size_decompressed(mipMapData);
-  debugInteger(bufferLength);
-
-  kmgData = (char*) malloc(bufferLength);
+  kmgData = (char*) allocMemory(bufferLength);
 
   // decompress and write result
-  bufferLength = qlz_decompress(mipMapData, kmgData, state_decompress);
+  bufferLength = qlz_decompress(pkgBuffer.mData, kmgData, state_decompress);
   debugInteger(bufferLength);
 
-  fileClose(pkgFile);
-  free(state_decompress);
+  freeBuffer(pkgBuffer);
+  freeMemory(state_decompress);
 
   returnData.mTextureSize.x = 0;
   returnData.mTextureSize.y = 0;
@@ -54,17 +44,31 @@ TextureData loadTexturePKG(char tFileDir[]) {
   memcpy4(&returnData.mTextureSize.x, kmgData + 16, sizeof returnData.mTextureSize.x);
   memcpy4(&returnData.mTextureSize.y, kmgData + 20, sizeof returnData.mTextureSize.y);
 
-  returnData.mTexture = pvr_mem_malloc(bufferLength - HEADER_SIZE_KMG);
+  returnData.mTexture = allocTextureMemory(bufferLength - HEADER_SIZE_KMG);
 
   sq_cpy(returnData.mTexture, kmgData + HEADER_SIZE_KMG, bufferLength - HEADER_SIZE_KMG);
 
-  free(kmgData);
+  freeMemory(kmgData);
 
   return returnData;
 }
 
+TextureData loadTexture(char* tFileDir) {
+	char* fileExt = getFileExtension(tFileDir);
+
+	if(!strcmp("pkg", fileExt)) {
+		return loadTexturePKG(tFileDir);
+	} else {
+		logError("Unable to identify texture file type.");
+		logErrorString(fileExt);
+		abortSystem();
+		TextureData errData;
+		return errData;
+	}
+}
+
 void unloadTexture(TextureData tTexture) {
-  pvr_mem_free(tTexture.mTexture);
+  freeTextureMemory(tTexture.mTexture);
 }
 
 #define FONT_CHARACTER_AMOUNT 91
