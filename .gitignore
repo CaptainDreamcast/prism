@@ -4,5 +4,5 @@
 *.user
 *.filters
 windows/.vs
-windows/libtari/.vs
-windows/libtari/Release
+windows/vs15/.vs
+windows/vs15/Release
