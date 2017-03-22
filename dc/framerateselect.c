@@ -1,12 +1,12 @@
-#include "include/framerateselectscreen.h"
+#include "../include/framerateselectscreen.h"
 
 #include <kos.h>
 
-#include "include/framerate.h"
-#include "include/drawing.h"
-#include "include/physics.h"
-#include "include/input.h"
-#include "include/system.h"
+#include "../include/framerate.h"
+#include "../include/drawing.h"
+#include "../include/physics.h"
+#include "../include/input.h"
+#include "../include/system.h"
 
 typedef struct {
   char ArrayToBePrinted[17];

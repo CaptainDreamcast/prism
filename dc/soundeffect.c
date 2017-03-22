@@ -1,9 +1,9 @@
-#include "include/soundeffect.h"
+#include "../include/soundeffect.h"
 
 #include <kos.h>
 
-#include "include/file.h"
-#include "include/sound.h"
+#include "../include/file.h"
+#include "../include/sound.h"
 
 void setupSoundEffectHandler() {
 	

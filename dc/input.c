@@ -1,8 +1,8 @@
-#include "include/input.h"
+#include "../include/input.h"
 
 #include <kos.h>
 
-#include "include/log.h"
+#include "../include/log.h"
 
 static maple_device_t* gCont;
 static cont_state_t* gState;

@@ -1,7 +1,9 @@
 #ifndef TARI_FILE
 #define TARI_FILE
 
-#include "stdint.h"
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
 
 typedef struct {
   int mIsOwned;
@@ -17,7 +19,7 @@ size_t fileSeek(int tHandler, size_t tOffset, int tWhence);
 size_t fileTell(int tHandler);
 size_t fileTotal(int tHandler);
 int fileUnlink(char* tPath);
-void* fileMemoryMap(char* tPath);
+void* fileMemoryMap(int tHandler);
 
 
 Buffer fileToBuffer(char* path);

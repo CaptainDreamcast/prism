@@ -11,7 +11,7 @@ int dot3D(Vector3D p1, Vector3D p2){
 }
 
 double vecLength(Vector3D tVelocity) {
-  return fsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
+  return fstsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
 }
 
 Vector3D vecAdd(Vector3D v1, Vector3D v2){
@@ -116,7 +116,7 @@ int checkIntersectLineCircle(Line tLine, Circle tCircle){
 		// so there is a solution to
 		// the equation.
 
-		discriminant = fsqrt( discriminant );
+		discriminant = fstsqrt( discriminant );
 
 		// either solution may be on or off the ray so need to test both
 		// t1 is always the smaller value, because BOTH discriminant and

@@ -13,4 +13,6 @@ double fatan2(double y, double x);
 double getLinearInterpolationFactor(double a, double b, double p);
 double interpolateLinear(double a, double b, double t);
 
+double fstsqrt(double x);
+
 #endif

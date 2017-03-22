@@ -1,11 +1,11 @@
-#include "include/file.h"
+#include "../include/file.h"
 
 #include <dirent.h> 
 #include <kos.h>
 
-#include "include/log.h"
-#include "include/memoryhandler.h"
-#include "include/system.h"
+#include "../include/log.h"
+#include "../include/memoryhandler.h"
+#include "../include/system.h"
 
 
 static struct {
@@ -187,8 +187,8 @@ size_t fileTotal(int tHandler){
 int fileUnlink(char* tPath) {
 	return fs_unlink(tPath);
 }
-void* fileMemoryMap(char* tPath) {
-	return fs_mmap(tPath);
+void* fileMemoryMap(int tHandler) {
+	return fs_mmap(tHandler);
 }
 
 

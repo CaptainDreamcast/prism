@@ -1,11 +1,11 @@
-#include "include/drawing.h"
+#include "../include/drawing.h"
 
 #include <stdlib.h>
 
 #include <kos.h>
 #include <dc/matrix3d.h>
 
-#include "include/log.h"
+#include "../include/log.h"
 
 static struct {
 

@@ -1,7 +1,7 @@
-#include "include/memoryhandler.h"
+#include "../include/memoryhandler.h"
 
-#include "include/log.h"
-#include "include/system.h"
+#include "../include/log.h"
+#include "../include/system.h"
 
 #include <stdlib.h>
 #include <kos.h>

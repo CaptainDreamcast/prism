@@ -1,16 +1,16 @@
-#include "include/texture.h"
+#include "../include/texture.h"
 
 #include <kos.h>
 #include <kos/string.h>
 
 // TODO: remove quicklz and remove it with something suitable
-#include "include/quicklz.h"
+#include "../include/quicklz.h"
 
-#include "include/file.h"
+#include "../include/file.h"
 
-#include "include/log.h"
-#include "include/memoryhandler.h"
-#include "include/system.h"
+#include "../include/log.h"
+#include "../include/memoryhandler.h"
+#include "../include/system.h"
 
 #define HEADER_SIZE_KMG 64
 // TODO: use kmg.h from KOS
