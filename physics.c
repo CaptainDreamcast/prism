@@ -2,7 +2,6 @@
 
 #include <string.h>
 #include <math.h>
-#include <kos.h>
 
 #include "include/log.h"
 #include "include/framerate.h"

@@ -1,8 +1,6 @@
 #ifndef TARI_FILE
 #define TARI_FILE
 
-#include <kos.h>
-
 #include "stdint.h"
 
 typedef struct {
@@ -12,14 +10,15 @@ typedef struct {
 } Buffer;
 
 int fileOpen(char* tPath, int tFlags);
-#define fileRead(x,y,z) fs_read(x,y,z)
-#define fileWrite(x,y,z) fs_write(x,y,z)
-#define fileSeek(x,y,z) fs_seek(x,y,z)
-#define fileTell(x) fs_tell(x)
-#define fileTotal(x) fs_total(x)
-#define fileClose(x) fs_close(x)
-#define fileUnlink(x) fs_unlink(x)
-#define fileMemoryMap(x) fs_mmap(x)
+int fileClose(int tHandler);
+size_t fileRead(int tHandler, void* tBuffer, size_t tCount);
+size_t fileWrite(int tHandler, const void* tBuffer, size_t tCount);
+size_t fileSeek(int tHandler, size_t tOffset, int tWhence);
+size_t fileTell(int tHandler);
+size_t fileTotal(int tHandler);
+int fileUnlink(char* tPath);
+void* fileMemoryMap(char* tPath);
+
 
 Buffer fileToBuffer(char* path);
 void freeBuffer(Buffer buffer);

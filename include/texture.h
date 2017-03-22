@@ -1,9 +1,17 @@
 #ifndef TARI_TEXTURE
 #define TARI_TEXTURE
 
+#ifdef DREAMCAST
 #include <kos.h>
 
 typedef pvr_ptr_t Texture;
+
+#elif defined _WINDOWS_
+#include <SDL.h>
+
+typedef SDL_Texture* Texture;
+
+#endif
 
 typedef struct {
   int x;

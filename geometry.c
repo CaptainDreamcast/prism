@@ -1,6 +1,5 @@
 #include "include/geometry.h"
 
-#include <kos.h>
 #include <math.h>
 
 #include "include/math.h"

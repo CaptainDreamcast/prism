@@ -1,6 +1,7 @@
 #include "include/file.h"
 
 #include <dirent.h> 
+#include <kos.h>
 
 #include "include/log.h"
 #include "include/memoryhandler.h"
@@ -164,6 +165,36 @@ int fileOpen(char* tPath, int tFlags){
 
 	return fs_open(path, tFlags);
 }
+
+int fileClose(int tHandler) {
+	return fs_close(tHandler);
+}
+size_t fileRead(int tHandler, void* tBuffer, size_t tCount) {
+	return fs_read(tHandler, tBuffer, tCount);
+}
+size_t fileWrite(int tHandler, const void* tBuffer, size_t tCount) {
+	return fs_write(tHandler, tBuffer, tCount);
+}
+size_t fileSeek(int tHandler, size_t tOffset, int tWhence)  {
+	return fs_seek(tHandler, tOffset, tWhence);
+}
+size_t fileTell(int tHandler) {
+	return fs_tell(tHandler);
+}
+size_t fileTotal(int tHandler){
+	return fs_total(tHandler);
+}
+int fileUnlink(char* tPath) {
+	return fs_unlink(tPath);
+}
+void* fileMemoryMap(char* tPath) {
+	return fs_mmap(tPath);
+}
+
+
+
+
+
 
 void mountRomdisk(char* tFilePath, char* tMountPath) {
 	file_t romDiskFile;
