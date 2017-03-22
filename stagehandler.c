@@ -4,7 +4,6 @@
 #include "include/memoryhandler.h"
 #include "include/file.h"
 
-
 static struct {
 	List mList;
 } gData;

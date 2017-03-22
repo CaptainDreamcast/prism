@@ -31,7 +31,7 @@ typedef struct{
 } Line;
 
 
-int dot3D(Vector3D p1, Vector3D p2);
+double dot3D(Vector3D p1, Vector3D p2);
 
 Vector3DI makeVector3DI(int x, int y, int z);
 Position makePosition(double x, double y, double z);

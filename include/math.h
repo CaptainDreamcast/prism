@@ -6,6 +6,12 @@
 
 #define INF 1000000000
 
+#ifdef _WIN32
+
+#define M_PI 3.141592653589
+
+#endif
+
 double randfrom(double tMin, double tMax);
 
 double fatan2(double y, double x);

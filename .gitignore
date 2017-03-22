@@ -1,1 +1,8 @@
 *.o
+*.db
+*.opendb
+*.user
+*.filters
+windows/.vs
+windows/libtari/.vs
+windows/libtari/Release

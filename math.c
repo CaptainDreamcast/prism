@@ -22,7 +22,7 @@ double fatan2(double y, double x){
 		return -PIBY2_FLOAT;
 	}
 	float atan;
-	float z = y/x;
+	float z = (float)(y/x);
 	if ( fabsf( z ) < 1.0f )
 	{
 		atan = z/(1.0f + 0.28f*z*z);

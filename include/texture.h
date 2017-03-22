@@ -1,6 +1,8 @@
 #ifndef TARI_TEXTURE
 #define TARI_TEXTURE
 
+#define _WINDOWS_
+
 #ifdef DREAMCAST
 #include <kos.h>
 
