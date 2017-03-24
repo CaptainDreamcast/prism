@@ -3,8 +3,12 @@
 
 #include "common/header.h"
 
+#ifdef DREAMCAST
+
 #define min(x, y) ((x < y) ? (x) : (y));
 #define max(x, y) ((x > y) ? (x) : (y));
+
+#endif
 
 #define INF 1000000000
 

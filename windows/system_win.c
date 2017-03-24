@@ -84,7 +84,7 @@ static void resizeWindow(SDL_Event* e) {
 	double scaleX = e->window.data1 /(double)sz.x;
 	double scaleY = e->window.data2 / (double)sz.y;
 
-	SDL_RenderSetScale(gRenderer, scaleX, scaleY);
+	SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY);
 }
 static void checkWindowEvents(SDL_Event* e) {
 	if (e->window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -105,7 +105,7 @@ static void switchFullscreen() {
 }
 
 static void checkFullscreen() {
-	Uint8* kstates = SDL_GetKeyboardState(NULL);
+	const Uint8* kstates = SDL_GetKeyboardState(NULL);
 
 	if (kstates[SDL_SCANCODE_RETURN] && kstates[SDL_SCANCODE_LALT]) {
 		switchFullscreen();

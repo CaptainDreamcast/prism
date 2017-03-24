@@ -114,12 +114,15 @@ void unmountRomdisk(char* tMountPath) {
 
 void printDirectory(char* tPath) {
 	char path[1024];
+	wchar_t wpath[1024];
 	getFullPath(path, tPath);
 
 	WIN32_FIND_DATA findFileData;
 	HANDLE hFind;
 
-	hFind = FindFirstFile(path, &findFileData);
+	mbstowcs(wpath, path, 1024);
+
+	hFind = FindFirstFile(wpath, &findFileData);
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
 		int err = GetLastError();
@@ -136,7 +139,7 @@ void printDirectory(char* tPath) {
 	}
 
 	do {
-		logString(findFileData.cFileName);
+		logWString(findFileData.cFileName);
 	} while (FindNextFile(hFind, &findFileData));
 
 	FindClose(hFind);

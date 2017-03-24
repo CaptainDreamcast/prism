@@ -9,6 +9,7 @@
 #define logg(x)	{logBase(); printf(x); printf("\n");}
 #define logInteger(x) {logBase(); printf("Value of %s: %d\n", #x, (int)x);}
 #define logString(x) {logBase(); printf("Value of %s: %s\n", #x, x);}
+#define logWString(x) {logBase(); printf("Value of %s: %S\n", #x, x);}
 #define logDouble(x) {logBase(); printf("Value of %s: %f\n", #x, (double)x);}
 #define logHex(x) {logBase(); printf("Value of %s: %X\n", #x, (unsigned int)x);}
 

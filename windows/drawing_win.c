@@ -172,7 +172,7 @@ void stopDrawing() {
 
 void waitForScreen() {
 	double frameMS = (1.0 / 60) * 1000;
-	int frameEndTime = gData.mFrameStartTime + ceil(frameMS);
+	int frameEndTime = (int)(gData.mFrameStartTime + ceil(frameMS));
 	int waitTime = frameEndTime-SDL_GetTicks();
 
 	if (waitTime > 0) {
