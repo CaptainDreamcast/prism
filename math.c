@@ -1,6 +1,9 @@
-#include "math.h"
+#include "include/math.h"
 
 #include <stdlib.h>
+#include <math.h>
+
+
 
 
 double randfrom(double tMin, double tMax) {

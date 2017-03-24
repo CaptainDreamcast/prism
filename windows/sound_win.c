@@ -1,6 +1,6 @@
 #include "../include/sound.h"
 
-#include <dc/sound/sound.h>
+#include <SDL_mixer.h>
 
 static struct {
 
@@ -12,11 +12,11 @@ static struct {
 void initSound() {
 	gData.mVolume = 255;
 	gData.mPanning = 128;
-	snd_init();
+	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
 }
 
-void shutdownSound(){
-	
+void shutdownSound() {
+	Mix_CloseAudio();
 }
 
 int getVolume() {

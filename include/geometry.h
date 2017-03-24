@@ -1,6 +1,8 @@
 #ifndef TARI_GEOMETRY
 #define TARI_GEOMETRY
 
+#include "common/header.h"
+
 typedef struct {
   double x;
   double y;
@@ -31,27 +33,27 @@ typedef struct{
 } Line;
 
 
-double dot3D(Vector3D p1, Vector3D p2);
+fup double dot3D(Vector3D p1, Vector3D p2);
 
-Vector3DI makeVector3DI(int x, int y, int z);
-Position makePosition(double x, double y, double z);
-Position variatePosition(Position tBase);
-void printPosition(char* tName, Position tPosition);
+fup Vector3DI makeVector3DI(int x, int y, int z);
+fup Position makePosition(double x, double y, double z);
+fup Position variatePosition(Position tBase);
+fup void printPosition(char* tName, Position tPosition);
 
-double vecLength(Vector3D v);
-Vector3D vecAdd(Vector3D v1, Vector3D v2);
-Vector3D vecScale(Vector3D v, double tFactor);
-Vector3D vecNormalize(Vector3D tVector);
-Position getDirection(Position tFrom, Position tTo);
-Line makeLine(Vector3D tStart, Vector3D tEnd);
+fup double vecLength(Vector3D v);
+fup Vector3D vecAdd(Vector3D v1, Vector3D v2);
+fup Vector3D vecScale(Vector3D v, double tFactor);
+fup Vector3D vecNormalize(Vector3D tVector);
+fup Position getDirection(Position tFrom, Position tTo);
+fup Line makeLine(Vector3D tStart, Vector3D tEnd);
 
-double getAngleFromDirection(Vector3D tDirection);
+fup double getAngleFromDirection(Vector3D tDirection);
 
-int checkIntersectLineCircle(Line tLine, Circle tCircle);
+fup int checkIntersectLineCircle(Line tLine, Circle tCircle);
 
-int checkPointInCircle(Circle tCirc, Position tPoint);
-int checkPointInRectangle(GeoRectangle tRect, Position tPoint);
-int checkIntersectCircRect(Circle tCirc, GeoRectangle tRect);
+fup int checkPointInCircle(Circle tCirc, Position tPoint);
+fup int checkPointInRectangle(GeoRectangle tRect, Position tPoint);
+fup int checkIntersectCircRect(Circle tCirc, GeoRectangle tRect);
 
 
 #endif

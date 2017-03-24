@@ -3,16 +3,16 @@
 
 #include "physics.h"
 
-void setupPhysicsHandler();
-void shutdownPhysicsHandler();
+fup void setupPhysicsHandler();
+fup void shutdownPhysicsHandler();
 
-void updatePhysicsHandler();
-int addToPhysicsHandler(Position tPosition);
-void removeFromPhysicsHandler(int tID);
-PhysicsObject* getPhysicsFromHandler(int tID);
-void addAccelerationToHandledPhysics(int tID, Acceleration tAccel);
+fup void updatePhysicsHandler();
+fup int addToPhysicsHandler(Position tPosition);
+fup void removeFromPhysicsHandler(int tID);
+fup PhysicsObject* getPhysicsFromHandler(int tID);
+fup void addAccelerationToHandledPhysics(int tID, Acceleration tAccel);
 
-void setHandledPhysicsMaxVelocity(int tID, double tVelocity);
-void setHandledPhysicsDragCoefficient(int tID, Vector3D tDragCoefficient);
-void setHandledPhysicsGravity(int tID, Vector3D tGravity);
+fup void setHandledPhysicsMaxVelocity(int tID, double tVelocity);
+fup void setHandledPhysicsDragCoefficient(int tID, Vector3D tDragCoefficient);
+fup void setHandledPhysicsGravity(int tID, Vector3D tGravity);
 #endif

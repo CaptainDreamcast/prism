@@ -1,5 +1,6 @@
 #include "include/geometry.h"
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 #include "include/math.h"

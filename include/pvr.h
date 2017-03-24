@@ -1,6 +1,8 @@
 #ifndef TARI_PVR
 #define TARI_PVR
 
-void initiatePVR();
+#include "common/header.h"
+
+fup void initiatePVR();
 
 #endif

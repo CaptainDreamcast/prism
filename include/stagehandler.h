@@ -3,16 +3,16 @@
 
 #include "animation.h"
 
-void setupStageHandler();
-void shutdownStageHandler();
-void updateStageHandler();
+fup void setupStageHandler();
+fup void shutdownStageHandler();
+fup void updateStageHandler();
 
 
-int addScrollingBackground(double tScrollingFactor, double tZ);
-int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Animation tAnimation);
-Position getRealScreenPosition(int tBackgroundID, Position tPos);
-void scrollBackgroundRight(double tAccel);
-Position* getScrollingBackgroundPositionReference(int tID);
+fup int addScrollingBackground(double tScrollingFactor, double tZ);
+fup int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Animation tAnimation);
+fup Position getRealScreenPosition(int tBackgroundID, Position tPos);
+fup void scrollBackgroundRight(double tAccel);
+fup Position* getScrollingBackgroundPositionReference(int tID);
 
 
 #endif

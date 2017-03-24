@@ -1,10 +1,10 @@
 #include "include/datastructures.h"
 
+#include <stdlib.h>
+
 #include "include/memoryhandler.h"
 #include "include/log.h"
 #include "include/system.h"
-
-#include <stdlib.h>
 
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
 	ListElement* e = allocMemory(sizeof(ListElement));
@@ -246,6 +246,22 @@ void* vector_get(Vector* tVector, int tIndex) {
 
 int vector_size(Vector* tVector) {
 	return tVector->mSize;
+}
+
+static sortCB gSortFunc;
+static void* gSortCaller;
+
+static int vector_sort_cmp(const void* tData1, const void* tData2) {
+	const VectorElement* e1 = tData1;
+	const VectorElement* e2 = tData2;
+
+	return gSortFunc(gSortCaller, e1->mData, e2->mData);
+}
+
+void vector_sort(Vector* tVector, sortCB tCB, void* tCaller) {
+	gSortCaller = tCaller;
+	gSortFunc = tCB;
+	qsort(tVector->mData, tVector->mSize, sizeof(VectorElement), vector_sort_cmp);
 }
 
 void vector_map(Vector* tVector, mapCB tCB, void* tCaller) {

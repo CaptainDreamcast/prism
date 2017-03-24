@@ -5,11 +5,11 @@
 
 typedef void (*TimerCB)(void* caller);
 
-int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller);
+fup int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller);
 
-void setupTimer();
-void updateTimer();
-void clearTimer();
-void shutdownTimer();
+fup void setupTimer();
+fup void updateTimer();
+fup void clearTimer();
+fup void shutdownTimer();
 
 #endif

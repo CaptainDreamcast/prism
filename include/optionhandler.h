@@ -5,14 +5,14 @@
 
 typedef void (*OptionCB)(void* caller);
 
-void setupOptionHandler();
-void shutdownOptionHandler();
-void disableOptionHandler();
-int addOption(Position tPosition, char* tText, OptionCB tCB, void* tCaller);
-void setOptionTextSize(int tSize);
-void setOptionButtonA();
-void setOptionButtonStart();
-void updateOptionHandler();
-void drawOptionHandler();
+fup void setupOptionHandler();
+fup void shutdownOptionHandler();
+fup void disableOptionHandler();
+fup int addOption(Position tPosition, char* tText, OptionCB tCB, void* tCaller);
+fup void setOptionTextSize(int tSize);
+fup void setOptionButtonA();
+fup void setOptionButtonStart();
+fup void updateOptionHandler();
+fup void drawOptionHandler();
 
 #endif

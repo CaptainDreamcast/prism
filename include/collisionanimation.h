@@ -12,22 +12,22 @@ typedef struct {
 	Animation mAnimation;
 } CollisionAnimation;
 
-CollisionAnimation makeEmptyCollisionAnimation();
-void destroyCollisionAnimation(CollisionAnimation* tAnimation);
+fup CollisionAnimation makeEmptyCollisionAnimation();
+fup void destroyCollisionAnimation(CollisionAnimation* tAnimation);
 
-AnimationResult updateCollisionAnimation(CollisionAnimation* tAnimation);
-void resetCollisionAnimation(CollisionAnimation* tAnimation);
-Collider getCollisionAnimationCollider(CollisionAnimation* tAnimation);
+fup AnimationResult updateCollisionAnimation(CollisionAnimation* tAnimation);
+fup void resetCollisionAnimation(CollisionAnimation* tAnimation);
+fup Collider getCollisionAnimationCollider(CollisionAnimation* tAnimation);
 
 
-void setupCollisionAnimationHandler();
-void shutdownCollisionAnimationHandler();
+fup void setupCollisionAnimationHandler();
+fup void shutdownCollisionAnimationHandler();
 
-void updateCollisionAnimationHandler();
-int addHandledCollisionAnimation(int tListID, Position* tBasePosition, CollisionAnimation tAnimation, CollisionCallback tCB, void* tCaller, void* tCollisionData);
-void removeHandledCollisionAnimation(int tID);
+fup void updateCollisionAnimationHandler();
+fup int addHandledCollisionAnimation(int tListID, Position* tBasePosition, CollisionAnimation tAnimation, CollisionCallback tCB, void* tCaller, void* tCollisionData);
+fup void removeHandledCollisionAnimation(int tID);
 
-void invertCollisionAnimationVertical(int tID);
-void setCollisionAnimationCenter(int tID, Position tCenter);
+fup void invertCollisionAnimationVertical(int tID);
+fup void setCollisionAnimationCenter(int tID, Position tCenter);
 
 #endif

@@ -13,110 +13,6 @@ static struct {
 	char fileSystem[1024];
 } gData;
 
-char* getPureFileName(char* path){
-	debugLog("Getting pure filename.");
-	char* pos = strrchr(path,'/');
-
-	if(pos == NULL) return path;
-	else return pos+1;
-}
-
-char* getFileExtension(char* tPath){
-	char* pos = strrchr(tPath,'.');
-
-	if(pos == NULL) {
-		logError("Unable to find file ending.");
-		logErrorString(tPath);
-		abortSystem();
-	}
-
-	return pos+1;
-}
-
-void getPathWithNumberAffixedFromAssetPath(char* tDest, char* tSrc, int i) {
-	char* pos = strrchr(tSrc,'.');
-	if(pos == NULL) {
-		sprintf(tDest, "%s%d", tSrc, i);
-	} else {
-		pos[0] = '\0';
-		sprintf(tDest, "%s%d.%s", tSrc, i, pos+1);
-		pos[0] = '.';
-	}
-
-}
-
-static int isFileMemoryMapped(file_t tFile) {
-	void* data = fileMemoryMap(tFile);
-	return data != NULL;
-}
-
-Buffer fileToBuffer(char* tFileDir){
-	debugLog("Reading file to Buffer.");
-	Buffer ret;
-
-	size_t bufferLength;
-	file_t file;
-	char* data;
-
-	file = fileOpen(tFileDir, O_RDONLY);
-
-	if (file == FILEHND_INVALID) {
-		logError("Couldn't open file.");
-		logErrorString(tFileDir);
-		logErrorString(gData.cwd);
-		logErrorString(gData.fileSystem);
-		abortSystem();
-	}
-
-	bufferLength = fileTotal(file);
-	debugInteger(bufferLength);
-
-	if(isFileMemoryMapped(file)) {
-		data = fileMemoryMap(file);
-		ret.mIsOwned = 0;	
-	} else {
-		data = allocMemory(bufferLength);
-		fileRead(file, data, bufferLength);
-		ret.mIsOwned = 1;
-	}
-
-	ret.mData = data;
-	ret.mLength = bufferLength;
-
-	fileClose(file);
-
-	return ret;
-}
-
-void freeBuffer(Buffer buffer){
-	debugLog("Freeing buffer.");
-	if(buffer.mIsOwned){
-		debugLog("Freeing owned memory");
-		debugInteger(buffer.mLength);
-		freeMemory(buffer.mData);
-	} 
-	buffer.mData = NULL;
-	buffer.mLength = 0;
-	buffer.mIsOwned = 0;
-}
-
-void appendTerminationSymbolToBuffer(Buffer* tBuffer) {
-	if(!tBuffer->mIsOwned) {
-		char* nData = allocMemory(tBuffer->mLength+1);
-		memcpy(nData, tBuffer->mData, tBuffer->mLength);
-		tBuffer->mData = nData;
-		tBuffer->mIsOwned = 1;
-	}
-	else {
-		tBuffer->mData = reallocMemory(tBuffer->mData, tBuffer->mLength+1);
-	}
-
-
-	char* buf = tBuffer->mData;
-	buf[tBuffer->mLength] = '\0';
-	tBuffer->mLength++;
-}
-
 void initFileSystem(){
 	log("Initiate file system.");
 	sprintf(gData.cwd, "/");
@@ -154,7 +50,7 @@ void getFullPath(char* tDest, char* tPath) {
 	else sprintf(tDest, "%s%s%s", gData.fileSystem, gData.cwd, tPath);
 }
 
-int fileOpen(char* tPath, int tFlags){
+FileHandler fileOpen(char* tPath, int tFlags){
 	char path[1024];
 	getFullPath(path, tPath);
 
@@ -166,28 +62,28 @@ int fileOpen(char* tPath, int tFlags){
 	return fs_open(path, tFlags);
 }
 
-int fileClose(int tHandler) {
+int fileClose(FileHandler tHandler) {
 	return fs_close(tHandler);
 }
-size_t fileRead(int tHandler, void* tBuffer, size_t tCount) {
+size_t fileRead(FileHandler tHandler, void* tBuffer, size_t tCount) {
 	return fs_read(tHandler, tBuffer, tCount);
 }
-size_t fileWrite(int tHandler, const void* tBuffer, size_t tCount) {
+size_t fileWrite(FileHandler tHandler, const void* tBuffer, size_t tCount) {
 	return fs_write(tHandler, tBuffer, tCount);
 }
-size_t fileSeek(int tHandler, size_t tOffset, int tWhence)  {
+size_t fileSeek(FileHandler tHandler, size_t tOffset, int tWhence)  {
 	return fs_seek(tHandler, tOffset, tWhence);
 }
-size_t fileTell(int tHandler) {
+size_t fileTell(FileHandler tHandler) {
 	return fs_tell(tHandler);
 }
-size_t fileTotal(int tHandler){
+size_t fileTotal(FileHandler tHandler){
 	return fs_total(tHandler);
 }
 int fileUnlink(char* tPath) {
 	return fs_unlink(tPath);
 }
-void* fileMemoryMap(int tHandler) {
+void* fileMemoryMap(FileHandler tHandler) {
 	return fs_mmap(tHandler);
 }
 

@@ -1,24 +1,20 @@
 #ifndef TARI_MATH
 #define TARI_MATH
 
+#include "common/header.h"
+
 #define min(x, y) ((x < y) ? (x) : (y));
 #define max(x, y) ((x > y) ? (x) : (y));
 
 #define INF 1000000000
 
-#ifdef _WIN32
+fup double randfrom(double tMin, double tMax);
 
-#define M_PI 3.141592653589
+fup double fatan2(double y, double x);
 
-#endif
+fup double getLinearInterpolationFactor(double a, double b, double p);
+fup double interpolateLinear(double a, double b, double t);
 
-double randfrom(double tMin, double tMax);
-
-double fatan2(double y, double x);
-
-double getLinearInterpolationFactor(double a, double b, double p);
-double interpolateLinear(double a, double b, double t);
-
-double fstsqrt(double x);
+fup double fstsqrt(double x);
 
 #endif
