@@ -13,8 +13,19 @@
 
 #elif defined _WIN32
 
+
+#include <SDL.h>
+
+#include "include/texture.h"
+
+void freeSDLTexture(void* tData) {
+	SDLTextureData* e = tData;
+	SDL_DestroyTexture(e->mTexture);
+	free(tData);
+}
+
 #define allocTextureHW malloc
-#define freeTextureHW free
+#define freeTextureHW freeSDLTexture
 
 #endif
 

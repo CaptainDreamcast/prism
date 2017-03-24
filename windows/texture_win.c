@@ -45,7 +45,8 @@ TextureData loadTexturePKG(char* tFileDir) {
 	SDL_FreeSurface(loadedSurface);
 	
 	TextureData returnData;
-	returnData.mTexture = newTexture;
+	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
+	returnData.mTexture->mTexture = newTexture;
 	int access;
 	Uint32 format;
 	SDL_QueryTexture(newTexture, &format, &access, &returnData.mTextureSize.x, &returnData.mTextureSize.y);
@@ -68,7 +69,7 @@ TextureData loadTexture(char* tFileDir) {
 }
 
 void unloadTexture(TextureData tTexture) {
-  freeTextureMemory(tTexture.mTexture);
+	freeTextureMemory(tTexture.mTexture);
 }
 
 int getAvailableTextureMemory() {

@@ -9,14 +9,10 @@
 #include "../include/datastructures.h"
 #include "../include/memoryhandler.h"
 
+
+
+
 typedef struct {
-	TextureData mTexture;
-	Position mPos;
-	Rectangle mTexturePosition;
-
-} DrawListElement;
-
-static struct {
 
 	double a;
 	double r;
@@ -27,10 +23,20 @@ static struct {
 	Vector3D mAngle;
 	Position mEffectCenter;
 
-	Vector mDrawVector;
-
 	int mFrameStartTime;
-} gData;
+} DrawingData;
+
+typedef struct {
+	TextureData mTexture;
+	Position mPos;
+	Rectangle mTexturePosition;
+
+	DrawingData mData;
+} DrawListElement;
+
+
+static Vector gDrawVector;
+static DrawingData gData;
 
 extern SDL_Window* gSDLWindow;
 SDL_Renderer* gRenderer;
@@ -48,7 +54,7 @@ void initDrawing(){
 
 	IMG_Init(IMG_INIT_PNG);
 
-	gData.mDrawVector = new_vector();
+	gDrawVector = new_vector();
 	gData.mFrameStartTime = 0;
 }
 
@@ -70,12 +76,13 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   e->mTexture = tTexture;
   e->mPos = tPos;
   e->mTexturePosition = tTexturePosition;
-  vector_push_back_owned(&gData.mDrawVector, e);
+  e->mData = gData;
+  vector_push_back_owned(&gDrawVector, e);
 }
 
 void startDrawing() {
 	SDL_RenderClear(gRenderer);
-	vector_empty(&gData.mDrawVector);
+	vector_empty(&gDrawVector);
 }
 
 static int cmpZ(void* tCaller, void* tData1, void* tData2) {
@@ -86,6 +93,39 @@ static int cmpZ(void* tCaller, void* tData1, void* tData2) {
 	if (e1->mPos.z < e2->mPos.z) return -1;
 	if (e1->mPos.z > e2->mPos.z) return 1;
 	else return 0;
+}
+
+static SDL_Rect makeSDLRectFromRectangle(Rectangle tRect) {
+	SDL_Rect ret;
+	ret.x = min(tRect.topLeft.x, tRect.bottomRight.x);
+	ret.y = min(tRect.topLeft.y, tRect.bottomRight.y);
+
+	ret.w = abs(tRect.bottomRight.x - tRect.topLeft.x);
+	ret.h = abs(tRect.bottomRight.y - tRect.topLeft.y);
+
+	return ret;
+}
+
+static Rectangle makeRectangleFromSDLRect(SDL_Rect tRect) {
+	Rectangle ret;
+	ret.topLeft.x = tRect.x;
+	ret.topLeft.y = tRect.y;
+
+	ret.bottomRight.x = tRect.x + tRect.w;
+	ret.bottomRight.y = tRect.y + tRect.h;
+
+	return ret;
+}
+
+
+static SDL_Rect scaleSDLRect(SDL_Rect tRect, Vector3D tScale, Position tCenter) {
+	Rectangle rect = makeRectangleFromSDLRect(tRect);
+
+	rect = translateRectangle(rect, vecScale(tCenter, -1));
+	rect = scaleRectangle(rect, tScale);
+	rect = translateRectangle(rect, tCenter);
+
+	return makeSDLRectFromRectangle(rect);
 }
 
 static void drawSorted(void* tCaller, void* tData) {
@@ -113,18 +153,20 @@ static void drawSorted(void* tCaller, void* tData) {
 	dstRect.w = sizeX;
 	dstRect.h = sizeY;
 
+	dstRect = scaleSDLRect(dstRect, e->mData.mScale, e->mData.mEffectCenter);
+
 	int flip = 0;
 	if (e->mTexturePosition.bottomRight.x < e->mTexturePosition.topLeft.x) flip |= SDL_FLIP_HORIZONTAL;
 	if (e->mTexturePosition.bottomRight.y < e->mTexturePosition.topLeft.y) flip |= SDL_FLIP_VERTICAL;
 
-	SDL_RenderCopyEx(gRenderer, e->mTexture.mTexture, &srcRect, &dstRect, 0, NULL, flip);
+	SDL_RenderCopyEx(gRenderer, e->mTexture.mTexture->mTexture, &srcRect, &dstRect, 0, NULL, flip);
 }
 
 void stopDrawing() {
 	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-	vector_sort(&gData.mDrawVector,cmpZ, NULL);
-	vector_map(&gData.mDrawVector, drawSorted, NULL);
-	vector_empty(&gData.mDrawVector);
+	vector_sort(&gDrawVector,cmpZ, NULL);
+	vector_map(&gDrawVector, drawSorted, NULL);
+	vector_empty(&gDrawVector);
 	SDL_RenderPresent(gRenderer);
 }
 

@@ -11,7 +11,12 @@ typedef pvr_ptr_t Texture;
 #elif defined _WINDOWS_
 #include <SDL.h>
 
-typedef SDL_Texture* Texture;
+typedef struct {
+	SDL_Texture* mTexture;
+
+} SDLTextureData;
+
+typedef SDLTextureData* Texture;
 
 #endif
 

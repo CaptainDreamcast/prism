@@ -31,6 +31,24 @@ Rectangle makeRectangleFromTexture(TextureData tTexture) {
 	return makeRectangle(0, 0, tTexture.mTextureSize.x - 1, tTexture.mTextureSize.y - 1);
 }
 
+Rectangle scaleRectangle(Rectangle tRect, Vector3D tScale) {
+	tRect.topLeft.x *= tScale.x;
+	tRect.topLeft.y *= tScale.y;
+
+	tRect.bottomRight.x *= tScale.x;
+	tRect.bottomRight.y *= tScale.y;
+	return tRect;
+}
+
+Rectangle translateRectangle(Rectangle tRect, Position tOffset) {
+	tRect.topLeft.x += tOffset.x;
+	tRect.topLeft.y += tOffset.y;
+
+	tRect.bottomRight.x += tOffset.x;
+	tRect.bottomRight.y += tOffset.y;
+	return tRect;
+}
+
 Position getTextureMiddlePosition(TextureData tTexture) {
 	return makePosition(tTexture.mTextureSize.x / 2, tTexture.mTextureSize.y / 2, 0);
 }

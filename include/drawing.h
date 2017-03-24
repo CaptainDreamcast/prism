@@ -41,6 +41,8 @@ fup void setDrawingParametersToIdentity();
 
 fup Rectangle makeRectangle(int x, int y, int w, int h);
 fup Rectangle makeRectangleFromTexture(TextureData tTexture);
+fup Rectangle scaleRectangle(Rectangle tRect, Vector3D tScale);
+fup Rectangle translateRectangle(Rectangle tRect, Position tOffset);
 fup Position getTextureMiddlePosition(TextureData tTexture);
 fup void printRectangle(Rectangle r);
 
