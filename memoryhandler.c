@@ -8,14 +8,14 @@
 
 #ifdef DREAMCAST
 
+#include <kos.h>
+
 #define allocTextureHW pvr_mem_malloc
 #define freeTextureHW pvr_mem_free
 
 #elif defined _WIN32
 
-
 #include <SDL.h>
-
 #include "include/texture.h"
 
 void freeSDLTexture(void* tData) {

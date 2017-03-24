@@ -14,14 +14,14 @@ static struct {
 } gData;
 
 void initFileSystem(){
-	log("Initiate file system.");
+	logg("Initiate file system.");
 	sprintf(gData.cwd, "/");
 	gData.fileSystem[0] = '\0';
 	debugString(gData.cwd);
 }
 
 void setFileSystem(char* path){
-	log("Setting file system.");
+	logg("Setting file system.");
 	if(path[0] != '/'){
 		logError("Invalid filesystem!");	
 		logErrorString(path);
@@ -30,6 +30,10 @@ void setFileSystem(char* path){
 	sprintf(gData.fileSystem, "%s", path);
 	debugString(gData.fileSystem);
 	
+}
+
+const char* getFileSystem() {
+	return gData.fileSystem;
 }
 
 void setWorkingDirectory(char* path) {
@@ -42,6 +46,10 @@ void setWorkingDirectory(char* path) {
 		gData.cwd[l] = '/';
 		gData.cwd[l+1] = '\0';
 	}
+}
+
+const char* getWorkingDirectory() {
+	return gData.cwd;
 }
 
 void getFullPath(char* tDest, char* tPath) {

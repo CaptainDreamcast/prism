@@ -22,7 +22,7 @@ void applyDrawingMatrix(pvr_vertex_t* tVert) {
 }
 
 void initDrawing(){
-	log("Initiate drawing.");
+	logg("Initiate drawing.");
 	setDrawingParametersToIdentity();
 }
 

@@ -3,9 +3,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-
-
-
 double randfrom(double tMin, double tMax) {
 	double range = (tMax - tMin); 
 	if(range == 0) return tMin;

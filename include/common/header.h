@@ -3,7 +3,7 @@
 
 #ifdef DREAMCAST
 
-#define fp	{}
+#define fup	
 
 #elif defined _WIN32
 #define fup __declspec(dllexport)
