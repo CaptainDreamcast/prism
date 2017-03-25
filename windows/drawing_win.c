@@ -158,8 +158,8 @@ static void drawSorted(void* tCaller, void* tData) {
 	Position realEffectPos = vecAdd(e->mData.mEffectCenter, vecScale(e->mPos,-1));
 
 	SDL_Point effectCenter;
-	effectCenter.x = (int)fabs(realEffectPos.x);
-	effectCenter.y = (int)fabs(realEffectPos.y);
+	effectCenter.x = (int)realEffectPos.x;
+	effectCenter.y = (int)realEffectPos.y;
 
 	int flip = 0;
 	if (e->mTexturePosition.bottomRight.x < e->mTexturePosition.topLeft.x) flip |= SDL_FLIP_HORIZONTAL;
@@ -169,7 +169,6 @@ static void drawSorted(void* tCaller, void* tData) {
 
 	SDL_SetTextureColorMod(e->mTexture.mTexture->mTexture, (Uint8)(e->mData.r*0xFF), (Uint8)(e->mData.g*0xFF), (Uint8)(e->mData.b*0xFF));
 	SDL_SetTextureAlphaMod(e->mTexture.mTexture->mTexture, (Uint8)(e->mData.a * 0xFF));
-
 
 	SDL_RenderCopyEx(gRenderer, e->mTexture.mTexture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
 }
@@ -208,10 +207,10 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
 		FontCharacterData charData = getFontCharacterData(tText[current]);
 
 		Rectangle tTexturePosition;
-		tTexturePosition.topLeft.x = fontData.mTextureSize.x*charData.mFilePositionX1;
-		tTexturePosition.topLeft.y = fontData.mTextureSize.y*charData.mFilePositionY1;
-		tTexturePosition.bottomRight.x = fontData.mTextureSize.x*charData.mFilePositionX2;
-		tTexturePosition.bottomRight.y = fontData.mTextureSize.y*charData.mFilePositionY2;
+		tTexturePosition.topLeft.x = (int)(fontData.mTextureSize.x*charData.mFilePositionX1);
+		tTexturePosition.topLeft.y = (int)(fontData.mTextureSize.y*charData.mFilePositionY1);
+		tTexturePosition.bottomRight.x = (int)(fontData.mTextureSize.x*charData.mFilePositionX2);
+		tTexturePosition.bottomRight.y = (int)(fontData.mTextureSize.y*charData.mFilePositionY2);
 
 		scaleDrawing(tSize / fabs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y), tPosition);
 		drawSprite(fontData, tPosition, tTexturePosition);
