@@ -13,7 +13,7 @@ static struct {
 } gData;
 
 void initFileSystem(){
-	log("Initiate file system.");
+	logg("Initiate file system.");
 	sprintf(gData.cwd, "/");
 	debugString(gData.cwd);
 }

@@ -155,11 +155,23 @@ static void drawSorted(void* tCaller, void* tData) {
 
 	dstRect = scaleSDLRect(dstRect, e->mData.mScale, e->mData.mEffectCenter);
 
+	Position realEffectPos = vecAdd(e->mData.mEffectCenter, vecScale(e->mPos,-1));
+
+	SDL_Point effectCenter;
+	effectCenter.x = (int)fabs(realEffectPos.x);
+	effectCenter.y = (int)fabs(realEffectPos.y);
+
 	int flip = 0;
 	if (e->mTexturePosition.bottomRight.x < e->mTexturePosition.topLeft.x) flip |= SDL_FLIP_HORIZONTAL;
 	if (e->mTexturePosition.bottomRight.y < e->mTexturePosition.topLeft.y) flip |= SDL_FLIP_VERTICAL;
 
-	SDL_RenderCopyEx(gRenderer, e->mTexture.mTexture->mTexture, &srcRect, &dstRect, 0, NULL, flip);
+	double angleDegrees = 360-((e->mData.mAngle.z * 180)/ M_PI);
+
+	SDL_SetTextureColorMod(e->mTexture.mTexture->mTexture, (Uint8)(e->mData.r*0xFF), (Uint8)(e->mData.g*0xFF), (Uint8)(e->mData.b*0xFF));
+	SDL_SetTextureAlphaMod(e->mTexture.mTexture->mTexture, (Uint8)(e->mData.a * 0xFF));
+
+
+	SDL_RenderCopyEx(gRenderer, e->mTexture.mTexture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
 }
 
 void stopDrawing() {
@@ -185,14 +197,32 @@ void waitForScreen() {
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
 void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
-	(void)tText;
-	(void)tPosition;
-	(void)tSize;
-	(void)tColor;
-	// TODO
+	int current = 0;
 
-	logg("Not implemented!");
-	abortSystem();
+	setDrawingBaseColor(tColor);
+
+	TextureData fontData = getFontTexture();
+	
+	while (tText[current] != '\0') {
+
+		FontCharacterData charData = getFontCharacterData(tText[current]);
+
+		Rectangle tTexturePosition;
+		tTexturePosition.topLeft.x = fontData.mTextureSize.x*charData.mFilePositionX1;
+		tTexturePosition.topLeft.y = fontData.mTextureSize.y*charData.mFilePositionY1;
+		tTexturePosition.bottomRight.x = fontData.mTextureSize.x*charData.mFilePositionX2;
+		tTexturePosition.bottomRight.y = fontData.mTextureSize.y*charData.mFilePositionY2;
+
+		scaleDrawing(tSize / fabs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y), tPosition);
+		drawSprite(fontData, tPosition, tTexturePosition);
+
+
+		tPosition.x += tSize;
+		current++;
+	}
+
+	setDrawingParametersToIdentity();
+
 }
 
 void scaleDrawing(double tFactor, Position tScalePosition){

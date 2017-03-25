@@ -158,3 +158,7 @@ void setScreenFramerate(int tFramerate) {
 void setVGA() {
 	
 }
+
+void returnToMenu() {
+	exit(0);
+}
