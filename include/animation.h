@@ -21,32 +21,32 @@ typedef struct {
   Frame mFrameAmount;
 } Animation;
 
-int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration);
-AnimationResult animateWithoutLoop(Animation* tAnimation);
-void animate(Animation* tAnimation);
-void resetAnimation(Animation* tAnimation);
-Animation createEmptyAnimation();
-Animation createOneFrameAnimation();
-void pauseDurationHandling();
-void resumeDurationHandling();
+fup int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration);
+fup AnimationResult animateWithoutLoop(Animation* tAnimation);
+fup void animate(Animation* tAnimation);
+fup void resetAnimation(Animation* tAnimation);
+fup Animation createEmptyAnimation();
+fup Animation createOneFrameAnimation();
+fup void pauseDurationHandling();
+fup void resumeDurationHandling();
 
-void setupAnimationHandler();
-void updateAnimationHandler();
-void drawHandledAnimations();
-int playAnimation(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller);
-int playAnimationLoop(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
-void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
+fup void setupAnimationHandler();
+fup void updateAnimationHandler();
+fup void drawHandledAnimations();
+fup int playAnimation(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller);
+fup int playAnimationLoop(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
+fup void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
 
-void setAnimationScreenPositionReference(int tID, Position* tScreenPositionReference);
-void setAnimationBasePositionReference(int tID, Position* tBasePositionReference);
-void setAnimationScale(int tID, Vector3D tScale, Position tCenter);
-void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller);
-void setAnimationPosition(int tID, Position tPosition);
-void removeAnimationCB(int tID);
+fup void setAnimationScreenPositionReference(int tID, Position* tScreenPositionReference);
+fup void setAnimationBasePositionReference(int tID, Position* tBasePositionReference);
+fup void setAnimationScale(int tID, Vector3D tScale, Position tCenter);
+fup void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller);
+fup void setAnimationPosition(int tID, Position tPosition);
+fup void removeAnimationCB(int tID);
 
-void setAnimationCenter(int tID, Position tCenter);
-void inverseAnimationVertical(int tID);
+fup void setAnimationCenter(int tID, Position tCenter);
+fup void inverseAnimationVertical(int tID);
 
-void removeHandledAnimation(int tID);
-void shutdownAnimationHandler();
+fup void removeHandledAnimation(int tID);
+fup void shutdownAnimationHandler();
 #endif

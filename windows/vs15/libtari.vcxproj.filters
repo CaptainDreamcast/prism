@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\animation.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collision.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collisionanimation.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collisionhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\datastructures.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\framerate.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\geometry.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\optionhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\physics.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\physicshandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\quicklz.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\script.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\stagehandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\timer.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wrapper.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\drawing_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\file_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framerateselect_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\input_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\log_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pvr_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sound_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\soundeffect_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\texture_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\file.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\input.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\memoryhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\drawing.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\texture.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\math.c">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\animation.h" />
+    <ClInclude Include="..\..\include\collision.h" />
+    <ClInclude Include="..\..\include\collisionanimation.h" />
+    <ClInclude Include="..\..\include\collisionhandler.h" />
+    <ClInclude Include="..\..\include\datastructures.h" />
+    <ClInclude Include="..\..\include\drawing.h" />
+    <ClInclude Include="..\..\include\file.h" />
+    <ClInclude Include="..\..\include\framerate.h" />
+    <ClInclude Include="..\..\include\framerateselectscreen.h" />
+    <ClInclude Include="..\..\include\geometry.h" />
+    <ClInclude Include="..\..\include\input.h" />
+    <ClInclude Include="..\..\include\log.h" />
+    <ClInclude Include="..\..\include\memoryhandler.h" />
+    <ClInclude Include="..\..\include\optionhandler.h" />
+    <ClInclude Include="..\..\include\physics.h" />
+    <ClInclude Include="..\..\include\physicshandler.h" />
+    <ClInclude Include="..\..\include\pvr.h" />
+    <ClInclude Include="..\..\include\quicklz.h" />
+    <ClInclude Include="..\..\include\script.h" />
+    <ClInclude Include="..\..\include\sound.h" />
+    <ClInclude Include="..\..\include\soundeffect.h" />
+    <ClInclude Include="..\..\include\stagehandler.h" />
+    <ClInclude Include="..\..\include\system.h" />
+    <ClInclude Include="..\..\include\texture.h" />
+    <ClInclude Include="..\..\include\timer.h" />
+    <ClInclude Include="..\..\include\wrapper.h" />
+    <ClInclude Include="..\..\include\common\header.h" />
+    <ClInclude Include="..\..\include\math.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{70cd4700-f13f-4125-ba0c-0674d46ebdb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\windows">
+      <UniqueIdentifier>{ea6923dd-ddde-4088-bcc8-2470cce701b0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

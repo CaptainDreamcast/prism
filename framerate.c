@@ -7,7 +7,7 @@
 Framerate gFramerate;
 
 void setFramerate(Framerate tFramerate) {
-  log("Set framerate");
+  logg("Set framerate");
   logInteger(tFramerate);
   gFramerate = tFramerate;
 }

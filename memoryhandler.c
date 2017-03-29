@@ -4,11 +4,34 @@
 #include "include/system.h"
 
 #include <stdlib.h>
+
+
+#ifdef DREAMCAST
+
 #include <kos.h>
+
+#define allocTextureHW pvr_mem_malloc
+#define freeTextureHW pvr_mem_free
+
+#elif defined _WIN32
+
+#include <SDL.h>
+#include "include/texture.h"
+
+void freeSDLTexture(void* tData) {
+	SDLTextureData* e = tData;
+	SDL_DestroyTexture(e->mTexture);
+	free(tData);
+}
+
+#define allocTextureHW malloc
+#define freeTextureHW freeSDLTexture
+
+#endif
 
 #define MEMORY_STACK_MAX 10
 
-typedef struct MemoryListElement_internal{
+typedef struct MemoryListElement_internal {
 	void* mData;
 	struct MemoryListElement_internal* mPrev;
 	struct MemoryListElement_internal* mNext;
@@ -32,14 +55,14 @@ static struct {
 
 
 typedef void* (*MallocFunc)(size_t tSize);
-typedef void (*FreeFunc)(void* tSize);
+typedef void(*FreeFunc)(void* tSize);
 typedef void* (*ReallocFunc)(void* tPointer, size_t tSize);
 
 static void printMemoryList(MemoryList* tList) {
 	logInteger(tList->mSize);
 	int amount = tList->mSize;
 	MemoryListElement* cur = tList->mFirst;
-	while(amount--) {
+	while (amount--) {
 		logHex(cur->mData);
 
 		cur = cur->mNext;
@@ -50,7 +73,7 @@ static void printMemoryList(MemoryList* tList) {
 static void printMemoryListStack(MemoryListStack* tStack) {
 	logInteger(tStack->mHead);
 	int current;
-	for(current = tStack->mHead; current >= 0; current--) {
+	for (current = tStack->mHead; current >= 0; current--) {
 		logInteger(current);
 		printMemoryList(&tStack->mLists[current]);
 	}
@@ -66,23 +89,23 @@ static void* addMemoryToMemoryList(MemoryList* tList, int tSize, MallocFunc tFun
 
 	e->mPrev = NULL;
 	e->mData = tFunc(tSize);
-	
-	if(tList->mFirst != NULL) tList->mFirst->mPrev = e;
+
+	if (tList->mFirst != NULL) tList->mFirst->mPrev = e;
 	e->mNext = tList->mFirst;
 	tList->mFirst = e;
 
 	tList->mSize++;
-	
+
 	return e->mData;
 }
 
 static void removeMemoryElementFromMemoryList(MemoryList* tList, MemoryListElement* e, FreeFunc tFunc) {
 
-	if(tList->mFirst == e) tList->mFirst = e->mNext;
-	if(e->mNext != NULL) e->mNext->mPrev = e->mPrev;
-	if(e->mPrev != NULL) e->mPrev->mNext = e->mNext;
+	if (tList->mFirst == e) tList->mFirst = e->mNext;
+	if (e->mNext != NULL) e->mNext->mPrev = e->mPrev;
+	if (e->mPrev != NULL) e->mPrev->mNext = e->mNext;
 	tFunc(e->mData);
-	free(e);	
+	free(e);
 
 	tList->mSize--;
 }
@@ -95,8 +118,8 @@ static void* resizeMemoryElementOnMemoryList(MemoryListElement* e, int tSize, Re
 static int removeMemoryFromMemoryList(MemoryList* tList, void* tData, FreeFunc tFunc) {
 	int amount = tList->mSize;
 	MemoryListElement* cur = tList->mFirst;
-	while(amount--) {
-		if(cur->mData == tData) {
+	while (amount--) {
+		if (cur->mData == tData) {
 			removeMemoryElementFromMemoryList(tList, cur, tFunc);
 			return 1;
 		}
@@ -110,8 +133,8 @@ static int removeMemoryFromMemoryList(MemoryList* tList, void* tData, FreeFunc t
 static int resizeMemoryOnMemoryList(MemoryList* tList, void* tData, int tSize, ReallocFunc tFunc, void** tOutput) {
 	int amount = tList->mSize;
 	MemoryListElement* cur = tList->mFirst;
-	while(amount--) {
-		if(cur->mData == tData) {
+	while (amount--) {
+		if (cur->mData == tData) {
 			*tOutput = resizeMemoryElementOnMemoryList(cur, tSize, tFunc);
 			return 1;
 		}
@@ -125,7 +148,7 @@ static int resizeMemoryOnMemoryList(MemoryList* tList, void* tData, int tSize, R
 static void emptyMemoryList(MemoryList* tList, FreeFunc tFunc) {
 	int amount = tList->mSize;
 	MemoryListElement* cur = tList->mFirst;
-	while(amount--) {
+	while (amount--) {
 		MemoryListElement* next = cur->mNext;
 		removeMemoryElementFromMemoryList(tList, cur, tFunc);
 		cur = next;
@@ -133,17 +156,17 @@ static void emptyMemoryList(MemoryList* tList, FreeFunc tFunc) {
 }
 
 static void* addMemoryToMemoryListStack(MemoryListStack* tStack, int tSize, MallocFunc tFunc) {
-	if(!gData.mActive) {
+	if (!gData.mActive) {
 		return tFunc(tSize);
 	}
 
-	if(tStack->mHead < 0) {
+	if (tStack->mHead < 0) {
 		logError("Invalid stack head position");
 		logErrorInteger(tStack->mHead);
 		abortSystem();
 	}
 
-	if(tSize < 0) {
+	if (tSize < 0) {
 		logError("Invalid alloc size");
 		logErrorInteger(tSize);
 		abortSystem();
@@ -152,22 +175,22 @@ static void* addMemoryToMemoryListStack(MemoryListStack* tStack, int tSize, Mall
 	return addMemoryToMemoryList(&tStack->mLists[tStack->mHead], tSize, tFunc);
 }
 static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData, FreeFunc tFunc) {
-	if(!gData.mActive) {
+	if (!gData.mActive) {
 		tFunc(tData);
 		return;
 	}
 
-	if(tStack->mHead < 0) {
+	if (tStack->mHead < 0) {
 		logError("Invalid stack head position");
 		logErrorInteger(tStack->mHead);
 		abortSystem();
 	}
 
 	int tempHead;
-	for(tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
-		if(removeMemoryFromMemoryList(&tStack->mLists[tempHead], tData, tFunc)) {
+	for (tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
+		if (removeMemoryFromMemoryList(&tStack->mLists[tempHead], tData, tFunc)) {
 			return;
-		}		
+		}
 	}
 
 	logError("Freeing invalid memory address");
@@ -176,11 +199,11 @@ static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData
 }
 
 static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData, int tSize, ReallocFunc tFunc) {
-	if(!gData.mActive) {
+	if (!gData.mActive) {
 		return tFunc(tData, tSize);
 	}
 
-	if(tStack->mHead < 0) {
+	if (tStack->mHead < 0) {
 		logError("Invalid stack head position");
 		logErrorInteger(tStack->mHead);
 		abortSystem();
@@ -188,8 +211,8 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 
 	void* output;
 	int tempHead;
-	for(tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
-		if(resizeMemoryOnMemoryList(&tStack->mLists[tempHead], tData, tSize, tFunc, &output)) {
+	for (tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
+		if (resizeMemoryOnMemoryList(&tStack->mLists[tempHead], tData, tSize, tFunc, &output)) {
 			return output;
 		}
 	}
@@ -202,56 +225,56 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 }
 
 static void popMemoryStackInternal(MemoryListStack* tStack, FreeFunc tFunc) {
-	if(tStack->mHead < 0) {
+	if (tStack->mHead < 0) {
 		logError("No stack layer left to pop.");
 		abortSystem();
 	}
 
-	emptyMemoryList(&tStack->mLists[tStack->mHead], tFunc);	
+	emptyMemoryList(&tStack->mLists[tStack->mHead], tFunc);
 	tStack->mHead--;
 }
 
 static void emptyMemoryListStack(MemoryListStack* tStack, FreeFunc tFunc) {
-	while(tStack->mHead >= 0) {
+	while (tStack->mHead >= 0) {
 		popMemoryStackInternal(tStack, tFunc);
 	}
 }
 
 void* allocMemory(int tSize) {
-	if(!tSize) return NULL;
+	if (!tSize) return NULL;
 
 	return addMemoryToMemoryListStack(&gData.mMemoryStack, tSize, malloc);
 }
 
 void freeMemory(void* tData) {
-	if(tData == NULL) return;
+	if (tData == NULL) return;
 
 	removeMemoryFromMemoryListStack(&gData.mMemoryStack, tData, free);
 }
 
 void* reallocMemory(void* tData, int tSize) {
-	if(!tSize) {
-		if(tData != NULL) freeMemory(tData);
+	if (!tSize) {
+		if (tData != NULL) freeMemory(tData);
 		return NULL;
 	}
-	if(tData == NULL) return allocMemory(tSize);
-	
+	if (tData == NULL) return allocMemory(tSize);
+
 	return resizeMemoryOnMemoryListStack(&gData.mMemoryStack, tData, tSize, realloc);
 }
 
-void* allocTextureMemory(int tSize)  {
-	if(!tSize) return NULL;
+void* allocTextureMemory(int tSize) {
+	if (!tSize) return NULL;
 
-	return addMemoryToMemoryListStack(&gData.mTextureMemoryStack, tSize, pvr_mem_malloc);
+	return addMemoryToMemoryListStack(&gData.mTextureMemoryStack, tSize, allocTextureHW);
 }
 void freeTextureMemory(void* tData) {
-	if(tData == NULL) return;
+	if (tData == NULL) return;
 
-	removeMemoryFromMemoryListStack(&gData.mTextureMemoryStack, tData, pvr_mem_free);
+	removeMemoryFromMemoryListStack(&gData.mTextureMemoryStack, tData, freeTextureHW);
 }
 
 static void pushMemoryStackInternal(MemoryListStack* tStack) {
-	if(tStack->mHead == MEMORY_STACK_MAX - 1) {
+	if (tStack->mHead == MEMORY_STACK_MAX - 1) {
 		logError("Unable to push stack layer; limit reached");
 		abortSystem();
 	}
@@ -273,17 +296,17 @@ void pushTextureMemoryStack() {
 	pushMemoryStackInternal(&gData.mTextureMemoryStack);
 }
 void popTextureMemoryStack() {
-	popMemoryStackInternal(&gData.mTextureMemoryStack, pvr_mem_free);
+	popMemoryStackInternal(&gData.mTextureMemoryStack, freeTextureHW);
 }
 
 void initMemoryHandler() {
-	if(gData.mActive) {
+	if (gData.mActive) {
 		logWarning("Memory Handler was already initialized; Resetting;");
 		shutdownMemoryHandler();
 	}
 
 	gData.mActive = 1;
-	gData.mMemoryStack.mHead = -1;	
+	gData.mMemoryStack.mHead = -1;
 	gData.mTextureMemoryStack.mHead = -1;
 	pushMemoryStack();
 	pushTextureMemoryStack();
@@ -292,6 +315,6 @@ void initMemoryHandler() {
 void shutdownMemoryHandler() {
 	gData.mActive = 0;
 	emptyMemoryListStack(&gData.mMemoryStack, free);
-	emptyMemoryListStack(&gData.mTextureMemoryStack, pvr_mem_free);
+	emptyMemoryListStack(&gData.mTextureMemoryStack, freeTextureHW);
 }
 

@@ -1,33 +1,35 @@
 #ifndef INPUT_TARI
 #define INPUT_TARI
 
-void updateInput();
-void resetInput();
+#include "common/header.h"
 
-int hasPressedA();
-int hasPressedB();
-int hasPressedX();
-int hasPressedY();
-int hasPressedLeft();
-int hasPressedRight();
-int hasPressedUp();
-int hasPressedDown();
-int hasPressedL();
-int hasPressedR();
-int hasPressedStart();
-int hasPressedAbort();
+fup void updateInput();
+fup void resetInput();
 
-int hasPressedAFlank();
-int hasPressedBFlank();
-int hasPressedXFlank();
-int hasPressedYFlank();
-int hasPressedLeftFlank();
-int hasPressedRightFlank();
-int hasPressedUpFlank();
-int hasPressedDownFlank();
-int hasPressedLFlank();
-int hasPressedRFlank();
-int hasPressedStartFlank();
-int hasPressedAbortFlank();
+fup int hasPressedA();
+fup int hasPressedB();
+fup int hasPressedX();
+fup int hasPressedY();
+fup int hasPressedLeft();
+fup int hasPressedRight();
+fup int hasPressedUp();
+fup int hasPressedDown();
+fup int hasPressedL();
+fup int hasPressedR();
+fup int hasPressedStart();
+fup int hasPressedAbort();
+
+fup int hasPressedAFlank();
+fup int hasPressedBFlank();
+fup int hasPressedXFlank();
+fup int hasPressedYFlank();
+fup int hasPressedLeftFlank();
+fup int hasPressedRightFlank();
+fup int hasPressedUpFlank();
+fup int hasPressedDownFlank();
+fup int hasPressedLFlank();
+fup int hasPressedRFlank();
+fup int hasPressedStartFlank();
+fup int hasPressedAbortFlank();
 
 #endif

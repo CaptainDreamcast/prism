@@ -13,22 +13,22 @@ typedef struct {
   Acceleration mAcceleration;
 } PhysicsObject;
 
-void handlePhysics(PhysicsObject* tObject);
-void setMaxVelocity(Velocity tVelocity);
-void setMaxVelocityDouble(double tVelocity);
-void resetMaxVelocity();
-void setDragCoefficient(Vector3D tDragCoefficient);
-void resetDragCoefficient();
-void setGravity(Gravity tGravity);
-Gravity getGravity();
-void resetPhysicsObject(PhysicsObject* tObject);
-void resetPhysics();
-void initPhysics();
-void pausePhysics();
-void resumePhysics();
+fup void handlePhysics(PhysicsObject* tObject);
+fup void setMaxVelocity(Velocity tVelocity);
+fup void setMaxVelocityDouble(double tVelocity);
+fup void resetMaxVelocity();
+fup void setDragCoefficient(Vector3D tDragCoefficient);
+fup void resetDragCoefficient();
+fup void setGravity(Gravity tGravity);
+fup Gravity getGravity();
+fup void resetPhysicsObject(PhysicsObject* tObject);
+fup void resetPhysics();
+fup void initPhysics();
+fup void pausePhysics();
+fup void resumePhysics();
 
-int isEmptyVelocity(Velocity tVelocity);
-Velocity normalizeVelocity(Velocity tVelocity);
+fup int isEmptyVelocity(Velocity tVelocity);
+fup Velocity normalizeVelocity(Velocity tVelocity);
 
 #define makeAcceleration(x, y, z) makePosition(x, y, z)
 

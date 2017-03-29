@@ -3,19 +3,22 @@
 
 #include <stdio.h>
 
+#include "common/header.h"
+
 #define logBase() {printf("[%s::%s, line %d] ", __FILE__, __FUNCTION__, __LINE__);}	
-#define log(x)	{logBase(); printf(x); printf("\n");}
+#define logg(x)	{logBase(); printf(x); printf("\n");}
 #define logInteger(x) {logBase(); printf("Value of %s: %d\n", #x, (int)x);}
 #define logString(x) {logBase(); printf("Value of %s: %s\n", #x, x);}
+#define logWString(x) {logBase(); printf("Value of %s: %S\n", #x, x);}
 #define logDouble(x) {logBase(); printf("Value of %s: %f\n", #x, (double)x);}
 #define logHex(x) {logBase(); printf("Value of %s: %X\n", #x, (unsigned int)x);}
 
-#define logError(x) log(x)
+#define logError(x) logg(x)
 #define logErrorInteger(x) logInteger(x)
 #define logErrorString(x) logString(x)
 #define logErrorHex(x) logHex(x)
 
-#define logWarning(x) log(x)
+#define logWarning(x) logg(x)
 #define logWarningInteger(x) logInteger(x)
 #define logWarningString(x) logString(x)
 
@@ -32,8 +35,8 @@
 #endif	
 
 #ifdef DEBUG
-void logTextureMemoryState();
-void logMemoryState();
+fup void logTextureMemoryState();
+fup void logMemoryState();
 #else
 #define logTextureMemoryState() {}
 #define logMemoryState() {}

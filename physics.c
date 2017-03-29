@@ -2,7 +2,6 @@
 
 #include <string.h>
 #include <math.h>
-#include <kos.h>
 
 #include "include/log.h"
 #include "include/framerate.h"
@@ -46,11 +45,11 @@ Gravity getGravity() {
 	return gData.mGravity;
 }
 
-double fmin(double a, double b) {
+static double f_min(double a, double b) {
   return (a < b) ? a : b;
 }
 
-double fmax(double a, double b) {
+static double f_max(double a, double b) {
   return (a > b) ? a : b;
 }
 
@@ -70,9 +69,9 @@ void handlePhysics(PhysicsObject* tObject) {
   tObject->mVelocity.z *= gData.mOneMinusDragCoefficient.z;
 
   //TODO: fix velocity increase problem for 50Hz
-  tObject->mVelocity.x = fmax(-gData.mMaxVelocity.x*f, fmin(gData.mMaxVelocity.x*f, tObject->mVelocity.x));
-  tObject->mVelocity.y = fmax(-gData.mMaxVelocity.y, fmin(gData.mMaxVelocity.y, tObject->mVelocity.y));
-  tObject->mVelocity.z = fmax(-gData.mMaxVelocity.x, fmin(gData.mMaxVelocity.z, tObject->mVelocity.z));
+  tObject->mVelocity.x = f_max(-gData.mMaxVelocity.x*f, f_min(gData.mMaxVelocity.x*f, tObject->mVelocity.x));
+  tObject->mVelocity.y = f_max(-gData.mMaxVelocity.y, f_min(gData.mMaxVelocity.y, tObject->mVelocity.y));
+  tObject->mVelocity.z = f_max(-gData.mMaxVelocity.x, f_min(gData.mMaxVelocity.z, tObject->mVelocity.z));
 
   tObject->mAcceleration.x = gData.mGravity.x;
   tObject->mAcceleration.y = gData.mGravity.y;

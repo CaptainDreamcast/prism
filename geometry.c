@@ -1,18 +1,18 @@
 #include "include/geometry.h"
 
-#include <kos.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 #include "include/math.h"
 #include "include/log.h"
 
 
-int dot3D(Vector3D p1, Vector3D p2){
+double dot3D(Vector3D p1, Vector3D p2){
 	return p1.x*p2.x + p1.y*p2.y + p1.z*p2.z;
 }
 
 double vecLength(Vector3D tVelocity) {
-  return fsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
+  return fstsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
 }
 
 Vector3D vecAdd(Vector3D v1, Vector3D v2){
@@ -97,16 +97,16 @@ double getAngleFromDirection(Vector3D tDirection){
 // TODO: refactor and/or add intersection position test;
 int checkIntersectLineCircle(Line tLine, Circle tCircle){
 
-	float r = tCircle.mRadius;
+	double r = tCircle.mRadius;
 
 	Position d = getDirection(tLine.mP1, tLine.mP2);
 	Position f = getDirection(tCircle.mCenter, tLine.mP1);
 
-	float a = dot3D(d, d) ;
-	float b = 2*dot3D(f,d) ;
-	float c = dot3D(f, f) - r*r ;
+	double a = dot3D(d, d) ;
+	double b = 2*dot3D(f,d) ;
+	double c = dot3D(f, f) - r*r ;
 
-	float discriminant = b*b-4*a*c;
+	double discriminant = b*b-4*a*c;
 	if( discriminant < 0 )
 	{
 		return 0;
@@ -117,13 +117,13 @@ int checkIntersectLineCircle(Line tLine, Circle tCircle){
 		// so there is a solution to
 		// the equation.
 
-		discriminant = fsqrt( discriminant );
+		discriminant = fstsqrt( discriminant );
 
 		// either solution may be on or off the ray so need to test both
 		// t1 is always the smaller value, because BOTH discriminant and
 		// a are nonnegative.
-		float t1 = (-b - discriminant)/(2*a);
-		float t2 = (-b + discriminant)/(2*a);
+		double t1 = (-b - discriminant)/(2*a);
+		double t2 = (-b + discriminant)/(2*a);
 
 		// 3x HIT cases:
 		//          -o->             --|-->  |            |  --|->

@@ -25,24 +25,26 @@ typedef enum {
 
 typedef int TextSize;
 
-void initDrawing();
-void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition);
-void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor);
-void waitForScreen();
-void startDrawing();
-void stopDrawing();
+fup void initDrawing();
+fup void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition);
+fup void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor);
+fup void waitForScreen();
+fup void startDrawing();
+fup void stopDrawing();
 
-void scaleDrawing(double tFactor, Position tScalePosition);
-void scaleDrawing3D(Vector3D tFactor, Position tScalePosition);
-void setDrawingBaseColor(Color tColor);
-void setDrawingTransparency(double tAlpha);
-void setDrawingRotationZ(double tAngle, Position tPosition);
-void setDrawingParametersToIdentity();
+fup void scaleDrawing(double tFactor, Position tScalePosition);
+fup void scaleDrawing3D(Vector3D tFactor, Position tScalePosition);
+fup void setDrawingBaseColor(Color tColor);
+fup void setDrawingTransparency(double tAlpha);
+fup void setDrawingRotationZ(double tAngle, Position tPosition);
+fup void setDrawingParametersToIdentity();
 
-Rectangle makeRectangle(int x, int y, int w, int h);
-Rectangle makeRectangleFromTexture(TextureData tTexture);
-Position getTextureMiddlePosition(TextureData tTexture);
-void printRectangle(Rectangle r);
+fup Rectangle makeRectangle(int x, int y, int w, int h);
+fup Rectangle makeRectangleFromTexture(TextureData tTexture);
+fup Rectangle scaleRectangle(Rectangle tRect, Vector3D tScale);
+fup Rectangle translateRectangle(Rectangle tRect, Position tOffset);
+fup Position getTextureMiddlePosition(TextureData tTexture);
+fup void printRectangle(Rectangle r);
 
 
 

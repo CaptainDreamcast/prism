@@ -5,18 +5,18 @@
 
 typedef void (*CollisionCallback)(void* tCaller, void* tCollisionData);
 
-void setupCollisionHandler();
-void shutdownCollisionHandler();
-void updateCollisionHandler();
+fup void setupCollisionHandler();
+fup void shutdownCollisionHandler();
+fup void updateCollisionHandler();
 
-int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData);
-void addCollisionHandlerCheck(int tListID1, int tListID2);
-int addCollisionListToHandler();
-void removeFromCollisionHandler(int tListID, int tElementID);
-void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider);
+fup int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData);
+fup void addCollisionHandlerCheck(int tListID1, int tListID2);
+fup int addCollisionListToHandler();
+fup void removeFromCollisionHandler(int tListID, int tElementID);
+fup void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider);
 
-void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition);
-void drawHandledCollisions();
-void activateCollisionHandlerDebugMode();
+fup void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition);
+fup void drawHandledCollisions();
+fup void activateCollisionHandlerDebugMode();
 
 #endif

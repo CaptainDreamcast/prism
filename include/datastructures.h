@@ -1,6 +1,8 @@
 #ifndef TARI_DATASTRUCTURES
 #define TARI_DATASTRUCTURES
 
+#include "common/header.h"
+
 typedef struct ListElement_internal{
 
 	int mID;
@@ -23,24 +25,25 @@ typedef struct {
 
 typedef void (*mapCB)(void* caller, void* data);
 typedef int (*predicateCB)(void* caller, void* data);
+typedef int(*sortCB)(void* caller, void* data1, void* data2);
 
 
-int list_push_front(List* tList, void* tData);
-int list_push_front_owned(List* tList, void* tData);
-int list_push_back(List* tList, void* tData);
-int list_push_back_owned(List* tList, void* tData);
-void* list_get(List* tList, int tID);
-void list_remove(List* tList, int tID);
-void list_empty(List* tList);
-void list_map(List* tList, mapCB tCB, void* tCaller);
-void list_remove_predicate(List* tList, predicateCB tCB, void* tCaller);
-int list_size(List* tList);
-List new_list();
-void delete_list(List* tList);
-ListIterator list_iterator_begin(List* tList);
-void* list_iterator_get(ListIterator tIterator);
-void list_iterator_increase(ListIterator* tIterator);
-int list_has_next(ListIterator tIterator);
+fup int list_push_front(List* tList, void* tData);
+fup int list_push_front_owned(List* tList, void* tData);
+fup int list_push_back(List* tList, void* tData);
+fup int list_push_back_owned(List* tList, void* tData);
+fup void* list_get(List* tList, int tID);
+fup void list_remove(List* tList, int tID);
+fup void list_empty(List* tList);
+fup void list_map(List* tList, mapCB tCB, void* tCaller);
+fup void list_remove_predicate(List* tList, predicateCB tCB, void* tCaller);
+fup int list_size(List* tList);
+fup List new_list();
+fup void delete_list(List* tList);
+fup ListIterator list_iterator_begin(List* tList);
+fup void* list_iterator_get(ListIterator tIterator);
+fup void list_iterator_increase(ListIterator* tIterator);
+fup int list_has_next(ListIterator tIterator);
 
 typedef struct {
 
@@ -56,16 +59,17 @@ typedef struct {
 } Vector;
 
 
-Vector new_vector();
-void delete_vector(Vector* tVector);
-void vector_empty(Vector* tVector);
-void vector_push_back(Vector* tVector, void* tData);
-void vector_push_back_owned(Vector* tVector, void* tData);
-void* vector_get(Vector* tVector, int tIndex);
-void vector_remove(Vector* tVector, int tIndex);
-void* vector_pop_back(Vector* tVector);
-int vector_size(Vector* tVector);
-void vector_map(Vector* tVector, mapCB tCB, void* tCaller);
+fup Vector new_vector();
+fup void delete_vector(Vector* tVector);
+fup void vector_empty(Vector* tVector);
+fup void vector_push_back(Vector* tVector, void* tData);
+fup void vector_push_back_owned(Vector* tVector, void* tData);
+fup void* vector_get(Vector* tVector, int tIndex);
+fup void vector_remove(Vector* tVector, int tIndex);
+fup void* vector_pop_back(Vector* tVector);
+fup int vector_size(Vector* tVector);
+fup void vector_sort(Vector* tVector, sortCB tCB, void* tCaller);
+fup void vector_map(Vector* tVector, mapCB tCB, void* tCaller);
 
 
 #endif

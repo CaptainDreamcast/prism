@@ -1,9 +1,27 @@
 #ifndef TARI_FILE
 #define TARI_FILE
 
-#include <kos.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
+#include <stdio.h>
 
-#include "stdint.h"
+#include "common/header.h"
+
+#ifdef DREAMCAST
+
+typedef int FileHandler;
+
+#elif defined _WIN32
+
+#define O_RDONLY	0x1
+#define O_WRONLY	0x2
+
+#define FILEHND_INVALID	0
+
+typedef FILE* FileHandler;
+
+#endif
 
 typedef struct {
   int mIsOwned;
@@ -11,32 +29,35 @@ typedef struct {
   void* mData;
 } Buffer;
 
-int fileOpen(char* tPath, int tFlags);
-#define fileRead(x,y,z) fs_read(x,y,z)
-#define fileWrite(x,y,z) fs_write(x,y,z)
-#define fileSeek(x,y,z) fs_seek(x,y,z)
-#define fileTell(x) fs_tell(x)
-#define fileTotal(x) fs_total(x)
-#define fileClose(x) fs_close(x)
-#define fileUnlink(x) fs_unlink(x)
-#define fileMemoryMap(x) fs_mmap(x)
+fup FileHandler fileOpen(char* tPath, int tFlags);
+fup int fileClose(FileHandler tHandler);
+fup size_t fileRead(FileHandler tHandler, void* tBuffer, size_t tCount);
+fup size_t fileWrite(FileHandler tHandler, const void* tBuffer, size_t tCount);
+fup size_t fileSeek(FileHandler tHandler, size_t tOffset, int tWhence);
+fup size_t fileTell(FileHandler tHandler);
+fup size_t fileTotal(FileHandler tHandler);
+fup int fileUnlink(char* tPath);
+fup void* fileMemoryMap(FileHandler tHandler);
 
-Buffer fileToBuffer(char* path);
-void freeBuffer(Buffer buffer);
-void appendTerminationSymbolToBuffer(Buffer* tBuffer);
 
-void initFileSystem();
-void setFileSystem(char* path);
-void setWorkingDirectory(char* path);
+fup Buffer fileToBuffer(char* path);
+fup void freeBuffer(Buffer buffer);
+fup void appendTerminationSymbolToBuffer(Buffer* tBuffer);
 
-void mountRomdisk(char* tFilePath, char* tMountPath);
-void unmountRomdisk(char* tMountPath);
+fup void initFileSystem();
+fup void setFileSystem(char* path);
+fup void setWorkingDirectory(char* path);
+fup const char* getFileSystem();
+fup const char* getWorkingDirectory();
 
-char* getPureFileName(char* path);
-char* getFileExtension(char* tPath);
-void  getPathWithNumberAffixedFromAssetPath(char* tDest, char* tSrc, int i);
-void getFullPath(char* tDest, char* tPath);
+fup void mountRomdisk(char* tFilePath, char* tMountPath);
+fup void unmountRomdisk(char* tMountPath);
 
-void printDirectory(char* tPath);
+fup char* getPureFileName(char* path);
+fup char* getFileExtension(char* tPath);
+fup void  getPathWithNumberAffixedFromAssetPath(char* tDest, char* tSrc, int i);
+fup void getFullPath(char* tDest, char* tPath);
+
+fup void printDirectory(char* tPath);
 
 #endif

@@ -1,13 +1,17 @@
-#include "include/system.h"
+#include "../include/system.h"
 
 #include <kos.h>
 
-#include "include/log.h"
-#include "include/pvr.h"
+#include "../include/log.h"
+#include "../include/pvr.h"
 
 void abortSystem(){
 	arch_exit();
 }	
+
+void returnToMenu() {
+	arch_menu();
+}
 
 static struct {
 
@@ -21,6 +25,11 @@ static struct {
 
 } gData;
 
+void initSystem(){}
+
+void shutdownSystem(){}
+
+void updateSystem() {}
 
 static void initScreenDefault() {
 	gData.mIsLoaded = 1;
@@ -97,3 +106,9 @@ void setVGA() {
 	gData.mIsVGA = 1;
 	setVideoModeInternal();
 }
+
+
+void setGameName(char* tName) {
+	(void) tName;
+}
+

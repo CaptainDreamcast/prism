@@ -1,7 +1,7 @@
-#include "math.h"
+#include "include/math.h"
 
 #include <stdlib.h>
-
+#include <math.h>
 
 double randfrom(double tMin, double tMax) {
 	double range = (tMax - tMin); 
@@ -22,7 +22,7 @@ double fatan2(double y, double x){
 		return -PIBY2_FLOAT;
 	}
 	float atan;
-	float z = y/x;
+	float z = (float)(y/x);
 	if ( fabsf( z ) < 1.0f )
 	{
 		atan = z/(1.0f + 0.28f*z*z);

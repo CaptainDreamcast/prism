@@ -1,5 +1,7 @@
 #include "include/script.h"
 
+#include <string.h>
+
 #include "include/log.h"
 #include "include/system.h"
 
@@ -81,7 +83,7 @@ static ScriptRegion makeScriptRegion(Script tScript, char* tStart, char* tEnd) {
 }
 
 static ScriptRegion getWholeScriptRegion(Script tScript) {
-	return makeScriptRegion(tScript, tScript.mBuffer.mData, tScript.mBuffer.mData + tScript.mBuffer.mLength - 1);
+	return makeScriptRegion(tScript, tScript.mBuffer.mData, (char*)((uint32_t)tScript.mBuffer.mData + tScript.mBuffer.mLength - 1));
 }
 
 static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, char* tWord) {
@@ -159,7 +161,7 @@ static ScriptPosition findScriptRegionStart(ScriptPosition tPos, char* tName) {
 		next = getNextScriptString(tPos, w2);
 		if(!isInside && !strcmp(tName, w1) && w2[0] == '{') {
 			if(next.mPointer == NULL) {
-				next.mPointer = tPos.mRegion.mScript.mBuffer.mData + tPos.mRegion.mScript.mBuffer.mLength - 1;
+				next.mPointer = (char*)((uint32_t)tPos.mRegion.mScript.mBuffer.mData + tPos.mRegion.mScript.mBuffer.mLength - 1);
 			}
 			return next;
 		}

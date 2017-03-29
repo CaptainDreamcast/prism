@@ -13,7 +13,7 @@ static struct {
 } gData;
 
 int getDurationInFrames(Duration tDuration){
-	return tDuration * getInverseFramerateFactor();
+	return (int)(tDuration * getInverseFramerateFactor());
 }
 
 int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration) {

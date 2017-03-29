@@ -1,4 +1,4 @@
-#include "include/pvr.h"
+#include "../include/pvr.h"
 
 #include <kos.h>
 

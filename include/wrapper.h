@@ -1,6 +1,8 @@
 #ifndef TARI_WRAPPER
 #define TARI_WRAPPER
 
+#include "common/header.h"
+
 typedef void (*LoadScreenFunction)();
 typedef void (*UpdateScreenFunction)();
 typedef void (*DrawScreenFunction)();
@@ -14,17 +16,17 @@ typedef struct Screen_internal{
 	struct Screen_internal* (*mGetNextScreen)();
 } Screen;
 
-void initTariWrapperWithDefaultFlags();
-void shutdownTariWrapper();
-void pauseWrapper();
-void resumeWrapper();
+fup void initTariWrapperWithDefaultFlags();
+fup void shutdownTariWrapper();
+fup void pauseWrapper();
+fup void resumeWrapper();
 
-void loadScreenFunctionality();
-void updateScreenFunctionality();
-void drawScreenFunctionality();
-void shutdownScreenFunctionality();
+fup void loadScreenFunctionality();
+fup void updateScreenFunctionality();
+fup void drawScreenFunctionality();
+fup void shutdownScreenFunctionality();
 
-void startScreenHandling(Screen* tScreen);
-void abortScreenHandling();
+fup void startScreenHandling(Screen* tScreen);
+fup void abortScreenHandling();
 
 #endif 

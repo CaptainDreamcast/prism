@@ -1,6 +1,8 @@
 #ifndef TARI_FRAMERATE
 #define TARI_FRAMERATE
 
+#include "common/header.h"
+
 typedef enum {
   FIFTY_HERTZ = 50,
   SIXTY_HERTZ = 60
@@ -8,8 +10,8 @@ typedef enum {
 
 #define FRAMERATE_AMOUNT 2
 
-void setFramerate(Framerate tFramerate);
-double getFramerateFactor();
-double getInverseFramerateFactor();
+fup void setFramerate(Framerate tFramerate);
+fup double getFramerateFactor();
+fup double getInverseFramerateFactor();
 
 #endif

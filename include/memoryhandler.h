@@ -1,20 +1,22 @@
 #ifndef TARI_MEMORYHANDLER_H
 #define TARI_MEMORYHANDLER_H
 
-void* allocMemory(int tSize);
-void freeMemory(void* tData);
-void* reallocMemory(void* tData, int tSize);
-void* allocTextureMemory(int tSize);
-void freeTextureMemory(void* tData);
+#include "common/header.h"
 
-void pushMemoryStack();
-void popMemoryStack();
-void pushTextureMemoryStack();
-void popTextureMemoryStack();
+fup void* allocMemory(int tSize);
+fup void freeMemory(void* tData);
+fup void* reallocMemory(void* tData, int tSize);
+fup void* allocTextureMemory(int tSize);
+fup void freeTextureMemory(void* tData);
 
-void initMemoryHandler();
-void shutdownMemoryHandler();
+fup void pushMemoryStack();
+fup void popMemoryStack();
+fup void pushTextureMemoryStack();
+fup void popTextureMemoryStack();
 
-void debugPrintMemoryStack();
+fup void initMemoryHandler();
+fup void shutdownMemoryHandler();
+
+fup void debugPrintMemoryStack();
 
 #endif

@@ -1,9 +1,12 @@
 #ifndef TARI_SOUND_H
 #define TARI_SOUND_H
 
-void initSound();
+#include "common/header.h"
 
-int getVolume();
-int getPanningValue();
+fup void initSound();
+fup void shutdownSound();
+
+fup int getVolume();
+fup int getPanningValue();
 
 #endif 

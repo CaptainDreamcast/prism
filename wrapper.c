@@ -19,7 +19,8 @@
 #include "include/system.h"
 
 void initTariWrapperWithDefaultFlags() {
-	log("Initiating wrapper.");
+	logg("Initiating wrapper.");
+	initSystem();
 	initiatePVR();
 	initMemoryHandler();
 	initPhysics();
@@ -30,7 +31,9 @@ void initTariWrapperWithDefaultFlags() {
 	
 }
 void shutdownTariWrapper() {
+	shutdownSound();
 	shutdownMemoryHandler();
+	shutdownSystem();
 }
 
 void pauseWrapper() {
@@ -48,51 +51,51 @@ static struct {
 } gData;
 
 static void loadScreen(Screen* tScreen) {
-	log("Loading handled screen");
-	log("Pushing memory stacks");
+	logg("Loading handled screen");
+	logg("Pushing memory stacks");
 	pushMemoryStack();
 	pushTextureMemoryStack();
-	log("Setting up Timer");
+	logg("Setting up Timer");
 	setupTimer();
-	log("Setting up Animationhandling");
+	logg("Setting up Animationhandling");
 	setupAnimationHandler();
-	log("Setting up Physicshandling");
+	logg("Setting up Physicshandling");
 	setupPhysicsHandler();
-	log("Setting up Stagehandling");
+	logg("Setting up Stagehandling");
 	setupStageHandler();
-	log("Setting up Collisionhandling");
+	logg("Setting up Collisionhandling");
 	setupCollisionHandler();
-	log("Setting up Collisionanimationhandling");
+	logg("Setting up Collisionanimationhandling");
 	setupCollisionAnimationHandler();
-	log("Setting up Soundeffecthandling");
+	logg("Setting up Soundeffecthandling");
 	setupSoundEffectHandler();
-	log("Setting up input flanks");
+	logg("Setting up input flanks");
 	resetInput();
 	
-	log("Loading user screen data");
+	logg("Loading user screen data");
 	tScreen->mLoad();
 }
 
 static void unloadScreen(Screen* tScreen) {
-	log("Unloading handled screen");
-	log("Unloading user screen data");
+	logg("Unloading handled screen");
+	logg("Unloading user screen data");
 	tScreen->mUnload();
 
-	log("Shutting down Soundeffecthandling");
+	logg("Shutting down Soundeffecthandling");
 	shutdownSoundEffectHandler();
-	log("Shutting down Collisionanimationhandling");
+	logg("Shutting down Collisionanimationhandling");
 	shutdownCollisionAnimationHandler();
-	log("Shutting down Collisionhandling");
+	logg("Shutting down Collisionhandling");
 	shutdownCollisionHandler();
-	log("Shutting down Stagehandling");
+	logg("Shutting down Stagehandling");
 	shutdownStageHandler();
-	log("Shutting down Physicshandling");
+	logg("Shutting down Physicshandling");
 	shutdownPhysicsHandler();
-	log("Shutting down Animationhandling");
+	logg("Shutting down Animationhandling");
 	shutdownAnimationHandler();
-	log("Shutting down Timer");
+	logg("Shutting down Timer");
 	shutdownTimer();
-	log("Popping Memory Stacks");
+	logg("Popping Memory Stacks");
 	popTextureMemoryStack();
 	popMemoryStack();
 
@@ -101,6 +104,7 @@ static void unloadScreen(Screen* tScreen) {
 }
 
 static void updateScreen(Screen* tScreen) {
+	updateSystem();
 	updateInput();
 	updatePhysicsHandler();
 	updateAnimationHandler();
@@ -124,7 +128,7 @@ static void drawScreen(Screen* tScreen) {
 }
 
 static Screen* showScreen(Screen* tScreen) {
-	log("Show screen");
+	logg("Show screen");
 
 	Screen* next = NULL;
 	while(!gData.mIsAborted && next == NULL) {
