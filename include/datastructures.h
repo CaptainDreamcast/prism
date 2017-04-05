@@ -72,4 +72,19 @@ fup void vector_sort(Vector* tVector, sortCB tCB, void* tCaller);
 fup void vector_map(Vector* tVector, mapCB tCB, void* tCaller);
 
 
+typedef struct {
+	int mSize;
+	Vector mBuckets;
+} StringMap;
+
+typedef void(*stringMapMapCB)(void* caller, char* key, void* data);
+
+fup StringMap new_string_map();
+fup void destroy_string_map(StringMap* tMap);
+fup void string_map_push_owned(StringMap* tMap, char* tKey, void* tData);
+fup void* string_map_get(StringMap* tMap, char* tKey);
+fup void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller);
+
+
+
 #endif

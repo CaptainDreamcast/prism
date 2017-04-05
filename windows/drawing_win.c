@@ -19,11 +19,15 @@ typedef struct {
 	double g;
 	double b;
 
+	Vector3D mTranslation;
 	Vector3D mScale;
 	Vector3D mAngle;
 	Position mEffectCenter;
+	int mIsEffectCenterAbsolute;
 
 	int mFrameStartTime;
+
+	Vector mEffectStack;
 } DrawingData;
 
 typedef struct {
@@ -41,7 +45,7 @@ static DrawingData gData;
 extern SDL_Window* gSDLWindow;
 SDL_Renderer* gRenderer;
 
-void initDrawing(){
+void initDrawing() {
 	logg("Initiate drawing.");
 	setDrawingParametersToIdentity();
 
@@ -56,6 +60,10 @@ void initDrawing(){
 
 	gDrawVector = new_vector();
 	gData.mFrameStartTime = 0;
+
+	gData.mTranslation = makePosition(0, 0, 0);
+	gData.mEffectStack = new_vector();
+	gData.mIsEffectCenterAbsolute = 1;
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
@@ -75,6 +83,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   DrawListElement* e = allocMemory(sizeof(DrawListElement));
   e->mTexture = tTexture;
   e->mPos = tPos;
+  e->mPos = vecAdd(e->mPos, gData.mTranslation);
   e->mTexturePosition = tTexturePosition;
   e->mData = gData;
   vector_push_back_owned(&gDrawVector, e);
@@ -155,7 +164,13 @@ static void drawSorted(void* tCaller, void* tData) {
 
 	dstRect = scaleSDLRect(dstRect, e->mData.mScale, e->mData.mEffectCenter);
 
-	Position realEffectPos = vecAdd(e->mData.mEffectCenter, vecScale(e->mPos,-1));
+	Position realEffectPos;
+	if (e->mData.mIsEffectCenterAbsolute) {
+		realEffectPos = vecAdd(e->mData.mEffectCenter, vecScale(e->mPos, -1));
+	}
+	else {
+		realEffectPos = e->mData.mEffectCenter;
+	}
 
 	SDL_Point effectCenter;
 	effectCenter.x = (int)realEffectPos.x;
@@ -254,7 +269,58 @@ void setDrawingParametersToIdentity(){
 	setDrawingRotationZ(0, makePosition(0,0,0));
 }
 
+void setEffectCenterRelative() {
+	gData.mIsEffectCenterAbsolute = 0;
+}
 
+void setEffectCenterAbsolute() {
+	gData.mIsEffectCenterAbsolute = 1;
+}
 
+typedef struct {
+	Vector3D mTranslation;
+
+} TranslationEffect;
+
+typedef struct {
+	double mAngle;
+
+} RotationZEffect;
+
+void pushDrawingTranslation(Vector3D tTranslation) {
+	tTranslation = vecRotateZ(tTranslation, 2*M_PI-gData.mAngle.z);
+	gData.mTranslation = vecAdd(gData.mTranslation, tTranslation);
+
+	TranslationEffect* e = allocMemory(sizeof(TranslationEffect));
+	e->mTranslation = tTranslation;
+	vector_push_back_owned(&gData.mEffectStack, e);
+}
+void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
+	gData.mEffectCenter = tCenter;
+	gData.mAngle.z += tAngle;
+
+	RotationZEffect* e = allocMemory(sizeof(RotationZEffect));
+	e->mAngle = tAngle;
+	vector_push_back_owned(&gData.mEffectStack, e);
+	
+}
+
+void popDrawingRotationZ() {
+	int ind = vector_size(&gData.mEffectStack)-1;
+	RotationZEffect* e = vector_get(&gData.mEffectStack, ind);
+	
+	gData.mAngle.z -= e->mAngle;
+
+	vector_remove(&gData.mEffectStack, ind);
+}
+void popDrawingTranslation() {
+	int ind = vector_size(&gData.mEffectStack) - 1;
+	TranslationEffect* e = vector_get(&gData.mEffectStack, ind);
+
+	Vector3D tTranslation = e->mTranslation;
+	gData.mTranslation = vecAdd(gData.mTranslation, vecScale(tTranslation,-1));
+
+	vector_remove(&gData.mEffectStack, ind);
+}
 
 

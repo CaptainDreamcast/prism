@@ -42,6 +42,14 @@ Vector3D vecNormalize(Vector3D tVector) {
 	return tVector;
 }
 
+Vector3D vecRotateZ(Vector3D tVector, double tAngle) {
+	Vector3D ret;
+	ret.x = cos(tAngle)*tVector.x - sin(tAngle)*tVector.y;
+	ret.y = sin(tAngle)*tVector.x + cos(tAngle)*tVector.y;
+	ret.z = tVector.z;
+	return ret;
+}
+
 Position makePosition(double x, double y, double z){
   Position pos;
   pos.x = x;

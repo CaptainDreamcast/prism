@@ -14,5 +14,6 @@ fup Position getRealScreenPosition(int tBackgroundID, Position tPos);
 fup void scrollBackgroundRight(double tAccel);
 fup Position* getScrollingBackgroundPositionReference(int tID);
 
+fup void loadStageFromScript(char* tPath);
 
 #endif

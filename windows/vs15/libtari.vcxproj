@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\animation.c" />
+    <ClCompile Include="..\..\animationtree.c" />
     <ClCompile Include="..\..\collision.c" />
     <ClCompile Include="..\..\collisionanimation.c" />
     <ClCompile Include="..\..\collisionhandler.c" />
@@ -167,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\animation.h" />
+    <ClInclude Include="..\..\include\animationtree.h" />
     <ClInclude Include="..\..\include\collision.h" />
     <ClInclude Include="..\..\include\collisionanimation.h" />
     <ClInclude Include="..\..\include\collisionhandler.h" />

@@ -1,6 +1,7 @@
 #include "include/datastructures.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "include/memoryhandler.h"
 #include "include/log.h"
@@ -248,6 +249,20 @@ int vector_size(Vector* tVector) {
 	return tVector->mSize;
 }
 
+void vector_remove(Vector* tVector, int ind) {
+	VectorElement* e = &tVector->mData[ind];
+	if (e->mIsOwned) {
+		freeMemory(e->mData);
+	}
+
+	int i;
+	for (i = ind; i < tVector->mSize - 1; i++) {
+		tVector->mData[i] = tVector->mData[i + 1];
+	}
+
+	tVector->mSize--;
+}
+
 static sortCB gSortFunc;
 static void* gSortCaller;
 
@@ -269,4 +284,106 @@ void vector_map(Vector* tVector, mapCB tCB, void* tCaller) {
 	for(i = 0; i < tVector->mSize; i++) {
 		tCB(tCaller, tVector->mData[i].mData);
 	}
+}
+
+
+#define MAP_MODULO 31
+
+typedef struct {
+	char mKey[100];
+	void* mData;
+	int mIsOwned;
+} StringMapBucketListEntry;
+
+typedef struct {
+	List mEntries;
+} StringMapBucket;
+
+StringMap new_string_map() {
+	StringMap ret;
+	ret.mBuckets = new_vector();
+
+	int i;
+	for (i = 0; i < MAP_MODULO; i++) {
+		StringMapBucket* newBucket = allocMemory(sizeof(StringMapBucket));
+		newBucket->mEntries = new_list();
+		vector_push_back_owned(&ret.mBuckets, newBucket);
+	}
+
+	ret.mSize = 0;
+	return ret;
+}
+
+static int getBucketIDFromString(char* tKey) {
+	int l = strlen(tKey);
+	int i;
+	int base = 1;
+	int offset = 0;
+	for (i = 0; i < l; i++) {
+		offset = (offset + (tKey[i] * base)) % MAP_MODULO;
+		base = (base * 10) % MAP_MODULO;
+	}
+	return offset;
+}
+
+void string_map_push_owned(StringMap* tMap, char* tKey, void* tData) {
+	int offset = getBucketIDFromString(tKey);
+	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+
+	StringMapBucketListEntry* newEntry = allocMemory(sizeof(StringMapBucketListEntry));
+	strcpy(newEntry->mKey, tKey);
+	newEntry->mData = tData;
+	newEntry->mIsOwned = 1;
+	
+	list_push_back_owned(&bucket->mEntries, newEntry);
+	
+	tMap->mSize++;
+}
+
+void* string_map_get(StringMap* tMap, char* tKey) {
+	int offset = getBucketIDFromString(tKey);
+	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+
+	ListIterator it = list_iterator_begin(&bucket->mEntries);
+	while (1) {
+		StringMapBucketListEntry* e = list_iterator_get(it);
+		if (!strcmp(tKey, e->mKey)) {
+			return e->mData;
+		}
+		
+		if (!list_has_next(it)) {
+			logError("Unable to find key in map.");
+			logErrorString(tKey);
+			abortSystem();
+		}
+
+		list_iterator_increase(&it);
+	}
+
+}
+
+typedef struct {
+	void* mCaller;
+	stringMapMapCB mCB;
+
+} StringMapCaller;
+
+static void string_map_map_single_list_entry(void* tCaller, void* tData) {
+	StringMapCaller* caller = tCaller;
+	StringMapBucketListEntry* e = tData;
+
+	caller->mCB(caller->mCaller, e->mKey, e->mData);
+}
+
+static void string_map_map_single_bucket(void* tCaller, void* tData) {
+	StringMapBucket* e = tData;
+	list_map(&e->mEntries, string_map_map_single_list_entry, tCaller);
+
+}
+
+void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller) {
+	StringMapCaller caller;
+	caller.mCaller = tCaller;
+	caller.mCB = tCB;
+	vector_map(&tMap->mBuckets, string_map_map_single_bucket, &caller);
 }

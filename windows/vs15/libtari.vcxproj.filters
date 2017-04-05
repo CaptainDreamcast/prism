@@ -97,6 +97,9 @@
     <ClCompile Include="..\..\math.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\animationtree.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\animation.h" />
@@ -127,6 +130,7 @@
     <ClInclude Include="..\..\include\wrapper.h" />
     <ClInclude Include="..\..\include\common\header.h" />
     <ClInclude Include="..\..\include\math.h" />
+    <ClInclude Include="..\..\include\animationtree.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

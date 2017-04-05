@@ -1,8 +1,11 @@
 #include "include/stagehandler.h"
 
+#include "include/script.h"
 #include "include/datastructures.h"
 #include "include/memoryhandler.h"
 #include "include/file.h"
+#include "include/system.h"
+#include "include/log.h"
 
 static struct {
 	List mList;
@@ -184,4 +187,111 @@ Position* getScrollingBackgroundPositionReference(int tID) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 
 	return &data->mPhysics.mPosition;
+}
+
+typedef struct {
+	double mZ;
+	double mScrollingFactor;
+	int mID;
+} StageScriptLayerData;
+
+typedef struct {
+	Position mPosition;
+	char mPath[1024];
+	Animation mAnimation;
+
+} StageScriptLayerElementData;
+
+static ScriptPosition loadStageScriptLayerElement(void* tCaller, ScriptPosition tPos) {
+	StageScriptLayerElementData* e = tCaller;
+	char word[1024];
+
+	tPos = getNextScriptString(tPos, word);
+
+	if (!strcmp("POSITION", word)) {
+		tPos = getNextScriptDouble(tPos, &e->mPosition.x);
+		tPos = getNextScriptDouble(tPos, &e->mPosition.y);
+		e->mPosition.z = 0;
+	}
+	else if (!strcmp("PATH", word)) {
+		tPos = getNextScriptString(tPos, e->mPath);
+	}
+	else if (!strcmp("ANIMATION", word)) {
+		e->mAnimation = createEmptyAnimation();
+
+		int v;
+		tPos = getNextScriptInteger(tPos, &v);
+		e->mAnimation.mDuration = v;
+
+		tPos = getNextScriptInteger(tPos, &v);
+		e->mAnimation.mFrameAmount = v;
+	}
+	else {
+		logError("Unrecognized token.");
+		logErrorString(word);
+		abortSystem();
+	}
+
+	return tPos;
+}
+
+static ScriptPosition loadStageScriptLayer(void* tCaller, ScriptPosition tPos) {
+	StageScriptLayerData* e = tCaller;
+	char word[1024];
+
+	tPos = getNextScriptString(tPos, word);
+
+	if (!strcmp("POSITION_Z", word)) {
+		tPos = getNextScriptDouble(tPos, &e->mZ);
+	}
+	else if (!strcmp("SCROLLING_FACTOR", word)) {
+		tPos = getNextScriptDouble(tPos, &e->mScrollingFactor);
+	}
+	else if (!strcmp("CREATE", word)) {
+		e->mID = addScrollingBackground(e->mScrollingFactor, e->mZ);
+	}
+	else if (!strcmp("ELEMENT", word)) {
+		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		StageScriptLayerElementData caller;
+		memset(&caller, 0, sizeof(StageScriptLayerElementData));
+		executeOnScriptRegion(reg, loadStageScriptLayerElement, &caller);
+		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+		addBackgroundElement(e->mID, caller.mPosition, caller.mPath, caller.mAnimation);
+	}
+	else {
+		logError("Unrecognized token.");
+		logErrorString(word);
+		abortSystem();
+	}
+
+	return tPos;
+}
+
+static ScriptPosition loadStageScriptStage(void* tCaller, ScriptPosition tPos) {
+	(void)tCaller;
+	char word[1024];
+
+	tPos = getNextScriptString(tPos, word);
+
+	if (!strcmp("LAYER", word)) {
+		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		StageScriptLayerData caller;
+		memset(&caller, 0, sizeof(StageScriptLayerData));
+		executeOnScriptRegion(reg, loadStageScriptLayer, &caller);
+		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+	}
+	else {
+		logError("Unrecognized token.");
+		logErrorString(word);
+		abortSystem();
+	}
+
+	return tPos;
+}
+
+void loadStageFromScript(char* tPath) {
+	Script s = loadScript(tPath);
+	ScriptRegion reg = getScriptRegion(s, "STAGE");
+
+	executeOnScriptRegion(reg, loadStageScriptStage, NULL);
 }

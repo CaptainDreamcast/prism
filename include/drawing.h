@@ -39,6 +39,15 @@ fup void setDrawingTransparency(double tAlpha);
 fup void setDrawingRotationZ(double tAngle, Position tPosition);
 fup void setDrawingParametersToIdentity();
 
+fup void setEffectCenterRelative();
+fup void setEffectCenterAbsolute();
+
+fup void pushDrawingTranslation(Vector3D tTranslation);
+fup void pushDrawingRotationZ(double tAngle, Vector3D tCenter);
+
+fup void popDrawingRotationZ();
+fup void popDrawingTranslation();
+
 fup Rectangle makeRectangle(int x, int y, int w, int h);
 fup Rectangle makeRectangleFromTexture(TextureData tTexture);
 fup Rectangle scaleRectangle(Rectangle tRect, Vector3D tScale);
