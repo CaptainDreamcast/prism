@@ -66,10 +66,11 @@ fup void vector_push_back(Vector* tVector, void* tData);
 fup void vector_push_back_owned(Vector* tVector, void* tData);
 fup void* vector_get(Vector* tVector, int tIndex);
 fup void vector_remove(Vector* tVector, int tIndex);
-fup void* vector_pop_back(Vector* tVector);
 fup int vector_size(Vector* tVector);
 fup void vector_sort(Vector* tVector, sortCB tCB, void* tCaller);
 fup void vector_map(Vector* tVector, mapCB tCB, void* tCaller);
+fup void* vector_get_back(Vector* tVector);
+fup void vector_pop_back(Vector* tVector);
 
 
 typedef struct {

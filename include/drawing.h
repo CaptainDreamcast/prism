@@ -39,9 +39,6 @@ fup void setDrawingTransparency(double tAlpha);
 fup void setDrawingRotationZ(double tAngle, Position tPosition);
 fup void setDrawingParametersToIdentity();
 
-fup void setEffectCenterRelative();
-fup void setEffectCenterAbsolute();
-
 fup void pushDrawingTranslation(Vector3D tTranslation);
 fup void pushDrawingRotationZ(double tAngle, Vector3D tCenter);
 

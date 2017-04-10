@@ -287,6 +287,17 @@ void vector_map(Vector* tVector, mapCB tCB, void* tCaller) {
 }
 
 
+void* vector_get_back(Vector* tVector) {
+	return tVector->mData[tVector->mSize-1].mData;
+}
+
+void vector_pop_back(Vector* tVector) {
+	vector_remove(tVector, tVector->mSize-1);
+}
+
+
+
+
 #define MAP_MODULO 31
 
 typedef struct {

@@ -1,5 +1,7 @@
 #include "include/animationtree.h"
 
+#include <math.h>
+
 #include "include/script.h"
 #include "include/log.h"
 #include "include/system.h"
@@ -34,7 +36,8 @@ static ScriptPosition loadTreeAnimation(TreeNode* e, ScriptPosition tPos) {
 	int v;
 	tPos = getNextScriptInteger(tPos, &v);
 	e->mAnimation.mDuration = v;
-	tPos = getNextScriptInteger(tPos, &e->mAnimation.mFrameAmount);
+	tPos = getNextScriptInteger(tPos, &v);
+	e->mAnimation.mFrameAmount = v;
 
 	e->mTextures = allocMemory(e->mAnimation.mFrameAmount*sizeof(TextureData));
 	char name[1024];
@@ -217,6 +220,7 @@ AnimationTree loadAnimationTree(char* tPath) {
 
 typedef struct {
 	AnimationTree mTree;
+	Position mPosition;
 } AnimationTreeHandlerEntry;
 
 static struct {
@@ -265,9 +269,7 @@ static void drawSingleTree(void* tCaller, void* tData) {
 }
 
 void drawAnimationTreeHandling() {
-	setEffectCenterRelative();
 	list_map(&gData.mAnimationTreeList, drawSingleTree, NULL);
-	setEffectCenterAbsolute();
 }
 
 static void copySingleTreeNode(TreeNode* tDst, TreeNode* tSrc) {
@@ -307,6 +309,7 @@ int playAnimationTreeLoop(Position tPosition, AnimationTree tTree, char* tAnimat
 	AnimationTreeHandlerEntry* e = allocMemory(sizeof(AnimationTreeHandlerEntry)); 
 
 	e->mTree = tTree;
+	e->mPosition = tPosition;
 	setAnimationTreeAnimation(&e->mTree, tAnimation);
 
 	return list_push_back_owned(&gData.mAnimationTreeList, e);

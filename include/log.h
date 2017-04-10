@@ -16,6 +16,7 @@
 #define logError(x) logg(x)
 #define logErrorInteger(x) logInteger(x)
 #define logErrorString(x) logString(x)
+#define logErrorDouble(x) logDouble(x)
 #define logErrorHex(x) logHex(x)
 
 #define logWarning(x) logg(x)
