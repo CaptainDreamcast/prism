@@ -32,4 +32,9 @@ fup int hasPressedRFlank();
 fup int hasPressedStartFlank();
 fup int hasPressedAbortFlank();
 
+fup double getLeftStickNormalizedX();
+fup double getLeftStickNormalizedY();
+fup double getLNormalized();
+fup double getRNormalized();
+
 #endif

@@ -55,7 +55,7 @@ fup void unmountRomdisk(char* tMountPath);
 
 fup char* getPureFileName(char* path);
 fup char* getFileExtension(char* tPath);
-fup void  getPathWithNumberAffixedFromAssetPath(char* tDest, char* tSrc, int i);
+fup void  getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i);
 fup void getFullPath(char* tDest, char* tPath);
 
 fup void printDirectory(char* tPath);

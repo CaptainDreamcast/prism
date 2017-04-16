@@ -14,9 +14,11 @@ fup void addCollisionHandlerCheck(int tListID1, int tListID2);
 fup int addCollisionListToHandler();
 fup void removeFromCollisionHandler(int tListID, int tElementID);
 fup void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider);
+fup void setCollisionHandlerOwningColliders();
 
 fup void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition);
 fup void drawHandledCollisions();
 fup void activateCollisionHandlerDebugMode();
+
 
 #endif

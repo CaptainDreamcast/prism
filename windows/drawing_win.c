@@ -171,6 +171,7 @@ static void drawSorted(void* tCaller, void* tData) {
 	else {
 		realEffectPos = e->mData.mEffectCenter;
 	}
+	realEffectPos = vecScale3D(realEffectPos, e->mData.mScale);
 
 	SDL_Point effectCenter;
 	effectCenter.x = (int)realEffectPos.x;
@@ -251,6 +252,12 @@ void scaleDrawing3D(Vector3D tFactor, Position tScalePosition){
 
 void setDrawingBaseColor(Color tColor){
 	getRGBFromColor(tColor, &gData.r, &gData.g, &gData.b);
+}
+
+void setDrawingBaseColorAdvanced(double r, double g, double b) {
+	gData.r = r;
+	gData.g = g;
+	gData.b = b;
 }
 
 void setDrawingTransparency(double tAlpha){

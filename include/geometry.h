@@ -43,12 +43,14 @@ fup void printPosition(char* tName, Position tPosition);
 fup double vecLength(Vector3D v);
 fup Vector3D vecAdd(Vector3D v1, Vector3D v2);
 fup Vector3D vecScale(Vector3D v, double tFactor);
+fup Vector3D vecScale3D(Vector3D v, Vector3D tScale);
 fup Vector3D vecNormalize(Vector3D tVector);
 fup Vector3D vecRotateZ(Vector3D, double tAngle);
 fup Position getDirection(Position tFrom, Position tTo);
 fup Line makeLine(Vector3D tStart, Vector3D tEnd);
 
 fup double getAngleFromDirection(Vector3D tDirection);
+fup double degreesToRadians(double tDegrees);
 
 fup int checkIntersectLineCircle(Line tLine, Circle tCircle);
 

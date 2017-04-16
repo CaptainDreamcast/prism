@@ -211,6 +211,10 @@ Collider makeColliderFromRect(CollisionRect tRect) {
 	return makeCollider_internal(COLLISION_RECT, &tRect, sizeof(CollisionRect));
 }
 
+Collider makeColliderFromCirc(CollisionCirc tCirc) {
+	return makeCollider_internal(COLLISION_CIRC, &tCirc, sizeof(CollisionCirc));
+}
+
 void setColliderBasePosition(Collider* tCollider, Position* tBasePosition) {
 	tCollider->mBasePosition = tBasePosition;
 }

@@ -35,6 +35,7 @@ fup void stopDrawing();
 fup void scaleDrawing(double tFactor, Position tScalePosition);
 fup void scaleDrawing3D(Vector3D tFactor, Position tScalePosition);
 fup void setDrawingBaseColor(Color tColor);
+fup void setDrawingBaseColorAdvanced(double r, double g, double b);
 fup void setDrawingTransparency(double tAlpha);
 fup void setDrawingRotationZ(double tAngle, Position tPosition);
 fup void setDrawingParametersToIdentity();

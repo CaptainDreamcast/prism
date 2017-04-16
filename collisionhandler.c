@@ -39,6 +39,7 @@ typedef struct {
 	Position* mScreenPositionReference;
 
 	TextureData mCollisionRectTexture;
+	TextureData mCollisionCircTexture;
 
 } CollisionHandlerDebugData;
 
@@ -47,16 +48,20 @@ static struct {
 	List mCollisionListPairs;	
 
 	CollisionHandlerDebugData mDebug;
+
+	int mIsOwningColliders;
 } gData;
 
 void setupCollisionHandler() {
 	gData.mCollisionLists = new_list();
 	gData.mCollisionListPairs = new_list();
+	gData.mIsOwningColliders = 0;
 }
 
 static void destroyCollisionElement(CollisionListElement* e) {
-	(void) e;
-	// TODO: find out why destroying colliders here may not be the best way of doing things
+	if (gData.mIsOwningColliders) {
+		destroyCollider(&e->mCollider);
+	}
 }
 
 static void cleanSingleCollisionListElement(void* tCaller, void* tData) {
@@ -98,6 +103,10 @@ static void checkAgainstOtherList(void* tCaller, void *tData) {
 static int checkElementRemoval(void* tCaller, void * tData) {
 	(void) tCaller;
 	CollisionListElement* e = tData;
+	
+	if (e->mIsScheduledForDeletion) {
+		destroyCollisionElement(e);
+	}
 
 	return e->mIsScheduledForDeletion;
 }
@@ -109,9 +118,14 @@ static void updateSingleCollisionPair(void* tCaller, void* tData) {
 	CollisionListData* list1 = list_get(&gData.mCollisionLists, data->mID1);
 	CollisionListData* list2 = list_get(&gData.mCollisionLists, data->mID2);
 
+	list_remove_predicate(&list1->mCollisionElements, checkElementRemoval, NULL);
+	list_remove_predicate(&list2->mCollisionElements, checkElementRemoval, NULL);
+
 	list_map(&list1->mCollisionElements, checkAgainstOtherList, list2);
 	
 	list_remove_predicate(&list1->mCollisionElements, checkElementRemoval, NULL);	
+	list_remove_predicate(&list2->mCollisionElements, checkElementRemoval, NULL);
+
 }
 
 void updateCollisionHandler() {
@@ -156,7 +170,8 @@ int addCollisionListToHandler() {
 
 void removeFromCollisionHandler(int tListID, int tElementID) {
 	CollisionListData* list = list_get(&gData.mCollisionLists, tListID);
-	list_remove(&list->mCollisionElements, tElementID);
+	CollisionListElement* e = list_get(&list->mCollisionElements, tElementID);
+	e->mIsScheduledForDeletion = 1;
 }
 
 void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider) {
@@ -164,6 +179,10 @@ void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCo
 	CollisionListElement* e = list_get(&list->mCollisionElements, tElementID);
 
 	e->mCollider = tCollider;
+}
+
+void setCollisionHandlerOwningColliders() {
+	gData.mIsOwningColliders = 1;
 }
 
 #define DEBUG_Z 12
@@ -191,6 +210,28 @@ static void drawCollisionRect(CollisionRect tRect, Position* tBasePosition){
 	
 }
 
+static void drawCollisionCirc(CollisionCirc tCirc, Position* tBasePosition) {
+	double r = tCirc.mRadius;
+	double d = r * 2;
+
+	if (r < 0) return;
+
+	Position position = vecAdd(tCirc.mCenter, *tBasePosition);
+	position = vecAdd(position, vecScale(makePosition(r, r, 0), -1));
+
+	if (gData.mDebug.mScreenPositionReference != NULL) {
+		position = vecAdd(position, vecScale(*gData.mDebug.mScreenPositionReference, -1));
+	}
+
+	position.z = DEBUG_Z;
+
+	Vector3D scale = makePosition(d / 16.0, d / 16.0, 1);
+	scaleDrawing3D(scale, position);
+
+	drawSprite(gData.mDebug.mCollisionCircTexture, position, makeRectangleFromTexture(gData.mDebug.mCollisionCircTexture));
+	setDrawingParametersToIdentity();
+}
+
 static void drawCollisionElement(void* tCaller, void* tData) {
 	(void) tCaller;
 	CollisionListElement* e = tData;
@@ -200,7 +241,11 @@ static void drawCollisionElement(void* tCaller, void* tData) {
 	if(col.mType == COLLISION_RECT) {
 		CollisionRect* rect = col.mData;
 		drawCollisionRect(*rect, col.mBasePosition);
-	} else {
+	} else if (col.mType == COLLISION_CIRC) {
+		CollisionCirc* circ = col.mData;
+		drawCollisionCirc(*circ, col.mBasePosition);
+	}
+	else {
 		logError("Unable to draw collision type");
 		logErrorInteger(col.mType);
 		abortSystem();
@@ -229,5 +274,6 @@ void activateCollisionHandlerDebugMode() {
 	gData.mDebug.mScreenPositionReference = NULL;	
 
 	gData.mDebug.mCollisionRectTexture = loadTexturePKG("$/rd/debug/collision_rect.pkg");
+	gData.mDebug.mCollisionCircTexture = loadTexturePKG("$/rd/debug/collision_circ.pkg");
 
 }

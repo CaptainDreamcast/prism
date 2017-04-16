@@ -31,6 +31,14 @@ Vector3D vecScale(Vector3D v, double tFactor){
 	return ret;
 }
 
+Vector3D vecScale3D(Vector3D v, Vector3D tScale) {
+	Vector3D ret;
+	ret.x = v.x*tScale.x;
+	ret.y = v.y*tScale.y;
+	ret.z = v.z*tScale.z;
+	return ret;
+}
+
 Vector3D vecNormalize(Vector3D tVector) {
 	double l = vecLength(tVector);
 	if (l == 0) {
@@ -100,6 +108,10 @@ Line makeLine(Vector3D tStart, Vector3D tEnd){
 
 double getAngleFromDirection(Vector3D tDirection){
 	return -fatan2(tDirection.y, tDirection.x)+M_PI;
+}
+
+double degreesToRadians(double tDegrees) {
+	return (tDegrees / 180) * M_PI;
 }
 
 // TODO: refactor and/or add intersection position test;
