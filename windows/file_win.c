@@ -37,6 +37,12 @@ static void expandPath(char* tDest, char* tPath) {
 	char* endPos = strchr(potentialMount, '/');
 	if (endPos != NULL) *endPos = '\0';
 
+	if (!strcmp("rd", potentialMount) || !strcmp("pc", potentialMount)) {
+		if (endPos == NULL) strcpy(tDest, "/");
+		else sprintf(tDest, "/%s", endPos + 1);
+		return;
+	}
+
 	int isMount = string_map_contains(&gData.mRomdiskMappings, potentialMount);
 	if (!isMount) return;
 

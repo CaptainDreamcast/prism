@@ -366,12 +366,7 @@ static void string_map_push_internal(StringMap* tMap, char* tKey, void* tData, i
 	newEntry->mData = tData;
 	newEntry->mIsOwned = tIsOwned;
 
-	if (newEntry->mIsOwned) {
-		list_push_back_owned(&bucket->mEntries, newEntry);
-	}
-	else {
-		list_push_back(&bucket->mEntries, newEntry);
-	}
+	list_push_back(&bucket->mEntries, newEntry);
 	tMap->mSize++;
 }
 
