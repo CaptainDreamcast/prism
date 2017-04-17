@@ -25,6 +25,13 @@ char* getFileExtension(char* tPath) {
 	return pos + 1;
 }
 
+void getPathWithoutFileExtension(char* tDest, char* tPath) {
+	strcpy(tDest, tPath);
+
+	char* pos = strrchr(tDest, '.');
+	*pos = '\0';
+}
+
 void getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i) {
 	char name[1024];
 	strcpy(name, tSrc);

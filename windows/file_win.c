@@ -6,30 +6,66 @@
 #include "../include/log.h"
 #include "../include/memoryhandler.h"
 #include "../include/system.h"
+#include "../include/datastructures.h"
 
+typedef struct {
+	char mMount[1024];
+	char mPath[1024];
+} RomdiskMapping;
 
 static struct {
 	char cwd[1024];
+	char mFileSystem[1024];
+	StringMap mRomdiskMappings;
 } gData;
+
 
 void initFileSystem(){
 	logg("Initiate file system.");
 	sprintf(gData.cwd, "/");
+	gData.mFileSystem[0] = '\0';
 	debugString(gData.cwd);
+	gData.mRomdiskMappings = new_string_map();
+}
+
+static void expandPath(char* tDest, char* tPath) {
+	strcpy(tDest, tPath);
+	if (tDest[0] != '/') return;
+
+	char potentialMount[1024];
+	strcpy(potentialMount, tDest + 1);
+	char* endPos = strchr(potentialMount, '/');
+	if (endPos != NULL) *endPos = '\0';
+
+	if (!strcmp("rd", potentialMount) || !strcmp("pc", potentialMount)) {
+		if (endPos == NULL) strcpy(tDest, "/");
+		else sprintf(tDest, "/%s", endPos + 1);
+		return;
+	}
+
+	int isMount = string_map_contains(&gData.mRomdiskMappings, potentialMount);
+	if (!isMount) return;
+
+	RomdiskMapping* e = string_map_get(&gData.mRomdiskMappings, potentialMount);
+	
+	sprintf(tDest, "%s%s", e->mPath, endPos + 1);
 }
 
 void setFileSystem(char* path){
-	(void)path;
+	char expandedPath[1024];
+	expandPath(expandedPath, path);
+	strcpy(gData.mFileSystem, expandedPath);
 }
 
 const char* getFileSystem() {
-	return NULL;
+	return gData.mFileSystem;
 }
 
 
 void setWorkingDirectory(char* path) {
-
-	sprintf(gData.cwd, "%s", path);
+	char expandedPath[1024];
+	expandPath(expandedPath, path);
+	strcpy(gData.cwd, expandedPath);
 	debugString(gData.cwd);
 
 	int l = strlen(gData.cwd);
@@ -46,7 +82,12 @@ const char* getWorkingDirectory() {
 void getFullPath(char* tDest, char* tPath) {
 	if (tPath[0] == '$') tPath+=4;
 
-	if(tPath[0] == '/') sprintf(tDest, ".%s", tPath);
+	if (tPath[0] == '/') {
+		char expandedPath[1024];
+		expandPath(expandedPath, tPath);
+		sprintf(tDest, ".%s", expandedPath);
+	}
+	
 	else sprintf(tDest, ".%s%s", gData.cwd, tPath);
 }
 
@@ -103,13 +144,26 @@ void* fileMemoryMap(FileHandler tHandler) {
 }
 
 void mountRomdisk(char* tFilePath, char* tMountPath) {
-	logError("Mounting romdisks not implemented under Windows.");
-	abortSystem();
+	int isAlreadyMounted = string_map_contains(&gData.mRomdiskMappings, tMountPath);
+	if (isAlreadyMounted) {
+		logError("Unable to mount. Already mounted.");
+		logErrorString(tMountPath);
+		abortSystem();
+	}
+
+	char path[1024], folderPath[104];
+	getPathWithoutFileExtension(path, tFilePath);
+	if(tFilePath[0] == '/') sprintf(folderPath, "%s/", path);
+	else sprintf(folderPath, "/%s/", path);
+
+	RomdiskMapping* e = allocMemory(sizeof(RomdiskMapping));
+	strcpy(e->mMount, tMountPath);
+	strcpy(e->mPath, folderPath);
+	string_map_push_owned(&gData.mRomdiskMappings, tMountPath, e);
 }
 
 void unmountRomdisk(char* tMountPath) {
-	logError("Mounting romdisks not implemented under Windows.");
-	abortSystem();
+	string_map_remove(&gData.mRomdiskMappings, tMountPath);
 }
 
 void printDirectory(char* tPath) {
