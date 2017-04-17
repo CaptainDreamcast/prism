@@ -7,6 +7,8 @@
 #include "include/datastructures.h"
 #include "include/memoryhandler.h"
 
+#include "include/timer.h" // TODO: separate animation and animation handler
+
 static struct {
 	int mIsPaused;
 
@@ -97,6 +99,13 @@ typedef struct AnimationElement_internal {
 	Position mEffectCenter;
 	int mIsScaled;
 	Vector3D mScale;
+
+	int mIsRotated;
+	double mRotationZ;
+
+	int mHasBaseColor;
+	Vector3D mBaseColor;
+
 	Vector3DI mInversionState;
 	
 } AnimationElement;
@@ -155,6 +164,16 @@ static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 		scaleDrawing3D(cur->mScale, sPosition);
 	}
 
+	if (cur->mIsRotated) {
+		Position rPosition = cur->mEffectCenter;
+		rPosition = vecAdd(rPosition, p);
+		setDrawingRotationZ(cur->mRotationZ, rPosition);
+	}
+
+	if (cur->mHasBaseColor) {
+		setDrawingBaseColorAdvanced(cur->mBaseColor.x, cur->mBaseColor.y, cur->mBaseColor.z);
+	}
+
 	Rectangle texturePos = cur->mTexturePosition;
 
 	if(cur->mInversionState.x) {
@@ -169,7 +188,7 @@ static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 
 	drawSprite(cur->mTextureData[frame], p, texturePos);	
 
-	if(cur->mIsScaled) {
+	if(cur->mIsScaled || cur->mIsRotated || cur->mHasBaseColor) {
 		setDrawingParametersToIdentity();
 	}
 }
@@ -196,6 +215,8 @@ static int playAnimationInternal(Position tPosition, TextureData* tTextures, Ani
 	e->mScreenPositionReference = NULL;
 	e->mBasePositionReference = NULL;
 	e->mIsScaled = 0;
+	e->mIsRotated = 0;
+	e->mHasBaseColor = 0;
 	e->mCenter = makePosition(0,0,0);
 	e->mInversionState = makeVector3DI(0,0,0);
 
@@ -238,6 +259,20 @@ void setAnimationScale(int tID, Vector3D tScale, Position tCenter) {
 	e->mScale = tScale;
 }
 
+void setAnimationRotationZ(int tID, double tAngle, Position tCenter) {
+	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	e->mIsRotated = 1;
+	e->mEffectCenter = tCenter;
+	e->mRotationZ = tAngle;
+}
+
+void setAnimationColor(int tID, double r, double g, double b) {
+	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	e->mHasBaseColor = 1;
+	e->mBaseColor = makePosition(r, g, b);
+}
+
+
 void setAnimationCenter(int tID, Position tCenter) {
 	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
 	e->mCenter = tCenter;
@@ -256,6 +291,35 @@ void setAnimationPosition(int tID, Position tPosition) {
 
 void removeAnimationCB(int tID) {
 	setAnimationCB(tID, NULL, NULL);
+}
+
+typedef struct {
+	int mID;
+	Vector3D mColor;
+	Duration mDuration;
+} AnimationColorIncrease;
+
+static void increaseAnimationColor(void* tCaller) {
+	AnimationColorIncrease* e = tCaller;
+
+	e->mColor = vecAdd(e->mColor, makePosition(1.0 / e->mDuration, 1.0 / e->mDuration, 1.0 / e->mDuration));
+
+	if (e->mColor.x >= 1) e->mColor = makePosition(1, 1, 1);
+
+	setAnimationColor(e->mID, e->mColor.x, e->mColor.y, e->mColor.z);
+
+	if (e->mColor.x >= 1) { freeMemory(e); }
+	else addTimerCB(0,increaseAnimationColor, e);
+}
+
+void fadeInAnimation(int tID, Duration tDuration) {
+	AnimationColorIncrease* e = allocMemory(sizeof(AnimationColorIncrease));
+	e->mID = tID;
+	e->mColor = makePosition(0, 0, 0);
+	e->mDuration = tDuration;
+	addTimerCB(0, increaseAnimationColor, e);
+
+	setAnimationColor(e->mID, e->mColor.x, e->mColor.y, e->mColor.z);
 }
 
 void inverseAnimationVertical(int tID) {

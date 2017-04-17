@@ -50,6 +50,7 @@ fup int checkCollisionObjectRect(CollisionObjectRect tObj1, CollisionObjectRect 
 fup int checkCollisionObjectCircRect(CollisionObjectCirc tObj1, CollisionObjectRect tObj2);
 
 fup Collider makeColliderFromRect(CollisionRect tRect);
+fup Collider makeColliderFromCirc(CollisionCirc tCirc);
 fup void setColliderBasePosition(Collider* tCollider, Position* tBasePosition);
 fup void destroyCollider(Collider* tCollider);
 

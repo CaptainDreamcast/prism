@@ -1,11 +1,18 @@
 #include "include/stagehandler.h"
 
+#include "include/script.h"
 #include "include/datastructures.h"
 #include "include/memoryhandler.h"
 #include "include/file.h"
+#include "include/system.h"
+#include "include/log.h"
+#include "include/math.h"
+#include "include/texturepool.h"
 
 static struct {
 	List mList;
+
+	int mIsLoadingTexturesDirectly;
 } gData;
 
 typedef struct {
@@ -23,6 +30,7 @@ typedef struct {
 
 typedef struct {
 	double mScrollingFactor;
+	double mMaxVelocity;
 	PhysicsObject mPhysics;
 	double mZ;
 	List mPatchList;
@@ -32,6 +40,7 @@ typedef struct {
 
 void setupStageHandler() {
 	gData.mList = new_list();
+	gData.mIsLoadingTexturesDirectly = 0;
 }
 
 static void emptyAll(void* tCaller, void* tData) {
@@ -53,7 +62,7 @@ static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgrou
 	for(i = 0; i < tData->mAnimation.mFrameAmount; i++) {
 		char fPath[100];
 		getPathWithNumberAffixedFromAssetPath(fPath, tData->mPath, i);
-		tData->mTextureData[i] = loadTexture(fPath);
+		tData->mTextureData[i] = loadTextureFromPool(fPath);
 	}
 
 	tData->mAnimationID = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
@@ -75,16 +84,33 @@ static int isStagePatchOutOfBounds(BackgroundPatchData* tData, SingleBackgroundD
 }
 
 static void unloadStagePatchIfNecessary(BackgroundPatchData* tData) {
-	if(!tData->mIsLoaded) return;
+	if (!tData->mIsLoaded || gData.mIsLoadingTexturesDirectly) return;
 	removeHandledAnimation(tData->mAnimationID);
 
 	Frame i;
 	for(i = 0; i < tData->mAnimation.mFrameAmount; i++) {
-		unloadTexture(tData->mTextureData[i]);
+		unloadTextureFromPool(tData->mTextureData[i]);
 	}
 
 	tData->mIsLoaded = 0;
 
+}
+
+static void setSingleStagePatches(SingleBackgroundData* data) {
+	while (data->mCurrentEndPatch != NULL && !isStagePatchOutOfBounds(list_iterator_get(data->mCurrentEndPatch), data)) {
+		loadStagePatchIfNecessary(list_iterator_get(data->mCurrentEndPatch), data);
+
+		if (list_has_next(data->mCurrentEndPatch)) list_iterator_increase(&data->mCurrentEndPatch);
+		else data->mCurrentEndPatch = NULL;
+
+	}
+
+	while (data->mCurrentStartPatch != NULL && isStagePatchOutOfBounds(list_iterator_get(data->mCurrentStartPatch), data)) {
+		unloadStagePatchIfNecessary(list_iterator_get(data->mCurrentStartPatch));
+
+		if (list_has_next(data->mCurrentStartPatch)) list_iterator_increase(&data->mCurrentStartPatch);
+		else data->mCurrentStartPatch = NULL;
+	}
 }
 
 static void updateSingleStage(void* tCaller, void* tData) {
@@ -92,32 +118,26 @@ static void updateSingleStage(void* tCaller, void* tData) {
 	SingleBackgroundData* data = tData;
 
 	setDragCoefficient(makePosition(0.1, 0.1, 0.1));
+	setMaxVelocityDouble(data->mMaxVelocity);
 	handlePhysics(&data->mPhysics);
+	resetMaxVelocity();
 	resetDragCoefficient();
 
-	while(data->mCurrentEndPatch != NULL && !isStagePatchOutOfBounds(list_iterator_get(data->mCurrentEndPatch), data)) {
-		loadStagePatchIfNecessary(list_iterator_get(data->mCurrentEndPatch), data);
-
-		if(list_has_next(data->mCurrentEndPatch)) list_iterator_increase(&data->mCurrentEndPatch);
-		else data->mCurrentEndPatch = NULL;
-			
-	}
-
-	while(data->mCurrentStartPatch != NULL && isStagePatchOutOfBounds(list_iterator_get(data->mCurrentStartPatch), data)) {
-		unloadStagePatchIfNecessary(list_iterator_get(data->mCurrentStartPatch));
-
-		if(list_has_next(data->mCurrentStartPatch)) list_iterator_increase(&data->mCurrentStartPatch);
-		else data->mCurrentStartPatch = NULL;
-	}
+	setSingleStagePatches(data);
 }
 
 void updateStageHandler() {
 	list_map(&gData.mList, updateSingleStage, NULL);
 }
 
+void setStageHandlerNoDelayedLoading() {
+	gData.mIsLoadingTexturesDirectly = 1;
+}
+
 int addScrollingBackground(double tScrollingFactor, double tZ) {
 	SingleBackgroundData* data = allocMemory(sizeof(SingleBackgroundData));
 	data->mScrollingFactor = tScrollingFactor;
+	data->mMaxVelocity = INF;
 	resetPhysicsObject(&data->mPhysics);
 	data->mPhysics.mPosition = makePosition(0, 0, 0);
 	data->mZ = tZ;
@@ -134,7 +154,7 @@ int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Ani
 	BackgroundPatchData* pData = allocMemory(sizeof(BackgroundPatchData));
 	pData->mIsLoaded = 0;
 	pData->mPosition = tPosition;
-	pData->mPosition.z = data->mZ;
+	pData->mPosition.z = data->mZ+list_size(&data->mPatchList)*0.001;
 	pData->mAnimation = tAnimation;
 	strcpy(pData->mPath, tPath);
 
@@ -142,7 +162,9 @@ int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Ani
 
 	if(data->mCurrentStartPatch == NULL) data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
 		
-
+	if (gData.mIsLoadingTexturesDirectly) {
+		loadStagePatchIfNecessary(pData, data);
+	}
 
 	return id;
 }
@@ -184,4 +206,140 @@ Position* getScrollingBackgroundPositionReference(int tID) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 
 	return &data->mPhysics.mPosition;
+}
+
+
+void setScrollingBackgroundPosition(int tID, Position tPos) {
+	SingleBackgroundData* data = list_get(&gData.mList, tID);
+	data->mPhysics.mPosition = tPos;
+	data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
+	setSingleStagePatches(data);
+}
+
+void setScrollingBackgroundMaxVelocity(int tID, double tVel) {
+	SingleBackgroundData* data = list_get(&gData.mList, tID);
+	data->mMaxVelocity = tVel;
+}
+
+PhysicsObject* getScrollingBackgroundPhysics(int tID) {
+	SingleBackgroundData* data = list_get(&gData.mList, tID);
+	return &data->mPhysics;
+}
+
+void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics) {
+	SingleBackgroundData* data = list_get(&gData.mList, tID);
+	data->mPhysics = tPhysics;
+}
+
+typedef struct {
+	double mZ;
+	double mScrollingFactor;
+	double mMaxVelocity;
+	int mID;
+} StageScriptLayerData;
+
+typedef struct {
+	Position mPosition;
+	char mPath[1024];
+	Animation mAnimation;
+
+} StageScriptLayerElementData;
+
+static ScriptPosition loadStageScriptLayerElement(void* tCaller, ScriptPosition tPos) {
+	StageScriptLayerElementData* e = tCaller;
+	char word[1024];
+
+	tPos = getNextScriptString(tPos, word);
+
+	if (!strcmp("POSITION", word)) {
+		tPos = getNextScriptDouble(tPos, &e->mPosition.x);
+		tPos = getNextScriptDouble(tPos, &e->mPosition.y);
+		e->mPosition.z = 0;
+	}
+	else if (!strcmp("PATH", word)) {
+		tPos = getNextScriptString(tPos, e->mPath);
+	}
+	else if (!strcmp("ANIMATION", word)) {
+		e->mAnimation = createEmptyAnimation();
+
+		int v;
+		tPos = getNextScriptInteger(tPos, &v);
+		e->mAnimation.mDuration = v;
+
+		tPos = getNextScriptInteger(tPos, &v);
+		e->mAnimation.mFrameAmount = v;
+	}
+	else {
+		logError("Unrecognized token.");
+		logErrorString(word);
+		abortSystem();
+	}
+
+	return tPos;
+}
+
+static ScriptPosition loadStageScriptLayer(void* tCaller, ScriptPosition tPos) {
+	StageScriptLayerData* e = tCaller;
+	char word[1024];
+
+	tPos = getNextScriptString(tPos, word);
+
+	if (!strcmp("POSITION_Z", word)) {
+		tPos = getNextScriptDouble(tPos, &e->mZ);
+	}
+	else if (!strcmp("SCROLLING_FACTOR", word)) {
+		tPos = getNextScriptDouble(tPos, &e->mScrollingFactor);
+	}
+	else if (!strcmp("MAX_VELOCITY", word)) {
+		tPos = getNextScriptDouble(tPos, &e->mMaxVelocity);
+	}
+	else if (!strcmp("CREATE", word)) {
+		e->mID = addScrollingBackground(e->mScrollingFactor, e->mZ);
+		setScrollingBackgroundMaxVelocity(e->mID, e->mMaxVelocity);
+	}
+	else if (!strcmp("ELEMENT", word)) {
+		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		StageScriptLayerElementData caller;
+		memset(&caller, 0, sizeof(StageScriptLayerElementData));
+		executeOnScriptRegion(reg, loadStageScriptLayerElement, &caller);
+		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+		addBackgroundElement(e->mID, caller.mPosition, caller.mPath, caller.mAnimation);
+	}
+	else {
+		logError("Unrecognized token.");
+		logErrorString(word);
+		abortSystem();
+	}
+
+	return tPos;
+}
+
+static ScriptPosition loadStageScriptStage(void* tCaller, ScriptPosition tPos) {
+	(void)tCaller;
+	char word[1024];
+
+	tPos = getNextScriptString(tPos, word);
+
+	if (!strcmp("LAYER", word)) {
+		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		StageScriptLayerData caller;
+		memset(&caller, 0, sizeof(StageScriptLayerData));
+		caller.mMaxVelocity = INF;
+		executeOnScriptRegion(reg, loadStageScriptLayer, &caller);
+		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+	}
+	else {
+		logError("Unrecognized token.");
+		logErrorString(word);
+		abortSystem();
+	}
+
+	return tPos;
+}
+
+void loadStageFromScript(char* tPath) {
+	Script s = loadScript(tPath);
+	ScriptRegion reg = getScriptRegion(s, "STAGE");
+
+	executeOnScriptRegion(reg, loadStageScriptStage, NULL);
 }

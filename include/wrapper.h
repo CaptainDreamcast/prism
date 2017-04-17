@@ -21,11 +21,6 @@ fup void shutdownTariWrapper();
 fup void pauseWrapper();
 fup void resumeWrapper();
 
-fup void loadScreenFunctionality();
-fup void updateScreenFunctionality();
-fup void drawScreenFunctionality();
-fup void shutdownScreenFunctionality();
-
 fup void startScreenHandling(Screen* tScreen);
 fup void abortScreenHandling();
 

@@ -6,6 +6,9 @@
 #include <dc/matrix3d.h>
 
 #include "../include/log.h"
+#include "../include/datastructures.h"
+#include "../include/memoryhandler.h"
+#include "../include/system.h"
 
 static struct {
 
@@ -14,16 +17,25 @@ static struct {
 	double g;
 	double b;
 
+	Vector mMatrixStack;
 } gData;
 
-void applyDrawingMatrix(pvr_vertex_t* tVert) {
+static void applyDrawingMatrix(pvr_vertex_t* tVert) {
   (void) tVert;
-  mat_trans_single(tVert->x, tVert->y, tVert->z);
+  mat_trans_single3(tVert->x, tVert->y, tVert->z);
 }
+
+static void forceToInteger(pvr_vertex_t* tVert) {
+  tVert->x = (int)tVert->x;
+  tVert->y = (int)tVert->y;
+}
+
 
 void initDrawing(){
 	logg("Initiate drawing.");
 	setDrawingParametersToIdentity();
+	gData.mMatrixStack = new_vector();
+	
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
@@ -67,7 +79,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert.u = left;
   vert.v = up;
   applyDrawingMatrix(&vert);
-  vert.z = tPos.z;
+  forceToInteger(&vert);
   pvr_prim(&vert, sizeof(vert));
 
   vert.x = tPos.x + sizeX;
@@ -76,7 +88,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert.u = right;
   vert.v = up;
   applyDrawingMatrix(&vert);
-  vert.z = tPos.z;
+  forceToInteger(&vert);
   pvr_prim(&vert, sizeof(vert));
 
   vert.x = tPos.x;
@@ -85,7 +97,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert.u = left;
   vert.v = down;
   applyDrawingMatrix(&vert);
-  vert.z = tPos.z;
+  forceToInteger(&vert);
   pvr_prim(&vert, sizeof(vert));
 
   vert.x = tPos.x + sizeX;
@@ -95,7 +107,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert.v = down;
   vert.flags = PVR_CMD_VERTEX_EOL;
   applyDrawingMatrix(&vert);
-  vert.z = tPos.z;
+  forceToInteger(&vert);
   pvr_prim(&vert, sizeof(vert));
 }
 
@@ -193,6 +205,13 @@ void setDrawingBaseColor(Color tColor){
 	getRGBFromColor(tColor, &gData.r, &gData.g, &gData.b);
 }
 
+void setDrawingBaseColorAdvanced(double r, double g, double b) {
+	gData.r = r;
+	gData.g = g;
+	gData.b = b;
+}
+
+
 void setDrawingTransparency(double tAlpha){
 	gData.a = tAlpha;
 }
@@ -207,4 +226,38 @@ void setDrawingParametersToIdentity(){
 	mat_identity();
 	setDrawingBaseColor(COLOR_WHITE);
 	setDrawingTransparency(1.0);
+}
+
+static void pushMatrixInternal() {
+	matrix_t* mat = allocMemory(sizeof(matrix_t));
+	mat_store(mat);
+	vector_push_back_owned(&gData.mMatrixStack, mat);
+}
+
+static void popMatrixInternal() {
+	matrix_t* mat = vector_get_back(&gData.mMatrixStack);
+	mat_load(mat);
+	vector_pop_back(&gData.mMatrixStack);
+}
+
+void pushDrawingTranslation(Vector3D tTranslation) {
+	pushMatrixInternal();
+	mat_translate(tTranslation.x, tTranslation.y, tTranslation.z);
+}
+
+void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
+	pushMatrixInternal();
+
+	mat_translate(tCenter.x, tCenter.y, tCenter.z);
+	mat_rotate_z(tAngle);
+	mat_translate(-tCenter.x, -tCenter.y, -tCenter.z);
+}
+
+
+void popDrawingRotationZ() {
+	popMatrixInternal();
+}
+
+void popDrawingTranslation() {
+	popMatrixInternal();
 }

@@ -17,6 +17,7 @@
 #include "include/collisionanimation.h"
 #include "include/soundeffect.h"
 #include "include/system.h"
+#include "include/texturepool.h"
 
 void initTariWrapperWithDefaultFlags() {
 	logg("Initiating wrapper.");
@@ -57,6 +58,8 @@ static void loadScreen(Screen* tScreen) {
 	pushTextureMemoryStack();
 	logg("Setting up Timer");
 	setupTimer();
+	logg("Setting up Texture pool");
+	setupTexturePool();
 	logg("Setting up Animationhandling");
 	setupAnimationHandler();
 	logg("Setting up Physicshandling");
@@ -93,6 +96,8 @@ static void unloadScreen(Screen* tScreen) {
 	shutdownPhysicsHandler();
 	logg("Shutting down Animationhandling");
 	shutdownAnimationHandler();
+	logg("Shutting down Texture pool");
+	shutdownTexturePool();
 	logg("Shutting down Timer");
 	shutdownTimer();
 	logg("Popping Memory Stacks");

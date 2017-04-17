@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\animation.c" />
+    <ClCompile Include="..\..\animationtree.c" />
     <ClCompile Include="..\..\collision.c" />
     <ClCompile Include="..\..\collisionanimation.c" />
     <ClCompile Include="..\..\collisionhandler.c" />
@@ -151,6 +152,7 @@
     <ClCompile Include="..\..\script.c" />
     <ClCompile Include="..\..\stagehandler.c" />
     <ClCompile Include="..\..\texture.c" />
+    <ClCompile Include="..\..\texturepool.c" />
     <ClCompile Include="..\..\timer.c" />
     <ClCompile Include="..\..\wrapper.c" />
     <ClCompile Include="..\drawing_win.c" />
@@ -167,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\animation.h" />
+    <ClInclude Include="..\..\include\animationtree.h" />
     <ClInclude Include="..\..\include\collision.h" />
     <ClInclude Include="..\..\include\collisionanimation.h" />
     <ClInclude Include="..\..\include\collisionhandler.h" />
@@ -192,6 +195,7 @@
     <ClInclude Include="..\..\include\stagehandler.h" />
     <ClInclude Include="..\..\include\system.h" />
     <ClInclude Include="..\..\include\texture.h" />
+    <ClInclude Include="..\..\include\texturepool.h" />
     <ClInclude Include="..\..\include\timer.h" />
     <ClInclude Include="..\..\include\wrapper.h" />
   </ItemGroup>

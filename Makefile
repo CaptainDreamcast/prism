@@ -3,7 +3,7 @@ OBJS = animation.o physics.o framerate.o drawing.o dc/drawing.o texture.o dc/tex
 collision.o input.o dc/input.o dc/pvr.o dc/framerateselect.o file.o dc/file.o math.o dc/math.o geometry.o \
 dc/system.o dc/log.o timer.o optionhandler.o datastructures.o memoryhandler.o \
 wrapper.o physicshandler.o script.o stagehandler.o collisionhandler.o \
-collisionanimation.o dc/soundeffect.o dc/sound.o  \
+collisionanimation.o dc/soundeffect.o dc/sound.o animationtree.o texturepool.o \
 quicklz.o
 
 defaultall: create_addons_link $(OBJS) subdirs linklib

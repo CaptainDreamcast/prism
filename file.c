@@ -25,14 +25,17 @@ char* getFileExtension(char* tPath) {
 	return pos + 1;
 }
 
-void getPathWithNumberAffixedFromAssetPath(char* tDest, char* tSrc, int i) {
-	char* pos = strrchr(tSrc, '.');
+void getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i) {
+	char name[1024];
+	strcpy(name, tSrc);
+
+	char* pos = strrchr(name, '.');
 	if (pos == NULL) {
 		sprintf(tDest, "%s%d", tSrc, i);
 	}
 	else {
 		pos[0] = '\0';
-		sprintf(tDest, "%s%d.%s", tSrc, i, pos + 1);
+		sprintf(tDest, "%s%d.%s", name, i, pos + 1);
 		pos[0] = '.';
 	}
 

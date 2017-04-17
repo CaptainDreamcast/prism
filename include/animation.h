@@ -37,13 +37,16 @@ fup int playAnimation(Position tPosition, TextureData* tTextures, Animation tAni
 fup int playAnimationLoop(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
 fup void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
 
+
 fup void setAnimationScreenPositionReference(int tID, Position* tScreenPositionReference);
 fup void setAnimationBasePositionReference(int tID, Position* tBasePositionReference);
 fup void setAnimationScale(int tID, Vector3D tScale, Position tCenter);
+fup void setAnimationRotationZ(int tID, double tAngle, Position tCenter);
+fup void setAnimationColor(int tID, double r, double g, double b);
 fup void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller);
 fup void setAnimationPosition(int tID, Position tPosition);
 fup void removeAnimationCB(int tID);
-
+fup void fadeInAnimation(int tID, Duration tDuration);
 fup void setAnimationCenter(int tID, Position tCenter);
 fup void inverseAnimationVertical(int tID);
 

@@ -5,8 +5,12 @@
 
 #ifdef DREAMCAST
 
+
 #define min(x, y) ((x < y) ? (x) : (y));
 #define max(x, y) ((x > y) ? (x) : (y));
+
+extern double cos(double r);
+extern double sin(double r);
 
 #endif
 
