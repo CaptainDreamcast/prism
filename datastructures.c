@@ -330,6 +330,7 @@ StringMap new_string_map() {
 }
 
 static void deleteStringMapBucket(void* tCaller, void* tData) {
+	(void) tCaller;
 	StringMapBucket* e = tData;
 	delete_list(&e->mEntries);
 }
@@ -400,8 +401,6 @@ void string_map_remove(StringMap* tMap, char* tKey) {
 	ListIterator it = list_iterator_begin(&bucket->mEntries);
 	while (1) {
 		
-		ListIterator prev = it;
-
 		StringMapBucketListEntry* e = list_iterator_get(it);
 		if (!strcmp(tKey, e->mKey)) {
 			string_map_remove_element(e);

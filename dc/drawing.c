@@ -20,10 +20,16 @@ static struct {
 	Vector mMatrixStack;
 } gData;
 
-void applyDrawingMatrix(pvr_vertex_t* tVert) {
+static void applyDrawingMatrix(pvr_vertex_t* tVert) {
   (void) tVert;
   mat_trans_single3(tVert->x, tVert->y, tVert->z);
 }
+
+static void forceToInteger(pvr_vertex_t* tVert) {
+  tVert->x = (int)tVert->x;
+  tVert->y = (int)tVert->y;
+}
+
 
 void initDrawing(){
 	logg("Initiate drawing.");
@@ -73,7 +79,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert.u = left;
   vert.v = up;
   applyDrawingMatrix(&vert);
-  //vert.z = tPos.z;
+  forceToInteger(&vert);
   pvr_prim(&vert, sizeof(vert));
 
   vert.x = tPos.x + sizeX;
@@ -82,7 +88,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert.u = right;
   vert.v = up;
   applyDrawingMatrix(&vert);
-  //vert.z = tPos.z;
+  forceToInteger(&vert);
   pvr_prim(&vert, sizeof(vert));
 
   vert.x = tPos.x;
@@ -91,7 +97,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert.u = left;
   vert.v = down;
   applyDrawingMatrix(&vert);
-  //vert.z = tPos.z;
+  forceToInteger(&vert);
   pvr_prim(&vert, sizeof(vert));
 
   vert.x = tPos.x + sizeX;
@@ -101,7 +107,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert.v = down;
   vert.flags = PVR_CMD_VERTEX_EOL;
   applyDrawingMatrix(&vert);
-  //vert.z = tPos.z;
+  forceToInteger(&vert);
   pvr_prim(&vert, sizeof(vert));
 }
 

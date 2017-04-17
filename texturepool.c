@@ -30,6 +30,8 @@ void setupTexturePool() {
 }
 
 static void cleanSingleTexturePoolEntry(void* tCaller, char* tKey, void* tData) {
+	(void) tCaller;
+	(void) tKey;
 	TexturePoolEntry* e = tData;
 	unloadTexture(e->mTexture);
 }
