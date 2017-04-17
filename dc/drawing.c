@@ -199,6 +199,13 @@ void setDrawingBaseColor(Color tColor){
 	getRGBFromColor(tColor, &gData.r, &gData.g, &gData.b);
 }
 
+void setDrawingBaseColorAdvanced(double r, double g, double b) {
+	gData.r = r;
+	gData.g = g;
+	gData.b = b;
+}
+
+
 void setDrawingTransparency(double tAlpha){
 	gData.a = tAlpha;
 }

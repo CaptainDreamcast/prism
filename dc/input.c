@@ -95,3 +95,24 @@ int hasPressedStart() {
 int hasPressedAbort() {
 	return hasPressedA() && hasPressedB() && hasPressedX() && hasPressedY() && hasPressedStart();
 }
+
+
+double getLeftStickNormalizedX() {
+	if (!gState) return 0;
+
+	return gState->joyx / 128.0;
+}
+double getLeftStickNormalizedY() {
+	if (!gState) return 0;
+
+	return gState->joyy / 128.0;
+}
+double getLNormalized() {
+	if (!gState) return 0;
+
+	return gState->ltrig / 128.0;
+}
+double getRNormalized() {
+	if (!gState) return 0;
+	return gState->rtrig / 128.0;
+}

@@ -23,7 +23,7 @@ double fatan2(double y, double x){
 	}
 	float atan;
 	float z = (float)(y/x);
-	if ( fabsf( z ) < 1.0f )
+	if ( abs( z ) < 1.0f )
 	{
 		atan = z/(1.0f + 0.28f*z*z);
 		if ( x < 0.0f )

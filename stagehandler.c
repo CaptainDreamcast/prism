@@ -86,8 +86,6 @@ static void unloadStagePatchIfNecessary(BackgroundPatchData* tData) {
 	if (!tData->mIsLoaded || gData.mIsLoadingTexturesDirectly) return;
 	removeHandledAnimation(tData->mAnimationID);
 
-	printf("Unloading\n");
-
 	Frame i;
 	for(i = 0; i < tData->mAnimation.mFrameAmount; i++) {
 		unloadTexture(tData->mTextureData[i]);
