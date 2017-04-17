@@ -187,6 +187,10 @@ void list_iterator_increase(ListIterator* tIterator) {
 	*tIterator = (*tIterator)->mNext;
 }
 
+void list_iterator_remove(List* tList, ListIterator tIterator) {
+	removeListElement(tList, tIterator);
+}
+
 int list_has_next(ListIterator tIterator)  {
 	return tIterator->mNext != NULL;
 }
@@ -325,6 +329,21 @@ StringMap new_string_map() {
 	return ret;
 }
 
+static void deleteStringMapBucket(void* tCaller, void* tData) {
+	StringMapBucket* e = tData;
+	delete_list(&e->mEntries);
+}
+
+void delete_string_map(StringMap* tMap) {
+	string_map_empty(tMap);
+	delete_vector(&tMap->mBuckets);
+}
+
+void string_map_empty(StringMap* tMap) {
+	vector_map(&tMap->mBuckets, deleteStringMapBucket, NULL);
+	vector_empty(&tMap->mBuckets);
+}
+
 static int getBucketIDFromString(char* tKey) {
 	int l = strlen(tKey);
 	int i;
@@ -337,23 +356,78 @@ static int getBucketIDFromString(char* tKey) {
 	return offset;
 }
 
-void string_map_push_owned(StringMap* tMap, char* tKey, void* tData) {
+static void string_map_push_internal(StringMap* tMap, char* tKey, void* tData, int tIsOwned) {
 	int offset = getBucketIDFromString(tKey);
 	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
 
 	StringMapBucketListEntry* newEntry = allocMemory(sizeof(StringMapBucketListEntry));
 	strcpy(newEntry->mKey, tKey);
 	newEntry->mData = tData;
-	newEntry->mIsOwned = 1;
-	
-	list_push_back_owned(&bucket->mEntries, newEntry);
-	
+	newEntry->mIsOwned = tIsOwned;
+
+	if (newEntry->mIsOwned) {
+		list_push_back_owned(&bucket->mEntries, newEntry);
+	}
+	else {
+		list_push_back(&bucket->mEntries, newEntry);
+	}
 	tMap->mSize++;
+}
+
+void string_map_push_owned(StringMap* tMap, char* tKey, void* tData) {
+	string_map_push_internal(tMap, tKey, tData, 1);
+}
+
+void string_map_push(StringMap* tMap, char* tKey, void* tData) {
+	string_map_push_internal(tMap, tKey, tData, 0);
+}
+
+static void string_map_remove_element(StringMapBucketListEntry* e) {
+	if (e->mIsOwned) {
+		freeMemory(e);
+	}
+}
+
+void string_map_remove(StringMap* tMap, char* tKey) {
+	int offset = getBucketIDFromString(tKey);
+	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+
+	if (!list_size(&bucket->mEntries)) {
+		logError("Unable to find key in map.");
+		logErrorString(tKey);
+		abortSystem();
+	}
+	ListIterator it = list_iterator_begin(&bucket->mEntries);
+	while (1) {
+		
+		ListIterator prev = it;
+
+		StringMapBucketListEntry* e = list_iterator_get(it);
+		if (!strcmp(tKey, e->mKey)) {
+			string_map_remove_element(e);
+			list_iterator_remove(&bucket->mEntries, it);
+			return;
+		}
+		
+		if (!list_has_next(it)) {
+			logError("Unable to find key in map.");
+			logErrorString(tKey);
+			abortSystem();
+		}
+
+		list_iterator_increase(&it);
+	}
 }
 
 void* string_map_get(StringMap* tMap, char* tKey) {
 	int offset = getBucketIDFromString(tKey);
 	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+
+	if (!list_size(&bucket->mEntries)) {
+		logError("Unable to find key in map.");
+		logErrorString(tKey);
+		abortSystem();
+	}
 
 	ListIterator it = list_iterator_begin(&bucket->mEntries);
 	while (1) {
@@ -397,4 +471,27 @@ void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller) {
 	caller.mCaller = tCaller;
 	caller.mCB = tCB;
 	vector_map(&tMap->mBuckets, string_map_map_single_bucket, &caller);
+}
+
+int string_map_contains(StringMap* tMap, char* tKey) {
+	int offset = getBucketIDFromString(tKey);
+	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+
+	if (!list_size(&bucket->mEntries)) return 0;
+
+	ListIterator it = list_iterator_begin(&bucket->mEntries);
+	while (1) {
+		StringMapBucketListEntry* e = list_iterator_get(it);
+		if (!strcmp(tKey, e->mKey)) {
+			return 1;
+		}
+
+		if (!list_has_next(it)) {
+			break;
+		}
+
+		list_iterator_increase(&it);
+	}
+
+	return 0;
 }

@@ -152,6 +152,7 @@
     <ClCompile Include="..\..\script.c" />
     <ClCompile Include="..\..\stagehandler.c" />
     <ClCompile Include="..\..\texture.c" />
+    <ClCompile Include="..\..\texturepool.c" />
     <ClCompile Include="..\..\timer.c" />
     <ClCompile Include="..\..\wrapper.c" />
     <ClCompile Include="..\drawing_win.c" />
@@ -194,6 +195,7 @@
     <ClInclude Include="..\..\include\stagehandler.h" />
     <ClInclude Include="..\..\include\system.h" />
     <ClInclude Include="..\..\include\texture.h" />
+    <ClInclude Include="..\..\include\texturepool.h" />
     <ClInclude Include="..\..\include\timer.h" />
     <ClInclude Include="..\..\include\wrapper.h" />
   </ItemGroup>

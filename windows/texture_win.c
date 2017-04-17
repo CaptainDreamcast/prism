@@ -77,3 +77,7 @@ void unloadTexture(TextureData tTexture) {
 int getAvailableTextureMemory() {
 	return INF;
 }
+
+int getTextureHash(TextureData tTexture) {
+	return (int)tTexture.mTexture;
+}

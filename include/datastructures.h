@@ -3,7 +3,7 @@
 
 #include "common/header.h"
 
-typedef struct ListElement_internal{
+typedef struct ListElement_internal {
 
 	int mID;
 	void* mData;
@@ -23,8 +23,8 @@ typedef struct {
 	int mIDs;
 } List;
 
-typedef void (*mapCB)(void* caller, void* data);
-typedef int (*predicateCB)(void* caller, void* data);
+typedef void(*mapCB)(void* caller, void* data);
+typedef int(*predicateCB)(void* caller, void* data);
 typedef int(*sortCB)(void* caller, void* data1, void* data2);
 
 
@@ -43,6 +43,7 @@ fup void delete_list(List* tList);
 fup ListIterator list_iterator_begin(List* tList);
 fup void* list_iterator_get(ListIterator tIterator);
 fup void list_iterator_increase(ListIterator* tIterator);
+fup void list_iterator_remove(List* tList, ListIterator tIterator);
 fup int list_has_next(ListIterator tIterator);
 
 typedef struct {
@@ -54,7 +55,7 @@ typedef struct {
 
 typedef struct {
 	int mSize;
-	int mAlloc;	
+	int mAlloc;
 	VectorElement* mData;
 } Vector;
 
@@ -80,12 +81,15 @@ typedef struct {
 
 typedef void(*stringMapMapCB)(void* caller, char* key, void* data);
 
+
 fup StringMap new_string_map();
-fup void destroy_string_map(StringMap* tMap);
+fup void delete_string_map(StringMap* tMap);
+fup void string_map_empty(StringMap* tMap);
 fup void string_map_push_owned(StringMap* tMap, char* tKey, void* tData);
+fup void string_map_push(StringMap* tMap, char* tKey, void* tData);
+fup void string_map_remove(StringMap* tMap, char* tKey);
 fup void* string_map_get(StringMap* tMap, char* tKey);
 fup void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller);
-
-
+fup int string_map_contains(StringMap* tMap, char* tKey);
 
 #endif

@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define fabs(x) ((x < 0) ? -x : x)
+// TODO: fix these math include problems
+
 double randfrom(double tMin, double tMax) {
 	double range = (tMax - tMin); 
 	if(range == 0) return tMin;
@@ -23,7 +26,7 @@ double fatan2(double y, double x){
 	}
 	float atan;
 	float z = (float)(y/x);
-	if ( abs( z ) < 1.0f )
+	if ( fabs( z ) < 1.0f )
 	{
 		atan = z/(1.0f + 0.28f*z*z);
 		if ( x < 0.0f )

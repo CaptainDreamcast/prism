@@ -7,6 +7,7 @@
 #include "include/system.h"
 #include "include/log.h"
 #include "include/math.h"
+#include "include/texturepool.h"
 
 static struct {
 	List mList;
@@ -61,7 +62,7 @@ static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgrou
 	for(i = 0; i < tData->mAnimation.mFrameAmount; i++) {
 		char fPath[100];
 		getPathWithNumberAffixedFromAssetPath(fPath, tData->mPath, i);
-		tData->mTextureData[i] = loadTexture(fPath);
+		tData->mTextureData[i] = loadTextureFromPool(fPath);
 	}
 
 	tData->mAnimationID = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
@@ -88,7 +89,7 @@ static void unloadStagePatchIfNecessary(BackgroundPatchData* tData) {
 
 	Frame i;
 	for(i = 0; i < tData->mAnimation.mFrameAmount; i++) {
-		unloadTexture(tData->mTextureData[i]);
+		unloadTextureFromPool(tData->mTextureData[i]);
 	}
 
 	tData->mIsLoaded = 0;
