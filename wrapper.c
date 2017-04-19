@@ -19,6 +19,7 @@
 #include "include/system.h"
 #include "include/texturepool.h"
 #include "include/texthandler.h"
+#include "include/screeneffect.h"
 
 void initTariWrapperWithDefaultFlags() {
 	logg("Initiating wrapper.");
@@ -30,6 +31,7 @@ void initTariWrapperWithDefaultFlags() {
 	initDrawing();
 	initSound();
 	setFont("$/rd/fonts/dolmexica.hdr", "$/rd/fonts/dolmexica.pkg");
+	initScreenEffects();
 	
 }
 void shutdownTariWrapper() {

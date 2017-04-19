@@ -43,6 +43,7 @@ fup void setAnimationBasePositionReference(int tID, Position* tBasePositionRefer
 fup void setAnimationScale(int tID, Vector3D tScale, Position tCenter);
 fup void setAnimationRotationZ(int tID, double tAngle, Position tCenter);
 fup void setAnimationColor(int tID, double r, double g, double b);
+fup void setAnimationTransparency(int tID, double a);
 fup void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller);
 fup void setAnimationPosition(int tID, Position tPosition);
 fup void removeAnimationCB(int tID);

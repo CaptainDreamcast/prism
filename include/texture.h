@@ -49,5 +49,6 @@ fup void setFont(char tFileDirHeader[], char tFileDirTexture[]);
 
 fup int getAvailableTextureMemory();
 fup int getTextureHash(TextureData tTexture); 
+fup int canLoadTexture(char* tPath);
 
 #endif

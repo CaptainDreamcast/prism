@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <string.h>
 
 #include "../include/file.h"
 #include "../include/log.h"
@@ -80,4 +81,18 @@ int getAvailableTextureMemory() {
 
 int getTextureHash(TextureData tTexture) {
 	return (int)tTexture.mTexture;
+}
+
+int canLoadTexture(char* tPath) {
+	char* fileExt = getFileExtension(tPath);
+
+	if (!strcmp("pkg", fileExt)) {
+		char path[1024];
+		strcpy(path, tPath);
+		char* newFileExt = getFileExtension(path);
+		strcpy(newFileExt, "png");
+		return isFile(path);
+	}
+	
+	return 0;
 }

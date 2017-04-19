@@ -149,6 +149,7 @@
     <ClCompile Include="..\..\physics.c" />
     <ClCompile Include="..\..\physicshandler.c" />
     <ClCompile Include="..\..\quicklz.c" />
+    <ClCompile Include="..\..\screeneffect.c" />
     <ClCompile Include="..\..\script.c" />
     <ClCompile Include="..\..\stagehandler.c" />
     <ClCompile Include="..\..\storyboard.c" />
@@ -191,6 +192,7 @@
     <ClInclude Include="..\..\include\physicshandler.h" />
     <ClInclude Include="..\..\include\pvr.h" />
     <ClInclude Include="..\..\include\quicklz.h" />
+    <ClInclude Include="..\..\include\screeneffect.h" />
     <ClInclude Include="..\..\include\script.h" />
     <ClInclude Include="..\..\include\sound.h" />
     <ClInclude Include="..\..\include\soundeffect.h" />

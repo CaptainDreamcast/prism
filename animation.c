@@ -106,6 +106,9 @@ typedef struct AnimationElement_internal {
 	int mHasBaseColor;
 	Vector3D mBaseColor;
 
+	int mHasTransparency;
+	double mTransparency;
+
 	Vector3DI mInversionState;
 	
 } AnimationElement;
@@ -174,6 +177,10 @@ static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 		setDrawingBaseColorAdvanced(cur->mBaseColor.x, cur->mBaseColor.y, cur->mBaseColor.z);
 	}
 
+	if (cur->mHasTransparency) {
+		setDrawingTransparency(cur->mTransparency);
+	}
+
 	Rectangle texturePos = cur->mTexturePosition;
 
 	if(cur->mInversionState.x) {
@@ -188,7 +195,7 @@ static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 
 	drawSprite(cur->mTextureData[frame], p, texturePos);	
 
-	if(cur->mIsScaled || cur->mIsRotated || cur->mHasBaseColor) {
+	if(cur->mIsScaled || cur->mIsRotated || cur->mHasBaseColor || cur->mHasTransparency) {
 		setDrawingParametersToIdentity();
 	}
 }
@@ -217,6 +224,7 @@ static int playAnimationInternal(Position tPosition, TextureData* tTextures, Ani
 	e->mIsScaled = 0;
 	e->mIsRotated = 0;
 	e->mHasBaseColor = 0;
+	e->mHasTransparency = 0;
 	e->mCenter = makePosition(0,0,0);
 	e->mInversionState = makeVector3DI(0,0,0);
 
@@ -272,6 +280,11 @@ void setAnimationColor(int tID, double r, double g, double b) {
 	e->mBaseColor = makePosition(r, g, b);
 }
 
+void setAnimationTransparency(int tID, double a) {
+	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	e->mHasTransparency = 1;
+	e->mTransparency = a;
+}
 
 void setAnimationCenter(int tID, Position tCenter) {
 	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
