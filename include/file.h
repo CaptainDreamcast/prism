@@ -39,8 +39,11 @@ fup size_t fileTotal(FileHandler tHandler);
 fup int fileUnlink(char* tPath);
 fup void* fileMemoryMap(FileHandler tHandler);
 
+fup int isFile(char* tPath);
+fup int isDirectory(char* tPath);
 
 fup Buffer fileToBuffer(char* path);
+fup void bufferToFile(char* tPath, Buffer tBuffer);
 fup void freeBuffer(Buffer buffer);
 fup void appendTerminationSymbolToBuffer(Buffer* tBuffer);
 

@@ -1,6 +1,7 @@
 #include "include/drawing.h"
 
 #include "include/log.h"
+#include "include/math.h"
 
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 	if (tColor == COLOR_BLACK) {
@@ -69,4 +70,20 @@ void printRectangle(Rectangle r) {
 	logDouble(r.bottomRight.x);
 	logDouble(r.bottomRight.y);
 
+}
+
+void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
+	drawAdvancedText(tText, tPosition, makeFontSize(tSize, tSize), tColor, 0);
+}
+
+void drawAdvancedText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize) {
+	drawMultilineText(tText, tPosition, tFontSize, tColor, makeFontSize(tBreakSize, 0), makePosition(INF, INF, INF));
+}
+
+Vector3D makeFontSize(int x, int y) {
+	Vector3D ret;
+	ret.x = x;
+	ret.y = y;
+	ret.z = 1;
+	return ret;
 }

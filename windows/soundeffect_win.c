@@ -21,11 +21,14 @@ void setupSoundEffectHandler() {
 	gData.mAllocatedChunks = new_list();
 }
 
+static void unloadSoundEffectEntry(SoundEffectEntry* e) {
+	Mix_FreeChunk(e->mChunk);
+}
+
 static int unloadSingleSoundEffect(void* tCaller, void* tData) {
 	(void)tCaller;
 	SoundEffectEntry* e = tData;
-
-	Mix_FreeChunk(e->mChunk);
+	unloadSoundEffectEntry(e);
 	return 1;
 }
 
@@ -45,8 +48,15 @@ int loadSoundEffect(char* tPath) {
 	return list_push_back_owned(&gData.mAllocatedChunks, e);
 }
 
+void unloadSoundEffect(int tID) {
+	SoundEffectEntry* e = list_get(&gData.mAllocatedChunks, tID);
+	unloadSoundEffectEntry(e);
+	list_remove(&gData.mAllocatedChunks, tID);
+}
+
 void playSoundEffect(int tID) {
 	SoundEffectEntry* e = list_get(&gData.mAllocatedChunks, tID);
 	Mix_PlayChannel(-1, e->mChunk, 0);
 }
+
 

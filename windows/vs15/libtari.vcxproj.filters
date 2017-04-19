@@ -103,6 +103,12 @@
     <ClCompile Include="..\..\texturepool.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\storyboard.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\texthandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\animation.h" />
@@ -135,6 +141,8 @@
     <ClInclude Include="..\..\include\math.h" />
     <ClInclude Include="..\..\include\animationtree.h" />
     <ClInclude Include="..\..\include\texturepool.h" />
+    <ClInclude Include="..\..\include\storyboard.h" />
+    <ClInclude Include="..\..\include\texthandler.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

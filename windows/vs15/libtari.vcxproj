@@ -151,6 +151,8 @@
     <ClCompile Include="..\..\quicklz.c" />
     <ClCompile Include="..\..\script.c" />
     <ClCompile Include="..\..\stagehandler.c" />
+    <ClCompile Include="..\..\storyboard.c" />
+    <ClCompile Include="..\..\texthandler.c" />
     <ClCompile Include="..\..\texture.c" />
     <ClCompile Include="..\..\texturepool.c" />
     <ClCompile Include="..\..\timer.c" />
@@ -193,7 +195,9 @@
     <ClInclude Include="..\..\include\sound.h" />
     <ClInclude Include="..\..\include\soundeffect.h" />
     <ClInclude Include="..\..\include\stagehandler.h" />
+    <ClInclude Include="..\..\include\storyboard.h" />
     <ClInclude Include="..\..\include\system.h" />
+    <ClInclude Include="..\..\include\texthandler.h" />
     <ClInclude Include="..\..\include\texture.h" />
     <ClInclude Include="..\..\include\texturepool.h" />
     <ClInclude Include="..\..\include\timer.h" />

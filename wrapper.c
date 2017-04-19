@@ -18,6 +18,7 @@
 #include "include/soundeffect.h"
 #include "include/system.h"
 #include "include/texturepool.h"
+#include "include/texthandler.h"
 
 void initTariWrapperWithDefaultFlags() {
 	logg("Initiating wrapper.");
@@ -62,6 +63,8 @@ static void loadScreen(Screen* tScreen) {
 	setupTexturePool();
 	logg("Setting up Animationhandling");
 	setupAnimationHandler();
+	logg("Setting up Texthandling");
+	setupTextHandler();
 	logg("Setting up Physicshandling");
 	setupPhysicsHandler();
 	logg("Setting up Stagehandling");
@@ -94,6 +97,8 @@ static void unloadScreen(Screen* tScreen) {
 	shutdownStageHandler();
 	logg("Shutting down Physicshandling");
 	shutdownPhysicsHandler();
+	logg("Shutting down Texthandling");
+	shutdownTextHandler();
 	logg("Shutting down Animationhandling");
 	shutdownAnimationHandler();
 	logg("Shutting down Texture pool");
@@ -113,6 +118,7 @@ static void updateScreen(Screen* tScreen) {
 	updateInput();
 	updatePhysicsHandler();
 	updateAnimationHandler();
+	updateTextHandler();
 	updateStageHandler();
 	updateCollisionAnimationHandler();
 	updateCollisionHandler();
@@ -125,6 +131,7 @@ static void drawScreen(Screen* tScreen) {
 	waitForScreen();
 	startDrawing();
 	drawHandledAnimations();
+	drawHandledTexts();
 	drawHandledCollisions();
 
 	tScreen->mDraw();

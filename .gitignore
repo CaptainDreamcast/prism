@@ -21,3 +21,7 @@ windows/vs15/Debug/*
 *.user
 *.db
 *.opendb
+*.ipdb
+*.TMP
+*.iobj
+*.cache

@@ -4,6 +4,7 @@ collision.o input.o dc/input.o dc/pvr.o dc/framerateselect.o file.o dc/file.o ma
 dc/system.o dc/log.o timer.o optionhandler.o datastructures.o memoryhandler.o \
 wrapper.o physicshandler.o script.o stagehandler.o collisionhandler.o \
 collisionanimation.o dc/soundeffect.o dc/sound.o animationtree.o texturepool.o \
+storyboard.o \
 quicklz.o
 
 defaultall: create_addons_link $(OBJS) subdirs linklib

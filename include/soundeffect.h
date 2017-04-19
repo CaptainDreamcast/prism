@@ -7,6 +7,7 @@ fup void setupSoundEffectHandler();
 fup void shutdownSoundEffectHandler();
 
 fup int loadSoundEffect(char* tPath);
+fup void unloadSoundEffect(int tID);
 fup void playSoundEffect(int tID);
 
 #endif

@@ -28,6 +28,8 @@ typedef int TextSize;
 fup void initDrawing();
 fup void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition);
 fup void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor);
+fup void drawAdvancedText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize);
+fup void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize);
 fup void waitForScreen();
 fup void startDrawing();
 fup void stopDrawing();
@@ -53,6 +55,7 @@ fup Rectangle translateRectangle(Rectangle tRect, Position tOffset);
 fup Position getTextureMiddlePosition(TextureData tTexture);
 fup void printRectangle(Rectangle r);
 
+fup Vector3D makeFontSize(int x, int y);
 
 
 #endif

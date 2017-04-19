@@ -2,6 +2,8 @@
 
 #include <SDL_mixer.h>
 
+#include "../include/log.h"
+
 static struct {
 
 	int mVolume;
@@ -25,4 +27,9 @@ int getVolume() {
 
 int getPanningValue() {
 	return gData.mPanning;
+}
+
+void playTrack(int tTrack) {
+	logWarning("Unable to play tracks on Windows.");
+	// TODO: implement
 }

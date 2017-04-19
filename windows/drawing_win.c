@@ -8,6 +8,7 @@
 #include "../include/system.h"
 #include "../include/datastructures.h"
 #include "../include/memoryhandler.h"
+#include "../include/math.h"
 
 
 
@@ -211,15 +212,35 @@ void waitForScreen() {
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
-void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
+static void drawTextInternal() {
+
+}
+
+static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+	
+	if (tText[0] == ' ') return 0;
+	if (tText[0] == '\n') return 1;
+	
+	char word[1024];
+	int positionsRead;
+	sscanf(tText + tCurrent, "%s%n", word, &positionsRead);
+
+	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead-1) * tBreakSize.x, 0, 0);
+	Position after = vecAdd(tPos, delta);
+	Position bottomRight = vecAdd(tTopLeft, tTextBoxSize);
+
+	return (after.x > bottomRight.x);
+}
+
+void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
 	int current = 0;
 
 	setDrawingBaseColor(tColor);
 
 	TextureData fontData = getFontTexture();
-	
-	while (tText[current] != '\0') {
+	Position pos = tPosition;
 
+	while (tText[current] != '\0') {
 		FontCharacterData charData = getFontCharacterData(tText[current]);
 
 		Rectangle tTexturePosition;
@@ -228,16 +249,23 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
 		tTexturePosition.bottomRight.x = (int)(fontData.mTextureSize.x*charData.mFilePositionX2);
 		tTexturePosition.bottomRight.y = (int)(fontData.mTextureSize.y*charData.mFilePositionY2);
 
-		scaleDrawing(tSize / fabs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y), tPosition);
-		drawSprite(fontData, tPosition, tTexturePosition);
+		double dx = fabs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x);
+		double dy = fabs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y);
+		Vector3D scale = makePosition(1 / dx, 1 / dy, 1);
+		scaleDrawing3D(vecScale3D(tFontSize, scale), pos);
 
+		drawSprite(fontData, pos, tTexturePosition);
 
-		tPosition.x += tSize;
+		pos.x += tFontSize.x + tBreakSize.x;
 		current++;
+
+		if (hasToLinebreak(tText, current, tPosition, pos, tFontSize, tBreakSize, tTextBoxSize)) {
+			pos.x = tPosition.x;
+			pos.y += tFontSize.y + tBreakSize.y;
+		}
 	}
 
 	setDrawingParametersToIdentity();
-
 }
 
 void scaleDrawing(double tFactor, Position tScalePosition){

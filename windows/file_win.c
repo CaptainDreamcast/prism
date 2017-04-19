@@ -102,7 +102,9 @@ FileHandler fileOpen(char* tPath, int tFlags){
 
 	char flags[100];
 	if (tFlags == O_RDONLY) {
-		sprintf(flags, "r");
+		sprintf(flags, "rb");
+	} else if (tFlags == O_WRONLY) {
+		sprintf(flags, "wb+");
 	}
 	else {
 		logError("Unrecognized read mode");
@@ -142,6 +144,7 @@ int fileUnlink(char* tPath) {
 void* fileMemoryMap(FileHandler tHandler) {
 	return NULL;
 }
+
 
 void mountRomdisk(char* tFilePath, char* tMountPath) {
 	int isAlreadyMounted = string_map_contains(&gData.mRomdiskMappings, tMountPath);

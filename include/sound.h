@@ -9,4 +9,6 @@ fup void shutdownSound();
 fup int getVolume();
 fup int getPanningValue();
 
+fup void playTrack(int tTrack);
+
 #endif 

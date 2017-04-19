@@ -1,5 +1,7 @@
 #include "include/file.h"
 
+#include <sys/stat.h>
+
 #include "include/log.h"
 #include "include/memoryhandler.h"
 #include "include/system.h"
@@ -27,6 +29,7 @@ char* getFileExtension(char* tPath) {
 
 void getPathWithoutFileExtension(char* tDest, char* tPath) {
 	strcpy(tDest, tPath);
+	if (!strcmp("", tPath)) return;
 
 	char* pos = strrchr(tDest, '.');
 	*pos = '\0';
@@ -51,6 +54,19 @@ void getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i)
 static int isFileMemoryMapped(FileHandler tFile) {
 	void* data = fileMemoryMap(tFile);
 	return data != NULL;
+}
+
+int isFile(char* tPath) {
+	FileHandler file = fileOpen(tPath, O_RDONLY);
+	if (file == 0) return 0;
+	fileClose(file);
+	return 1;
+}
+
+int isDirectory(char* tPath) {
+	struct stat sb;
+
+	return (stat(tPath, &sb) == 0 && (sb.st_mode & S_IFDIR));
 }
 
 Buffer fileToBuffer(char* tFileDir) {
@@ -90,6 +106,12 @@ Buffer fileToBuffer(char* tFileDir) {
 	fileClose(file);
 
 	return ret;
+}
+
+void bufferToFile(char* tFileDir, Buffer tBuffer) {
+	FileHandler file = fileOpen(tFileDir, O_WRONLY);
+	fileWrite(file, tBuffer.mData, tBuffer.mLength);
+	fileClose(file);
 }
 
 void freeBuffer(Buffer buffer) {
