@@ -142,3 +142,17 @@ void appendTerminationSymbolToBuffer(Buffer* tBuffer) {
 	buf[tBuffer->mLength] = '\0';
 	tBuffer->mLength++;
 }
+
+void fileToMemory(void* tDst, int tSize, char* tPath) {
+	Buffer b = fileToBuffer(tPath);
+	if (b.mLength != tSize) {
+		logError("File and memory struct have different sizes!");
+		logErrorString(tPath);
+		logErrorInteger(tSize);
+		logErrorInteger(b.mLength);
+		abortSystem();
+	}
+	memcpy(tDst, b.mData, tSize);
+
+	freeBuffer(b);
+}

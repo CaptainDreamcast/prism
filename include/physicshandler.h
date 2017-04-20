@@ -11,6 +11,7 @@ fup int addToPhysicsHandler(Position tPosition);
 fup void removeFromPhysicsHandler(int tID);
 fup PhysicsObject* getPhysicsFromHandler(int tID);
 fup void addAccelerationToHandledPhysics(int tID, Acceleration tAccel);
+fup void stopHandledPhysics(int tID);
 
 fup void setHandledPhysicsMaxVelocity(int tID, double tVelocity);
 fup void setHandledPhysicsDragCoefficient(int tID, Vector3D tDragCoefficient);

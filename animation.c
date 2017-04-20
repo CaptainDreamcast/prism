@@ -6,6 +6,7 @@
 #include "include/log.h"
 #include "include/datastructures.h"
 #include "include/memoryhandler.h"
+#include "include/system.h"
 
 #include "include/timer.h" // TODO: separate animation and animation handler
 
@@ -265,6 +266,16 @@ void setAnimationScale(int tID, Vector3D tScale, Position tCenter) {
 	e->mIsScaled = 1;
 	e->mEffectCenter = tCenter;
 	e->mScale = tScale;
+}
+
+void setAnimationSize(int tID, Vector3D tSize, Position tCenter) {
+	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	e->mIsScaled = 1;
+	e->mEffectCenter = tCenter;
+
+	double dx = tSize.x / e->mTextureData[0].mTextureSize.x;
+	double dy = tSize.y / e->mTextureData[0].mTextureSize.y;
+	e->mScale = makePosition(dx, dy, 1);
 }
 
 void setAnimationRotationZ(int tID, double tAngle, Position tCenter) {

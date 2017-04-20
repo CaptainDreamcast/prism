@@ -143,8 +143,8 @@ static void drawSorted(void* tCaller, void* tData) {
 
 	DrawListElement* e = tData;
 
-	int sizeX = abs(e->mTexturePosition.bottomRight.x - e->mTexturePosition.topLeft.x);
-	int sizeY = abs(e->mTexturePosition.bottomRight.y - e->mTexturePosition.topLeft.y);
+	int sizeX = abs(e->mTexturePosition.bottomRight.x - e->mTexturePosition.topLeft.x) + 1;
+	int sizeY = abs(e->mTexturePosition.bottomRight.y - e->mTexturePosition.topLeft.y) + 1;
 
 	double left = e->mTexturePosition.topLeft.x / ((double)(e->mTexture.mTextureSize.x - 1));
 	double right = e->mTexturePosition.bottomRight.x / ((double)(e->mTexture.mTextureSize.x - 1));

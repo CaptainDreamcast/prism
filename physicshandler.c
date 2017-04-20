@@ -79,6 +79,11 @@ void addAccelerationToHandledPhysics(int tID, Acceleration tAccel) {
 	obj->mAcceleration = vecAdd(obj->mAcceleration, tAccel);
 }
 
+void stopHandledPhysics(int tID) {
+	PhysicsObject* obj = getPhysicsFromHandler(tID);
+	obj->mVelocity = makePosition(0, 0, 0);
+}
+
 void setHandledPhysicsMaxVelocity(int tID, double tVelocity) {
 	HandledPhysicsData* data = list_get(&gData.mList, tID);
 	data->mMaxVelocity = tVelocity;
@@ -93,3 +98,5 @@ void setHandledPhysicsGravity(int tID, Vector3D tGravity) {
 	HandledPhysicsData* data = list_get(&gData.mList, tID);
 	data->mGravity = tGravity;
 }
+
+

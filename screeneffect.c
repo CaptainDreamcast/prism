@@ -6,6 +6,8 @@
 #include "include/physicshandler.h"
 #include "include/system.h"
 #include "include/texture.h"
+#include "include/system.h"
+#include "include/log.h"
 
 struct FadeInStruct;
 
@@ -35,6 +37,8 @@ static struct {
 	double mZ;
 
 	int mFullLineSize;
+
+	int mScreenFillID;
 } gData;
 
 void initScreenEffects() {
@@ -46,6 +50,7 @@ void initScreenEffects() {
 	gData.mWhiteTexture = loadTexture("$/rd/effects/white.pkg");
 	gData.mFullLineSize = 10;
 	gData.mZ = 13;
+	gData.mScreenFillID = -1;
 	gData.mIsActive = 1;
 }
 
@@ -80,7 +85,7 @@ static void removeFadeIn(FadeIn* e) {
 }
 
 static void updateSingleFadeInAnimation(FadeIn* e, int i) {
-	setAnimationScale(e->mAnimationIDs[i], *e->mSize, makePosition(0, 0, 0));
+	setAnimationSize(e->mAnimationIDs[i], *e->mSize, makePosition(0, 0, 0));
 	setAnimationTransparency(e->mAnimationIDs[i], *e->mAlpha);
 }
 
@@ -161,4 +166,19 @@ void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tC
 	double da = 1 / (double)tDuration;
 	Vector3D patchSize = makePosition(getScreenSize().x, getScreenSize().y, 1);
 	addFadeIn(tDuration, tOptionalCB, tCaller, patchSize, patchSize, makePosition(0, 0, 0), 0, da, isFadeOutOver);
+}
+
+void setScreenBlack() {
+	gData.mScreenFillID = playAnimationLoop(makePosition(0,0,gData.mZ), &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
+	setAnimationSize(gData.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));
+	setAnimationColor(gData.mScreenFillID, 0, 0, 0);
+}
+
+void unsetScreenBlack() {
+	if (gData.mScreenFillID == -1) {
+		logError("Screen not set to black, unable to reset");
+		abortSystem();
+	}
+
+	removeHandledAnimation(gData.mScreenFillID);
 }

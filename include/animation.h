@@ -41,6 +41,7 @@ fup void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, 
 fup void setAnimationScreenPositionReference(int tID, Position* tScreenPositionReference);
 fup void setAnimationBasePositionReference(int tID, Position* tBasePositionReference);
 fup void setAnimationScale(int tID, Vector3D tScale, Position tCenter);
+fup void setAnimationSize(int tID, Vector3D tSize, Position tCenter);
 fup void setAnimationRotationZ(int tID, double tAngle, Position tCenter);
 fup void setAnimationColor(int tID, double r, double g, double b);
 fup void setAnimationTransparency(int tID, double a);

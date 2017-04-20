@@ -46,6 +46,7 @@ fup Buffer fileToBuffer(char* path);
 fup void bufferToFile(char* tPath, Buffer tBuffer);
 fup void freeBuffer(Buffer buffer);
 fup void appendTerminationSymbolToBuffer(Buffer* tBuffer);
+fup void fileToMemory(void* tDst, int tSize, char* tPath);
 
 fup void initFileSystem();
 fup void setFileSystem(char* path);
