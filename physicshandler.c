@@ -74,6 +74,11 @@ PhysicsObject* getPhysicsFromHandler(int tID) {
 	return &data->mObj;
 }
 
+Position* getHandledPhysicsPositionReference(int tID) {
+	HandledPhysicsData* data = list_get(&gData.mList, tID);
+	return &data->mObj.mPosition;
+}
+
 void addAccelerationToHandledPhysics(int tID, Acceleration tAccel) {
 	PhysicsObject* obj = getPhysicsFromHandler(tID);
 	obj->mAcceleration = vecAdd(obj->mAcceleration, tAccel);

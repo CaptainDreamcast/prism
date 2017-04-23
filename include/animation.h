@@ -35,6 +35,8 @@ fup void updateAnimationHandler();
 fup void drawHandledAnimations();
 fup int playAnimation(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller);
 fup int playAnimationLoop(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
+fup int playOneFrameAnimationLoop(Position tPosition, TextureData* tTextures);
+
 fup void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
 
 

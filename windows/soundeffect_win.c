@@ -14,11 +14,17 @@ typedef struct {
 } SoundEffectEntry;
 
 static struct {
+	double mVolume;
 	List mAllocatedChunks;
 } gData;
 
+void initSoundEffects() {
+	setSoundEffectVolume(1);
+}
+
 void setupSoundEffectHandler() {
 	gData.mAllocatedChunks = new_list();
+	
 }
 
 static void unloadSoundEffectEntry(SoundEffectEntry* e) {
@@ -59,4 +65,11 @@ void playSoundEffect(int tID) {
 	Mix_PlayChannel(-1, e->mChunk, 0);
 }
 
+double getSoundEffectVolume() {
+	return gData.mVolume;
+}
 
+void setSoundEffectVolume(double tVolume) {
+	gData.mVolume = tVolume;
+	// TODO
+}

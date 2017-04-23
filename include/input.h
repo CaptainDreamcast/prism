@@ -1,5 +1,7 @@
-#ifndef INPUT_TARI
-#define INPUT_TARI
+#pragma once
+
+#define MAXIMUM_CONTROLLER_AMOUNT 2
+
 
 #include "common/header.h"
 
@@ -37,4 +39,37 @@ fup double getLeftStickNormalizedY();
 fup double getLNormalized();
 fup double getRNormalized();
 
-#endif
+fup int hasPressedASingle(int i);
+fup int hasPressedBSingle(int i);
+fup int hasPressedXSingle(int i);
+fup int hasPressedYSingle(int i);
+fup int hasPressedLeftSingle();
+fup int hasPressedRightSingle();
+fup int hasPressedUpSingle(int i);
+fup int hasPressedDownSingle(int i);
+fup int hasPressedLSingle(int i);
+fup int hasPressedRSingle(int i);
+fup int hasPressedStartSingle(int i);
+fup int hasPressedAbortSingle(int i);
+
+fup int hasPressedAFlankSingle(int i);
+fup int hasPressedBFlankSingle(int i);
+fup int hasPressedXFlankSingle(int i);
+fup int hasPressedYFlankSingle(int i);
+fup int hasPressedLeftFlankSingle(int i);
+fup int hasPressedRightFlankSingle(int i);
+fup int hasPressedUpFlankSingle(int i);
+fup int hasPressedDownFlankSingle(int i);
+fup int hasPressedLFlankSingle(int i);
+fup int hasPressedRFlankSingle(int i);
+fup int hasPressedStartFlankSingle(int i);
+fup int hasPressedAbortFlankSingle(int i);
+
+fup double getSingleLeftStickNormalizedX(int i);
+fup double getSingleLeftStickNormalizedY(int i);
+fup double getSingleLNormalized(int i);
+fup double getSingleRNormalized(int i);
+
+fup void setMainController(int i);
+fup int getMainController();
+

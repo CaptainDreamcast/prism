@@ -30,6 +30,7 @@ void initTariWrapperWithDefaultFlags() {
 	initFileSystem();
 	initDrawing();
 	initSound();
+	initSoundEffects();
 	setFont("$/rd/fonts/dolmexica.hdr", "$/rd/fonts/dolmexica.pkg");
 	initScreenEffects();
 	

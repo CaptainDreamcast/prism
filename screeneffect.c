@@ -168,6 +168,20 @@ void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tC
 	addFadeIn(tDuration, tOptionalCB, tCaller, patchSize, patchSize, makePosition(0, 0, 0), 0, da, isFadeOutOver);
 }
 
+void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
+	if (!gData.mIsActive) return;
+
+	double dx = (tRect.mBottomRight.x - tRect.mTopLeft.x) + 1;
+	double dy = (tRect.mBottomRight.y - tRect.mTopLeft.y) + 1;
+	dx /= gData.mWhiteTexture.mTextureSize.x;
+	dy /= gData.mWhiteTexture.mTextureSize.y;
+
+	scaleDrawing3D(makePosition(dx, dy, 1), tRect.mTopLeft);
+	setDrawingBaseColor(tColor);
+	drawSprite(gData.mWhiteTexture, tRect.mTopLeft, makeRectangleFromTexture(gData.mWhiteTexture));
+	setDrawingParametersToIdentity();
+}
+
 void setScreenBlack() {
 	gData.mScreenFillID = playAnimationLoop(makePosition(0,0,gData.mZ), &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
 	setAnimationSize(gData.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));

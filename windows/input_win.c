@@ -4,39 +4,77 @@
 
 #include "../include/log.h"
 
+typedef struct {
+	int mIsUsingController;
+	SDL_GameController* mController;
+} Controller;
 
 static struct {
 	const Uint8* mCurrentKeyStates;
-
-	int mIsUsingController;
-	SDL_GameController* mController;
-
+	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
 } gData;
 
-static void loadController() {
-	if (gData.mIsUsingController) return;
+static int const gKeys[2][20] = { 
+	{
+		SDL_SCANCODE_A,
+		SDL_SCANCODE_S,
+		SDL_SCANCODE_Q,
+		SDL_SCANCODE_W,
+		SDL_SCANCODE_LEFT,
+		SDL_SCANCODE_RIGHT,
+		SDL_SCANCODE_UP,
+		SDL_SCANCODE_DOWN,
+		SDL_SCANCODE_E,
+		SDL_SCANCODE_D,
+		SDL_SCANCODE_1,
+		SDL_SCANCODE_ESCAPE,
+	}, 
 
-	gData.mController = SDL_GameControllerOpen(0);
-	gData.mIsUsingController = 1;
+	{
+		SDL_SCANCODE_H,
+		SDL_SCANCODE_J,
+		SDL_SCANCODE_Y,
+		SDL_SCANCODE_U,
+		SDL_SCANCODE_4,
+		SDL_SCANCODE_6,
+		SDL_SCANCODE_8,
+		SDL_SCANCODE_2,
+		SDL_SCANCODE_I,
+		SDL_SCANCODE_K,
+		SDL_SCANCODE_3,
+		SDL_SCANCODE_ESCAPE,
+	}
+};
+
+static void loadController(int i) {
+	if (gData.mControllers[i].mIsUsingController) return;
+
+	gData.mControllers[i].mController = SDL_GameControllerOpen(i);
+	gData.mControllers[i].mIsUsingController = 1;
 }
 
-static void unloadController() {
-	if (!gData.mIsUsingController) return;
+static void unloadController(int i) {
+	if (!gData.mControllers[i].mIsUsingController) return;
 
-	SDL_GameControllerClose(gData.mController);
-	gData.mController = NULL;
-	gData.mIsUsingController = 0;
+	SDL_GameControllerClose(gData.mControllers[i].mController);
+	gData.mControllers[i].mController = NULL;
+	gData.mControllers[i].mIsUsingController = 0;
 }
 
-static void updateControllerInput() {
-	if (SDL_NumJoysticks() == 0) {
-		unloadController();
+static void updateSingleControllerInput(int i) {
+	if (i >= SDL_NumJoysticks()) {
+		unloadController(i);
 		return;
 	}
 
+	loadController(i);
+}
 
-	loadController();
-
+static void updateControllerInput() {
+	int i;
+	for (i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
+		updateSingleControllerInput(i);
+	}
 }
 
 void updateInput() {
@@ -47,106 +85,106 @@ void updateInput() {
 
 
 
-int hasPressedA() {
+int hasPressedASingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_A];
-	if (gData.mIsUsingController) state |= SDL_GameControllerGetButton(gData.mController, SDL_CONTROLLER_BUTTON_A);
+	int state = gData.mCurrentKeyStates[gKeys[i][0]];
+	if (gData.mControllers[i].mIsUsingController) state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_A);
 	return state;
 }
 
-int hasPressedB() {
+int hasPressedBSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_S];
-	if (gData.mIsUsingController) state |= SDL_GameControllerGetButton(gData.mController, SDL_CONTROLLER_BUTTON_B);
+	int state = gData.mCurrentKeyStates[gKeys[i][1]];
+	if (gData.mControllers[i].mIsUsingController) state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_B);
 	return state;
 }
 
-int hasPressedX() {
+int hasPressedXSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_Q];
-	if (gData.mIsUsingController) state |= SDL_GameControllerGetButton(gData.mController, SDL_CONTROLLER_BUTTON_X);
+	int state = gData.mCurrentKeyStates[gKeys[i][2]];
+	if (gData.mControllers[i].mIsUsingController) state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_X);
 	return state;
 }
 
-int hasPressedY() {
+int hasPressedYSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_W];
-	if (gData.mIsUsingController) state |= SDL_GameControllerGetButton(gData.mController, SDL_CONTROLLER_BUTTON_Y);
+	int state = gData.mCurrentKeyStates[gKeys[i][3]];
+	if (gData.mControllers[i].mIsUsingController) state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_Y);
 	return state;
 }
 
-int hasPressedLeft() {
+int hasPressedLeftSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_LEFT];
-	if (gData.mIsUsingController) {
-		double axis = getLeftStickNormalizedX();
+	int state = gData.mCurrentKeyStates[gKeys[i][4]];
+	if (gData.mControllers[i].mIsUsingController) {
+		double axis = getSingleLeftStickNormalizedX(i);
 		state |= (axis < -0.5);
 	}
 	return state;
 }
 
-int hasPressedRight() {
+int hasPressedRightSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_RIGHT];
-	if (gData.mIsUsingController) {
-		double axis = getLeftStickNormalizedX();
+	int state = gData.mCurrentKeyStates[gKeys[i][5]];
+	if (gData.mControllers[i].mIsUsingController) {
+		double axis = getSingleLeftStickNormalizedX(i);
 		state |= (axis > 0.5);
 	}
 	return state;
 }
 
-int hasPressedUp() {
+int hasPressedUpSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_UP];
-	if (gData.mIsUsingController) {
-		double axis = getLeftStickNormalizedY();
+	int state = gData.mCurrentKeyStates[gKeys[i][6]];
+	if (gData.mControllers[i].mIsUsingController) {
+		double axis = getSingleLeftStickNormalizedY(i);
 		state |= (axis < -0.5);
 	}
 	return state;
 }
 
-int hasPressedDown() {
+int hasPressedDownSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_DOWN];
-	if (gData.mIsUsingController) {
-		double axis = getLeftStickNormalizedY();
+	int state = gData.mCurrentKeyStates[gKeys[i][7]];
+	if (gData.mControllers[i].mIsUsingController) {
+		double axis = getSingleLeftStickNormalizedY(i);
 		state |= (axis > 0.5);
 	}
 	return state;
 }
 
-int hasPressedL() {
+int hasPressedLSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_E];
-	if (gData.mIsUsingController) {
-		double axis = getLNormalized();
+	int state = gData.mCurrentKeyStates[gKeys[i][8]];
+	if (gData.mControllers[i].mIsUsingController) {
+		double axis = getSingleLNormalized(i);
 		state |= (axis > 0.5);
 	}
 	return state;
 }
 
-int hasPressedR() {
+int hasPressedRSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_D];
-	if (gData.mIsUsingController) {
-		double axis = getRNormalized();
+	int state = gData.mCurrentKeyStates[gKeys[i][9]];
+	if (gData.mControllers[i].mIsUsingController) {
+		double axis = getSingleRNormalized(i);
 		state |= (axis > 0.5);
 	}
 	return state;
 }
 
-int hasPressedStart() {
+int hasPressedStartSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_1];
-	if (gData.mIsUsingController) state |= SDL_GameControllerGetButton(gData.mController, SDL_CONTROLLER_BUTTON_START);
+	int state = gData.mCurrentKeyStates[gKeys[i][10]];
+	if (gData.mControllers[i].mIsUsingController) state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_START);
 	return state;
 }
 
-int hasPressedAbort() {
+int hasPressedAbortSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_ESCAPE];
-	if (gData.mIsUsingController) {
-		state |= (hasPressedA() && hasPressedB() && hasPressedX() && hasPressedY() && hasPressedStart());
+	int state = gData.mCurrentKeyStates[gKeys[i][11]];
+	if (gData.mControllers[i].mIsUsingController) {
+		state |= (hasPressedASingle(i) && hasPressedBSingle(i) && hasPressedXSingle(i) && hasPressedYSingle(i) && hasPressedStartSingle(i));
 	}
 	return state;
 }
@@ -159,30 +197,30 @@ static double getStickNormalizedBinary(int tCodeMinus, int tCodePlus) {
 	else return 0;
 }
 
-double getLeftStickNormalizedX() {
-	if (gData.mIsUsingController) {
-		return SDL_GameControllerGetAxis(gData.mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
+double getSingleLeftStickNormalizedX(int i) {
+	if (gData.mControllers[i].mIsUsingController) {
+		return SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
 	}
-	else return getStickNormalizedBinary(SDL_SCANCODE_LEFT, SDL_SCANCODE_RIGHT);
+	else return getStickNormalizedBinary(gKeys[i][4], gKeys[i][5]);
 }
 
-double getLeftStickNormalizedY() {
-	if (gData.mIsUsingController) {
-		return SDL_GameControllerGetAxis(gData.mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
+double getSingleLeftStickNormalizedY(int i) {
+	if (gData.mControllers[i].mIsUsingController) {
+		return SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
 	}
-	else return getStickNormalizedBinary(SDL_SCANCODE_UP, SDL_SCANCODE_DOWN);
+	else return getStickNormalizedBinary(gKeys[i][6], gKeys[i][7]);
 }
 
-double getLNormalized() {
-	if (gData.mIsUsingController) {
-		return SDL_GameControllerGetAxis(gData.mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
+double getSingleLNormalized(int i) {
+	if (gData.mControllers[i].mIsUsingController) {
+		return SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
 	}
-	else return gData.mCurrentKeyStates[SDL_SCANCODE_E];
+	else return gData.mCurrentKeyStates[gKeys[i][8]];
 }
 
-double getRNormalized() {
-	if (gData.mIsUsingController) {
-		return SDL_GameControllerGetAxis(gData.mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
+double getSingleRNormalized(int i) {
+	if (gData.mControllers[i].mIsUsingController) {
+		return SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
 	}
-	else return gData.mCurrentKeyStates[SDL_SCANCODE_D];
+	else return gData.mCurrentKeyStates[gKeys[i][9]];
 }

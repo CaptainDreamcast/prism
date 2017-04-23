@@ -65,6 +65,7 @@ fup void delete_vector(Vector* tVector);
 fup void vector_empty(Vector* tVector);
 fup void vector_push_back(Vector* tVector, void* tData);
 fup void vector_push_back_owned(Vector* tVector, void* tData);
+fup void* vector_push_back_new_buffer(Vector* tVector, int tSize);
 fup void* vector_get(Vector* tVector, int tIndex);
 fup void vector_remove(Vector* tVector, int tIndex);
 fup int vector_size(Vector* tVector);

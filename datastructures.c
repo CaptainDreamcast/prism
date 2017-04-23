@@ -245,6 +245,12 @@ void vector_push_back_owned(Vector* tVector, void* tData) {
 	vector_push_back_internal(tVector, tData, 1);
 }
 
+void* vector_push_back_new_buffer(Vector* tVector, int tSize) {
+	char* b = allocMemory(tSize);
+	vector_push_back_owned(tVector, b);
+	return b;
+}
+
 void* vector_get(Vector* tVector, int tIndex) {
 	return tVector->mData[tIndex].mData;
 }

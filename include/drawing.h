@@ -57,5 +57,6 @@ fup void printRectangle(Rectangle r);
 
 fup Vector3D makeFontSize(int x, int y);
 
+fup void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
 #endif

@@ -242,6 +242,12 @@ int playAnimationLoop(Position tPosition, TextureData* tTextures, Animation tAni
 	return playAnimationInternal(tPosition, tTextures, tAnimation, tTexturePosition, NULL, NULL, 1);
 }
 
+int playOneFrameAnimationLoop(Position tPosition, TextureData* tTextures) {
+	Animation anim = createOneFrameAnimation();
+	Rectangle rect = makeRectangleFromTexture(tTextures[0]);
+	return playAnimationLoop(tPosition, tTextures, anim, rect);
+}
+
 void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition) {
 	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
 

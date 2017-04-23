@@ -3,8 +3,9 @@
 
 #include "common/header.h"
 
-#ifdef DREAMCAST
+#include <math.h>
 
+#ifdef DREAMCAST
 
 #define min(x, y) ((x < y) ? (x) : (y));
 #define max(x, y) ((x > y) ? (x) : (y));
@@ -13,6 +14,8 @@ extern double cos(double r);
 extern double sin(double r);
 
 #endif
+
+#define fclamp(x, y, z) (fmin(fmax(x, y), z))
 
 #define INF 1000000000
 

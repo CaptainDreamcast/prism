@@ -6,8 +6,9 @@
 fup void initSound();
 fup void shutdownSound();
 
-fup int getVolume();
-fup int getPanningValue();
+fup double getVolume();
+fup void setVolume(double tVolume);
+fup double getPanningValue();
 
 fup void playTrack(int tTrack);
 

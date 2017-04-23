@@ -21,15 +21,20 @@ void shutdownSound() {
 	Mix_CloseAudio();
 }
 
-int getVolume() {
-	return gData.mVolume;
+double getVolume() {
+	return gData.mVolume / 255.0;
 }
 
-int getPanningValue() {
-	return gData.mPanning;
+void setVolume(double tVolume) {
+	gData.mVolume = (int)(tVolume * 255);
+}
+
+double getPanningValue() {
+	return (gData.mPanning / 128.0) - 1.0;
 }
 
 void playTrack(int tTrack) {
 	logWarning("Unable to play tracks on Windows.");
 	// TODO: implement
 }
+
