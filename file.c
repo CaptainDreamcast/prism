@@ -58,7 +58,7 @@ static int isFileMemoryMapped(FileHandler tFile) {
 
 int isFile(char* tPath) {
 	FileHandler file = fileOpen(tPath, O_RDONLY);
-	if (file == 0) return 0;
+	if (file == FILEHND_INVALID) return 0;
 	fileClose(file);
 	return 1;
 }
@@ -145,7 +145,7 @@ void appendTerminationSymbolToBuffer(Buffer* tBuffer) {
 
 void fileToMemory(void* tDst, int tSize, char* tPath) {
 	Buffer b = fileToBuffer(tPath);
-	if (b.mLength != tSize) {
+	if (b.mLength != (unsigned int)tSize) {
 		logError("File and memory struct have different sizes!");
 		logErrorString(tPath);
 		logErrorInteger(tSize);

@@ -4,115 +4,128 @@
 
 #include "../include/log.h"
 
-static maple_device_t* gCont;
-static cont_state_t* gState;
+typedef struct {
+	maple_device_t* mCont;
+	cont_state_t* mState;
+} Controller;
+
+static struct {
+	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
+} gData;
+
+static void updateSingleInput(int i) {
+	  if ((gData.mControllers[i].mCont = maple_enum_dev(i, 0)) != NULL) {
+	    gData.mControllers[i].mState = (cont_state_t *) maple_dev_status(gData.mControllers[i].mCont);
+	  } else {
+	    gData.mControllers[i].mState = (cont_state_t*)0;
+	  }
+}
 
 void updateInput() {
-  if ((gCont = maple_enum_dev(0, 0)) != NULL) {
-    gState = (cont_state_t *) maple_dev_status(gCont);
-  } else {
-    gState = (cont_state_t*)0;
-  }
+	int i;
+	for(i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
+		updateSingleInput(i);
+	}
 }
 
-int hasPressedA() {
-  if (!gState)
+int hasPressedASingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return (gState->buttons & CONT_A);
+  return (gData.mControllers[i].mState->buttons & CONT_A);
 }
 
-int hasPressedB() {
-  if (!gState)
+int hasPressedBSingle(int i) {
+  if (!gData.mControllers[i].mState) 
+	return 0;
+
+  return (gData.mControllers[i].mState->buttons & CONT_B);
+}
+
+int hasPressedXSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return (gState->buttons & CONT_B);
+  return (gData.mControllers[i].mState->buttons & CONT_X);
 }
 
-int hasPressedX() {
-  if (!gState)
+int hasPressedYSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return (gState->buttons & CONT_X);
+  return (gData.mControllers[i].mState->buttons & CONT_Y);
 }
 
-int hasPressedY() {
-  if (!gState)
+int hasPressedLeftSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return (gState->buttons & CONT_Y);
+  return ((gData.mControllers[i].mState->buttons & CONT_DPAD_LEFT) || (gData.mControllers[i].mState->joyx <= -64));
 }
 
-int hasPressedLeft() {
-  if (!gState)
+int hasPressedRightSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return ((gState->buttons & CONT_DPAD_LEFT) || (gState->joyx <= -64));
+  return ((gData.mControllers[i].mState->buttons & CONT_DPAD_RIGHT) || (gData.mControllers[i].mState->joyx >= 64));
 }
 
-int hasPressedRight() {
-  if (!gState)
+int hasPressedUpSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return ((gState->buttons & CONT_DPAD_RIGHT) || (gState->joyx >= 64));
+  return ((gData.mControllers[i].mState->buttons & CONT_DPAD_UP) || (gData.mControllers[i].mState->joyy <= -64));
 }
 
-int hasPressedUp() {
-  if (!gState)
+int hasPressedDownSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return ((gState->buttons & CONT_DPAD_UP) || (gState->joyy <= -64));
+  return ((gData.mControllers[i].mState->buttons & CONT_DPAD_DOWN) || (gData.mControllers[i].mState->joyy >= 64));
 }
 
-int hasPressedDown() {
-  if (!gState)
+int hasPressedLSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return ((gState->buttons & CONT_DPAD_DOWN) || (gState->joyy >= 64));
+  return (gData.mControllers[i].mState->ltrig >= 64);
 }
 
-int hasPressedL() {
-  if (!gState)
+int hasPressedRSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return (gState->ltrig >= 64);
+  return (gData.mControllers[i].mState->rtrig >= 64);
 }
 
-int hasPressedR() {
-  if (!gState)
+int hasPressedStartSingle(int i) {
+  if (!gData.mControllers[i].mState)
     return 0;
 
-  return (gState->rtrig >= 64);
+  return (gData.mControllers[i].mState->buttons & CONT_START);
 }
 
-int hasPressedStart() {
-  if (!gState)
-    return 0;
-
-  return (gState->buttons & CONT_START);
-}
-
-int hasPressedAbort() {
-	return hasPressedA() && hasPressedB() && hasPressedX() && hasPressedY() && hasPressedStart();
+int hasPressedAbortSingle(int i) {
+	return hasPressedASingle(i) && hasPressedBSingle(i) && hasPressedXSingle(i) && hasPressedYSingle(i) && hasPressedStartSingle(i);
 }
 
 
-double getLeftStickNormalizedX() {
-	if (!gState) return 0;
+double getSingleLeftStickNormalizedX(int i) {
+	if (!gData.mControllers[i].mState) return 0;
 
-	return gState->joyx / 128.0;
+	return gData.mControllers[i].mState->joyx / 128.0;
 }
-double getLeftStickNormalizedY() {
-	if (!gState) return 0;
+double getSingleLeftStickNormalizedY(int i) {
+	if (!gData.mControllers[i].mState) return 0;
 
-	return gState->joyy / 128.0;
+	return gData.mControllers[i].mState->joyy / 128.0;
 }
-double getLNormalized() {
-	if (!gState) return 0;
+double getSingleLNormalized(int i) {
+	if (!gData.mControllers[i].mState) return 0;
 
-	return gState->ltrig / 128.0;
+	return gData.mControllers[i].mState->ltrig / 128.0;
 }
-double getRNormalized() {
-	if (!gState) return 0;
-	return gState->rtrig / 128.0;
+double getSingleRNormalized(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return gData.mControllers[i].mState->rtrig / 128.0;
 }

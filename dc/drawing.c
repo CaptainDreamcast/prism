@@ -129,13 +129,31 @@ void waitForScreen() {
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
-void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
+// TODO: refactor into general drawing code so both have it
+static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+	
+	if (tText[0] == ' ') return 0;
+	if (tText[0] == '\n') return 1;
+	
+	char word[1024];
+	int positionsRead;
+	sscanf(tText + tCurrent, "%s%n", word, &positionsRead);
+
+	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead-1) * tBreakSize.x, 0, 0);
+	Position after = vecAdd(tPos, delta);
+	Position bottomRight = vecAdd(tTopLeft, tTextBoxSize);
+
+	return (after.x > bottomRight.x);
+}
+
+void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
 
   pvr_poly_cxt_t cxt;
   pvr_poly_hdr_t hdr;
   pvr_vertex_t vert;
 
   int current = 0;
+  Position pos = tPosition;
 
   double r, g, b;
   getRGBFromColor(tColor, &r, &g, &b);
@@ -154,37 +172,42 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
     vert.oargb = 0;
     vert.flags = PVR_CMD_VERTEX;
 
-    vert.x = tPosition.x;
-    vert.y = tPosition.y;
-    vert.z = tPosition.z;
+    vert.x = pos.x;
+    vert.y = pos.y;
+    vert.z = pos.z;
     vert.u = charData.mFilePositionX1;
     vert.v = charData.mFilePositionY1;
     pvr_prim(&vert, sizeof(vert));
 
-    vert.x = tPosition.x + tSize;
-    vert.y = tPosition.y;
-    vert.z = tPosition.z;
+    vert.x = pos.x + tFontSize.x;
+    vert.y = pos.y;
+    vert.z = pos.z;
     vert.u = charData.mFilePositionX2;
     vert.v = charData.mFilePositionY1;
     pvr_prim(&vert, sizeof(vert));
 
-    vert.x = tPosition.x;
-    vert.y = tPosition.y + tSize;
-    vert.z = tPosition.z;
+    vert.x = pos.x;
+    vert.y = pos.y + tFontSize.y;
+    vert.z = pos.z;
     vert.u = charData.mFilePositionX1;
     vert.v = charData.mFilePositionY2;
     pvr_prim(&vert, sizeof(vert));
 
-    vert.x = tPosition.x + tSize;
-    vert.y = tPosition.y + tSize;
-    vert.z = tPosition.z;
+    vert.x = pos.x + tFontSize.x;
+    vert.y = pos.y + tFontSize.y;
+    vert.z = pos.z;
     vert.u = charData.mFilePositionX2;
     vert.v = charData.mFilePositionY2;
     vert.flags = PVR_CMD_VERTEX_EOL;
     pvr_prim(&vert, sizeof(vert));
 
-    tPosition.x += tSize;
+    pos.x += tFontSize.x + tBreakSize.x;
     current++;
+
+    if(hasToLinebreak(tText, current, tPosition, pos, tFontSize, tBreakSize, tTextBoxSize)) {
+	pos.x = tPosition.x;
+	pos.y += tFontSize.y + tBreakSize.y;
+    }
   }
 
 }

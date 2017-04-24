@@ -149,6 +149,7 @@ static void unloadStoryboard(Storyboard* e) {
 }
 
 static int removeStoryboardEntry(void* tCaller, void* tData) {
+	(void) tCaller;
 	Storyboard* e = tData;
 	unloadStoryboard(e);
 	return 1;
@@ -328,6 +329,7 @@ static void checkStoryboardInputs(Storyboard* e) {
 }
 
 static int updateSingleStoryboard(void* tCaller, void* tData) {
+	(void) tCaller;
 	Storyboard* e = tData;
 
 	checkStoryboardInputs(e);

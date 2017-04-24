@@ -4,14 +4,14 @@
 
 static struct {
 
-	int mVolume;
-	int mPanning;
+	double mVolume;
+	double mPanning;
 
 } gData;
 
 void initSound() {
-	gData.mVolume = 255;
-	gData.mPanning = 128;
+	gData.mVolume = 1;
+	gData.mPanning = 0;
 	snd_init();
 }
 
@@ -19,10 +19,17 @@ void shutdownSound(){
 	
 }
 
-int getVolume() {
+double getVolume() {
 	return gData.mVolume;
 }
 
-int getPanningValue() {
+void setVolume(double tVolume) {
+	gData.mVolume = tVolume;
+}
+
+double getPanningValue() {
 	return gData.mPanning;
 }
+
+
+

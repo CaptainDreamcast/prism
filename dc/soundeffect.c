@@ -5,6 +5,10 @@
 #include "../include/file.h"
 #include "../include/sound.h"
 
+void initSoundEffects() {
+
+}
+
 void setupSoundEffectHandler() {
 	
 }

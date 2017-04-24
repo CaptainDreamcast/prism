@@ -78,3 +78,9 @@ int getAvailableTextureMemory() {
 int getTextureHash(TextureData tTexture) {
 	return (int)tTexture.mTexture;
 }
+
+int canLoadTexture(char* tPath) {
+	char* fileExt = getFileExtension(tPath);
+
+	return (!strcmp("pkg", fileExt) && isFile(tPath));
+}

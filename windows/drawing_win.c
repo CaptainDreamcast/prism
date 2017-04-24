@@ -216,6 +216,7 @@ static void drawTextInternal() {
 
 }
 
+// TODO: refactor into general drawing code so both have it
 static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize) {
 	
 	if (tText[0] == ' ') return 0;

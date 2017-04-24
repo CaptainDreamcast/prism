@@ -62,6 +62,7 @@ static void increaseDrawnText(HandledText* e) {
 }
 
 static int updateSingleText(void* tCaller, void* tData) {
+	(void) tCaller;
 	HandledText* e = tData;
 
 	if (handleDurationAndCheckIfOver(&e->mNow, e->mDuration)) {
@@ -80,6 +81,7 @@ void updateTextHandler() {
 }
 
 static void drawSingleText(void* tCaller, void* tData) {
+	(void) tCaller;
 	HandledText* e = tData;
 
 	// TODO: set font to correct font 

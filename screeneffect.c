@@ -157,8 +157,7 @@ void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalC
 	addFadeIn(tDuration, tOptionalCB, tCaller, makePosition(getScreenSize().x, gData.mFullLineSize+1, 1), makePosition(getScreenSize().x, gData.mFullLineSize, 1), makePosition(0, dy, 0), 1, 0, isVerticalLineFadeInOver);
 }
 
-static int isFadeOutOver(void* tCaller) {
-	FadeIn* e = tCaller;
+static int isFadeOutOver(FadeIn* e) {
 	return (*e->mAlpha) >= 1;
 }
 
