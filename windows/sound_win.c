@@ -34,6 +34,7 @@ double getPanningValue() {
 }
 
 void playTrack(int tTrack) {
+	(void)tTrack;
 	logWarning("Unable to play tracks on Windows.");
 	// TODO: implement
 }

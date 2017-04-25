@@ -146,11 +146,6 @@ static void drawSorted(void* tCaller, void* tData) {
 	int sizeX = abs(e->mTexturePosition.bottomRight.x - e->mTexturePosition.topLeft.x) + 1;
 	int sizeY = abs(e->mTexturePosition.bottomRight.y - e->mTexturePosition.topLeft.y) + 1;
 
-	double left = e->mTexturePosition.topLeft.x / ((double)(e->mTexture.mTextureSize.x - 1));
-	double right = e->mTexturePosition.bottomRight.x / ((double)(e->mTexture.mTextureSize.x - 1));
-	double up = e->mTexturePosition.topLeft.y / ((double)(e->mTexture.mTextureSize.y - 1));
-	double down = e->mTexturePosition.bottomRight.y / ((double)(e->mTexture.mTextureSize.y - 1));
-
 	SDL_Rect srcRect;
 	srcRect.x = min(e->mTexturePosition.topLeft.x, e->mTexturePosition.bottomRight.x);
 	srcRect.y = min(e->mTexturePosition.topLeft.y, e->mTexturePosition.bottomRight.y);

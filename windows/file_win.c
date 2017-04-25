@@ -142,6 +142,7 @@ int fileUnlink(char* tPath) {
 }
 
 void* fileMemoryMap(FileHandler tHandler) {
+	(void)tHandler;
 	return NULL;
 }
 

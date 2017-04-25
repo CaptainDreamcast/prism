@@ -116,7 +116,6 @@ static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, ch
 	logString(tPos.mPointer);
 	logString(tWord);
 	abortSystem();
-	return tPos;
 }
 
 static ScriptPosition findNextCharacterScriptOccurenceOnSameLevel(ScriptPosition tPos, char tChar) {
@@ -141,7 +140,6 @@ static ScriptPosition findNextCharacterScriptOccurenceOnSameLevel(ScriptPosition
 	logString(tPos.mPointer);
 	logInteger(tChar);
 	abortSystem();
-	return tPos;
 }
 
 static ScriptPosition findScriptRegionEnd(ScriptPosition tPos) {
@@ -174,7 +172,6 @@ static ScriptPosition findScriptRegionStart(ScriptPosition tPos, char* tName) {
 	logString(tPos.mPointer);
 	logString(tName);
 	abortSystem();
-	return tPos;
 }
 
 ScriptRegion getScriptRegion(Script tScript, char* tName) {

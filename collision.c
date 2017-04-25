@@ -193,7 +193,6 @@ int checkCollisionCollider(Collider tCollider1, Collider tCollider2) {
 		logErrorInteger(tCollider1.mType);
 		logErrorInteger(tCollider2.mType);
 		abortSystem();
-		return 0;
 	}
 
 }

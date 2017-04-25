@@ -64,10 +64,6 @@ TextureData loadTexture(char* tFileDir) {
 		logError("Unable to identify texture file type.");
 		logErrorString(fileExt);
 		abortSystem();
-		TextureData errData;
-		memset(&errData, 0, sizeof errData);
-
-		return errData;
 	}
 }
 
