@@ -33,12 +33,18 @@ static void addToUsageQueueFront(TextureMemory tMem);
 static void removeFromUsageQueue(TextureMemory tMem);
 
 static void* allocTextureFunc(size_t tSize) {
-	TextureMemory ret = allocMemory(sizeof(struct TextureMemory_internal));
+	TextureMemory ret = malloc(sizeof(struct TextureMemory_internal));
 	ret->mData = allocTextureHW(tSize);
 	addToUsageQueueFront(ret);
 	return ret;
 }
 
+static void freeTextureFunc(void* tData) {
+	TextureMemory tMem = tData;
+	removeFromUsageQueue(tMem);
+	freeTextureHW(tMem->mData);
+	free(tMem);
+}
 
 
 #define MEMORY_STACK_MAX 10
@@ -71,13 +77,6 @@ static struct {
 	TextureMemoryUsageList mTextureMemoryUsageList;
 	int mActive;
 } gData;
-
-static void freeTextureFunc(void* tData) {
-	TextureMemory tMem = tData;
-	removeFromUsageQueue(tMem);
-	freeTextureHW(tMem->mData);
-	free(tMem);
-}
 
 typedef void* (*MallocFunc)(size_t tSize);
 typedef void(*FreeFunc)(void* tData);
@@ -143,10 +142,6 @@ static void removeFromUsageQueue(TextureMemory tMem) {
 
 static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
 	removeFromUsageQueue(tMem);
-	addToUsageQueueFront(tMem);
-}
-
-static void insertTextureMemoryIntoUsageQueue(TextureMemory tMem) {
 	addToUsageQueueFront(tMem);
 }
 
@@ -343,6 +338,12 @@ void freeTextureMemory(TextureMemory tMem) {
 	if (tMem == NULL) return;
 
 	removeMemoryFromMemoryListStack(&gData.mTextureMemoryStack, tMem, freeTextureFunc);
+}
+
+void referenceTextureMemory(TextureMemory tMem) {
+	if (tMem == NULL) return;
+
+	moveTextureMemoryInUsageQueueToFront(tMem);
 }
 
 static void pushMemoryStackInternal(MemoryListStack* tStack) {

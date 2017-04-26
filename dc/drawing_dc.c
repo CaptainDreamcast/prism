@@ -60,6 +60,8 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   double up = tTexturePosition.topLeft.y / ((double) (tTexture.mTextureSize.y - 1));
   double down = tTexturePosition.bottomRight.y / ((double) (tTexture.mTextureSize.y - 1));
 
+  referenceTextureMemory(tTexture.mTexture);
+
   pvr_poly_cxt_t cxt;
   pvr_poly_hdr_t hdr;
   pvr_vertex_t vert;
@@ -159,6 +161,8 @@ void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Colo
   getRGBFromColor(tColor, &r, &g, &b);
 
   TextureData fontData = getFontTexture();
+  referenceTextureMemory(fontData.mTexture);
+
   pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, fontData.mTextureSize.x, fontData.mTextureSize.y, fontData.mTexture->mData, PVR_FILTER_BILINEAR);
 
   pvr_poly_compile(&hdr, &cxt);
