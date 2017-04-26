@@ -1,6 +1,8 @@
 #ifndef TARI_MEMORYHANDLER_H
 #define TARI_MEMORYHANDLER_H
 
+#include <stdlib.h>
+
 #include "common/header.h"
 
 #ifdef DREAMCAST
@@ -21,7 +23,11 @@ typedef SDLTextureData* Texture;
 #endif
 
 struct TextureMemory_internal {
-	Texture mData;
+	void* mData;
+	size_t mSize;
+
+	int mIsVirtual;
+
 	struct TextureMemory_internal* mPrevInUsageList;
 	struct TextureMemory_internal* mNextInUsageList;
 };

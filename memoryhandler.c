@@ -35,6 +35,7 @@ static void removeFromUsageQueue(TextureMemory tMem);
 static void* allocTextureFunc(size_t tSize) {
 	TextureMemory ret = malloc(sizeof(struct TextureMemory_internal));
 	ret->mData = allocTextureHW(tSize);
+	ret->mSize = tSize;
 	addToUsageQueueFront(ret);
 	return ret;
 }

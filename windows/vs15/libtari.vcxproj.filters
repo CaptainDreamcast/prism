@@ -112,6 +112,9 @@
     <ClCompile Include="..\..\screeneffect.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\memoryhandler_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\animation.h" />

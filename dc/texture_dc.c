@@ -71,10 +71,6 @@ void unloadTexture(TextureData tTexture) {
   freeTextureMemory(tTexture.mTexture);
 }
 
-int getAvailableTextureMemory() {
-	return pvr_mem_available();
-}
-
 int getTextureHash(TextureData tTexture) {
 	return (int)tTexture.mTexture;
 }
