@@ -179,10 +179,11 @@ static void drawSorted(void* tCaller, void* tData) {
 
 	double angleDegrees = 360-((e->mData.mAngle.z * 180)/ M_PI);
 
-	SDL_SetTextureColorMod(e->mTexture.mTexture->mTexture, (Uint8)(e->mData.r*0xFF), (Uint8)(e->mData.g*0xFF), (Uint8)(e->mData.b*0xFF));
-	SDL_SetTextureAlphaMod(e->mTexture.mTexture->mTexture, (Uint8)(e->mData.a * 0xFF));
+	Texture texture = e->mTexture.mTexture->mData;
+	SDL_SetTextureColorMod(texture->mTexture, (Uint8)(e->mData.r*0xFF), (Uint8)(e->mData.g*0xFF), (Uint8)(e->mData.b*0xFF));
+	SDL_SetTextureAlphaMod(texture->mTexture, (Uint8)(e->mData.a * 0xFF));
 
-	SDL_RenderCopyEx(gRenderer, e->mTexture.mTexture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
+	SDL_RenderCopyEx(gRenderer, texture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
 }
 
 void stopDrawing() {

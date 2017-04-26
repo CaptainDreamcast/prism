@@ -47,7 +47,7 @@ TextureData loadTexturePKG(char* tFileDir) {
 	
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
-	returnData.mTexture->mTexture = newTexture;
+	returnData.mTexture->mData->mTexture = newTexture;
 	int access;
 	Uint32 format;
 	SDL_QueryTexture(newTexture, &format, &access, &returnData.mTextureSize.x, &returnData.mTextureSize.y);

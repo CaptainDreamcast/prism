@@ -3,11 +3,37 @@
 
 #include "common/header.h"
 
+#ifdef DREAMCAST
+#include <kos.h>
+
+typedef pvr_ptr_t Texture;
+
+#elif defined _WIN32
+#include <SDL.h>
+
+typedef struct {
+	SDL_Texture* mTexture;
+
+} SDLTextureData;
+
+typedef SDLTextureData* Texture;
+
+#endif
+
+struct TextureMemory_internal {
+	Texture mData;
+	struct TextureMemory_internal* mPrevInUsageList;
+	struct TextureMemory_internal* mNextInUsageList;
+};
+
+typedef struct TextureMemory_internal* TextureMemory;
+
 fup void* allocMemory(int tSize);
 fup void freeMemory(void* tData);
 fup void* reallocMemory(void* tData, int tSize);
-fup void* allocTextureMemory(int tSize);
-fup void freeTextureMemory(void* tData);
+fup TextureMemory allocTextureMemory(int tSize);
+fup void freeTextureMemory(TextureMemory tMem);
+fup void referenceTextureMemory(TextureMemory tMem);
 
 fup void pushMemoryStack();
 fup void popMemoryStack();

@@ -46,7 +46,7 @@ TextureData loadTexturePKG(char* tFileDir) {
 
   returnData.mTexture = allocTextureMemory(bufferLength - HEADER_SIZE_KMG);
 
-  sq_cpy(returnData.mTexture, kmgData + HEADER_SIZE_KMG, bufferLength - HEADER_SIZE_KMG);
+  sq_cpy(returnData.mTexture->mData, kmgData + HEADER_SIZE_KMG, bufferLength - HEADER_SIZE_KMG);
 
   freeMemory(kmgData);
 

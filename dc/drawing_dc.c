@@ -64,7 +64,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   pvr_poly_hdr_t hdr;
   pvr_vertex_t vert;
 
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture, PVR_FILTER_BILINEAR);
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_BILINEAR);
 
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
@@ -159,7 +159,7 @@ void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Colo
   getRGBFromColor(tColor, &r, &g, &b);
 
   TextureData fontData = getFontTexture();
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, fontData.mTextureSize.x, fontData.mTextureSize.y, fontData.mTexture, PVR_FILTER_BILINEAR);
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, fontData.mTextureSize.x, fontData.mTextureSize.y, fontData.mTexture->mData, PVR_FILTER_BILINEAR);
 
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
