@@ -156,4 +156,9 @@
       <UniqueIdentifier>{ea6923dd-ddde-4088-bcc8-2470cce701b0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Filter>src</Filter>
+    </None>
+  </ItemGroup>
 </Project>
