@@ -1,9 +1,9 @@
 TARGET = libtari.a
-OBJS = animation.o physics.o framerate.o drawing.o dc/drawing.o texture.o dc/texture.o \
-collision.o input.o dc/input.o dc/pvr.o dc/framerateselect.o file.o dc/file.o math.o dc/math.o geometry.o \
-dc/system.o dc/log.o timer.o optionhandler.o datastructures.o memoryhandler.o \
+OBJS = animation.o physics.o framerate.o drawing.o dc/drawing_dc.o texture.o dc/texture_dc.o \
+collision.o input.o dc/input_dc.o dc/pvr_dc.o dc/framerateselect_dc.o file.o dc/file_dc.o math.o dc/math_dc.o geometry.o \
+dc/system_dc.o dc/log_dc.o timer.o optionhandler.o datastructures.o memoryhandler.o \
 wrapper.o physicshandler.o script.o stagehandler.o collisionhandler.o \
-collisionanimation.o dc/soundeffect.o dc/sound.o animationtree.o texturepool.o \
+collisionanimation.o dc/soundeffect_dc.o dc/sound_dc.o animationtree.o texturepool.o \
 storyboard.o screeneffect.o texthandler.o \
 quicklz.o
 

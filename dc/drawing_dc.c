@@ -52,8 +52,8 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
     return;
   }
 
-  int sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x);
-  int sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y);
+  int sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
+  int sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
 
   double left = tTexturePosition.topLeft.x / ((double) (tTexture.mTextureSize.x - 1));
   double right = tTexturePosition.bottomRight.x / ((double) (tTexture.mTextureSize.x - 1));
