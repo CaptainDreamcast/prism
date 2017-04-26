@@ -7,12 +7,10 @@
 
 void abortSystem(){
 	arch_exit();
-	exit(0);
 }	
 
 void returnToMenu() {
 	arch_menu();
-	exit(0);
 }
 
 static struct {

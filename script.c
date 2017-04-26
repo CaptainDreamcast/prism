@@ -116,6 +116,9 @@ static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, ch
 	logString(tPos.mPointer);
 	logString(tWord);
 	abortSystem();
+	#ifdef DREAMCAST
+	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+	#endif
 }
 
 static ScriptPosition findNextCharacterScriptOccurenceOnSameLevel(ScriptPosition tPos, char tChar) {
@@ -140,6 +143,10 @@ static ScriptPosition findNextCharacterScriptOccurenceOnSameLevel(ScriptPosition
 	logString(tPos.mPointer);
 	logInteger(tChar);
 	abortSystem();
+
+	#ifdef DREAMCAST
+	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+	#endif
 }
 
 static ScriptPosition findScriptRegionEnd(ScriptPosition tPos) {
@@ -172,6 +179,9 @@ static ScriptPosition findScriptRegionStart(ScriptPosition tPos, char* tName) {
 	logString(tPos.mPointer);
 	logString(tName);
 	abortSystem();
+	#ifdef DREAMCAST
+	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+	#endif
 }
 
 ScriptRegion getScriptRegion(Script tScript, char* tName) {

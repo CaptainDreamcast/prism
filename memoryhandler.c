@@ -220,6 +220,10 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 	logError("Reallocating invalid memory address");
 	logErrorHex(tData);
 	abortSystem();
+
+	#ifdef DREAMCAST
+	return NULL; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+	#endif
 }
 
 static void popMemoryStackInternal(MemoryListStack* tStack, FreeFunc tFunc) {

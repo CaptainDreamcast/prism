@@ -193,6 +193,9 @@ int checkCollisionCollider(Collider tCollider1, Collider tCollider2) {
 		logErrorInteger(tCollider1.mType);
 		logErrorInteger(tCollider2.mType);
 		abortSystem();
+		#ifdef DREAMCAST
+		return 0; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+		#endif
 	}
 
 }
