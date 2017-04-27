@@ -50,5 +50,6 @@ fup void initMemoryHandler();
 fup void shutdownMemoryHandler();
 
 fup void debugPrintMemoryStack();
+fup int getAvailableTextureMemory();
 
 #endif

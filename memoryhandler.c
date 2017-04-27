@@ -4,7 +4,7 @@
 #include "include/system.h"
 
 #include <stdlib.h>
-
+#include <string.h>
 
 #ifdef DREAMCAST
 
@@ -31,11 +31,16 @@ void freeSDLTexture(void* tData) {
 
 static void addToUsageQueueFront(TextureMemory tMem);
 static void removeFromUsageQueue(TextureMemory tMem);
+static void makeSpaceInTextureMemory(size_t tSize);
 
 static void* allocTextureFunc(size_t tSize) {
+
+	makeSpaceInTextureMemory(tSize);
+
 	TextureMemory ret = malloc(sizeof(struct TextureMemory_internal));
 	ret->mData = allocTextureHW(tSize);
 	ret->mSize = tSize;
+	ret->mIsVirtual = 0;
 	addToUsageQueueFront(ret);
 	return ret;
 }
@@ -144,6 +149,45 @@ static void removeFromUsageQueue(TextureMemory tMem) {
 static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
 	removeFromUsageQueue(tMem);
 	addToUsageQueueFront(tMem);
+}
+
+static void virtualizeSingleTextureMemory(TextureMemory tMem) {
+	void* mainMemoryBuffer = malloc(tMem->mSize);
+	memcpy(mainMemoryBuffer, tMem->mData, tMem->mSize);
+	freeTextureHW(tMem->mData);
+	tMem->mData = mainMemoryBuffer;
+	tMem->mIsVirtual = 1;
+}
+
+static void unvirtualizeSingleTextureMemory(TextureMemory tMem) {
+	void* textureMemoryBuffer = allocTextureHW(tMem->mSize);
+	memcpy(textureMemoryBuffer, tMem->mData, tMem->mSize);
+	free(tMem->mData);
+	tMem->mData = textureMemoryBuffer;
+	tMem->mIsVirtual = 0;
+
+	addToUsageQueueFront(tMem);
+}
+
+static void virtualizeTextureMemory(size_t tSize) {
+	TextureMemory cur = gData.mTextureMemoryUsageList.mLast;
+
+	while (cur != NULL) {
+		TextureMemory next = cur->mPrevInUsageList;
+		virtualizeSingleTextureMemory(cur);
+		removeFromUsageQueue(cur);
+		tSize -= cur->mSize;
+		cur = next;
+	}
+}
+
+static void makeSpaceInTextureMemory(size_t tSize) {
+	int available = getAvailableTextureMemory();
+	if ((int)tSize < available) return;
+
+	int needed = available - tSize;
+
+	virtualizeTextureMemory(needed);
 }
 
 static void* addMemoryToMemoryList(MemoryList* tList, int tSize, MallocFunc tFunc) {
@@ -284,9 +328,9 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 	logErrorHex(tData);
 	abortSystem();
 
-	#ifdef DREAMCAST
+#ifdef DREAMCAST
 	return NULL; // TODO: fix unreachable code (Windows) / no return (DC) conflict
-	#endif
+#endif
 }
 
 static void popMemoryStackInternal(MemoryListStack* tStack, FreeFunc tFunc) {
@@ -344,6 +388,9 @@ void freeTextureMemory(TextureMemory tMem) {
 void referenceTextureMemory(TextureMemory tMem) {
 	if (tMem == NULL) return;
 
+	if (tMem->mIsVirtual) {
+		unvirtualizeSingleTextureMemory(tMem);
+	}
 	moveTextureMemoryInUsageQueueToFront(tMem);
 }
 
