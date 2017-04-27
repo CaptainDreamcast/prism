@@ -2,7 +2,7 @@
 
 // TODO: REFACTOR
 
-#include "../../include/storyboard.h"
+#include "tari/storyboard.h"
 #include "../common/legacydefinitions.h"
 #include "../common/scriptreader.h"
 
