@@ -1,9 +1,9 @@
-#include "../include/system.h"
+#include "tari/system.h"
 
 #include <kos.h>
 
-#include "../include/log.h"
-#include "../include/pvr.h"
+#include "tari/log.h"
+#include "tari/pvr.h"
 
 void abortSystem(){
 	arch_exit();

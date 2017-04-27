@@ -9,13 +9,13 @@ quicklz.o
 
 defaultall: create_addons_link $(OBJS) subdirs linklib
 
-KOS_CFLAGS += -W -Wall -Werror -DDREAMCAST
+KOS_CFLAGS += -W -Wall -Werror -DDREAMCAST -I ./include
 
 include $(KOS_BASE)/addons/Makefile.prefab
 
 create_addons_link:
 	rm -f ../include/tari
-	ln -s ../libtari/include ../include/tari
+	ln -s ../libtari/include/tari ../include/tari
 
 clean:
 	rm -f *.o

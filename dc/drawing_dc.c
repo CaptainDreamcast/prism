@@ -1,14 +1,14 @@
-#include "../include/drawing.h"
+#include "tari/drawing.h"
 
 #include <stdlib.h>
 
 #include <kos.h>
 #include <dc/matrix3d.h>
 
-#include "../include/log.h"
-#include "../include/datastructures.h"
-#include "../include/memoryhandler.h"
-#include "../include/system.h"
+#include "tari/log.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
 
 static struct {
 

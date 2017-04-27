@@ -1,8 +1,8 @@
-#include "../include/input.h"
+#include "tari/input.h"
 
 #include <kos.h>
 
-#include "../include/log.h"
+#include "tari/log.h"
 
 typedef struct {
 	maple_device_t* mCont;
