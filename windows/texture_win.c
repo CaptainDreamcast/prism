@@ -1,14 +1,14 @@
-#include "../include/texture.h"
+#include "tari/texture.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string.h>
 
-#include "../include/file.h"
-#include "../include/log.h"
-#include "../include/memoryhandler.h"
-#include "../include/system.h"
-#include "../include/math.h"
+#include "tari/file.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
+#include "tari/math.h"
 
 
 

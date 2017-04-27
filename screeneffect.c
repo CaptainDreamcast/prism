@@ -1,13 +1,13 @@
-#include "include/screeneffect.h"
+#include "tari/screeneffect.h"
 
-#include "include/file.h"
-#include "include/timer.h"
-#include "include/memoryhandler.h"
-#include "include/physicshandler.h"
-#include "include/system.h"
-#include "include/texture.h"
-#include "include/system.h"
-#include "include/log.h"
+#include "tari/file.h"
+#include "tari/timer.h"
+#include "tari/memoryhandler.h"
+#include "tari/physicshandler.h"
+#include "tari/system.h"
+#include "tari/texture.h"
+#include "tari/system.h"
+#include "tari/log.h"
 
 struct FadeInStruct;
 

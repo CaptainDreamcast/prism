@@ -1,8 +1,8 @@
-#include "../include/sound.h"
+#include "tari/sound.h"
 
 #include <SDL_mixer.h>
 
-#include "../include/log.h"
+#include "tari/log.h"
 
 static struct {
 

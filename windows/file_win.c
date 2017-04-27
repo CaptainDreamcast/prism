@@ -1,12 +1,12 @@
-#include "../include/file.h"
+#include "tari/file.h"
 
 #include <stdio.h>
 #include <windows.h>
 
-#include "../include/log.h"
-#include "../include/memoryhandler.h"
-#include "../include/system.h"
-#include "../include/datastructures.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
+#include "tari/datastructures.h"
 
 typedef struct {
 	char mMount[1024];

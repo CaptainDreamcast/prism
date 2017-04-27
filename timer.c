@@ -1,7 +1,7 @@
-#include "include/timer.h"
+#include "tari/timer.h"
 
-#include "include/memoryhandler.h"
-#include "include/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/datastructures.h"
 
 typedef struct TimerElement_internal{
 	Duration mNow;

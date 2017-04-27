@@ -1,21 +1,21 @@
-#include "include/storyboard.h"
+#include "tari/storyboard.h"
 
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "include/datastructures.h"
-#include "include/memoryhandler.h"
-#include "include/file.h"
-#include "include/log.h"
-#include "include/animation.h"
-#include "include/system.h"
-#include "include/physicshandler.h"
-#include "include/soundeffect.h"
-#include "include/timer.h"
-#include "include/texthandler.h"
-#include "include/sound.h"
-#include "include/math.h"
-#include "include/input.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/file.h"
+#include "tari/log.h"
+#include "tari/animation.h"
+#include "tari/system.h"
+#include "tari/physicshandler.h"
+#include "tari/soundeffect.h"
+#include "tari/timer.h"
+#include "tari/texthandler.h"
+#include "tari/sound.h"
+#include "tari/math.h"
+#include "tari/input.h"
 
 
 #pragma pack(push, 1)

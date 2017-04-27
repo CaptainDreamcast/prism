@@ -1,7 +1,7 @@
-#include "include/drawing.h"
+#include "tari/drawing.h"
 
-#include "include/log.h"
-#include "include/math.h"
+#include "tari/log.h"
+#include "tari/math.h"
 
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 	if (tColor == COLOR_BLACK) {

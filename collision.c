@@ -1,10 +1,10 @@
-#include "include/collision.h"
+#include "tari/collision.h"
 
 #include <string.h>
 
-#include "include/log.h"
-#include "include/memoryhandler.h"
-#include "include/system.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
 
 
 // TODO: use something better; this will likely cause vibrations

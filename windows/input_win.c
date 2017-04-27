@@ -1,8 +1,8 @@
-#include "../include/input.h"
+#include "tari/input.h"
 
 #include <SDL.h>
 
-#include "../include/log.h"
+#include "tari/log.h"
 
 typedef struct {
 	int mIsUsingController;

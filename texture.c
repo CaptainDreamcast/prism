@@ -1,7 +1,7 @@
-#include "include/texture.h"
+#include "tari/texture.h"
 
-#include "include/file.h"
-#include "include/log.h"
+#include "tari/file.h"
+#include "tari/log.h"
 
 #define FONT_CHARACTER_AMOUNT 91
 

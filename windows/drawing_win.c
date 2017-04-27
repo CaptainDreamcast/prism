@@ -1,14 +1,14 @@
-#include "../include/drawing.h"
+#include "../include/tari/drawing.h"
 
 #include <stdlib.h>
 #include <SDL.h>
 #include <SDL_image.h>
 
-#include "../include/log.h"
-#include "../include/system.h"
-#include "../include/datastructures.h"
-#include "../include/memoryhandler.h"
-#include "../include/math.h"
+#include "tari/log.h"
+#include "tari/system.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/math.h"
 
 
 

@@ -1,9 +1,9 @@
-#include "include/script.h"
+#include "tari/script.h"
 
 #include <string.h>
 
-#include "include/log.h"
-#include "include/system.h"
+#include "tari/log.h"
+#include "tari/system.h"
 
 
 Script loadScript(char* tPath) {

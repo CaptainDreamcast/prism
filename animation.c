@@ -1,14 +1,14 @@
-#include "include/animation.h"
+#include "tari/animation.h"
 
 #include <stdlib.h>
 
-#include "include/framerate.h"
-#include "include/log.h"
-#include "include/datastructures.h"
-#include "include/memoryhandler.h"
-#include "include/system.h"
+#include "tari/framerate.h"
+#include "tari/log.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
 
-#include "include/timer.h" // TODO: separate animation and animation handler
+#include "tari/timer.h" // TODO: separate animation and animation handler
 
 static struct {
 	int mIsPaused;

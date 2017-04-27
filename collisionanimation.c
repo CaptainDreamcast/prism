@@ -1,8 +1,8 @@
-#include "include/collisionanimation.h"
-#include "include/collisionhandler.h"
-#include "include/memoryhandler.h"
-#include "include/log.h"
-#include "include/system.h"
+#include "tari/collisionanimation.h"
+#include "tari/collisionhandler.h"
+#include "tari/memoryhandler.h"
+#include "tari/log.h"
+#include "tari/system.h"
 
 
 CollisionAnimation makeEmptyCollisionAnimation() {

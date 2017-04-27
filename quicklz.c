@@ -9,7 +9,7 @@
 
 // 1.5.0 final
 
-#include "include/quicklz.h"
+#include "tari/quicklz.h"
 
 #if QLZ_VERSION_MAJOR != 1 || QLZ_VERSION_MINOR != 5 || QLZ_VERSION_REVISION != 0
 	#error quicklz.c and quicklz.h have different versions

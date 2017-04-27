@@ -1,7 +1,7 @@
-#include "include/memoryhandler.h"
+#include "tari/memoryhandler.h"
 
-#include "include/log.h"
-#include "include/system.h"
+#include "tari/log.h"
+#include "tari/system.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +16,7 @@
 #elif defined _WIN32
 
 #include <SDL.h>
-#include "include/texture.h"
+#include "tari/texture.h"
 
 void freeSDLTexture(void* tData) {
 	SDLTextureData* e = tData;

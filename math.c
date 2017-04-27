@@ -1,4 +1,4 @@
-#include "include/math.h"
+#include "tari/math.h"
 
 #include <stdlib.h>
 #include <math.h>

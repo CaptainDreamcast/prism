@@ -1,10 +1,10 @@
-#include "include/file.h"
+#include "tari/file.h"
 
 #include <sys/stat.h>
 
-#include "include/log.h"
-#include "include/memoryhandler.h"
-#include "include/system.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
 
 char* getPureFileName(char* path) {
 	debugLog("Getting pure filename.");
