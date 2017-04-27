@@ -24,7 +24,7 @@
 #define logWarningString(x) logString(x)
 
 #ifdef DEBUG
-#define debugLog(x) log(x)
+#define debugLog(x) logg(x)
 #define debugInteger(x) logInteger(x)
 #define debugDouble(x) logDouble(x)
 #define debugString(x) logString(x)

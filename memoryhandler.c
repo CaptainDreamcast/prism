@@ -6,6 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// TODO: update to newest KOS, so no more manual memory tracking required
+extern void initMemoryHandlerHW(); 
+extern void increaseAvailableTextureMemoryHW(size_t tSize);
+extern void decreaseAvailableTextureMemoryHW(size_t tSize);
+
 #ifdef DREAMCAST
 
 #include <kos.h>
@@ -38,17 +43,24 @@ static void* allocTextureFunc(size_t tSize) {
 	makeSpaceInTextureMemory(tSize);
 
 	TextureMemory ret = malloc(sizeof(struct TextureMemory_internal));
+	decreaseAvailableTextureMemoryHW(tSize);
 	ret->mData = allocTextureHW(tSize);
 	ret->mSize = tSize;
 	ret->mIsVirtual = 0;
 	addToUsageQueueFront(ret);
+
 	return ret;
 }
 
 static void freeTextureFunc(void* tData) {
 	TextureMemory tMem = tData;
 	removeFromUsageQueue(tMem);
-	freeTextureHW(tMem->mData);
+	if(tMem->mIsVirtual) {
+		free(tMem->mData);
+	} else {
+		increaseAvailableTextureMemoryHW(tMem->mSize);
+		freeTextureHW(tMem->mData);
+	}
 	free(tMem);
 }
 
@@ -152,14 +164,22 @@ static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
 }
 
 static void virtualizeSingleTextureMemory(TextureMemory tMem) {
+	debugLog("Virtualizing texture memory.");
+	debugInteger(tMem->mSize);
+
 	void* mainMemoryBuffer = malloc(tMem->mSize);
 	memcpy(mainMemoryBuffer, tMem->mData, tMem->mSize);
+	increaseAvailableTextureMemoryHW(tMem->mSize);
 	freeTextureHW(tMem->mData);
 	tMem->mData = mainMemoryBuffer;
 	tMem->mIsVirtual = 1;
 }
 
 static void unvirtualizeSingleTextureMemory(TextureMemory tMem) {
+	debugLog("Unvirtualizing texture memory.");
+	debugInteger(tMem->mSize);
+
+	decreaseAvailableTextureMemoryHW(tMem->mSize);
 	void* textureMemoryBuffer = allocTextureHW(tMem->mSize);
 	memcpy(textureMemoryBuffer, tMem->mData, tMem->mSize);
 	free(tMem->mData);
@@ -172,20 +192,23 @@ static void unvirtualizeSingleTextureMemory(TextureMemory tMem) {
 static void virtualizeTextureMemory(size_t tSize) {
 	TextureMemory cur = gData.mTextureMemoryUsageList.mLast;
 
+	int sizeLeft = (int)tSize;
 	while (cur != NULL) {
 		TextureMemory next = cur->mPrevInUsageList;
 		virtualizeSingleTextureMemory(cur);
 		removeFromUsageQueue(cur);
-		tSize -= cur->mSize;
+		sizeLeft -= cur->mSize;
 		cur = next;
+		if(sizeLeft <= 0) break;
 	}
 }
 
 static void makeSpaceInTextureMemory(size_t tSize) {
 	int available = getAvailableTextureMemory();
-	if ((int)tSize < available) return;
 
-	int needed = available - tSize;
+	if ((int)tSize <= available) return;
+
+	int needed = tSize - available;
 
 	virtualizeTextureMemory(needed);
 }
@@ -389,6 +412,7 @@ void referenceTextureMemory(TextureMemory tMem) {
 	if (tMem == NULL) return;
 
 	if (tMem->mIsVirtual) {
+		makeSpaceInTextureMemory(tMem->mSize);
 		unvirtualizeSingleTextureMemory(tMem);
 	}
 	moveTextureMemoryInUsageQueueToFront(tMem);
@@ -438,6 +462,7 @@ void initMemoryHandler() {
 	initTextureMemoryUsageList();
 	pushMemoryStack();
 	pushTextureMemoryStack();
+	initMemoryHandlerHW();
 }
 
 void shutdownMemoryHandler() {
