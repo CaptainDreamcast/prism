@@ -138,6 +138,7 @@
     <ClCompile Include="..\..\collision.c" />
     <ClCompile Include="..\..\collisionanimation.c" />
     <ClCompile Include="..\..\collisionhandler.c" />
+    <ClCompile Include="..\..\compression.c" />
     <ClCompile Include="..\..\datastructures.c" />
     <ClCompile Include="..\..\drawing.c" />
     <ClCompile Include="..\..\file.c" />
@@ -182,6 +183,7 @@
     <ClInclude Include="..\..\include\tari\collisionanimation.h" />
     <ClInclude Include="..\..\include\tari\collisionhandler.h" />
     <ClInclude Include="..\..\include\tari\common\header.h" />
+    <ClInclude Include="..\..\include\tari\compression.h" />
     <ClInclude Include="..\..\include\tari\datastructures.h" />
     <ClInclude Include="..\..\include\tari\drawing.h" />
     <ClInclude Include="..\..\include\tari\file.h" />

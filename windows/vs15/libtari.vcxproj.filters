@@ -115,6 +115,9 @@
     <ClCompile Include="..\memoryhandler_win.c">
       <Filter>src\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\compression.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -234,6 +237,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\tari\common\header.h">
       <Filter>hdr\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\compression.h">
+      <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

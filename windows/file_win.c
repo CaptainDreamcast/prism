@@ -79,7 +79,17 @@ const char* getWorkingDirectory() {
 	return gData.cwd;
 }
 
+static int isAbsoluteWindowsDirectory(char* tPath) {
+	return tPath[1] == ':';
+}
+
 void getFullPath(char* tDest, char* tPath) {
+
+	if (isAbsoluteWindowsDirectory(tPath)) {
+		strcpy(tDest, tPath);
+		return;
+	}
+
 	if (tPath[0] == '$') tPath+=4;
 
 	if (tPath[0] == '/') {

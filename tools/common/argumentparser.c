@@ -183,3 +183,11 @@ void FetchFolderAndOriginalFileName(char OriginalInputFileName[], char InputFold
 	RawFileName[OutputArrayPosition] = '\0';
 
 }
+
+void getPathWithoutFileExtension(char* tDest, char* tPath) {
+	strcpy(tDest, tPath);
+	if (!strcmp("", tPath)) return;
+
+	char* pos = strrchr(tDest, '.');
+	*pos = '\0';
+}
