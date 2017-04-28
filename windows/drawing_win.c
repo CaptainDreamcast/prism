@@ -220,7 +220,7 @@ static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position
 	
 	char word[1024];
 	int positionsRead;
-	sscanf(tText + tCurrent, "%s%n", word, &positionsRead);
+	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
 
 	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead-1) * tBreakSize.x, 0, 0);
 	Position after = vecAdd(tPos, delta);

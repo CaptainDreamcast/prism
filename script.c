@@ -35,7 +35,7 @@ static ScriptPosition updateScriptPositionValidity(ScriptPosition tPos) {
 
 ScriptPosition getNextScriptString(ScriptPosition tPos, char* tDest) {
 	int positionsRead;	
-	sscanf(tPos.mPointer, "%s%n", tDest, &positionsRead);
+	sscanf(tPos.mPointer, "%99s%n", tDest, &positionsRead);
 	tPos.mPointer += positionsRead;
 	tPos = updateScriptPositionValidity(tPos);
 	

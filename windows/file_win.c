@@ -101,6 +101,7 @@ FileHandler fileOpen(char* tPath, int tFlags){
 	debugString(gData.cwd);
 
 	char flags[100];
+	flags[0] = '\0';
 	if (tFlags == O_RDONLY) {
 		sprintf(flags, "rb");
 	} else if (tFlags == O_WRONLY) {

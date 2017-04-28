@@ -123,11 +123,11 @@ void printDirectory(char* tPath) {
 	char path[1024];
 	getFullPath(path, tPath);
 
-	DIR* d;
-	struct dirent *dir;
+	DIR* d;	
 	d = opendir(path);
 	if (d)
 	{
+		struct dirent *dir;
 		while ((dir = readdir(d)) != NULL)
 		{
 			logString(dir->d_name);
