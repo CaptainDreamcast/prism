@@ -1,12 +1,12 @@
-#include "../include/file.h"
+#include "tari/file.h"
 
 #include <stdio.h>
 #include <windows.h>
 
-#include "../include/log.h"
-#include "../include/memoryhandler.h"
-#include "../include/system.h"
-#include "../include/datastructures.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
+#include "tari/datastructures.h"
 
 typedef struct {
 	char mMount[1024];
@@ -79,7 +79,17 @@ const char* getWorkingDirectory() {
 	return gData.cwd;
 }
 
+static int isAbsoluteWindowsDirectory(char* tPath) {
+	return tPath[1] == ':';
+}
+
 void getFullPath(char* tDest, char* tPath) {
+
+	if (isAbsoluteWindowsDirectory(tPath)) {
+		strcpy(tDest, tPath);
+		return;
+	}
+
 	if (tPath[0] == '$') tPath+=4;
 
 	if (tPath[0] == '/') {
@@ -101,6 +111,7 @@ FileHandler fileOpen(char* tPath, int tFlags){
 	debugString(gData.cwd);
 
 	char flags[100];
+	flags[0] = '\0';
 	if (tFlags == O_RDONLY) {
 		sprintf(flags, "rb");
 	} else if (tFlags == O_WRONLY) {
@@ -142,6 +153,7 @@ int fileUnlink(char* tPath) {
 }
 
 void* fileMemoryMap(FileHandler tHandler) {
+	(void)tHandler;
 	return NULL;
 }
 

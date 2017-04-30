@@ -1,4 +1,4 @@
-#include "../include/pvr.h"
+#include "tari/pvr.h"
 
 #include <kos.h>
 

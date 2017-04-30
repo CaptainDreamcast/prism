@@ -9,3 +9,4 @@ int FetchBackGroundProgramLocations(char CurrentFolderName[], char KallistiImage
 
 void FetchFolderName(char OriginalInputFileName[], char InputFolderName[]);
 void FetchFolderAndOriginalFileName(char OriginalInputFileName[], char InputFolderName[], char RawFileName[]);
+void getPathWithoutFileExtension(char* tDest, char* tPath);

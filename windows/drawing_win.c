@@ -1,14 +1,14 @@
-#include "../include/drawing.h"
+#include "../include/tari/drawing.h"
 
 #include <stdlib.h>
 #include <SDL.h>
 #include <SDL_image.h>
 
-#include "../include/log.h"
-#include "../include/system.h"
-#include "../include/datastructures.h"
-#include "../include/memoryhandler.h"
-#include "../include/math.h"
+#include "tari/log.h"
+#include "tari/system.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/math.h"
 
 
 
@@ -146,11 +146,6 @@ static void drawSorted(void* tCaller, void* tData) {
 	int sizeX = abs(e->mTexturePosition.bottomRight.x - e->mTexturePosition.topLeft.x) + 1;
 	int sizeY = abs(e->mTexturePosition.bottomRight.y - e->mTexturePosition.topLeft.y) + 1;
 
-	double left = e->mTexturePosition.topLeft.x / ((double)(e->mTexture.mTextureSize.x - 1));
-	double right = e->mTexturePosition.bottomRight.x / ((double)(e->mTexture.mTextureSize.x - 1));
-	double up = e->mTexturePosition.topLeft.y / ((double)(e->mTexture.mTextureSize.y - 1));
-	double down = e->mTexturePosition.bottomRight.y / ((double)(e->mTexture.mTextureSize.y - 1));
-
 	SDL_Rect srcRect;
 	srcRect.x = min(e->mTexturePosition.topLeft.x, e->mTexturePosition.bottomRight.x);
 	srcRect.y = min(e->mTexturePosition.topLeft.y, e->mTexturePosition.bottomRight.y);
@@ -184,10 +179,11 @@ static void drawSorted(void* tCaller, void* tData) {
 
 	double angleDegrees = 360-((e->mData.mAngle.z * 180)/ M_PI);
 
-	SDL_SetTextureColorMod(e->mTexture.mTexture->mTexture, (Uint8)(e->mData.r*0xFF), (Uint8)(e->mData.g*0xFF), (Uint8)(e->mData.b*0xFF));
-	SDL_SetTextureAlphaMod(e->mTexture.mTexture->mTexture, (Uint8)(e->mData.a * 0xFF));
+	Texture texture = e->mTexture.mTexture->mData;
+	SDL_SetTextureColorMod(texture->mTexture, (Uint8)(e->mData.r*0xFF), (Uint8)(e->mData.g*0xFF), (Uint8)(e->mData.b*0xFF));
+	SDL_SetTextureAlphaMod(texture->mTexture, (Uint8)(e->mData.a * 0xFF));
 
-	SDL_RenderCopyEx(gRenderer, e->mTexture.mTexture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
+	SDL_RenderCopyEx(gRenderer, texture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
 }
 
 void stopDrawing() {
@@ -224,7 +220,7 @@ static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position
 	
 	char word[1024];
 	int positionsRead;
-	sscanf(tText + tCurrent, "%s%n", word, &positionsRead);
+	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
 
 	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead-1) * tBreakSize.x, 0, 0);
 	Position after = vecAdd(tPos, delta);

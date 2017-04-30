@@ -1,13 +1,13 @@
-#include "include/collisionhandler.h"
+#include "tari/collisionhandler.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "include/datastructures.h"
-#include "include/memoryhandler.h"
-#include "include/drawing.h"
-#include "include/log.h"
-#include "include/system.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/drawing.h"
+#include "tari/log.h"
+#include "tari/system.h"
 
 typedef struct {
 	int mListID;

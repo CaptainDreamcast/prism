@@ -1,10 +1,15 @@
-#include "include/memoryhandler.h"
+#include "tari/memoryhandler.h"
 
-#include "include/log.h"
-#include "include/system.h"
+#include "tari/log.h"
+#include "tari/system.h"
 
 #include <stdlib.h>
+#include <string.h>
 
+// TODO: update to newest KOS, so no more manual memory tracking required
+extern void initMemoryHandlerHW(); 
+extern void increaseAvailableTextureMemoryHW(size_t tSize);
+extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 
 #ifdef DREAMCAST
 
@@ -16,7 +21,7 @@
 #elif defined _WIN32
 
 #include <SDL.h>
-#include "include/texture.h"
+#include "tari/texture.h"
 
 void freeSDLTexture(void* tData) {
 	SDLTextureData* e = tData;
@@ -28,6 +33,37 @@ void freeSDLTexture(void* tData) {
 #define freeTextureHW freeSDLTexture
 
 #endif
+
+static void addToUsageQueueFront(TextureMemory tMem);
+static void removeFromUsageQueue(TextureMemory tMem);
+static void makeSpaceInTextureMemory(size_t tSize);
+
+static void* allocTextureFunc(size_t tSize) {
+
+	makeSpaceInTextureMemory(tSize);
+
+	TextureMemory ret = malloc(sizeof(struct TextureMemory_internal));
+	decreaseAvailableTextureMemoryHW(tSize);
+	ret->mData = allocTextureHW(tSize);
+	ret->mSize = tSize;
+	ret->mIsVirtual = 0;
+	addToUsageQueueFront(ret);
+
+	return ret;
+}
+
+static void freeTextureFunc(void* tData) {
+	TextureMemory tMem = tData;
+	removeFromUsageQueue(tMem);
+	if(tMem->mIsVirtual) {
+		free(tMem->mData);
+	} else {
+		increaseAvailableTextureMemoryHW(tMem->mSize);
+		freeTextureHW(tMem->mData);
+	}
+	free(tMem);
+}
+
 
 #define MEMORY_STACK_MAX 10
 
@@ -43,6 +79,12 @@ typedef struct {
 } MemoryList;
 
 typedef struct {
+	int mSize;
+	TextureMemory mFirst;
+	TextureMemory mLast;
+} TextureMemoryUsageList;
+
+typedef struct {
 	int mHead;
 	MemoryList mLists[MEMORY_STACK_MAX];
 } MemoryListStack;
@@ -50,12 +92,12 @@ typedef struct {
 static struct {
 	MemoryListStack mMemoryStack;
 	MemoryListStack mTextureMemoryStack;
+	TextureMemoryUsageList mTextureMemoryUsageList;
 	int mActive;
 } gData;
 
-
 typedef void* (*MallocFunc)(size_t tSize);
-typedef void(*FreeFunc)(void* tSize);
+typedef void(*FreeFunc)(void* tData);
 typedef void* (*ReallocFunc)(void* tPointer, size_t tSize);
 
 static void printMemoryList(MemoryList* tList) {
@@ -81,6 +123,94 @@ static void printMemoryListStack(MemoryListStack* tStack) {
 
 void debugPrintMemoryStack() {
 	printMemoryListStack(&gData.mMemoryStack);
+}
+
+static void addToUsageQueueFront(TextureMemory tMem) {
+	TextureMemory prevFirst = gData.mTextureMemoryUsageList.mFirst;
+	if (prevFirst == NULL) {
+		gData.mTextureMemoryUsageList.mFirst = gData.mTextureMemoryUsageList.mLast = tMem;
+		tMem->mPrevInUsageList = tMem->mNextInUsageList = NULL;
+	}
+	else {
+		gData.mTextureMemoryUsageList.mFirst = tMem;
+		prevFirst->mPrevInUsageList = tMem;
+
+		tMem->mPrevInUsageList = NULL;
+		tMem->mNextInUsageList = prevFirst;
+	}
+
+	gData.mTextureMemoryUsageList.mSize++;
+}
+
+static void removeFromUsageQueue(TextureMemory tMem) {
+	TextureMemory prev = tMem->mPrevInUsageList;
+	TextureMemory next = tMem->mNextInUsageList;
+
+	if (prev != NULL) prev->mNextInUsageList = next;
+	else gData.mTextureMemoryUsageList.mFirst = next;
+
+	if (next != NULL) next->mPrevInUsageList = prev;
+	else gData.mTextureMemoryUsageList.mLast = prev;
+
+	gData.mTextureMemoryUsageList.mSize--;
+
+	tMem->mNextInUsageList = NULL;
+	tMem->mPrevInUsageList = NULL;
+}
+
+static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
+	removeFromUsageQueue(tMem);
+	addToUsageQueueFront(tMem);
+}
+
+static void virtualizeSingleTextureMemory(TextureMemory tMem) {
+	debugLog("Virtualizing texture memory.");
+	debugInteger(tMem->mSize);
+
+	void* mainMemoryBuffer = malloc(tMem->mSize);
+	memcpy(mainMemoryBuffer, tMem->mData, tMem->mSize);
+	increaseAvailableTextureMemoryHW(tMem->mSize);
+	freeTextureHW(tMem->mData);
+	tMem->mData = mainMemoryBuffer;
+	tMem->mIsVirtual = 1;
+}
+
+static void unvirtualizeSingleTextureMemory(TextureMemory tMem) {
+	debugLog("Unvirtualizing texture memory.");
+	debugInteger(tMem->mSize);
+
+	decreaseAvailableTextureMemoryHW(tMem->mSize);
+	void* textureMemoryBuffer = allocTextureHW(tMem->mSize);
+	memcpy(textureMemoryBuffer, tMem->mData, tMem->mSize);
+	free(tMem->mData);
+	tMem->mData = textureMemoryBuffer;
+	tMem->mIsVirtual = 0;
+
+	addToUsageQueueFront(tMem);
+}
+
+static void virtualizeTextureMemory(size_t tSize) {
+	TextureMemory cur = gData.mTextureMemoryUsageList.mLast;
+
+	int sizeLeft = (int)tSize;
+	while (cur != NULL) {
+		TextureMemory next = cur->mPrevInUsageList;
+		virtualizeSingleTextureMemory(cur);
+		removeFromUsageQueue(cur);
+		sizeLeft -= cur->mSize;
+		cur = next;
+		if(sizeLeft <= 0) break;
+	}
+}
+
+static void makeSpaceInTextureMemory(size_t tSize) {
+	int available = getAvailableTextureMemory();
+
+	if ((int)tSize <= available) return;
+
+	int needed = tSize - available;
+
+	virtualizeTextureMemory(needed);
 }
 
 static void* addMemoryToMemoryList(MemoryList* tList, int tSize, MallocFunc tFunc) {
@@ -221,7 +351,9 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 	logErrorHex(tData);
 	abortSystem();
 
-	return NULL;
+#ifdef DREAMCAST
+	return NULL; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+#endif
 }
 
 static void popMemoryStackInternal(MemoryListStack* tStack, FreeFunc tFunc) {
@@ -262,15 +394,28 @@ void* reallocMemory(void* tData, int tSize) {
 	return resizeMemoryOnMemoryListStack(&gData.mMemoryStack, tData, tSize, realloc);
 }
 
-void* allocTextureMemory(int tSize) {
-	if (!tSize) return NULL;
+TextureMemory allocTextureMemory(int tSize) {
+	if (!tSize) {
+		return NULL;
+	}
 
-	return addMemoryToMemoryListStack(&gData.mTextureMemoryStack, tSize, allocTextureHW);
+	return addMemoryToMemoryListStack(&gData.mTextureMemoryStack, tSize, allocTextureFunc);
 }
-void freeTextureMemory(void* tData) {
-	if (tData == NULL) return;
 
-	removeMemoryFromMemoryListStack(&gData.mTextureMemoryStack, tData, freeTextureHW);
+void freeTextureMemory(TextureMemory tMem) {
+	if (tMem == NULL) return;
+
+	removeMemoryFromMemoryListStack(&gData.mTextureMemoryStack, tMem, freeTextureFunc);
+}
+
+void referenceTextureMemory(TextureMemory tMem) {
+	if (tMem == NULL) return;
+
+	if (tMem->mIsVirtual) {
+		makeSpaceInTextureMemory(tMem->mSize);
+		unvirtualizeSingleTextureMemory(tMem);
+	}
+	moveTextureMemoryInUsageQueueToFront(tMem);
 }
 
 static void pushMemoryStackInternal(MemoryListStack* tStack) {
@@ -296,7 +441,13 @@ void pushTextureMemoryStack() {
 	pushMemoryStackInternal(&gData.mTextureMemoryStack);
 }
 void popTextureMemoryStack() {
-	popMemoryStackInternal(&gData.mTextureMemoryStack, freeTextureHW);
+	popMemoryStackInternal(&gData.mTextureMemoryStack, freeTextureFunc);
+}
+
+static void initTextureMemoryUsageList() {
+	gData.mTextureMemoryUsageList.mFirst = NULL;
+	gData.mTextureMemoryUsageList.mLast = NULL;
+	gData.mTextureMemoryUsageList.mSize = 0;
 }
 
 void initMemoryHandler() {
@@ -308,13 +459,15 @@ void initMemoryHandler() {
 	gData.mActive = 1;
 	gData.mMemoryStack.mHead = -1;
 	gData.mTextureMemoryStack.mHead = -1;
+	initTextureMemoryUsageList();
 	pushMemoryStack();
 	pushTextureMemoryStack();
+	initMemoryHandlerHW();
 }
 
 void shutdownMemoryHandler() {
 	gData.mActive = 0;
 	emptyMemoryListStack(&gData.mMemoryStack, free);
-	emptyMemoryListStack(&gData.mTextureMemoryStack, freeTextureHW);
+	emptyMemoryListStack(&gData.mTextureMemoryStack, freeTextureFunc);
 }
 

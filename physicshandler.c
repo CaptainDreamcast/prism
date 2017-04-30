@@ -1,12 +1,12 @@
-#include "include/physicshandler.h"
+#include "tari/physicshandler.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-#include "include/datastructures.h"
-#include "include/physics.h"
-#include "include/memoryhandler.h"
+#include "tari/datastructures.h"
+#include "tari/physics.h"
+#include "tari/memoryhandler.h"
 
 typedef struct {
 

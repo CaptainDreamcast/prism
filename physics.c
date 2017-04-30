@@ -1,10 +1,10 @@
-#include "include/physics.h"
+#include "tari/physics.h"
 
 #include <string.h>
 #include <math.h>
 
-#include "include/log.h"
-#include "include/framerate.h"
+#include "tari/log.h"
+#include "tari/framerate.h"
 
 static struct {
 	Velocity mMaxVelocity;

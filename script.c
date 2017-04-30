@@ -1,9 +1,9 @@
-#include "include/script.h"
+#include "tari/script.h"
 
 #include <string.h>
 
-#include "include/log.h"
-#include "include/system.h"
+#include "tari/log.h"
+#include "tari/system.h"
 
 
 Script loadScript(char* tPath) {
@@ -35,7 +35,7 @@ static ScriptPosition updateScriptPositionValidity(ScriptPosition tPos) {
 
 ScriptPosition getNextScriptString(ScriptPosition tPos, char* tDest) {
 	int positionsRead;	
-	sscanf(tPos.mPointer, "%s%n", tDest, &positionsRead);
+	sscanf(tPos.mPointer, "%99s%n", tDest, &positionsRead);
 	tPos.mPointer += positionsRead;
 	tPos = updateScriptPositionValidity(tPos);
 	
@@ -116,7 +116,9 @@ static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, ch
 	logString(tPos.mPointer);
 	logString(tWord);
 	abortSystem();
-	return tPos;
+	#ifdef DREAMCAST
+	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+	#endif
 }
 
 static ScriptPosition findNextCharacterScriptOccurenceOnSameLevel(ScriptPosition tPos, char tChar) {
@@ -141,7 +143,10 @@ static ScriptPosition findNextCharacterScriptOccurenceOnSameLevel(ScriptPosition
 	logString(tPos.mPointer);
 	logInteger(tChar);
 	abortSystem();
-	return tPos;
+
+	#ifdef DREAMCAST
+	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+	#endif
 }
 
 static ScriptPosition findScriptRegionEnd(ScriptPosition tPos) {
@@ -174,7 +179,9 @@ static ScriptPosition findScriptRegionStart(ScriptPosition tPos, char* tName) {
 	logString(tPos.mPointer);
 	logString(tName);
 	abortSystem();
-	return tPos;
+	#ifdef DREAMCAST
+	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+	#endif
 }
 
 ScriptRegion getScriptRegion(Script tScript, char* tName) {

@@ -1,0 +1,1 @@
+xcopy /Y /E /I Release\kompressor.exe ..\..\bin\

@@ -1,8 +1,8 @@
-#include "../include/input.h"
+#include "tari/input.h"
 
 #include <SDL.h>
 
-#include "../include/log.h"
+#include "tari/log.h"
 
 typedef struct {
 	int mIsUsingController;
@@ -28,8 +28,7 @@ static int const gKeys[2][20] = {
 		SDL_SCANCODE_D,
 		SDL_SCANCODE_1,
 		SDL_SCANCODE_ESCAPE,
-	}, 
-
+	},
 	{
 		SDL_SCANCODE_H,
 		SDL_SCANCODE_J,
@@ -43,7 +42,7 @@ static int const gKeys[2][20] = {
 		SDL_SCANCODE_K,
 		SDL_SCANCODE_3,
 		SDL_SCANCODE_ESCAPE,
-	}
+	},
 };
 
 static void loadController(int i) {

@@ -1,11 +1,11 @@
-#include "include/datastructures.h"
+#include "tari/datastructures.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/memoryhandler.h"
-#include "include/log.h"
-#include "include/system.h"
+#include "tari/memoryhandler.h"
+#include "tari/log.h"
+#include "tari/system.h"
 
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
 	ListElement* e = allocMemory(sizeof(ListElement));

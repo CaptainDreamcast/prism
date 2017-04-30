@@ -112,41 +112,12 @@
     <ClCompile Include="..\..\screeneffect.c">
       <Filter>src</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\animation.h" />
-    <ClInclude Include="..\..\include\collision.h" />
-    <ClInclude Include="..\..\include\collisionanimation.h" />
-    <ClInclude Include="..\..\include\collisionhandler.h" />
-    <ClInclude Include="..\..\include\datastructures.h" />
-    <ClInclude Include="..\..\include\drawing.h" />
-    <ClInclude Include="..\..\include\file.h" />
-    <ClInclude Include="..\..\include\framerate.h" />
-    <ClInclude Include="..\..\include\framerateselectscreen.h" />
-    <ClInclude Include="..\..\include\geometry.h" />
-    <ClInclude Include="..\..\include\input.h" />
-    <ClInclude Include="..\..\include\log.h" />
-    <ClInclude Include="..\..\include\memoryhandler.h" />
-    <ClInclude Include="..\..\include\optionhandler.h" />
-    <ClInclude Include="..\..\include\physics.h" />
-    <ClInclude Include="..\..\include\physicshandler.h" />
-    <ClInclude Include="..\..\include\pvr.h" />
-    <ClInclude Include="..\..\include\quicklz.h" />
-    <ClInclude Include="..\..\include\script.h" />
-    <ClInclude Include="..\..\include\sound.h" />
-    <ClInclude Include="..\..\include\soundeffect.h" />
-    <ClInclude Include="..\..\include\stagehandler.h" />
-    <ClInclude Include="..\..\include\system.h" />
-    <ClInclude Include="..\..\include\texture.h" />
-    <ClInclude Include="..\..\include\timer.h" />
-    <ClInclude Include="..\..\include\wrapper.h" />
-    <ClInclude Include="..\..\include\common\header.h" />
-    <ClInclude Include="..\..\include\math.h" />
-    <ClInclude Include="..\..\include\animationtree.h" />
-    <ClInclude Include="..\..\include\texturepool.h" />
-    <ClInclude Include="..\..\include\storyboard.h" />
-    <ClInclude Include="..\..\include\texthandler.h" />
-    <ClInclude Include="..\..\include\screeneffect.h" />
+    <ClCompile Include="..\memoryhandler_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\compression.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -155,5 +126,120 @@
     <Filter Include="src\windows">
       <UniqueIdentifier>{ea6923dd-ddde-4088-bcc8-2470cce701b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hdr">
+      <UniqueIdentifier>{a7e6c9d5-aa12-456b-b493-9e6073159364}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hdr\common">
+      <UniqueIdentifier>{e718a84f-bf11-49e0-af5f-37f182113425}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Filter>src</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\tari\animation.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\animationtree.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\collision.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\collisionanimation.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\collisionhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\datastructures.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\drawing.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\file.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\framerate.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\framerateselectscreen.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\geometry.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\input.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\log.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\math.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\memoryhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\optionhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\physics.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\physicshandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\pvr.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\quicklz.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\screeneffect.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\script.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\sound.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\soundeffect.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\stagehandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\storyboard.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\system.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\texthandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\texture.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\texturepool.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\timer.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\wrapper.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\common\header.h">
+      <Filter>hdr\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\compression.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

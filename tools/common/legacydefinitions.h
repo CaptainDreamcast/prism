@@ -25,7 +25,7 @@
 #define AnimationIDOffsetHoldingBack	7
 
 
-#ifdef DREAMCAST
+#if defined(DREAMCAST) || defined(__linux__)
 
 #define FOLDER_SLASH '/'
 

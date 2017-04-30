@@ -1,8 +1,8 @@
-#include "../include/sound.h"
+#include "tari/sound.h"
 
 #include <SDL_mixer.h>
 
-#include "../include/log.h"
+#include "tari/log.h"
 
 static struct {
 
@@ -34,6 +34,7 @@ double getPanningValue() {
 }
 
 void playTrack(int tTrack) {
+	(void)tTrack;
 	logWarning("Unable to play tracks on Windows.");
 	// TODO: implement
 }

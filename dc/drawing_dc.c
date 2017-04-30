@@ -1,14 +1,14 @@
-#include "../include/drawing.h"
+#include "tari/drawing.h"
 
 #include <stdlib.h>
 
 #include <kos.h>
 #include <dc/matrix3d.h>
 
-#include "../include/log.h"
-#include "../include/datastructures.h"
-#include "../include/memoryhandler.h"
-#include "../include/system.h"
+#include "tari/log.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
 
 static struct {
 
@@ -52,19 +52,21 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
     return;
   }
 
-  int sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x);
-  int sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y);
+  int sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
+  int sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
 
   double left = tTexturePosition.topLeft.x / ((double) (tTexture.mTextureSize.x - 1));
   double right = tTexturePosition.bottomRight.x / ((double) (tTexture.mTextureSize.x - 1));
   double up = tTexturePosition.topLeft.y / ((double) (tTexture.mTextureSize.y - 1));
   double down = tTexturePosition.bottomRight.y / ((double) (tTexture.mTextureSize.y - 1));
 
+  referenceTextureMemory(tTexture.mTexture);
+
   pvr_poly_cxt_t cxt;
   pvr_poly_hdr_t hdr;
   pvr_vertex_t vert;
 
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture, PVR_FILTER_BILINEAR);
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_BILINEAR);
 
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
@@ -137,7 +139,7 @@ static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position
 	
 	char word[1024];
 	int positionsRead;
-	sscanf(tText + tCurrent, "%s%n", word, &positionsRead);
+	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
 
 	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead-1) * tBreakSize.x, 0, 0);
 	Position after = vecAdd(tPos, delta);
@@ -159,7 +161,9 @@ void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Colo
   getRGBFromColor(tColor, &r, &g, &b);
 
   TextureData fontData = getFontTexture();
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, fontData.mTextureSize.x, fontData.mTextureSize.y, fontData.mTexture, PVR_FILTER_BILINEAR);
+  referenceTextureMemory(fontData.mTexture);
+
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, fontData.mTextureSize.x, fontData.mTextureSize.y, fontData.mTexture->mData, PVR_FILTER_BILINEAR);
 
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));

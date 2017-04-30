@@ -1,12 +1,12 @@
-#include "include/optionhandler.h"
+#include "tari/optionhandler.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/datastructures.h"
-#include "include/drawing.h"
-#include "include/input.h"
-#include "include/memoryhandler.h"
+#include "tari/datastructures.h"
+#include "tari/drawing.h"
+#include "tari/input.h"
+#include "tari/memoryhandler.h"
 
 static struct {
 	List mOptionList;

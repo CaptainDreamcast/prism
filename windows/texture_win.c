@@ -1,14 +1,14 @@
-#include "../include/texture.h"
+#include "tari/texture.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
 #include <string.h>
 
-#include "../include/file.h"
-#include "../include/log.h"
-#include "../include/memoryhandler.h"
-#include "../include/system.h"
-#include "../include/math.h"
+#include "tari/file.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
+#include "tari/math.h"
 
 
 
@@ -47,7 +47,8 @@ TextureData loadTexturePKG(char* tFileDir) {
 	
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
-	returnData.mTexture->mTexture = newTexture;
+	Texture texture = returnData.mTexture->mData;
+	texture->mTexture = newTexture;
 	int access;
 	Uint32 format;
 	SDL_QueryTexture(newTexture, &format, &access, &returnData.mTextureSize.x, &returnData.mTextureSize.y);
@@ -64,19 +65,11 @@ TextureData loadTexture(char* tFileDir) {
 		logError("Unable to identify texture file type.");
 		logErrorString(fileExt);
 		abortSystem();
-		TextureData errData;
-		memset(&errData, 0, sizeof errData);
-
-		return errData;
 	}
 }
 
 void unloadTexture(TextureData tTexture) {
 	freeTextureMemory(tTexture.mTexture);
-}
-
-int getAvailableTextureMemory() {
-	return INF;
 }
 
 int getTextureHash(TextureData tTexture) {

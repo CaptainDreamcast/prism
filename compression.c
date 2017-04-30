@@ -1,0 +1,30 @@
+#include "tari/compression.h"
+
+#include "tari/quicklz.h"
+#include "tari/log.h"
+#include "tari/system.h"
+#include "tari/memoryhandler.h"
+
+static const int COMPRESSION_BUFFER = 400;
+
+
+void compressBuffer(Buffer* tBuffer) {
+	if (!tBuffer->mIsOwned) {
+		logError("Unable to compress unowned Buffer");
+		abortSystem();
+	}
+
+	Buffer src = *tBuffer;
+	Buffer dst = *tBuffer;
+
+	qlz_state_compress state_compress;
+
+	dst.mData = allocMemory(src.mLength + COMPRESSION_BUFFER);
+	dst.mLength = qlz_compress(src.mData, dst.mData, src.mLength, &state_compress);
+	dst.mData = reallocMemory(dst.mData, dst.mLength);
+	dst.mIsOwned = 1;
+
+	freeBuffer(src);
+
+	*tBuffer = dst;
+}

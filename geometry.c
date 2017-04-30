@@ -1,10 +1,10 @@
-#include "include/geometry.h"
+#include "tari/geometry.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include "include/math.h"
-#include "include/log.h"
+#include "tari/math.h"
+#include "tari/log.h"
 
 
 double dot3D(Vector3D p1, Vector3D p2){

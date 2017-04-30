@@ -1,13 +1,13 @@
-#include "include/stagehandler.h"
+#include "tari/stagehandler.h"
 
-#include "include/script.h"
-#include "include/datastructures.h"
-#include "include/memoryhandler.h"
-#include "include/file.h"
-#include "include/system.h"
-#include "include/log.h"
-#include "include/math.h"
-#include "include/texturepool.h"
+#include "tari/script.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/file.h"
+#include "tari/system.h"
+#include "tari/log.h"
+#include "tari/math.h"
+#include "tari/texturepool.h"
 
 static struct {
 	List mList;

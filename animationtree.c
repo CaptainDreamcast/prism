@@ -1,13 +1,13 @@
-#include "include/animationtree.h"
+#include "tari/animationtree.h"
 
 #include <math.h>
 
-#include "include/script.h"
-#include "include/log.h"
-#include "include/system.h"
-#include "include/memoryhandler.h"
-#include "include/animation.h"
-#include "include/file.h"
+#include "tari/script.h"
+#include "tari/log.h"
+#include "tari/system.h"
+#include "tari/memoryhandler.h"
+#include "tari/animation.h"
+#include "tari/file.h"
 
 typedef struct {
 

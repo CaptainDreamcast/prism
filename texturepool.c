@@ -1,9 +1,9 @@
-#include "include/texturepool.h"
+#include "tari/texturepool.h"
 
-#include "include/datastructures.h"
-#include "include/log.h"
-#include "include/memoryhandler.h"
-#include "include/system.h"
+#include "tari/datastructures.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
 
 typedef struct {
 	TextureData mTexture;

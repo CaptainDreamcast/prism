@@ -1,26 +1,9 @@
 #ifndef TARI_TEXTURE
 #define TARI_TEXTURE
 
-#define _WINDOWS_
-
-#ifdef DREAMCAST
-#include <kos.h>
-
-typedef pvr_ptr_t Texture;
-
-#elif defined _WINDOWS_
-#include <SDL.h>
-
-typedef struct {
-	SDL_Texture* mTexture;
-
-} SDLTextureData;
-
-typedef SDLTextureData* Texture;
-
-#endif
-
 #include "common/header.h"
+
+#include "memoryhandler.h"
 
 typedef struct {
   int x;
@@ -29,7 +12,7 @@ typedef struct {
 
 typedef struct {
   TextureSize mTextureSize;
-  Texture mTexture;
+  TextureMemory mTexture;
 } TextureData;
 
 typedef struct {  // TODO: refactor completely from Dolmexica
@@ -47,7 +30,6 @@ fup TextureData getFontTexture();
 fup FontCharacterData getFontCharacterData(char tChar);
 fup void setFont(char tFileDirHeader[], char tFileDirTexture[]);
 
-fup int getAvailableTextureMemory();
 fup int getTextureHash(TextureData tTexture); 
 fup int canLoadTexture(char* tPath);
 

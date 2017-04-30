@@ -1,6 +1,6 @@
-#include "include/framerate.h"
+#include "tari/framerate.h"
 
-#include "include/log.h"
+#include "tari/log.h"
 
 // TODO: Refactor into system
 

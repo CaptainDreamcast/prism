@@ -1,9 +1,9 @@
-#include "../include/soundeffect.h"
+#include "tari/soundeffect.h"
 
 #include <kos.h>
 
-#include "../include/file.h"
-#include "../include/sound.h"
+#include "tari/file.h"
+#include "tari/sound.h"
 
 void initSoundEffects() {
 

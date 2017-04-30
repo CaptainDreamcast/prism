@@ -1,11 +1,11 @@
-#include "../include/file.h"
+#include "tari/file.h"
 
 #include <dirent.h> 
 #include <kos.h>
 
-#include "../include/log.h"
-#include "../include/memoryhandler.h"
-#include "../include/system.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
 
 
 static struct {
@@ -123,11 +123,11 @@ void printDirectory(char* tPath) {
 	char path[1024];
 	getFullPath(path, tPath);
 
-	DIR* d;
-	struct dirent *dir;
+	DIR* d;	
 	d = opendir(path);
 	if (d)
 	{
+		struct dirent *dir;
 		while ((dir = readdir(d)) != NULL)
 		{
 			logString(dir->d_name);

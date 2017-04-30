@@ -1,16 +1,16 @@
-#include "../include/texture.h"
+#include "tari/texture.h"
 
 #include <kos.h>
 #include <kos/string.h>
 
 // TODO: remove quicklz and remove it with something suitable
-#include "../include/quicklz.h"
+#include "tari/quicklz.h"
 
-#include "../include/file.h"
+#include "tari/file.h"
 
-#include "../include/log.h"
-#include "../include/memoryhandler.h"
-#include "../include/system.h"
+#include "tari/log.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
 
 #define HEADER_SIZE_KMG 64
 // TODO: use kmg.h from KOS
@@ -46,7 +46,7 @@ TextureData loadTexturePKG(char* tFileDir) {
 
   returnData.mTexture = allocTextureMemory(bufferLength - HEADER_SIZE_KMG);
 
-  sq_cpy(returnData.mTexture, kmgData + HEADER_SIZE_KMG, bufferLength - HEADER_SIZE_KMG);
+  sq_cpy(returnData.mTexture->mData, kmgData + HEADER_SIZE_KMG, bufferLength - HEADER_SIZE_KMG);
 
   freeMemory(kmgData);
 
@@ -63,16 +63,13 @@ TextureData loadTexture(char* tFileDir) {
 		logErrorString(fileExt);
 		abortSystem();
 		TextureData errData;
+		memset(&errData, 0, sizeof errData);
 		return errData;
 	}
 }
 
 void unloadTexture(TextureData tTexture) {
   freeTextureMemory(tTexture.mTexture);
-}
-
-int getAvailableTextureMemory() {
-	return pvr_mem_available();
 }
 
 int getTextureHash(TextureData tTexture) {

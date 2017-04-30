@@ -1,11 +1,11 @@
-#include "include/texthandler.h"
+#include "tari/texthandler.h"
 
 #include <string.h>
 
-#include "include/datastructures.h"
-#include "include/log.h"
-#include "include/math.h"
-#include "include/memoryhandler.h"
+#include "tari/datastructures.h"
+#include "tari/log.h"
+#include "tari/math.h"
+#include "tari/memoryhandler.h"
 
 typedef struct {
 	char mText[1024];

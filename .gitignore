@@ -3,6 +3,10 @@
 windows/vs15/.vs/*
 windows/vs15/Release/*
 windows/vs15/Debug/*
+tools/bin/*
+tools/storyboardbuilder/windows/Release/*
+tools/kompressor/windows/Release/*
+
 *.aps
 *.exe
 *.idb

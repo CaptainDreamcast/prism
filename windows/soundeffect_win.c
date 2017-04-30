@@ -1,11 +1,11 @@
-#include "../include/soundeffect.h"
+#include "tari/soundeffect.h"
 
 #include <SDL_mixer.h>
 
-#include "../include/file.h"
-#include "../include/sound.h"
-#include "../include/datastructures.h"
-#include "../include/memoryhandler.h"
+#include "tari/file.h"
+#include "tari/sound.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
 
 typedef struct {
 
