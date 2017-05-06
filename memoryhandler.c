@@ -204,6 +204,7 @@ static void virtualizeTextureMemory(size_t tSize) {
 }
 
 static void makeSpaceInTextureMemory(size_t tSize) {
+	if (!gData.mActive) return;
 	int available = getAvailableTextureMemory();
 
 	if ((int)tSize <= available) return;
@@ -409,6 +410,7 @@ void freeTextureMemory(TextureMemory tMem) {
 }
 
 void referenceTextureMemory(TextureMemory tMem) {
+	if (!gData.mActive) return;
 	if (tMem == NULL) return;
 
 	if (tMem->mIsVirtual) {
