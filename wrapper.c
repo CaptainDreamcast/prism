@@ -81,14 +81,19 @@ static void loadScreen(Screen* tScreen) {
 	logg("Setting up input flanks");
 	resetInput();
 	
-	logg("Loading user screen data");
-	tScreen->mLoad();
+	if (tScreen->mLoad) {
+		logg("Loading user screen data");
+		tScreen->mLoad();
+	}
 }
 
 static void unloadScreen(Screen* tScreen) {
 	logg("Unloading handled screen");
-	logg("Unloading user screen data");
-	tScreen->mUnload();
+	
+	if (tScreen->mUnload) {
+		logg("Unloading user screen data");
+		tScreen->mUnload();
+	}
 
 	logg("Shutting down Soundeffecthandling");
 	shutdownSoundEffectHandler();
@@ -127,7 +132,9 @@ static void updateScreen(Screen* tScreen) {
 	updateCollisionHandler();
 	updateTimer();
 
-	tScreen->mUpdate();
+	if (tScreen->mUpdate) {
+		tScreen->mUpdate();
+	}
 }
 
 static void drawScreen(Screen* tScreen) {
@@ -137,7 +144,9 @@ static void drawScreen(Screen* tScreen) {
 	drawHandledTexts();
 	drawHandledCollisions();
 
-	tScreen->mDraw();
+	if (tScreen->mDraw) {
+		tScreen->mDraw();
+	}
 
 	stopDrawing();
 }
@@ -163,6 +172,12 @@ void startScreenHandling(Screen* tScreen) {
 	gData.mIsAborted = 0;
 
 	while(!gData.mIsAborted) {
+	
+		if (!tScreen->mGetNextScreen) {
+			logError("GetNextScreen not set.");
+			abortSystem();
+		}
+
 		loadScreen(tScreen);
 		Screen* next = showScreen(tScreen);
 		unloadScreen(tScreen);
