@@ -12,12 +12,14 @@
 #define logWString(x) {logBase(); printf("Value of %s: %S\n", #x, x);}
 #define logDouble(x) {logBase(); printf("Value of %s: %f\n", #x, (double)x);}
 #define logHex(x) {logBase(); printf("Value of %s: %X\n", #x, (unsigned int)x);}
+#define logPointer(x) {logBase(); printf("Value of %s: %p\n", #x, (char*)x);}
 
 #define logError(x) logg(x)
 #define logErrorInteger(x) logInteger(x)
 #define logErrorString(x) logString(x)
 #define logErrorDouble(x) logDouble(x)
 #define logErrorHex(x) logHex(x)
+#define logErrorPointer(x) logPointer(x)
 
 #define logWarning(x) logg(x)
 #define logWarningInteger(x) logInteger(x)
