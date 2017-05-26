@@ -7,16 +7,11 @@
 #include "tari/memoryhandler.h"
 #include "tari/system.h"
 #include "tari/datastructures.h"
-
-typedef struct {
-	char mMount[1024];
-	char mPath[1024];
-} RomdiskMapping;
+#include "tari/windows/romdisk_win.h"
 
 static struct {
 	char cwd[1024];
 	char mFileSystem[1024];
-	StringMap mRomdiskMappings;
 } gData;
 
 
@@ -25,7 +20,8 @@ void initFileSystem(){
 	sprintf(gData.cwd, "/");
 	gData.mFileSystem[0] = '\0';
 	debugString(gData.cwd);
-	gData.mRomdiskMappings = new_string_map();
+
+	initRomdisks();
 }
 
 static void expandPath(char* tDest, char* tPath) {
@@ -42,13 +38,6 @@ static void expandPath(char* tDest, char* tPath) {
 		else sprintf(tDest, "/%s", endPos + 1);
 		return;
 	}
-
-	int isMount = string_map_contains(&gData.mRomdiskMappings, potentialMount);
-	if (!isMount) return;
-
-	RomdiskMapping* e = string_map_get(&gData.mRomdiskMappings, potentialMount);
-	
-	sprintf(tDest, "%s%s", e->mPath, endPos + 1);
 }
 
 void setFileSystem(char* path){
@@ -105,6 +94,10 @@ FileHandler fileOpen(char* tPath, int tFlags){
 	char path[1024];
 	getFullPath(path, tPath);
 
+	if (isRomdiskPath(path)) {
+		return fileOpenRomdisk(path, tFlags);
+	}
+
 	debugLog("Open file.");
 	debugString(tPath);
 	debugString(gData.fileSystem);
@@ -127,21 +120,37 @@ FileHandler fileOpen(char* tPath, int tFlags){
 }
 
 int fileClose(FileHandler tHandler) {
+	if (isRomdiskFileHandler(tHandler)) return fileCloseRomdisk(tHandler);
+
 	return fclose(tHandler);
 }
 size_t fileRead(FileHandler tHandler, void* tBuffer, size_t tCount) {
+	if (isRomdiskFileHandler(tHandler)) return fileReadRomdisk(tHandler, tBuffer, tCount);
+
 	return fread(tBuffer, 1, tCount, tHandler);
 }
 size_t fileWrite(FileHandler tHandler, const void* tBuffer, size_t tCount) {
+	if (isRomdiskFileHandler(tHandler)) {
+		logError("Unable to write to romdisk file.");
+		logErrorInteger(tHandler);
+		abortSystem();
+	}
+
 	return fwrite(tBuffer, 1, tCount, tHandler);
 }
 size_t fileSeek(FileHandler tHandler, size_t tOffset, int tWhence)  {
+	if (isRomdiskFileHandler(tHandler)) return fileSeekRomdisk(tHandler, tOffset, tWhence);
+
 	return fseek(tHandler, tOffset, tWhence);
 }
 size_t fileTell(FileHandler tHandler) {
+	if (isRomdiskFileHandler(tHandler)) return fileTellRomdisk(tHandler);
+
 	return ftell(tHandler);
 }
 size_t fileTotal(FileHandler tHandler){
+	if (isRomdiskFileHandler(tHandler)) return fileTotalRomdisk(tHandler);
+
 	fseek(tHandler, 0L, SEEK_END);
 	size_t size = ftell(tHandler);
 	rewind(tHandler);
@@ -159,26 +168,14 @@ void* fileMemoryMap(FileHandler tHandler) {
 
 
 void mountRomdisk(char* tFilePath, char* tMountPath) {
-	int isAlreadyMounted = string_map_contains(&gData.mRomdiskMappings, tMountPath);
-	if (isAlreadyMounted) {
-		logError("Unable to mount. Already mounted.");
-		logErrorString(tMountPath);
-		abortSystem();
-	}
-
-	char path[1024], folderPath[104];
-	getPathWithoutFileExtension(path, tFilePath);
-	if(tFilePath[0] == '/') sprintf(folderPath, "%s/", path);
-	else sprintf(folderPath, "/%s/", path);
-
-	RomdiskMapping* e = allocMemory(sizeof(RomdiskMapping));
-	strcpy(e->mMount, tMountPath);
-	strcpy(e->mPath, folderPath);
-	string_map_push_owned(&gData.mRomdiskMappings, tMountPath, e);
+	
+	char fullPath[1024];
+	expandPath(fullPath, tFilePath);
+	mountRomdiskWindows(fullPath, tMountPath);
 }
 
 void unmountRomdisk(char* tMountPath) {
-	string_map_remove(&gData.mRomdiskMappings, tMountPath);
+	unmountRomdiskWindows(tMountPath);
 }
 
 void printDirectory(char* tPath) {

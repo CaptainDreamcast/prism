@@ -29,6 +29,8 @@ typedef struct {
   void* mData;
 } Buffer;
 
+typedef char* BufferPointer;
+
 fup FileHandler fileOpen(char* tPath, int tFlags);
 fup int fileClose(FileHandler tHandler);
 fup size_t fileRead(FileHandler tHandler, void* tBuffer, size_t tCount);
@@ -47,6 +49,8 @@ fup void bufferToFile(char* tPath, Buffer tBuffer);
 fup void freeBuffer(Buffer buffer);
 fup void appendTerminationSymbolToBuffer(Buffer* tBuffer);
 fup void fileToMemory(void* tDst, int tSize, char* tPath);
+fup BufferPointer getBufferPointer(Buffer tBuffer);
+fup void readFromBufferPointer(void* tDst, BufferPointer* tPointer, uint32_t tSize);
 
 fup void initFileSystem();
 fup void setFileSystem(char* path);

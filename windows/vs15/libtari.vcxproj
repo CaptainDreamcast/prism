@@ -168,6 +168,7 @@
     <ClCompile Include="..\math_win.c" />
     <ClCompile Include="..\memoryhandler_win.c" />
     <ClCompile Include="..\pvr_win.c" />
+    <ClCompile Include="..\romdisk_win.c" />
     <ClCompile Include="..\soundeffect_win.c" />
     <ClCompile Include="..\sound_win.c" />
     <ClCompile Include="..\system_win.c" />
@@ -210,6 +211,7 @@
     <ClInclude Include="..\..\include\tari\texture.h" />
     <ClInclude Include="..\..\include\tari\texturepool.h" />
     <ClInclude Include="..\..\include\tari\timer.h" />
+    <ClInclude Include="..\..\include\tari\windows\romdisk_win.h" />
     <ClInclude Include="..\..\include\tari\wrapper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

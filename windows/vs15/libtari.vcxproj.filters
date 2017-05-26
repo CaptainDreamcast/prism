@@ -118,6 +118,9 @@
     <ClCompile Include="..\..\compression.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\romdisk_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -131,6 +134,9 @@
     </Filter>
     <Filter Include="hdr\common">
       <UniqueIdentifier>{e718a84f-bf11-49e0-af5f-37f182113425}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hdr\windows">
+      <UniqueIdentifier>{3b042a29-db22-405e-9685-aecaad3387c4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -240,6 +246,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\tari\compression.h">
       <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\windows\romdisk_win.h">
+      <Filter>hdr\windows</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

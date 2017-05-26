@@ -156,3 +156,15 @@ void fileToMemory(void* tDst, int tSize, char* tPath) {
 
 	freeBuffer(b);
 }
+
+BufferPointer getBufferPointer(Buffer tBuffer)
+{
+	return tBuffer.mData;
+}
+
+void readFromBufferPointer(void * tDst, BufferPointer* tPointer, uint32_t tSize)
+{
+	memcpy(tDst, *tPointer, tSize);
+	(*tPointer) += tSize;
+}
+
