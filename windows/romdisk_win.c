@@ -200,12 +200,15 @@ FileHandler fileOpenRomdisk(char* tPath, int tFlags) {
 		return NULL;
 	}
 
+	char* romdiskPath = strchr(tPath+1, '/');
+	if (romdiskPath == NULL) romdiskPath = tPath;
+
 	/* No blank filenames */
-	if (tPath[0] == 0)
-		tPath = "";
+	if (romdiskPath[0] == 0)
+		romdiskPath = "";
 
 	/* Look for the file */
-	filehdr = romdisk_find(mnt, tPath + 1, tFlags & O_DIR);
+	filehdr = romdisk_find(mnt, romdiskPath + 1, tFlags & O_DIR);
 
 	if (filehdr == 0) {
 		errno = ENOENT;
@@ -435,7 +438,6 @@ void mountRomdiskWindows(char* tFilePath, char* tMountPath) {
 	// mutex_lock(&fh_mutex);
 	string_map_push_owned(&gRomdiskMapping, tMountPath, mnt);
 	// mutex_unlock(&fh_mutex);
-
 }
 
 

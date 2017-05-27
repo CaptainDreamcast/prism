@@ -74,7 +74,7 @@ static int isAbsoluteWindowsDirectory(char* tPath) {
 
 void getFullPath(char* tDest, char* tPath) {
 
-	if (isAbsoluteWindowsDirectory(tPath)) {
+	if (isRomdiskPath(tPath) || isAbsoluteWindowsDirectory(tPath)) {
 		strcpy(tDest, tPath);
 		return;
 	}
@@ -86,11 +86,12 @@ void getFullPath(char* tDest, char* tPath) {
 		expandPath(expandedPath, tPath);
 		sprintf(tDest, ".%s", expandedPath);
 	}
-	
+
 	else sprintf(tDest, ".%s%s", gData.cwd, tPath);
 }
 
 FileHandler fileOpen(char* tPath, int tFlags){
+
 	char path[1024];
 	getFullPath(path, tPath);
 

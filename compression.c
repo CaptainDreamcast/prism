@@ -28,3 +28,25 @@ void compressBuffer(Buffer* tBuffer) {
 
 	*tBuffer = dst;
 }
+
+fup void decompressBuffer(Buffer * tBuffer)
+{
+	if (!tBuffer->mIsOwned) {
+		logError("Unable to decompress unowned Buffer");
+		abortSystem();
+	}
+
+	Buffer src = *tBuffer;
+	Buffer dst = *tBuffer;
+
+	qlz_state_decompress state_decompress;
+	size_t len = qlz_size_decompressed(src.mData);
+
+	dst.mData = allocMemory(len);
+	dst.mLength = qlz_decompress(src.mData, dst.mData, &state_decompress);
+	dst.mData = reallocMemory(dst.mData, dst.mLength);
+	dst.mIsOwned = 1;
+
+	freeBuffer(src);
+	*tBuffer = dst;
+}
