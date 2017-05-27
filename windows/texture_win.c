@@ -152,7 +152,7 @@ TextureData loadTexturePKG(char* tFileDir) {
 	getFullPath(fullFileNamePNG, pngPath);
 
 	// TODO: Properly decode PKG files; currently assume we have PNG instead
-	if (isFile(fullFileNamePNG)) {
+	if (isFile(pngPath)) {
 		return loadTexturePNG(fullFileNamePNG);
 	}
 	else {
