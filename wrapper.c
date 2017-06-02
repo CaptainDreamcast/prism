@@ -20,6 +20,7 @@
 #include "tari/texturepool.h"
 #include "tari/texthandler.h"
 #include "tari/screeneffect.h"
+#include "tari/actorhandler.h"
 
 void initTariWrapperWithDefaultFlags() {
 	logg("Initiating wrapper.");
@@ -78,6 +79,8 @@ static void loadScreen(Screen* tScreen) {
 	setupCollisionAnimationHandler();
 	logg("Setting up Soundeffecthandling");
 	setupSoundEffectHandler();
+	logg("Setting up Actorhandling");
+	setupActorHandler();
 	logg("Setting up input flanks");
 	resetInput();
 	
@@ -94,7 +97,8 @@ static void unloadScreen(Screen* tScreen) {
 		logg("Unloading user screen data");
 		tScreen->mUnload();
 	}
-
+	logg("Shutting down Actorhandling");
+	shutdownActorHandler();
 	logg("Shutting down Soundeffecthandling");
 	shutdownSoundEffectHandler();
 	logg("Shutting down Collisionanimationhandling");
@@ -131,6 +135,7 @@ static void updateScreen(Screen* tScreen) {
 	updateCollisionAnimationHandler();
 	updateCollisionHandler();
 	updateTimer();
+	updateActorHandler();
 
 	if (tScreen->mUpdate) {
 		tScreen->mUpdate();

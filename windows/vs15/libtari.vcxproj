@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\actorhandler.c" />
     <ClCompile Include="..\..\animation.c" />
     <ClCompile Include="..\..\animationtree.c" />
     <ClCompile Include="..\..\collision.c" />
@@ -178,6 +179,7 @@
     <None Include="..\..\README.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\tari\actorhandler.h" />
     <ClInclude Include="..\..\include\tari\animation.h" />
     <ClInclude Include="..\..\include\tari\animationtree.h" />
     <ClInclude Include="..\..\include\tari\collision.h" />

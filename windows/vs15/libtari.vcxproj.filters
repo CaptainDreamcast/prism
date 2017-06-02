@@ -121,6 +121,9 @@
     <ClCompile Include="..\romdisk_win.c">
       <Filter>src\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\actorhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -249,6 +252,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\tari\windows\romdisk_win.h">
       <Filter>hdr\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\actorhandler.h">
+      <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
