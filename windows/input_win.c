@@ -195,7 +195,7 @@ int hasShotGunSingle(int i)
 	return mask & SDL_BUTTON(SDL_BUTTON_LEFT); // TODO: fix multiplayer
 }
 
-extern Vector3D scaleSDLWindowPosition(Vector3D v);
+extern Vector3D correctSDLWindowPosition(Vector3D v);
 
 Vector3D getShotPositionSingle(int i) {
 	(void)i; // TODO: fix multiplayer
@@ -203,7 +203,7 @@ Vector3D getShotPositionSingle(int i) {
 	int x, y;
 	SDL_GetMouseState(&x, &y);
 	Vector3D ret = makePosition(x, y, 0);
-	return scaleSDLWindowPosition(ret);
+	return correctSDLWindowPosition(ret);
 }
 
 

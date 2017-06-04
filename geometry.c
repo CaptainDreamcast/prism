@@ -110,6 +110,12 @@ Position getDirection(Position tFrom, Position tTo) {
 	return ret;
 }
 
+double getDistance2D(Position tFrom, Position tTo)
+{
+	tFrom.z = tTo.z = 0;
+	return vecLength(vecSub(tTo, tFrom));
+}
+
 Line makeLine(Vector3D tStart, Vector3D tEnd) {
 	Line ret;
 	ret.mP1 = tStart;

@@ -88,8 +88,8 @@ static void checkCollisionElements(void* tCaller, void* tData) {
 	CollisionListElement* e2 = tData;
 
 	if(checkCollisionCollider(e1->mCollider, e2->mCollider)) {
-		e1->mCB(e1->mCaller, e2->mCollisionData);
-		e2->mCB(e2->mCaller, e1->mCollisionData);
+		if(e1->mCB) e1->mCB(e1->mCaller, e2->mCollisionData);
+		if(e2->mCB) e2->mCB(e2->mCaller, e1->mCollisionData);
 	}
 }
 

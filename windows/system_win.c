@@ -99,7 +99,7 @@ static void checkWindowEvents(SDL_Event* e) {
 	
 }
 
-Vector3D scaleSDLWindowPosition(Vector3D v) {
+Vector3D correctSDLWindowPosition(Vector3D v) {
 	ScreenSize sz = getScreenSize();
 	double scaleX = gData.mDisplayedWindowSizeX / (double)sz.x;
 	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;

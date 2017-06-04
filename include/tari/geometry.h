@@ -49,6 +49,7 @@ fup Vector3D vecNormalize(Vector3D tVector);
 fup Vector3D vecRotateZ(Vector3D, double tAngle);
 fup Vector3D vecScaleToSize(Vector3D v, double tSize);
 fup Position getDirection(Position tFrom, Position tTo);
+fup double getDistance2D(Position tFrom, Position tTo);
 fup Line makeLine(Vector3D tStart, Vector3D tEnd);
 fup GeoRectangle makeGeoRectangle(double x, double y, double w, double h);
 

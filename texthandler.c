@@ -125,6 +125,18 @@ int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color 
 	return id;
 }
 
+int addHandledTextWithInfiniteDurationOnOneLine(Position tPosition, char * tText, int tFont, Color tColor, Vector3D tFontSize)
+{
+	return addHandledText(tPosition, tText, tFont, tColor, tFontSize, makePosition(0, 0, 0), makePosition(INF, INF, INF), INF);
+}
+
+void setHandledText(int tID, char * tText)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	strcpy(e->mText, tText);
+	strcpy(e->mDrawnText, tText);
+}
+
 void removeHandledText(int tID) {
 	list_remove(&gData.mTexts, tID);
 }
