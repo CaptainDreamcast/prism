@@ -14,7 +14,7 @@ static struct {
 	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
 } gData;
 
-static int const gKeys[2][20] = { 
+static int const gKeys[2][20] = {
 	{
 		SDL_SCANCODE_A,
 		SDL_SCANCODE_S,
@@ -77,7 +77,7 @@ static void updateControllerInput() {
 }
 
 void updateInput() {
-	
+
 	gData.mCurrentKeyStates = SDL_GetKeyboardState(NULL);
 	updateControllerInput();
 }
@@ -187,6 +187,25 @@ int hasPressedAbortSingle(int i) {
 	}
 	return state;
 }
+
+int hasShotGunSingle(int i)
+{
+	(void)i;
+	uint32_t mask = SDL_GetMouseState(NULL, NULL);
+	return mask & SDL_BUTTON(SDL_BUTTON_LEFT); // TODO: fix multiplayer
+}
+
+extern Vector3D scaleSDLWindowPosition(Vector3D v);
+
+Vector3D getShotPositionSingle(int i) {
+	(void)i; // TODO: fix multiplayer
+
+	int x, y;
+	SDL_GetMouseState(&x, &y);
+	Vector3D ret = makePosition(x, y, 0);
+	return scaleSDLWindowPosition(ret);
+}
+
 
 static double getStickNormalizedBinary(int tCodeMinus, int tCodePlus) {
 	if (gData.mCurrentKeyStates == NULL) return 0;

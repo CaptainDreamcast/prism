@@ -10,6 +10,7 @@
 
 #include "tari/log.h"
 #include "tari/pvr.h"
+#include "tari/geometry.h"
 
 void abortSystem(){
 	exit(0);
@@ -22,6 +23,9 @@ static struct {
 	int mScreenSizeX;
 	int mScreenSizeY;
 
+	int mDisplayedWindowSizeX;
+	int mDisplayedWindowSizeY;
+
 	int mIsFullscreen;
 
 	char mGameName[100];
@@ -31,8 +35,8 @@ SDL_Window* gSDLWindow;
 
 static void initScreenDefault() {
 	gData.mIsLoaded = 1;
-	gData.mScreenSizeX = 640;
-	gData.mScreenSizeY = 480;
+	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = 640;
+	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = 480;
 
 	gData.mIsFullscreen = 0;
 }
@@ -80,9 +84,11 @@ static void resizeWindow(SDL_Event* e) {
 	if (gRenderer == NULL) return;
 
 	ScreenSize sz = getScreenSize();
+	gData.mDisplayedWindowSizeX = e->window.data1;
+	gData.mDisplayedWindowSizeY = e->window.data2;
 
-	double scaleX = e->window.data1 /(double)sz.x;
-	double scaleY = e->window.data2 / (double)sz.y;
+	double scaleX = gData.mDisplayedWindowSizeX /(double)sz.x;
+	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
 
 	SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY);
 }
@@ -91,6 +97,13 @@ static void checkWindowEvents(SDL_Event* e) {
 		resizeWindow(e);
 	}
 	
+}
+
+Vector3D scaleSDLWindowPosition(Vector3D v) {
+	ScreenSize sz = getScreenSize();
+	double scaleX = gData.mDisplayedWindowSizeX / (double)sz.x;
+	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
+	return vecScale3D(v, makePosition(1 / scaleX, 1 / scaleY, 1));
 }
 
 static void switchFullscreen() {
@@ -132,15 +145,15 @@ void setScreen(int tX, int tY, int tFramerate, int tIsVGA) {
 	(void)tIsVGA;
 	(void)tFramerate;
 	if(!gData.mIsLoaded) initScreenDefault();
-	gData.mScreenSizeX = tX;
-	gData.mScreenSizeY = tY;
+	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = tX;
+	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = tY;
 }
 
 void setScreenSize(int tX, int tY) {
 	if(!gData.mIsLoaded) initScreenDefault();
 
-	gData.mScreenSizeX = tX;
-	gData.mScreenSizeY = tY;
+	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = tX;
+	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = tY;
 }
 
 ScreenSize getScreenSize() {

@@ -15,6 +15,7 @@ typedef struct {
 	int mDownFlank;
 	int mStartFlank;
 	int mAbortFlank;
+	int mShotFlank;
 } InputFlanks;
 
 static struct {
@@ -38,6 +39,7 @@ void resetInput() {
 		hasPressedDownFlankSingle(i);
 		hasPressedStartFlankSingle(i);
 		hasPressedAbortFlankSingle(i);
+		hasShotGunFlank(i);
 	}
 }
 
@@ -100,6 +102,11 @@ int hasPressedStartFlankSingle(int i) {
 
 int hasPressedAbortFlankSingle(int i) {
 	return hasPressedFlank(hasPressedAbortSingle(i), &gData.mFlanks[i].mAbortFlank);
+}
+
+int hasShotGunFlankSingle(int i)
+{
+	return hasPressedFlank(hasShotGunSingle(i), &gData.mFlanks[i].mShotFlank);
 }
 
 
@@ -215,6 +222,21 @@ double getLNormalized() {
 
 double getRNormalized() {
 	return getSingleRNormalized(getMainController());
+}
+
+int hasShotGun()
+{
+	return hasShotGunSingle(getMainController());
+}
+
+int hasShotGunFlank()
+{
+	return hasShotGunFlankSingle(getMainController());
+}
+
+Vector3D getShotPosition()
+{
+	return getShotPositionSingle(getMainController());
 }
 
 
