@@ -495,3 +495,123 @@ int string_map_contains(StringMap* tMap, char* tKey) {
 
 	return 0;
 }
+
+IntMap new_int_map()
+{
+	return new_string_map();
+}
+
+void delete_int_map(IntMap * tMap)
+{
+	delete_string_map(tMap);
+}
+
+void int_map_empty(IntMap * tMap)
+{
+	string_map_empty(tMap);
+}
+
+static int gIntMapIndex;
+
+void int_map_push_owned(IntMap * tMap, int tKey, void * tData)
+{
+	char str[100];
+	sprintf(str, "%d", tKey);
+	string_map_push_owned(tMap, str, tData);
+}
+
+int int_map_push_back_owned(IntMap * tMap, void * tData)
+{
+	int nkey = gIntMapIndex++;
+	int_map_push_owned(tMap, nkey, tData);
+	return nkey;
+}
+
+void int_map_push(IntMap * tMap, int tKey, void * tData)
+{
+	char str[100];
+	sprintf(str, "%d", tKey);
+	string_map_push(tMap, str, tData);
+}
+
+int int_map_push_back(IntMap * tMap, void * tData)
+{
+	int nkey = gIntMapIndex++;
+	int_map_push(tMap, nkey, tData);
+	return nkey;
+}
+
+void int_map_remove(IntMap * tMap, int tKey)
+{
+	char str[100];
+	sprintf(str, "%d", tKey);
+	string_map_remove(tMap, str);
+}
+
+void* int_map_get(IntMap * tMap, int tKey)
+{
+	char str[100];
+	sprintf(str, "%d", tKey);
+	return string_map_get(tMap, str);
+}
+
+typedef struct {
+	void* mCaller;
+	mapCB mCB;
+} IntMapCaller;
+
+static void int_map_map_single_list_entry(void* tCaller, void* tData) {
+	IntMapCaller* caller = tCaller;
+	StringMapBucketListEntry* e = tData;
+
+	caller->mCB(caller->mCaller, e->mData);
+}
+
+static void int_map_map_single_bucket(void* tCaller, void* tData) {
+	StringMapBucket* e = tData;
+	list_map(&e->mEntries, int_map_map_single_list_entry, tCaller);
+}
+
+void int_map_map(IntMap* tMap, mapCB tCB, void* tCaller) {
+	IntMapCaller caller;
+	caller.mCaller = tCaller;
+	caller.mCB = tCB;
+	vector_map(&tMap->mBuckets, int_map_map_single_bucket, &caller);
+}
+
+typedef struct {
+	void* mCaller;
+	predicateCB mCB;
+} IntPredicateCaller;
+
+static int int_map_remove_predicate_single_list_entry(void* tCaller, void* tData) {
+	IntPredicateCaller* caller = tCaller;
+	StringMapBucketListEntry* e = tData;
+
+	int ret = caller->mCB(caller->mCaller, e->mData);
+	if (ret) {
+		string_map_remove_element(e);
+	}
+	return ret;
+}
+
+static void int_map_remove_predicate_single_bucket(void* tCaller, void* tData) {
+	StringMapBucket* e = tData;
+	list_remove_predicate(&e->mEntries, int_map_remove_predicate_single_list_entry, tCaller);
+}
+
+
+void int_map_remove_predicate(IntMap * tMap, predicateCB tCB, void * tCaller)
+{
+	IntPredicateCaller caller;
+	caller.mCaller = tCaller;
+	caller.mCB = tCB;
+	vector_map(&tMap->mBuckets, int_map_remove_predicate_single_bucket, &caller);
+}
+
+int int_map_contains(IntMap * tMap, int tKey)
+{
+	char str[100];
+	sprintf(str, "%d", tKey);
+	return string_map_contains(tMap, str);
+}

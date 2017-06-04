@@ -115,17 +115,18 @@ typedef struct AnimationElement_internal {
 } AnimationElement;
 
 static struct{
-	List mList;
-
+	IntMap mList;
+	int mIsLoaded;
 } gAnimationHandler;
 
 void setupAnimationHandler(){
-	if(list_size(&gAnimationHandler.mList) > 0){
+	if(gAnimationHandler.mIsLoaded){
 		logWarning("Setting up non-empty animation handler; Cleaning up.");
 		shutdownAnimationHandler();
 	}
 	
-	gAnimationHandler.mList = new_list();
+	gAnimationHandler.mList = new_int_map();
+	gAnimationHandler.mIsLoaded = 1;
 }
 
 static int updateAndRemoveCB(void* tCaller, void* tData) {
@@ -146,7 +147,7 @@ static int updateAndRemoveCB(void* tCaller, void* tData) {
 }
 
 void updateAnimationHandler(){
-	list_remove_predicate(&gAnimationHandler.mList, updateAndRemoveCB, NULL);
+	int_map_remove_predicate(&gAnimationHandler.mList, updateAndRemoveCB, NULL);
 }
 
 static void drawAnimationHandlerCB(void* tCaller, void* tData) {
@@ -202,11 +203,11 @@ static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 }
 
 void drawHandledAnimations() {
-	list_map(&gAnimationHandler.mList, drawAnimationHandlerCB, NULL);
+	int_map_map(&gAnimationHandler.mList, drawAnimationHandlerCB, NULL);
 }
 		
 static void emptyAnimationHandler(){
-	list_empty(&gAnimationHandler.mList);
+	int_map_empty(&gAnimationHandler.mList);
 }
 
 static int playAnimationInternal(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller, int tIsLooped){
@@ -229,7 +230,7 @@ static int playAnimationInternal(Position tPosition, TextureData* tTextures, Ani
 	e->mCenter = makePosition(0,0,0);
 	e->mInversionState = makeVector3DI(0,0,0);
 
-	return list_push_front_owned(&gAnimationHandler.mList, (void*)e);
+	return int_map_push_back_owned(&gAnimationHandler.mList, (void*)e);
 }
 
 
@@ -249,7 +250,7 @@ int playOneFrameAnimationLoop(Position tPosition, TextureData* tTextures) {
 }
 
 void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 
 	e->mTexturePosition = tTexturePosition;
 	e->mTextureData = tTextures;
@@ -257,25 +258,25 @@ void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rect
 }
 
 void setAnimationScreenPositionReference(int tID, Position* tScreenPositionReference) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mScreenPositionReference = tScreenPositionReference;
 
 }
 
 void setAnimationBasePositionReference(int tID, Position* tBasePositionReference) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mBasePositionReference = tBasePositionReference;
 }
 
 void setAnimationScale(int tID, Vector3D tScale, Position tCenter) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mIsScaled = 1;
 	e->mEffectCenter = tCenter;
 	e->mScale = tScale;
 }
 
 void setAnimationSize(int tID, Vector3D tSize, Position tCenter) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mIsScaled = 1;
 	e->mEffectCenter = tCenter;
 
@@ -285,37 +286,37 @@ void setAnimationSize(int tID, Vector3D tSize, Position tCenter) {
 }
 
 void setAnimationRotationZ(int tID, double tAngle, Position tCenter) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mIsRotated = 1;
 	e->mEffectCenter = tCenter;
 	e->mRotationZ = tAngle;
 }
 
 void setAnimationColor(int tID, double r, double g, double b) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mHasBaseColor = 1;
 	e->mBaseColor = makePosition(r, g, b);
 }
 
 void setAnimationTransparency(int tID, double a) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mHasTransparency = 1;
 	e->mTransparency = a;
 }
 
 void setAnimationCenter(int tID, Position tCenter) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mCenter = tCenter;
 }
 
 void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mCB = tCB;
 	e->mCaller = tCaller;
 }
 
 void setAnimationPosition(int tID, Position tPosition) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mPosition = tPosition;
 }
 
@@ -353,14 +354,15 @@ void fadeInAnimation(int tID, Duration tDuration) {
 }
 
 void inverseAnimationVertical(int tID) {
-	AnimationElement* e = list_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mInversionState.x ^= 1;
 }
 
 void removeHandledAnimation(int tID) {
-	list_remove(&gAnimationHandler.mList, tID);
+	int_map_remove(&gAnimationHandler.mList, tID);
 }
 
 void shutdownAnimationHandler(){
 	emptyAnimationHandler();
+	gAnimationHandler.mIsLoaded = 0;
 }
