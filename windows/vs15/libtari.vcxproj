@@ -213,6 +213,7 @@
     <ClInclude Include="..\..\include\tari\texture.h" />
     <ClInclude Include="..\..\include\tari\texturepool.h" />
     <ClInclude Include="..\..\include\tari\timer.h" />
+    <ClInclude Include="..\..\include\tari\tweening.h" />
     <ClInclude Include="..\..\include\tari\windows\romdisk_win.h" />
     <ClInclude Include="..\..\include\tari\wrapper.h" />
   </ItemGroup>

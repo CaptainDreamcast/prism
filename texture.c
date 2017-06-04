@@ -47,6 +47,16 @@ void setFont(char tFileDirHeader[], char tFileDirTexture[]) {
 	isFontDataLoaded = 1;
 }
 
+void loadConsecutiveTextures(TextureData * tDst, char * tBaseFileDir, int tAmount)
+{
+	int i;
+	for (i = 0; i < tAmount; i++) {
+		char path[1024];
+		getPathWithNumberAffixedFromAssetPath(path, tBaseFileDir, i);
+		tDst[i] = loadTexture(path);
+	}
+}
+
 TextureData getFontTexture() {
 	return gFont;
 }

@@ -256,5 +256,8 @@
     <ClInclude Include="..\..\include\tari\actorhandler.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\tari\tweening.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
