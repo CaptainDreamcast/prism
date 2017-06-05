@@ -372,7 +372,7 @@ static void string_map_push_internal(StringMap* tMap, char* tKey, void* tData, i
 	newEntry->mData = tData;
 	newEntry->mIsOwned = tIsOwned;
 
-	list_push_back(&bucket->mEntries, newEntry);
+	list_push_back_owned(&bucket->mEntries, newEntry);
 	tMap->mSize++;
 }
 
@@ -386,7 +386,7 @@ void string_map_push(StringMap* tMap, char* tKey, void* tData) {
 
 static void string_map_remove_element(StringMapBucketListEntry* e) {
 	if (e->mIsOwned) {
-		freeMemory(e);
+		freeMemory(e->mData);
 	}
 }
 
