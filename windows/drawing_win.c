@@ -356,3 +356,45 @@ void popDrawingTranslation() {
 }
 
 
+static uint32_t* getPixelFromSurface(SDL_Surface* tSurface, int x, int y) {
+	uint32_t* pixels = tSurface->pixels;
+	return &pixels[y*tSurface->w + x];
+}
+
+#define PIXEL_BUFFER_SIZE 1000
+uint32_t gPixelBuffer[PIXEL_BUFFER_SIZE];
+
+void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget) {
+	Texture dst = tDst.mTexture->mData;
+
+	double rd, gd, bd;
+	getRGBFromColor(tColor, &rd, &gd, &bd);
+	uint8_t r = (uint8_t)(rd * 255);
+	uint8_t g = (uint8_t)(gd * 255);
+	uint8_t b = (uint8_t)(bd * 255);
+	
+	int w = tTarget.bottomRight.x - tTarget.topLeft.x + 1;
+	int h = tTarget.bottomRight.y - tTarget.topLeft.y + 1;
+	if (w * h >= PIXEL_BUFFER_SIZE) {
+		logError("Over pixel buffer limit.");
+		logErrorInteger(w);
+		logErrorInteger(h);
+		abortSystem();
+	}
+
+	uint32_t val = SDL_MapRGB(dst->mSurface->format, r, g, b);
+	int i;
+	for (i = 0; i < w*h; i++) {
+		gPixelBuffer[i] = val;
+	}
+
+
+	SDL_Rect rect;
+	rect.x = tTarget.topLeft.x;
+	rect.y = tTarget.topLeft.y;
+	rect.w = w;
+	rect.h = h;
+	SDL_UpdateTexture(dst->mTexture, &rect, gPixelBuffer, w*sizeof(uint32_t));
+}
+
+

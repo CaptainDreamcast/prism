@@ -87,6 +87,8 @@ static void checkCollisionElements(void* tCaller, void* tData) {
 	CollisionListElement* e1 = tCaller;
 	CollisionListElement* e2 = tData;
 
+	if (e1->mIsScheduledForDeletion || e2->mIsScheduledForDeletion) return;
+
 	if(checkCollisionCollider(e1->mCollider, e2->mCollider)) {
 		if(e1->mCB) e1->mCB(e1->mCaller, e2->mCollisionData);
 		if(e2->mCB) e2->mCB(e2->mCaller, e1->mCollisionData);
@@ -96,6 +98,8 @@ static void checkCollisionElements(void* tCaller, void* tData) {
 static void checkAgainstOtherList(void* tCaller, void *tData) {
 	IntMap* list = tCaller;
 	CollisionListElement* e = tData;
+
+	if (e->mIsScheduledForDeletion) return;
 
 	int_map_map(list, checkCollisionElements, e);
 }

@@ -15,7 +15,7 @@ typedef pvr_ptr_t Texture;
 
 typedef struct {
 	SDL_Texture* mTexture;
-
+	SDL_Surface* mSurface;
 } SDLTextureData;
 
 typedef SDLTextureData* Texture;

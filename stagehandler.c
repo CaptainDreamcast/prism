@@ -36,6 +36,7 @@ typedef struct {
 	double mScrollingFactor;
 	double mMaxVelocity;
 	PhysicsObject mPhysics;
+	Position mReferencedPosition;
 	Position mTweeningTarget;
 	double mZ;
 	List mPatchList;
@@ -51,18 +52,25 @@ typedef struct {
 	StageHandlerCameraAddMovementFunction mAddMovement;
 } StageHandlerCameraStrategy;
 
+typedef struct {
+	Position mDirection;
+	double mStrength;
+} ScreenShake;
+
 static struct {
 	List mList;
 	StageHandlerCameraStrategy mCamera;
 
 	GeoRectangle mCameraRange;
 	int mIsLoadingTexturesDirectly;
+	ScreenShake mShake;
 } gData;
 
 void setupStageHandler() {
 	gData.mList = new_list();
 	gData.mIsLoadingTexturesDirectly = 0;
 	gData.mCameraRange = makeGeoRectangle(-INF, -INF, INF * 2, INF * 2);
+	gData.mShake.mStrength = 0;
 	setStageHandlerAccelerationPhysics();
 	
 }
@@ -90,7 +98,7 @@ static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgrou
 	}
 
 	tData->mAnimationID = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
-	setAnimationScreenPositionReference(tData->mAnimationID, &tBackgroundData->mPhysics.mPosition);
+	setAnimationScreenPositionReference(tData->mAnimationID, &tBackgroundData->mReferencedPosition);
 
 	tData->mIsLoaded = 1;
 }
@@ -142,17 +150,33 @@ static void clampCameraRange(Vector3D* v, double tScrollingFactor) {
 	*v = clampPositionToGeoRectangle(*v, rect);
 }
 
+static void setReferencedPosition(SingleBackgroundData* e) {
+	double l = gData.mShake.mStrength*e->mScrollingFactor;
+	e->mReferencedPosition = vecAdd(e->mPhysics.mPosition, vecScale(gData.mShake.mDirection, l));
+}
+
 static void updateSingleStage(void* tCaller, void* tData) {
 	(void)tCaller;
 	SingleBackgroundData* data = tData;
 
 	gData.mCamera.mUpdate(data);
 	clampCameraRange(&data->mPhysics.mPosition, data->mScrollingFactor);
-	
+	setReferencedPosition(data);
+
 	setSingleStagePatches(data);
 }
 
+static void updateCameraShake() {
+	gData.mShake.mStrength *= 0.9;
+	if (gData.mShake.mStrength < 0.5) gData.mShake.mStrength = 0;
+	gData.mShake.mStrength = min(gData.mShake.mStrength, 100);
+
+	double angle = randfrom(0, M_PI * 2);
+	gData.mShake.mDirection = getDirectionFromAngleZ(angle);
+}
+
 void updateStageHandler() {
+	updateCameraShake();
 	list_map(&gData.mList, updateSingleStage, NULL);
 }
 
@@ -167,10 +191,12 @@ int addScrollingBackground(double tScrollingFactor, double tZ) {
 	resetPhysicsObject(&data->mPhysics);
 	data->mPhysics.mPosition = makePosition(0, 0, 0);
 	data->mTweeningTarget = data->mPhysics.mPosition;
+	data->mReferencedPosition = data->mPhysics.mPosition;
 	data->mZ = tZ;
 	data->mPatchList = new_list();
 	data->mCurrentStartPatch = NULL;
 	data->mCurrentEndPatch = NULL;
+	
 
 	return list_push_front_owned(&gData.mList, data);
 }
@@ -196,9 +222,16 @@ int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Ani
 	return id;
 }
 
+TextureData* getBackgroundElementTextureData(int tBackgroundID, int tElementID)
+{
+	SingleBackgroundData* data = list_get(&gData.mList, tBackgroundID);
+	BackgroundPatchData* e = list_get(&data->mPatchList, tElementID);
+	return e->mTextureData;
+}
+
 Position getRealScreenPosition(int tBackgroundID, Position tPos) {
 	SingleBackgroundData* data = list_get(&gData.mList, tBackgroundID);
-	Position p = vecAdd(tPos, vecScale(data->mPhysics.mPosition, -1));
+	Position p = vecAdd(tPos, vecScale(data->mReferencedPosition, -1));
 	p.z = tPos.z;
 	return p;
 }
@@ -231,13 +264,14 @@ void scrollBackgroundDown(double tAccel)
 Position* getScrollingBackgroundPositionReference(int tID) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 
-	return &data->mPhysics.mPosition;
+	return &data->mReferencedPosition;
 }
 
 
 void setScrollingBackgroundPosition(int tID, Position tPos) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 	data->mPhysics.mPosition = tPos;
+	data->mReferencedPosition = tPos;
 	data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
 	setSingleStagePatches(data);
 }
@@ -255,6 +289,12 @@ PhysicsObject* getScrollingBackgroundPhysics(int tID) {
 void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 	data->mPhysics = tPhysics;
+	data->mReferencedPosition = data->mPhysics.mPosition;
+}
+
+void addStageHandlerScreenShake(double tStrength)
+{
+	gData.mShake.mStrength += tStrength;
 }
 
 typedef struct {

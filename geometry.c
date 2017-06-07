@@ -138,6 +138,10 @@ double getAngleFromDirection(Vector3D tDirection) {
 	return -fatan2(tDirection.y, tDirection.x) + M_PI;
 }
 
+Vector3D getDirectionFromAngleZ(double tAngle) {
+	return makePosition(cos(tAngle), sin(tAngle), 0);
+}
+
 double degreesToRadians(double tDegrees) {
 	return (tDegrees / 180) * M_PI;
 }

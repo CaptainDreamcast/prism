@@ -54,6 +54,7 @@ fup Line makeLine(Vector3D tStart, Vector3D tEnd);
 fup GeoRectangle makeGeoRectangle(double x, double y, double w, double h);
 
 fup double getAngleFromDirection(Vector3D tDirection);
+fup Vector3D getDirectionFromAngleZ(double tAngle);
 fup double degreesToRadians(double tDegrees);
 
 fup int checkIntersectLineCircle(Line tLine, Circle tCircle);

@@ -14,6 +14,7 @@ fup void setStageCameraRange(GeoRectangle tRange);
 
 fup int addScrollingBackground(double tScrollingFactor, double tZ);
 fup int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Animation tAnimation);
+fup TextureData* getBackgroundElementTextureData(int tBackgroundID, int tElementID);
 
 fup Position getRealScreenPosition(int tBackgroundID, Position tPos);
 fup void scrollBackgroundRight(double tAccel);
@@ -24,6 +25,8 @@ fup void setScrollingBackgroundPosition(int tID, Position tPos);
 fup void setScrollingBackgroundMaxVelocity(int tID, double tVel);
 fup PhysicsObject* getScrollingBackgroundPhysics(int tID);
 fup void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics);
+
+fup void addStageHandlerScreenShake(double tStrength);
 
 fup void loadStageFromScript(char* tPath);
 

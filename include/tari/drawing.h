@@ -20,7 +20,8 @@ typedef enum {
   COLOR_GREEN,
   COLOR_BLUE,
   COLOR_YELLOW,
-  COLOR_WHITE
+  COLOR_WHITE,
+  COLOR_DARK_RED
 } Color;
 
 typedef int TextSize;
@@ -58,5 +59,7 @@ fup void printRectangle(Rectangle r);
 fup Vector3D makeFontSize(int x, int y);
 
 fup void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
+
+fup void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget);
 
 #endif

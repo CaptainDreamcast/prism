@@ -1,9 +1,8 @@
 #ifndef TARI_TEXTURE
 #define TARI_TEXTURE
 
-#include "common/header.h"
-
 #include "memoryhandler.h"
+#include "geometry.h"
 
 typedef struct {
   int x;

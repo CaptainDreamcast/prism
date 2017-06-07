@@ -11,6 +11,10 @@ void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 		(*tR) = 1.0f;
 		(*tG) = (*tB) = 0;
 	}
+	else if (tColor == COLOR_DARK_RED) {
+		(*tR) = 0.5f;
+		(*tG) = (*tB) = 0;
+	}
 	else if (tColor == COLOR_GREEN) {
 		(*tG) = 1.0f;
 		(*tR) = (*tB) = 0;

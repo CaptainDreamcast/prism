@@ -13,7 +13,7 @@ typedef struct {
 } Actor;
 
 static struct {
-	List mActors;
+	IntMap mActors;
 	int mIsInitialized;
 } gData;
 
@@ -24,7 +24,7 @@ void setupActorHandler()
 		shutdownActorHandler();
 	}
 
-	gData.mActors = new_list();
+	gData.mActors = new_int_map();
 	gData.mIsInitialized = 1;
 }
 
@@ -45,8 +45,8 @@ static int removeActorCB(void* tCaller, void* tData) {
 
 void shutdownActorHandler()
 {
-	list_remove_predicate(&gData.mActors, removeActorCB, NULL);
-	delete_list(&gData.mActors);
+	int_map_remove_predicate(&gData.mActors, removeActorCB, NULL);
+	delete_int_map(&gData.mActors);
 	gData.mIsInitialized = 0;
 }
 
@@ -66,7 +66,7 @@ static int updateSingleActor(void* tCaller, void* tData) {
 
 void updateActorHandler()
 {
-	list_remove_predicate(&gData.mActors, updateSingleActor, NULL);
+	int_map_remove_predicate(&gData.mActors, updateSingleActor, NULL);
 }
 
 static void drawSingleActor(void* tCaller, void* tData) {
@@ -78,7 +78,7 @@ static void drawSingleActor(void* tCaller, void* tData) {
 
 void drawActorHandler()
 {
-	list_map(&gData.mActors, drawSingleActor, NULL);
+	int_map_map(&gData.mActors, drawSingleActor, NULL);
 }
 
 int instantiateActor(ActorBlueprint tBP)
@@ -95,18 +95,18 @@ int instantiateActorWithData(ActorBlueprint tBP, void * tData, int tIsOwned)
 	
 	if (e->mBP.mLoad) e->mBP.mLoad(e->mData);
 
-	return list_push_back_owned(&gData.mActors, e);
+	return int_map_push_back_owned(&gData.mActors, e);
 }
 
 void performOnActor(int tID, ActorInteractionFunction tFunc, void * tCaller)
 {
-	Actor* e = list_get(&gData.mActors, tID);
+	Actor* e = int_map_get(&gData.mActors, tID);
 	tFunc(tCaller, e->mData);
 }
 
 void removeActor(int tID)
 {
-	Actor* e = list_get(&gData.mActors, tID);
+	Actor* e = int_map_get(&gData.mActors, tID);
 	unloadActor(e);
-	list_remove(&gData.mActors, tID);
+	int_map_remove(&gData.mActors, tID);
 }

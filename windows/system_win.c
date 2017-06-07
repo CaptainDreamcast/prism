@@ -3,6 +3,7 @@
 #include <direct.h>
 #include <string.h>
 #include <windows.h>
+#include <assert.h>
 
 #include <stdlib.h>
 #include <SDL.h>
@@ -12,7 +13,9 @@
 #include "tari/pvr.h"
 #include "tari/geometry.h"
 
+
 void abortSystem(){
+	assert(0);
 	exit(0);
 }	
 
