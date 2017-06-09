@@ -133,7 +133,7 @@ void updateSystem() {
 	while (SDL_PollEvent(&e) != 0) { 
 		if( e.type == SDL_QUIT ) 
 		{  
-			abortSystem();
+			returnToMenu();
 		}
 		else if (e.type == SDL_WINDOWEVENT) {
 			checkWindowEvents(&e);
