@@ -21,7 +21,10 @@ typedef enum {
   COLOR_BLUE,
   COLOR_YELLOW,
   COLOR_WHITE,
-  COLOR_DARK_RED
+  COLOR_DARK_RED,
+  COLOR_DARK_GREEN,
+  COLOR_DARK_BLUE,
+  COLOR_DARK_YELLOW,
 } Color;
 
 typedef int TextSize;

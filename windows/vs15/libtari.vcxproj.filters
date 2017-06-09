@@ -124,6 +124,9 @@
     <ClCompile Include="..\..\actorhandler.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tweening.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

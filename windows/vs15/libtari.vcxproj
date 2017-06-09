@@ -160,6 +160,7 @@
     <ClCompile Include="..\..\texture.c" />
     <ClCompile Include="..\..\texturepool.c" />
     <ClCompile Include="..\..\timer.c" />
+    <ClCompile Include="..\..\tweening.c" />
     <ClCompile Include="..\..\wrapper.c" />
     <ClCompile Include="..\drawing_win.c" />
     <ClCompile Include="..\file_win.c" />

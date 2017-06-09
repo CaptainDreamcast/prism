@@ -29,6 +29,7 @@ fup Animation createEmptyAnimation();
 fup Animation createOneFrameAnimation();
 fup void pauseDurationHandling();
 fup void resumeDurationHandling();
+fup double getDurationPercentage(Duration tNow, Duration tDuration);
 
 fup void setupAnimationHandler();
 fup void updateAnimationHandler();
@@ -46,6 +47,7 @@ fup void setAnimationScale(int tID, Vector3D tScale, Position tCenter);
 fup void setAnimationSize(int tID, Vector3D tSize, Position tCenter);
 fup void setAnimationRotationZ(int tID, double tAngle, Position tCenter);
 fup void setAnimationColor(int tID, double r, double g, double b);
+fup void setAnimationColorType(int tID, Color tColor);
 fup void setAnimationTransparency(int tID, double a);
 fup void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller);
 fup void setAnimationPosition(int tID, Position tPosition);

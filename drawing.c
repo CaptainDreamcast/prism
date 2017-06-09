@@ -3,6 +3,7 @@
 #include "tari/log.h"
 #include "tari/math.h"
 
+// TODO: refactor
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 	if (tColor == COLOR_BLACK) {
 		(*tR) = (*tG) = (*tB) = 0;
@@ -19,12 +20,24 @@ void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 		(*tG) = 1.0f;
 		(*tR) = (*tB) = 0;
 	}
+	else if (tColor == COLOR_DARK_GREEN) {
+		(*tG) = 0.5f;
+		(*tR) = (*tB) = 0;
+	}
 	else if (tColor == COLOR_BLUE) {
 		(*tB) = 1.0f;
 		(*tG) = (*tR) = 0;
 	}
+	else if (tColor == COLOR_DARK_BLUE) {
+		(*tB) = 0.5f;
+		(*tG) = (*tR) = 0;
+	}
 	else if (tColor == COLOR_YELLOW) {
 		(*tG) = (*tR) = 1.0f;
+		(*tB) = 0;
+	}
+	else if (tColor == COLOR_DARK_YELLOW) {
+		(*tG) = (*tR) = 0.5f;
 		(*tB) = 0;
 	}
 	else {

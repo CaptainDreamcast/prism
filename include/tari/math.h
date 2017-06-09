@@ -20,6 +20,7 @@ extern double sin(double r);
 #define INF 1000000000
 
 fup double randfrom(double tMin, double tMax);
+fup int randfromInteger(int tMin, int tMax);
 
 fup double fatan2(double y, double x);
 

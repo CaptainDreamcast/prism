@@ -21,6 +21,7 @@
 #include "tari/texthandler.h"
 #include "tari/screeneffect.h"
 #include "tari/actorhandler.h"
+#include "tari/tweening.h"
 
 void initTariWrapperWithDefaultFlags() {
 	logg("Initiating wrapper.");
@@ -67,6 +68,8 @@ static void loadScreen(Screen* tScreen) {
 	setupTexturePool();
 	logg("Setting up Animationhandling");
 	setupAnimationHandler();
+	logg("Setting up Tweeninghandling");
+	setupTweening();
 	logg("Setting up Texthandling");
 	setupTextHandler();
 	logg("Setting up Physicshandling");
@@ -111,6 +114,8 @@ static void unloadScreen(Screen* tScreen) {
 	shutdownPhysicsHandler();
 	logg("Shutting down Texthandling");
 	shutdownTextHandler();
+	logg("Shutting down Tweeninghandling");
+	shutdownTweening();
 	logg("Shutting down Animationhandling");
 	shutdownAnimationHandler();
 	logg("Shutting down Texture pool");
@@ -129,6 +134,7 @@ static void updateScreen(Screen* tScreen) {
 	updateSystem();
 	updateInput();
 	updatePhysicsHandler();
+	updateTweening();
 	updateAnimationHandler();
 	updateTextHandler();
 	updateStageHandler();

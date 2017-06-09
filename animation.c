@@ -82,6 +82,12 @@ void resumeDurationHandling() {
 	gData.mIsPaused = 0;
 }
 
+double getDurationPercentage(Duration tNow, Duration tDuration)
+{
+	int duration = getDurationInFrames(tDuration);
+	return tNow / (double)tDuration;
+}
+
 typedef struct AnimationElement_internal {
 	
 	void* mCaller;
@@ -296,6 +302,13 @@ void setAnimationColor(int tID, double r, double g, double b) {
 	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mHasBaseColor = 1;
 	e->mBaseColor = makePosition(r, g, b);
+}
+
+void setAnimationColorType(int tID, Color tColor)
+{
+	double r, g, b;
+	getRGBFromColor(tColor, &r, &g, &b);
+	setAnimationColor(tID, r, g, b);
 }
 
 void setAnimationTransparency(int tID, double a) {
