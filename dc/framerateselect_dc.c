@@ -24,24 +24,24 @@ typedef struct {
 
 #define FRAMERATE_WARNING_ARRAY_AMOUNT 2
 
-void setFramerateSixty() {
+static void setFramerateSixty() {
 
   setFramerate(SIXTY_HERTZ);
   setScreenFramerate(60);
 }
 
-void setFramerateVGA() {
+static void setFramerateVGA() {
   setFramerate(SIXTY_HERTZ);
   setScreenFramerate(60);
   setVGA();
 }
 
-void setFramerateFifty() {
+static void setFramerateFifty() {
   setFramerate(FIFTY_HERTZ);
   setScreenFramerate(50);
 }
 
-int hasToSetFramerate() {
+static int hasToSetFramerate() {
   int whichVideoCable;
 
   whichVideoCable = vid_check_cable();

@@ -23,7 +23,7 @@ static struct {
 	int mFramerate;
 	int mIsVGA;
 
-} gData;
+} gSystem;
 
 void initSystem(){}
 
@@ -32,78 +32,78 @@ void shutdownSystem(){}
 void updateSystem() {}
 
 static void initScreenDefault() {
-	gData.mIsLoaded = 1;
-	gData.mScreenSizeX = 640;
-	gData.mScreenSizeY = 480;
-	gData.mFramerate = 60;
-	gData.mIsVGA = 0;	
+	gSystem.mIsLoaded = 1;
+	gSystem.mScreenSizeX = 640;
+	gSystem.mScreenSizeY = 480;
+	gSystem.mFramerate = 60;
+	gSystem.mIsVGA = 0;	
 }
 
  // TODO: enable video mode changing on the fly
 static void setVideoModeInternal() {
 
-	if(gData.mScreenSizeX == 640 && gData.mScreenSizeY == 480 && gData.mIsVGA) {
+	if(gSystem.mScreenSizeX == 640 && gSystem.mScreenSizeY == 480 && gSystem.mIsVGA) {
 		vid_set_mode(DM_640x480_VGA, PM_RGB565);
-	} else if(gData.mScreenSizeX == 640 && gData.mScreenSizeY == 480 && gData.mFramerate == 50) {
+	} else if(gSystem.mScreenSizeX == 640 && gSystem.mScreenSizeY == 480 && gSystem.mFramerate == 50) {
 		vid_set_mode(DM_640x480_PAL_IL, PM_RGB565);
-	} else if(gData.mScreenSizeX == 640 && gData.mScreenSizeY == 480 && gData.mFramerate == 60) {
+	} else if(gSystem.mScreenSizeX == 640 && gSystem.mScreenSizeY == 480 && gSystem.mFramerate == 60) {
 		vid_set_mode(DM_640x480_NTSC_IL, PM_RGB565);
-	} else if(gData.mScreenSizeX == 320 && gData.mScreenSizeY == 240 && gData.mIsVGA) {
+	} else if(gSystem.mScreenSizeX == 320 && gSystem.mScreenSizeY == 240 && gSystem.mIsVGA) {
 		vid_set_mode(DM_320x240_VGA, PM_RGB565);
-	} else if(gData.mScreenSizeX == 320 && gData.mScreenSizeY == 240 && gData.mFramerate == 50) {
+	} else if(gSystem.mScreenSizeX == 320 && gSystem.mScreenSizeY == 240 && gSystem.mFramerate == 50) {
 		vid_set_mode(DM_320x240_PAL, PM_RGB565);
-	} else if(gData.mScreenSizeX == 320 && gData.mScreenSizeY == 240 && gData.mFramerate == 60) {
+	} else if(gSystem.mScreenSizeX == 320 && gSystem.mScreenSizeY == 240 && gSystem.mFramerate == 60) {
 		vid_set_mode(DM_320x240_NTSC, PM_RGB565);
 	} else {
 		logError("Unrecognized video format.");
-		logErrorInteger(gData.mScreenSizeX);
-		logErrorInteger(gData.mScreenSizeY);
-		logErrorInteger(gData.mFramerate);
-		logErrorInteger(gData.mIsVGA);
+		logErrorInteger(gSystem.mScreenSizeX);
+		logErrorInteger(gSystem.mScreenSizeY);
+		logErrorInteger(gSystem.mFramerate);
+		logErrorInteger(gSystem.mIsVGA);
 		abortSystem();
 	}
 
 }
 
 void setScreen(int tX, int tY, int tFramerate, int tIsVGA) {
-	if(!gData.mIsLoaded) initScreenDefault();
-	gData.mScreenSizeX = tX;
-	gData.mScreenSizeY = tY;
-	gData.mFramerate = tFramerate;
-	gData.mIsVGA = tIsVGA;
+	if(!gSystem.mIsLoaded) initScreenDefault();
+	gSystem.mScreenSizeX = tX;
+	gSystem.mScreenSizeY = tY;
+	gSystem.mFramerate = tFramerate;
+	gSystem.mIsVGA = tIsVGA;
 	
 	setVideoModeInternal();
 	
 }
 
 void setScreenSize(int tX, int tY) {
-	if(!gData.mIsLoaded) initScreenDefault();
+	if(!gSystem.mIsLoaded) initScreenDefault();
 
-	gData.mScreenSizeX = tX;
-	gData.mScreenSizeY = tY;
+	gSystem.mScreenSizeX = tX;
+	gSystem.mScreenSizeY = tY;
 	
 	setVideoModeInternal();
 }
 
 ScreenSize getScreenSize() {
-	if(!gData.mIsLoaded) initScreenDefault();
+	if(!gSystem.mIsLoaded) initScreenDefault();
 	ScreenSize ret;
-	ret.x = gData.mScreenSizeX;
-	ret.y = gData.mScreenSizeY;
+	ret.x = gSystem.mScreenSizeX;
+	ret.y = gSystem.mScreenSizeY;
 	return ret;
 }
 
 void setScreenFramerate(int tFramerate) {
-	if(!gData.mIsLoaded) initScreenDefault();
-	gData.mFramerate = tFramerate;
+	if(!gSystem.mIsLoaded) initScreenDefault();
+	gSystem.mFramerate = tFramerate;
 
 	setVideoModeInternal();
 }
 
 void setVGA() {
-	if(!gData.mIsLoaded) initScreenDefault();
-	gData.mFramerate = 60;
-	gData.mIsVGA = 1;
+	if(!gSystem.mIsLoaded) initScreenDefault();
+	gSystem.mFramerate = 60;
+	gSystem.mIsVGA = 1;
 	setVideoModeInternal();
 }
 
