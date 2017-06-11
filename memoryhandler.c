@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 // TODO: update to newest KOS, so no more manual memory tracking required
 extern void initMemoryHandlerHW(); 
@@ -307,8 +308,8 @@ static int removeMemoryFromMemoryMapBucketWithoutFreeingData(MemoryMapBucket* tL
 }
 
 static void removeMemoryElementFromMemoryMapBucket(MemoryMapBucket* tList, MemoryListElement* e, FreeFunc tFunc) {
-	removeMemoryElementFromMemoryMapBucketWithoutFreeingData(tList, e);
 	tFunc(e->mData);
+	removeMemoryElementFromMemoryMapBucketWithoutFreeingData(tList, e);
 }
 
 static int removeMemoryFromMemoryMapBucket(MemoryMapBucket* tList, void* tData, FreeFunc tFunc) {
@@ -360,7 +361,8 @@ static int resizeMemoryOnMemoryMapBucket(MemoryMapBucket* tList, void* tData, in
 static void moveMemoryInMap(MemoryMap* tMap, void* tDst, void* tSrc) {
 	int srcBucket = getBucketFromPointer(tSrc);
 
-	removeMemoryFromMemoryMapBucketWithoutFreeingData(&tMap->mBuckets[srcBucket], tDst);
+	int ret = removeMemoryFromMemoryMapBucketWithoutFreeingData(&tMap->mBuckets[srcBucket], tDst);
+	assert(ret);
 	addAllocatedMemoryToMemoryMap(tMap, tDst);
 }
 
@@ -369,7 +371,7 @@ static int resizeMemoryOnMemoryMap(MemoryMap* tMap, void* tData, int tSize, Real
 	int ret = resizeMemoryOnMemoryMapBucket(&tMap->mBuckets[whichBucket], tData, tSize, tFunc, tOutput);
 
 	int newBucket = getBucketFromPointer(*tOutput);
-	if(whichBucket != newBucket) {
+	if(ret && whichBucket != newBucket) {
 		moveMemoryInMap(tMap, *tOutput, tData);
 	}
 
