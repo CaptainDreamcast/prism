@@ -23,6 +23,7 @@ void setupTexturePool() {
 		logWarning("Attempting to use active texture pool. Resetting.");
 		shutdownTexturePool();
 	}
+
 	gTexturePool.mPathToLoadedTexture = new_string_map();
 	gTexturePool.mTextureHashToLoadedTexture = new_string_map();
 
