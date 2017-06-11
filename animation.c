@@ -85,7 +85,7 @@ void resumeDurationHandling() {
 double getDurationPercentage(Duration tNow, Duration tDuration)
 {
 	int duration = getDurationInFrames(tDuration);
-	return tNow / (double)tDuration;
+	return tNow / (double)duration;
 }
 
 typedef struct AnimationElement_internal {

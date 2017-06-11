@@ -129,3 +129,12 @@ double getSingleRNormalized(int i) {
 	if (!gData.mControllers[i].mState) return 0;
 	return gData.mControllers[i].mState->rtrig / 128.0;
 }
+
+int hasShotGunSingle(int i)  {
+	return hasPressedBFlankSingle(i); // TODO
+}
+
+Vector3D getShotPositionSingle(int i) {
+	(void) i;
+	return makePosition(0,0,0); // TODO
+}

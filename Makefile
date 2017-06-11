@@ -5,6 +5,7 @@ dc/system_dc.o dc/log_dc.o timer.o optionhandler.o datastructures.o memoryhandle
 wrapper.o physicshandler.o script.o stagehandler.o collisionhandler.o \
 collisionanimation.o dc/soundeffect_dc.o dc/sound_dc.o animationtree.o texturepool.o \
 storyboard.o screeneffect.o texthandler.o dc/memoryhandler_dc.o compression.o \
+actorhandler.o tweening.o \
 quicklz.o
 
 defaultall: create_addons_link $(OBJS) subdirs linklib

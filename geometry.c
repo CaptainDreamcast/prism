@@ -233,10 +233,10 @@ int checkIntersectCircRect(Circle tCirc, GeoRectangle tRect) {
 Vector3D clampPositionToGeoRectangle(Vector3D v, GeoRectangle tRect)
 {
 	Vector3D ret = v;
-	ret.x = fmax(ret.x, tRect.mTopLeft.x);
-	ret.y = fmax(ret.y, tRect.mTopLeft.y);
-	ret.x = fmin(ret.x, tRect.mBottomRight.x);
-	ret.y = fmin(ret.y, tRect.mBottomRight.y);
+	ret.x = max(ret.x, tRect.mTopLeft.x);
+	ret.y = max(ret.y, tRect.mTopLeft.y);
+	ret.x = min(ret.x, tRect.mBottomRight.x);
+	ret.y = min(ret.y, tRect.mBottomRight.y);
 	return ret;
 }
 

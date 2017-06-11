@@ -66,7 +66,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   pvr_poly_hdr_t hdr;
   pvr_vertex_t vert;
 
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_BILINEAR);
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_PT_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_BILINEAR);
 
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
@@ -115,7 +115,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
 
 void startDrawing() {
   pvr_scene_begin();
-  pvr_list_begin(PVR_LIST_TR_POLY);
+  pvr_list_begin(PVR_LIST_PT_POLY);
 }
 
 void stopDrawing() {
@@ -148,7 +148,7 @@ static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position
 	return (after.x > bottomRight.x);
 }
 
-void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
 
   pvr_poly_cxt_t cxt;
   pvr_poly_hdr_t hdr;
@@ -163,7 +163,7 @@ void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Colo
   TextureData fontData = getFontTexture();
   referenceTextureMemory(fontData.mTexture);
 
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, fontData.mTextureSize.x, fontData.mTextureSize.y, fontData.mTexture->mData, PVR_FILTER_BILINEAR);
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_PT_POLY, PVR_TXRFMT_ARGB4444, fontData.mTextureSize.x, fontData.mTextureSize.y, fontData.mTexture->mData, PVR_FILTER_BILINEAR);
 
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
@@ -208,7 +208,7 @@ void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Colo
     pos.x += tFontSize.x + tBreakSize.x;
     current++;
 
-    if(hasToLinebreak(tText, current, tPosition, pos, tFontSize, tBreakSize, tTextBoxSize)) {
+    if(hasToLinebreak(tFullText, current, tPosition, pos, tFontSize, tBreakSize, tTextBoxSize)) {
 	pos.x = tPosition.x;
 	pos.y += tFontSize.y + tBreakSize.y;
     }
@@ -288,3 +288,10 @@ void popDrawingRotationZ() {
 void popDrawingTranslation() {
 	popMatrixInternal();
 }
+
+void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget) {
+	(void) tDst;
+	(void) tColor;
+	(void) tTarget;
+}
+
