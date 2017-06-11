@@ -20,10 +20,12 @@ void initMemoryHandlerHW() {
 }
 
 void increaseAvailableTextureMemoryHW(size_t tSize) {
+	printf("inc %d\n", tSize);
 	gData.mAvailableMemory += tSize;
 }
 
 void decreaseAvailableTextureMemoryHW(size_t tSize) {
+	printf("dec %d\n", tSize);
 	gData.mAvailableMemory -= tSize;
 }
 

@@ -89,10 +89,6 @@ typedef struct {
 } MemoryMap;
 
 typedef struct {
-	MemoryMap mMap;
-} MemoryList;
-
-typedef struct {
 	int mSize;
 	TextureMemory mFirst;
 	TextureMemory mLast;
@@ -100,7 +96,7 @@ typedef struct {
 
 typedef struct {
 	int mHead;
-	MemoryList mLists[MEMORY_STACK_MAX];
+	MemoryMap mMaps[MEMORY_STACK_MAX];
 } MemoryListStack;
 
 static struct {
@@ -135,17 +131,12 @@ static void printMemoryMap(MemoryMap* tMap) {
 	}
 }
 
-static void printMemoryList(MemoryList* tList) {
-	printMemoryMap(&tList->mMap);
-
-}
-
 static void printMemoryListStack(MemoryListStack* tStack) {
 	logInteger(tStack->mHead);
 	int current;
 	for (current = tStack->mHead; current >= 0; current--) {
 		logInteger(current);
-		printMemoryList(&tStack->mLists[current]);
+		printMemoryMap(&tStack->mMaps[current]);
 	}
 }
 
@@ -263,6 +254,10 @@ static void* addMemoryToMemoryMap(MemoryMap* tMap, int tSize, MallocFunc tFunc) 
 
 	e->mPrev = NULL;
 	e->mData = tFunc(tSize);
+	
+	if(tFunc == allocTextureFunc) {
+		printf("adding to %X which is %X not %X\n", (unsigned int)tMap, (unsigned int)&gData.mTextureMemoryStack.mMaps[1], (unsigned int)&gData.mTextureMemoryStack.mMaps[0]);
+	}
 
 	int whichBucket = getBucketFromPointer(e->mData);
 	return addMemoryToMemoryMapBucket(&tMap->mBuckets[whichBucket], e);
@@ -276,10 +271,6 @@ static void* addAllocatedMemoryToMemoryMap(MemoryMap* tMap, void* tData) {
 
 	int whichBucket = getBucketFromPointer(e->mData);
 	return addMemoryToMemoryMapBucket(&tMap->mBuckets[whichBucket], e);
-}
-
-static void* addMemoryToMemoryList(MemoryList* tList, int tSize, MallocFunc tFunc) {
-	return addMemoryToMemoryMap(&tList->mMap, tSize, tFunc);
 }
 
 static void removeMemoryElementFromMemoryMapBucketWithoutFreeingData(MemoryMapBucket* tList, MemoryListElement* e) {
@@ -333,10 +324,6 @@ static int removeMemoryFromMemoryMap(MemoryMap* tMap, void* tData, FreeFunc tFun
 	return removeMemoryFromMemoryMapBucket(&tMap->mBuckets[whichBucket], tData, tFunc);
 }
 
-static int removeMemoryFromMemoryList(MemoryList* tList, void* tData, FreeFunc tFunc) {
-	return removeMemoryFromMemoryMap(&tList->mMap, tData, tFunc);
-}
-
 static void* resizeMemoryElementOnMemoryMapBucket(MemoryListElement* e, int tSize, ReallocFunc tFunc) {
 	e->mData = tFunc(e->mData, tSize);
 	return e->mData;
@@ -378,10 +365,6 @@ static int resizeMemoryOnMemoryMap(MemoryMap* tMap, void* tData, int tSize, Real
 	return ret;
 }
 
-static int resizeMemoryOnMemoryList(MemoryList* tList, void* tData, int tSize, ReallocFunc tFunc, void** tOutput) {
-	return resizeMemoryOnMemoryMap(&tList->mMap, tData, tSize, tFunc, tOutput);
-}
-
 static void emptyMemoryMapBucket(MemoryMapBucket* tList, FreeFunc tFunc) {
 	int amount = tList->mSize;
 	MemoryListElement* cur = tList->mFirst;
@@ -397,10 +380,6 @@ static void emptyMemoryMap(MemoryMap* tMap, FreeFunc tFunc) {
 	for(i = 0; i < MEMORY_MAP_BUCKET_AMOUNT; i++) {
 		emptyMemoryMapBucket(&tMap->mBuckets[i], tFunc);
 	}
-}
-
-static void emptyMemoryList(MemoryList* tList, FreeFunc tFunc) {
-	emptyMemoryMap(&tList->mMap, tFunc);
 }
 
 static void* addMemoryToMemoryListStack(MemoryListStack* tStack, int tSize, MallocFunc tFunc) {
@@ -420,7 +399,7 @@ static void* addMemoryToMemoryListStack(MemoryListStack* tStack, int tSize, Mall
 		abortSystem();
 	}
 
-	return addMemoryToMemoryList(&tStack->mLists[tStack->mHead], tSize, tFunc);
+	return addMemoryToMemoryMap(&tStack->mMaps[tStack->mHead], tSize, tFunc);
 }
 static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData, FreeFunc tFunc) {
 	if (!gData.mActive) {
@@ -436,7 +415,7 @@ static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData
 
 	int tempHead;
 	for (tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
-		if (removeMemoryFromMemoryList(&tStack->mLists[tempHead], tData, tFunc)) {
+		if (removeMemoryFromMemoryMap(&tStack->mMaps[tempHead], tData, tFunc)) {
 			return;
 		}
 	}
@@ -460,7 +439,7 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 	void* output = NULL;
 	int tempHead;
 	for (tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
-		if (resizeMemoryOnMemoryList(&tStack->mLists[tempHead], tData, tSize, tFunc, &output)) {
+		if (resizeMemoryOnMemoryMap(&tStack->mMaps[tempHead], tData, tSize, tFunc, &output)) {
 			return output;
 		}
 	}
@@ -480,12 +459,15 @@ static void popMemoryStackInternal(MemoryListStack* tStack, FreeFunc tFunc) {
 		abortSystem();
 	}
 
-	emptyMemoryList(&tStack->mLists[tStack->mHead], tFunc);
+	printf("Popping internal %d\n", tStack->mHead);
+	emptyMemoryMap(&tStack->mMaps[tStack->mHead], tFunc);
 	tStack->mHead--;
+	printf("New head %d\n", tStack->mHead);
 }
 
 static void emptyMemoryListStack(MemoryListStack* tStack, FreeFunc tFunc) {
 	while (tStack->mHead >= 0) {
+		printf("Popping now %d\n", tStack->mHead);
 		popMemoryStackInternal(tStack, tFunc);
 	}
 }
@@ -516,7 +498,9 @@ TextureMemory allocTextureMemory(int tSize) {
 	if (!tSize) {
 		return NULL;
 	}
-
+	
+	printf("allocing %d\n", gData.mTextureMemoryStack.mHead);
+	printMemoryListStack(&gData.mTextureMemoryStack);
 	return addMemoryToMemoryListStack(&gData.mTextureMemoryStack, tSize, allocTextureFunc);
 }
 
@@ -556,7 +540,7 @@ static void pushMemoryStackInternal(MemoryListStack* tStack) {
 	}
 
 	tStack->mHead++;
-	pushMemoryMapInternal(&tStack->mLists[tStack->mHead].mMap);
+	pushMemoryMapInternal(&tStack->mMaps[tStack->mHead]);
 }
 
 void pushMemoryStack() {
@@ -569,9 +553,15 @@ void popMemoryStack() {
 
 void pushTextureMemoryStack() {
 	pushMemoryStackInternal(&gData.mTextureMemoryStack);
+	printf("pushing %d\n", gData.mTextureMemoryStack.mHead);
 }
 void popTextureMemoryStack() {
+	printf("popping %d\n", gData.mTextureMemoryStack.mHead);
+	printf("ava bef %d\n", getAvailableTextureMemory());
+	printMemoryListStack(&gData.mTextureMemoryStack);
 	popMemoryStackInternal(&gData.mTextureMemoryStack, freeTextureFunc);
+	printf("ava %d\n", getAvailableTextureMemory());
+	printMemoryListStack(&gData.mTextureMemoryStack);
 }
 
 static void initTextureMemoryUsageList() {
@@ -589,14 +579,17 @@ void initMemoryHandler() {
 	gData.mActive = 1;
 	gData.mMemoryStack.mHead = -1;
 	gData.mTextureMemoryStack.mHead = -1;
+	printf("INIT %d\n", gData.mTextureMemoryStack.mHead);
 	initTextureMemoryUsageList();
 	pushMemoryStack();
 	pushTextureMemoryStack();
 	initMemoryHandlerHW();
+	printf("INIT2 %d\n", gData.mTextureMemoryStack.mHead);
 }
 
 void shutdownMemoryHandler() {
 	gData.mActive = 0;
+	printf("Shutting down\n");
 	emptyMemoryListStack(&gData.mMemoryStack, free);
 	emptyMemoryListStack(&gData.mTextureMemoryStack, freeTextureFunc);
 }
