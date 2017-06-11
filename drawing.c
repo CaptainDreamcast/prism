@@ -94,7 +94,7 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
 }
 
 void drawAdvancedText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize) {
-	drawMultilineText(tText, tPosition, tFontSize, tColor, makeFontSize(tBreakSize, 0), makePosition(INF, INF, INF));
+	drawMultilineText(tText, tText, tPosition, tFontSize, tColor, makeFontSize(tBreakSize, 0), makePosition(INF, INF, INF));
 }
 
 Vector3D makeFontSize(int x, int y) {

@@ -86,7 +86,7 @@ static void drawSingleText(void* tCaller, void* tData) {
 
 	// TODO: set font to correct font 
 	e->mColor = COLOR_WHITE;
-	drawMultilineText(e->mDrawnText, e->mPosition, e->mFontSize, e->mColor, e->mBreakSize, e->mTextBoxSize);
+	drawMultilineText(e->mDrawnText, e->mText, e->mPosition, e->mFontSize, e->mColor, e->mBreakSize, e->mTextBoxSize);
 }
 
 void drawHandledTexts() {

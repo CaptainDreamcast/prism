@@ -229,7 +229,7 @@ static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position
 	return (after.x > bottomRight.x);
 }
 
-void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
 	int current = 0;
 
 	setDrawingBaseColor(tColor);
@@ -256,8 +256,8 @@ void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Colo
 		pos.x += tFontSize.x + tBreakSize.x;
 		current++;
 
-		if (hasToLinebreak(tText, current, tPosition, pos, tFontSize, tBreakSize, tTextBoxSize)) {
-			pos.x = tPosition.x;
+		if (hasToLinebreak(tFullText, current, tPosition, pos, tFontSize, tBreakSize, tTextBoxSize)) {
+			pos.x = tPosition.x - (tFontSize.x + tBreakSize.x);
 			pos.y += tFontSize.y + tBreakSize.y;
 		}
 	}
