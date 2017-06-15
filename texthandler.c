@@ -25,6 +25,9 @@ typedef struct {
 
 	Duration mSingleLetterBuildupNow;
 	Duration mSingleLetterBuildupDuration;
+
+	int mHasSoundEffects;
+	SoundEffectCollection mSoundEffects;
 } HandledText;
 
 static struct {
@@ -59,6 +62,11 @@ static void increaseDrawnText(HandledText* e) {
 	}
 
 	e->mSingleLetterBuildupNow = 0;
+
+	if (e->mHasSoundEffects) {
+		playRandomSoundEffectFromCollection(e->mSoundEffects);
+	}
+	
 }
 
 static int updateSingleText(void* tCaller, void* tData) {
@@ -114,13 +122,15 @@ int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vec
 	e->mSingleLetterBuildupNow = 0;
 	e->mSingleLetterBuildupDuration = INF;
 
+	e->mHasSoundEffects = 0;
+
 	return list_push_front_owned(&gData.mTexts, e);
 }
 
-int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration, Duration tBuildupSpeed) {
+int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration, Duration tBuildupDuration) {
 	int id = addHandledText(tPosition, tText, tFont, tColor, tFontSize, tBreakSize, tTextBoxSize, tDuration);
 	HandledText* e = list_get(&gData.mTexts, id);
-	e->mSingleLetterBuildupDuration = tBuildupSpeed / strlen(tText);
+	e->mSingleLetterBuildupDuration = tBuildupDuration / strlen(tText);
 	e->mDrawnText[0] = '\0';
 	return id;
 }
@@ -135,6 +145,13 @@ void setHandledText(int tID, char * tText)
 	HandledText* e = list_get(&gData.mTexts, tID);
 	strcpy(e->mText, tText);
 	strcpy(e->mDrawnText, tText);
+}
+
+void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	e->mHasSoundEffects = 1;
+	e->mSoundEffects = tSoundEffects;
 }
 
 void removeHandledText(int tID) {

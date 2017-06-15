@@ -154,6 +154,7 @@
     <ClCompile Include="..\..\quicklz.c" />
     <ClCompile Include="..\..\screeneffect.c" />
     <ClCompile Include="..\..\script.c" />
+    <ClCompile Include="..\..\soundeffect.c" />
     <ClCompile Include="..\..\stagehandler.c" />
     <ClCompile Include="..\..\storyboard.c" />
     <ClCompile Include="..\..\texthandler.c" />

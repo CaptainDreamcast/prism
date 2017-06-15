@@ -23,6 +23,11 @@
 #include "tari/actorhandler.h"
 #include "tari/tweening.h"
 
+static struct {
+	int mIsAborted;
+	Screen* mNext;
+} gData;
+
 void initTariWrapperWithDefaultFlags() {
 	logg("Initiating wrapper.");
 	initSystem();
@@ -53,9 +58,7 @@ void resumeWrapper() {
 	resumeDurationHandling();
 }
 
-static struct {
-	int mIsAborted;
-} gData;
+
 
 static void loadScreen(Screen* tScreen) {
 	logg("Loading handled screen");
@@ -165,30 +168,31 @@ static void drawScreen(Screen* tScreen) {
 static Screen* showScreen(Screen* tScreen) {
 	logg("Show screen");
 
-	Screen* next = NULL;
-	while(!gData.mIsAborted && next == NULL) {
+	gData.mNext = NULL;
+	while(!gData.mIsAborted && gData.mNext == NULL) {
 		updateScreen(tScreen);
 		drawScreen(tScreen);
-		next = tScreen->mGetNextScreen();	
+		if (tScreen->mGetNextScreen && !gData.mNext) {
+			gData.mNext = tScreen->mGetNextScreen();
+		}
 	}
 
-	return next;
+	return gData.mNext;
 }
 
 void abortScreenHandling() {
 	gData.mIsAborted = 1;
 }
 
+void setNewScreen(Screen * tScreen)
+{
+	gData.mNext = tScreen;
+}
+
 void startScreenHandling(Screen* tScreen) {
 	gData.mIsAborted = 0;
 
 	while(!gData.mIsAborted) {
-	
-		if (!tScreen->mGetNextScreen) {
-			logError("GetNextScreen not set.");
-			abortSystem();
-		}
-
 		loadScreen(tScreen);
 		Screen* next = showScreen(tScreen);
 		unloadScreen(tScreen);

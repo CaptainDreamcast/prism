@@ -23,5 +23,6 @@ fup void resumeWrapper();
 
 fup void startScreenHandling(Screen* tScreen);
 fup void abortScreenHandling();
+fup void setNewScreen(Screen* tScreen);
 
 #endif 

@@ -6,6 +6,7 @@
 typedef void (*TimerCB)(void* caller);
 
 fup int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller);
+fup void removeTimer(int tID);
 
 fup void setupTimer();
 fup void updateTimer();

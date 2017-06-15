@@ -55,6 +55,7 @@ typedef struct {
 typedef struct {
 	Position mDirection;
 	double mStrength;
+	double mMaximum;
 } ScreenShake;
 
 static struct {
@@ -71,6 +72,7 @@ void setupStageHandler() {
 	gData.mIsLoadingTexturesDirectly = 0;
 	gData.mCameraRange = makeGeoRectangle(-INF, -INF, INF * 2, INF * 2);
 	gData.mShake.mStrength = 0;
+	gData.mShake.mMaximum = INF;
 	setStageHandlerAccelerationPhysics();
 	
 }
@@ -169,7 +171,7 @@ static void updateSingleStage(void* tCaller, void* tData) {
 static void updateCameraShake() {
 	gData.mShake.mStrength *= 0.9;
 	if (gData.mShake.mStrength < 0.5) gData.mShake.mStrength = 0;
-	gData.mShake.mStrength = min(gData.mShake.mStrength, 100);
+	gData.mShake.mStrength = min(gData.mShake.mStrength, gData.mShake.mMaximum);
 
 	double angle = randfrom(0, M_PI * 2);
 	gData.mShake.mDirection = getDirectionFromAngleZ(angle);
@@ -295,6 +297,11 @@ void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics) {
 void addStageHandlerScreenShake(double tStrength)
 {
 	gData.mShake.mStrength += tStrength;
+}
+
+void setStageHandlerMaximumScreenShake(double tStrength)
+{
+	gData.mShake.mMaximum = tStrength;
 }
 
 typedef struct {

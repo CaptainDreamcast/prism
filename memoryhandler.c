@@ -77,7 +77,7 @@ typedef struct MemoryListElement_internal {
 	struct MemoryListElement_internal* mNext;
 } MemoryListElement;
 
-#define MEMORY_MAP_BUCKET_AMOUNT 101
+#define MEMORY_MAP_BUCKET_AMOUNT 1009
 
 typedef struct {
 	int mSize;

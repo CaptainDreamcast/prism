@@ -127,6 +127,9 @@
     <ClCompile Include="..\..\tweening.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\soundeffect.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

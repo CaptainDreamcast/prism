@@ -27,6 +27,7 @@ fup PhysicsObject* getScrollingBackgroundPhysics(int tID);
 fup void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics);
 
 fup void addStageHandlerScreenShake(double tStrength);
+fup void setStageHandlerMaximumScreenShake(double tStrength);
 
 fup void loadStageFromScript(char* tPath);
 

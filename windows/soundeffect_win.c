@@ -62,6 +62,7 @@ void unloadSoundEffect(int tID) {
 
 void playSoundEffect(int tID) {
 	SoundEffectEntry* e = list_get(&gData.mAllocatedChunks, tID);
+	return;
 	Mix_PlayChannel(-1, e->mChunk, 0);
 }
 
