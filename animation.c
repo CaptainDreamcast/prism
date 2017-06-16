@@ -103,12 +103,14 @@ typedef struct AnimationElement_internal {
 	Position* mBasePositionReference;
 
 	Position mCenter;
-	Position mEffectCenter;
+	
 	int mIsScaled;
 	Vector3D mScale;
+	Position mScaleEffectCenter;
 
 	int mIsRotated;
 	double mRotationZ;
+	Position mRotationEffectCenter;
 
 	int mHasBaseColor;
 	Vector3D mBaseColor;
@@ -156,27 +158,34 @@ void updateAnimationHandler(){
 	int_map_remove_predicate(&gAnimationHandler.mList, updateAndRemoveCB, NULL);
 }
 
+static Position getAnimationPositionWithAllReferencesIncluded(AnimationElement* cur) {
+	Position p = cur->mPosition;
+	if (cur->mScreenPositionReference != NULL) {
+		p = vecAdd(p, vecScale(*cur->mScreenPositionReference, -1));
+	}
+
+	if (cur->mBasePositionReference != NULL) {
+		p = vecAdd(p, *(cur->mBasePositionReference));
+	}
+
+	return p;
+}
+
 static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 	(void) tCaller;
 	AnimationElement* cur = tData;
 	int frame = cur->mAnimation.mFrame;
-	Position p = cur->mPosition;
-	if(cur->mScreenPositionReference != NULL) {
-		p = vecAdd(p, vecScale(*cur->mScreenPositionReference, -1));
-	}
-
-	if(cur->mBasePositionReference != NULL) {
-		p = vecAdd(p, *(cur->mBasePositionReference));
-	}
+	
+	Position p = getAnimationPositionWithAllReferencesIncluded(cur);
 
 	if(cur->mIsScaled) {
-		Position sPosition = cur->mEffectCenter;
+		Position sPosition = cur->mScaleEffectCenter;
 		sPosition = vecAdd(sPosition, p);
 		scaleDrawing3D(cur->mScale, sPosition);
 	}
 
 	if (cur->mIsRotated) {
-		Position rPosition = cur->mEffectCenter;
+		Position rPosition = cur->mRotationEffectCenter;
 		rPosition = vecAdd(rPosition, p);
 		setDrawingRotationZ(cur->mRotationZ, rPosition);
 	}
@@ -277,25 +286,29 @@ void setAnimationBasePositionReference(int tID, Position* tBasePositionReference
 void setAnimationScale(int tID, Vector3D tScale, Position tCenter) {
 	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mIsScaled = 1;
-	e->mEffectCenter = tCenter;
+	e->mScaleEffectCenter = tCenter;
 	e->mScale = tScale;
 }
 
 void setAnimationSize(int tID, Vector3D tSize, Position tCenter) {
 	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mIsScaled = 1;
-	e->mEffectCenter = tCenter;
+	e->mScaleEffectCenter = tCenter;
 
 	double dx = tSize.x / e->mTextureData[0].mTextureSize.x;
 	double dy = tSize.y / e->mTextureData[0].mTextureSize.y;
 	e->mScale = makePosition(dx, dy, 1);
 }
 
+static void setAnimationRotationZ_internal(AnimationElement* e, double tAngle, Vector3D tCenter) {
+	e->mIsRotated = 1;
+	e->mRotationEffectCenter = tCenter;
+	e->mRotationZ = tAngle;
+}
+
 void setAnimationRotationZ(int tID, double tAngle, Position tCenter) {
 	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
-	e->mIsRotated = 1;
-	e->mEffectCenter = tCenter;
-	e->mRotationZ = tAngle;
+	setAnimationRotationZ_internal(e, tAngle, tCenter);
 }
 
 void setAnimationColor(int tID, double r, double g, double b) {
@@ -369,6 +382,28 @@ void fadeInAnimation(int tID, Duration tDuration) {
 void inverseAnimationVertical(int tID) {
 	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mInversionState.x ^= 1;
+}
+
+typedef struct {
+	double mAngle;
+	Vector3D mCenter;
+} ScreenRotationZ;
+
+static void setScreenRotationZForSingleAnimation(void* tCaller, void* tData) {
+	ScreenRotationZ* rot = tCaller;
+	AnimationElement* e = tData;
+
+	Position p = getAnimationPositionWithAllReferencesIncluded(e);
+	Position center = vecSub(rot->mCenter, p);
+	setAnimationRotationZ_internal(e, rot->mAngle, center);
+}
+
+void setAnimationHandlerScreenRotationZ(double tAngle, Vector3D tCenter)
+{
+	ScreenRotationZ rot;
+	rot.mAngle = tAngle;
+	rot.mCenter = tCenter;
+	int_map_map(&gAnimationHandler.mList, setScreenRotationZForSingleAnimation, &rot);
 }
 
 void removeHandledAnimation(int tID) {

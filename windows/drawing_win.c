@@ -23,8 +23,10 @@ typedef struct {
 	Vector3D mTranslation;
 	Vector3D mScale;
 	Vector3D mAngle;
-	Position mEffectCenter;
-	int mIsEffectCenterAbsolute;
+	Position mScaleEffectCenter;
+	Position mRotationEffectCenter;
+	int mIsScaleEffectCenterAbsolute;
+	int mIsRotationEffectCenterAbsolute;
 
 	int mFrameStartTime;
 
@@ -64,7 +66,8 @@ void initDrawing() {
 
 	gData.mTranslation = makePosition(0, 0, 0);
 	gData.mEffectStack = new_vector();
-	gData.mIsEffectCenterAbsolute = 1;
+	gData.mIsScaleEffectCenterAbsolute = 1;
+	gData.mIsRotationEffectCenterAbsolute = 1;
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
@@ -158,16 +161,24 @@ static void drawSorted(void* tCaller, void* tData) {
 	dstRect.w = sizeX;
 	dstRect.h = sizeY;
 
-	dstRect = scaleSDLRect(dstRect, e->mData.mScale, e->mData.mEffectCenter);
+	dstRect = scaleSDLRect(dstRect, e->mData.mScale, e->mData.mScaleEffectCenter);
 
 	Position realEffectPos;
-	if (e->mData.mIsEffectCenterAbsolute) {
-		realEffectPos = vecAdd(e->mData.mEffectCenter, vecScale(e->mPos, -1));
+	if (e->mData.mIsScaleEffectCenterAbsolute) {
+		realEffectPos = vecAdd(e->mData.mScaleEffectCenter, vecScale(e->mPos, -1));
 	}
 	else {
-		realEffectPos = e->mData.mEffectCenter;
+		realEffectPos = e->mData.mScaleEffectCenter;
 	}
 	realEffectPos = vecScale3D(realEffectPos, e->mData.mScale);
+
+
+	if (e->mData.mIsRotationEffectCenterAbsolute) {
+		realEffectPos = vecAdd(e->mData.mRotationEffectCenter, vecScale(e->mPos, -1));
+	}
+	else {
+		realEffectPos = e->mData.mRotationEffectCenter;
+	}
 
 	SDL_Point effectCenter;
 	effectCenter.x = (int)realEffectPos.x;
@@ -267,12 +278,12 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
 
 void scaleDrawing(double tFactor, Position tScalePosition){
 	gData.mScale = makePosition(tFactor,tFactor,1);
-	gData.mEffectCenter = tScalePosition;
+	gData.mScaleEffectCenter = tScalePosition;
 }
 
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition){
 	gData.mScale = tFactor;
-	gData.mEffectCenter = tScalePosition;
+	gData.mScaleEffectCenter = tScalePosition;
 }
 
 void setDrawingBaseColor(Color tColor){
@@ -291,7 +302,7 @@ void setDrawingTransparency(double tAlpha){
 
 void setDrawingRotationZ(double tAngle, Position tPosition){
 	gData.mAngle.z = tAngle;
-	gData.mEffectCenter = tPosition;
+	gData.mRotationEffectCenter = tPosition;
 }
 
 void setDrawingParametersToIdentity(){
@@ -299,14 +310,6 @@ void setDrawingParametersToIdentity(){
 	setDrawingTransparency(1.0);
 	scaleDrawing(1, makePosition(0, 0, 0));
 	setDrawingRotationZ(0, makePosition(0,0,0));
-}
-
-void setEffectCenterRelative() {
-	gData.mIsEffectCenterAbsolute = 0;
-}
-
-void setEffectCenterAbsolute() {
-	gData.mIsEffectCenterAbsolute = 1;
 }
 
 typedef struct {
@@ -328,13 +331,12 @@ void pushDrawingTranslation(Vector3D tTranslation) {
 	vector_push_back_owned(&gData.mEffectStack, e);
 }
 void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
-	gData.mEffectCenter = tCenter;
+	gData.mRotationEffectCenter = tCenter;
 	gData.mAngle.z += tAngle;
 
 	RotationZEffect* e = allocMemory(sizeof(RotationZEffect));
 	e->mAngle = tAngle;
 	vector_push_back_owned(&gData.mEffectStack, e);
-	
 }
 
 void popDrawingRotationZ() {

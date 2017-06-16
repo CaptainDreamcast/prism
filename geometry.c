@@ -63,6 +63,13 @@ Vector3D vecRotateZ(Vector3D tVector, double tAngle) {
 	return ret;
 }
 
+Vector3D vecRotateZAroundCenter(Vector3D tVector, double tAngle, Vector3D tCenter) {
+	tVector = vecSub(tVector, tCenter);
+	tVector = vecRotateZ(tVector, tAngle);
+	tVector = vecAdd(tVector, tCenter);
+	return tVector;
+}
+
 Vector3D vecScaleToSize(Vector3D v, double tSize)
 {
 	v = vecNormalize(v);
