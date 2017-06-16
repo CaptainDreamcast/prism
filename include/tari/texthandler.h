@@ -13,5 +13,6 @@ fup int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Co
 fup int addHandledTextWithInfiniteDurationOnOneLine(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize);
 fup void setHandledText(int tID, char* tText);
 fup void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects);
+fup void setHandledTextPosition(int tID, Position tPosition);
 fup void removeHandledText(int tID);
 

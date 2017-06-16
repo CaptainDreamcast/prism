@@ -154,6 +154,12 @@ void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects)
 	e->mSoundEffects = tSoundEffects;
 }
 
+void setHandledTextPosition(int tID, Position tPosition)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	e->mPosition = tPosition;
+}
+
 void removeHandledText(int tID) {
 	list_remove(&gData.mTexts, tID);
 }
