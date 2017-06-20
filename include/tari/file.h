@@ -12,7 +12,7 @@
 
 typedef int FileHandler;
 
-#elif defined _WIN32
+#elif defined _WIN32 || defined __EMSCRIPTEN__
 
 #define O_RDONLY	0x1
 #define O_WRONLY	0x2

@@ -14,5 +14,6 @@ fup int addHandledTextWithInfiniteDurationOnOneLine(Position tPosition, char* tT
 fup void setHandledText(int tID, char* tText);
 fup void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects);
 fup void setHandledTextPosition(int tID, Position tPosition);
+fup void setHandledTextBasePositionReference(int tID, Position* tPosition);
 fup void removeHandledText(int tID);
 

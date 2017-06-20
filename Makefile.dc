@@ -1,0 +1,18 @@
+include Makefile.common
+
+OBJS += dc/drawing_dc.o dc/texture_dc.o dc/input_dc.o dc/pvr_dc.o \
+dc/framerateselect_dc.o dc/file_dc.o dc/math_dc.o dc/system_dc.o dc/log_dc.o \
+dc/soundeffect_dc.o dc/sound_dc.o dc/memoryhandler_dc.o
+
+defaultall: create_addons_link $(OBJS) subdirs linklib
+
+KOS_CFLAGS += -W -Wall -Werror -DDREAMCAST -I ./include
+
+include $(KOS_BASE)/addons/Makefile.prefab
+
+create_addons_link:
+	rm -f ../include/tari
+	ln -s ../libtari/include/tari ../include/tari
+
+clean:
+	rm -f *.o

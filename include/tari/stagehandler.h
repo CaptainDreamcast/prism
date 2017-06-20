@@ -25,6 +25,8 @@ fup void setScrollingBackgroundPosition(int tID, Position tPos);
 fup void setScrollingBackgroundMaxVelocity(int tID, double tVel);
 fup PhysicsObject* getScrollingBackgroundPhysics(int tID);
 fup void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics);
+fup void setScrollingBackgroundInvisible(int tID);
+fup void setScrollingBackgroundVisible(int tID);
 
 fup void addStageHandlerScreenShake(double tStrength);
 fup void setStageHandlerMaximumScreenShake(double tStrength);

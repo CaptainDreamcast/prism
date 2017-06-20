@@ -10,7 +10,7 @@
 
 typedef pvr_ptr_t Texture;
 
-#elif defined _WIN32
+#elif defined _WIN32 || defined __EMSCRIPTEN__
 #include <SDL.h>
 
 typedef struct {

@@ -1,5 +1,7 @@
 #include "tari/stagehandler.h"
 
+#include <stdlib.h>
+
 #include "tari/script.h"
 #include "tari/datastructures.h"
 #include "tari/memoryhandler.h"
@@ -39,6 +41,8 @@ typedef struct {
 	Position mReferencedPosition;
 	Position mTweeningTarget;
 	double mZ;
+	int mIsVisible;
+
 	List mPatchList;
 	ListIterator mCurrentStartPatch;
 	ListIterator mCurrentEndPatch;
@@ -88,6 +92,17 @@ void shutdownStageHandler() {
 	list_empty(&gData.mList);
 }
 
+static void setPatchAnimationActive(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
+	tData->mAnimationID = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
+	setAnimationScreenPositionReference(tData->mAnimationID, &tBackgroundData->mReferencedPosition);
+
+}
+
+static void setPatchAnimationInactive(BackgroundPatchData* tData) {
+	removeHandledAnimation(tData->mAnimationID);
+
+}
+
 
 static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
 	if (tData->mIsLoaded) return;
@@ -99,13 +114,15 @@ static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgrou
 		tData->mTextureData[i] = loadTextureFromPool(fPath);
 	}
 
-	tData->mAnimationID = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
-	setAnimationScreenPositionReference(tData->mAnimationID, &tBackgroundData->mReferencedPosition);
-
+	if (tBackgroundData->mIsVisible) {
+		setPatchAnimationActive(tData, tBackgroundData);
+	}
+	
 	tData->mIsLoaded = 1;
 }
 
 static int isStagePatchOutOfBounds(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
+	if (gData.mIsLoadingTexturesDirectly) return 0;
 
 	double sl = tBackgroundData->mPhysics.mPosition.x;
 	double sr = sl + 640.0;
@@ -117,20 +134,26 @@ static int isStagePatchOutOfBounds(BackgroundPatchData* tData, SingleBackgroundD
 	return isOut;
 }
 
-static void unloadStagePatchIfNecessary(BackgroundPatchData* tData) {
-	if (!tData->mIsLoaded || gData.mIsLoadingTexturesDirectly) return;
-	removeHandledAnimation(tData->mAnimationID);
 
+
+static void unloadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
+	if (!tData->mIsLoaded) return;
+
+	if (tBackgroundData->mIsVisible) {
+		setPatchAnimationInactive(tData);
+	}
+	
 	Frame i;
 	for (i = 0; i < tData->mAnimation.mFrameAmount; i++) {
 		unloadTextureFromPool(tData->mTextureData[i]);
 	}
 
 	tData->mIsLoaded = 0;
-
 }
 
 static void setSingleStagePatches(SingleBackgroundData* data) {
+	if (!data->mIsVisible) return;
+
 	while (data->mCurrentEndPatch != NULL && !isStagePatchOutOfBounds(list_iterator_get(data->mCurrentEndPatch), data)) {
 		loadStagePatchIfNecessary(list_iterator_get(data->mCurrentEndPatch), data);
 
@@ -140,7 +163,7 @@ static void setSingleStagePatches(SingleBackgroundData* data) {
 	}
 
 	while (data->mCurrentStartPatch != NULL && isStagePatchOutOfBounds(list_iterator_get(data->mCurrentStartPatch), data)) {
-		unloadStagePatchIfNecessary(list_iterator_get(data->mCurrentStartPatch));
+		unloadStagePatchIfNecessary(list_iterator_get(data->mCurrentStartPatch), data);
 
 		if (list_has_next(data->mCurrentStartPatch)) list_iterator_increase(&data->mCurrentStartPatch);
 		else data->mCurrentStartPatch = NULL;
@@ -195,6 +218,7 @@ int addScrollingBackground(double tScrollingFactor, double tZ) {
 	data->mTweeningTarget = data->mPhysics.mPosition;
 	data->mReferencedPosition = data->mPhysics.mPosition;
 	data->mZ = tZ;
+	data->mIsVisible = 1;
 	data->mPatchList = new_list();
 	data->mCurrentStartPatch = NULL;
 	data->mCurrentEndPatch = NULL;
@@ -270,12 +294,16 @@ Position* getScrollingBackgroundPositionReference(int tID) {
 }
 
 
+static void resetScrollingBackgroundPatchLoading(SingleBackgroundData* data) {
+	data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
+	setSingleStagePatches(data);
+}
+
 void setScrollingBackgroundPosition(int tID, Position tPos) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 	data->mPhysics.mPosition = tPos;
 	data->mReferencedPosition = tPos;
-	data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
-	setSingleStagePatches(data);
+	resetScrollingBackgroundPatchLoading(data);
 }
 
 void setScrollingBackgroundMaxVelocity(int tID, double tVel) {
@@ -292,6 +320,39 @@ void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 	data->mPhysics = tPhysics;
 	data->mReferencedPosition = data->mPhysics.mPosition;
+}
+
+
+static void setStagePatchVisible(void* tCaller, void* tData) {
+	SingleBackgroundData* data = tCaller;
+	BackgroundPatchData* e = tData;
+
+	if (!e->mIsLoaded) return;
+
+	setPatchAnimationActive(e, data);
+}
+
+static void setStagePatchInvisible(void* tCaller, void* tData) {
+	SingleBackgroundData* data = tCaller;
+	BackgroundPatchData* e = tData;
+
+	if (!e->mIsLoaded) return;
+
+	setPatchAnimationInactive(e);
+}
+
+void setScrollingBackgroundInvisible(int tID)
+{
+	SingleBackgroundData* data = list_get(&gData.mList, tID);
+	data->mIsVisible = 0;
+	list_map(&data->mPatchList, setStagePatchInvisible, data);
+}
+
+void setScrollingBackgroundVisible(int tID)
+{
+	SingleBackgroundData* data = list_get(&gData.mList, tID);
+	data->mIsVisible = 1;
+	list_map(&data->mPatchList, setStagePatchVisible, data);
 }
 
 void addStageHandlerScreenShake(double tStrength)

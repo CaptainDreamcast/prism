@@ -22,9 +22,9 @@ void loadConsecutiveSoundEffects(int * tDst, char * tPath, int tAmount)
 	}
 }
 
-void playRandomSoundEffectFromCollection(SoundEffectCollection tCollection)
+int playRandomSoundEffectFromCollection(SoundEffectCollection tCollection)
 {
 	int i;
 	i = randfromInteger(0, tCollection.mAmount - 1);
-	playSoundEffect(tCollection.mSoundEffects[i]);
+	return playSoundEffect(tCollection.mSoundEffects[i]);
 }

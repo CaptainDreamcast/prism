@@ -19,7 +19,7 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 #define allocTextureHW pvr_mem_malloc
 #define freeTextureHW pvr_mem_free
 
-#elif defined _WIN32
+#elif defined _WIN32 || defined __EMSCRIPTEN__
 
 #include <SDL.h>
 #include "tari/texture.h"

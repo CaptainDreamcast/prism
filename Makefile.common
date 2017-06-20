@@ -1,0 +1,9 @@
+TARGET = libtari.a
+OBJS = animation.o physics.o framerate.o drawing.o texture.o \
+collision.o input.o file.o math.o geometry.o \
+timer.o optionhandler.o datastructures.o memoryhandler.o \
+wrapper.o physicshandler.o script.o stagehandler.o collisionhandler.o \
+collisionanimation.o animationtree.o texturepool.o \
+storyboard.o screeneffect.o texthandler.o compression.o \
+actorhandler.o tweening.o \
+quicklz.o

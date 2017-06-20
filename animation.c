@@ -311,10 +311,14 @@ void setAnimationRotationZ(int tID, double tAngle, Position tCenter) {
 	setAnimationRotationZ_internal(e, tAngle, tCenter);
 }
 
-void setAnimationColor(int tID, double r, double g, double b) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+static void setAnimationColor_internal(AnimationElement* e, double r, double g, double b) {
 	e->mHasBaseColor = 1;
 	e->mBaseColor = makePosition(r, g, b);
+}
+
+void setAnimationColor(int tID, double r, double g, double b) {
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	setAnimationColor_internal(e, r, g, b);
 }
 
 void setAnimationColorType(int tID, Color tColor)
@@ -404,6 +408,33 @@ void setAnimationHandlerScreenRotationZ(double tAngle, Vector3D tCenter)
 	rot.mAngle = tAngle;
 	rot.mCenter = tCenter;
 	int_map_map(&gAnimationHandler.mList, setScreenRotationZForSingleAnimation, &rot);
+}
+
+typedef struct {
+	double r;
+	double g;
+	double b;
+} AnimationHandlerScreenTint;
+
+static void setAnimationHandlerScreenTintSingle(void* tCaller, void* tData) {
+	AnimationHandlerScreenTint* tint = tCaller;
+	AnimationElement* e = tData;
+	setAnimationColor_internal(e, tint->r, tint->g, tint->b);
+}
+
+void setAnimationHandlerScreenTint(double r, double g, double b)
+{
+	AnimationHandlerScreenTint tint;
+	tint.r = r;
+	tint.g = g;
+	tint.b = b;
+
+	int_map_map(&gAnimationHandler.mList, setAnimationHandlerScreenTintSingle, &tint);
+}
+
+void resetAnimationHandlerScreenTint()
+{
+	setAnimationHandlerScreenTint(1, 1, 1);
 }
 
 void removeHandledAnimation(int tID) {

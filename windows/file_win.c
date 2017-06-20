@@ -1,7 +1,6 @@
 #include "tari/file.h"
 
 #include <stdio.h>
-#include <windows.h>
 
 #include "tari/log.h"
 #include "tari/memoryhandler.h"
@@ -179,7 +178,14 @@ void unmountRomdisk(char* tMountPath) {
 	unmountRomdiskWindows(tMountPath);
 }
 
+#ifdef _WIN32
+
+#include <Windows.h>
+
+#endif
+
 void printDirectory(char* tPath) {
+#ifdef _WIN32
 	char path[1024];
 	wchar_t wpath[1024];
 	getFullPath(path, tPath);
@@ -210,5 +216,6 @@ void printDirectory(char* tPath) {
 	} while (FindNextFile(hFind, &findFileData));
 
 	FindClose(hFind);
+#endif
 }
 

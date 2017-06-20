@@ -1,6 +1,11 @@
 #include "tari/sound.h"
 
+#include <SDL.h>
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_mixer.h>
+#elif defined _WIN32
 #include <SDL_mixer.h>
+#endif
 
 #include "tari/log.h"
 

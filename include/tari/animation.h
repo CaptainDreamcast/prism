@@ -56,6 +56,8 @@ fup void fadeInAnimation(int tID, Duration tDuration);
 fup void setAnimationCenter(int tID, Position tCenter);
 fup void inverseAnimationVertical(int tID);
 fup void setAnimationHandlerScreenRotationZ(double tAngle, Vector3D tCenter);
+fup void setAnimationHandlerScreenTint(double r, double g, double b);
+fup void resetAnimationHandlerScreenTint();
 
 fup void removeHandledAnimation(int tID);
 fup void shutdownAnimationHandler();

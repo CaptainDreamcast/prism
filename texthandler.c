@@ -28,6 +28,9 @@ typedef struct {
 
 	int mHasSoundEffects;
 	SoundEffectCollection mSoundEffects;
+
+	int mHasBasePositionReference;
+	Position* mBasePositionReference;
 } HandledText;
 
 static struct {
@@ -92,9 +95,14 @@ static void drawSingleText(void* tCaller, void* tData) {
 	(void) tCaller;
 	HandledText* e = tData;
 
+	Position p = e->mPosition;
+	if (e->mHasBasePositionReference) {
+		p = vecAdd(p, *e->mBasePositionReference);
+	}
+
 	// TODO: set font to correct font 
 	e->mColor = COLOR_WHITE;
-	drawMultilineText(e->mDrawnText, e->mText, e->mPosition, e->mFontSize, e->mColor, e->mBreakSize, e->mTextBoxSize);
+	drawMultilineText(e->mDrawnText, e->mText, p, e->mFontSize, e->mColor, e->mBreakSize, e->mTextBoxSize);
 }
 
 void drawHandledTexts() {
@@ -123,6 +131,9 @@ int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vec
 	e->mSingleLetterBuildupDuration = INF;
 
 	e->mHasSoundEffects = 0;
+
+	e->mHasBasePositionReference = 0;
+	e->mBasePositionReference = NULL;
 
 	return list_push_front_owned(&gData.mTexts, e);
 }
@@ -158,6 +169,13 @@ void setHandledTextPosition(int tID, Position tPosition)
 {
 	HandledText* e = list_get(&gData.mTexts, tID);
 	e->mPosition = tPosition;
+}
+
+void setHandledTextBasePositionReference(int tID, Position * tPosition)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	e->mHasBasePositionReference = 1;
+	e->mBasePositionReference = tPosition;
 }
 
 void removeHandledText(int tID) {

@@ -1,8 +1,6 @@
 #include "tari/system.h"
 
-#include <direct.h>
 #include <string.h>
-#include <windows.h>
 #include <assert.h>
 
 #include <stdlib.h>
@@ -48,7 +46,14 @@ void setGameName(char* tName) {
 	strcpy(gData.mGameName, tName);
 }
 
+
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#endif
+
 static void setToProgramDirectory() {
+#ifdef _WIN32
 	TCHAR wbuf[1024];
 	char buf[1024];
 	GetModuleFileName(NULL, wbuf, 1024);
@@ -59,6 +64,7 @@ static void setToProgramDirectory() {
 	end[1] = '\0';
 
 	_chdir(buf);
+#endif
 }
 
 void initSystem() {
