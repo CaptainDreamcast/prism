@@ -2,12 +2,13 @@
 
 #include "tari/file.h"
 #include "tari/log.h"
+#include "tari/system.h"
 
 #define FONT_CHARACTER_AMOUNT 91
 
-int isFontDataLoaded;
-TextureData gFont;
-FontCharacterData gFontCharacterData[FONT_CHARACTER_AMOUNT];
+static int isFontDataLoaded;
+static TextureData gFont;
+static FontCharacterData gFontCharacterData[FONT_CHARACTER_AMOUNT];
 
 void unloadFont() {
 	if (!isFontDataLoaded)
@@ -23,6 +24,13 @@ void loadFontHeader(char tFileDir[]) {
 	FileHandler file;
 
 	file = fileOpen(tFileDir, O_RDONLY);
+
+	if (file == FILEHND_INVALID) {
+		logError("Cannot open font header.");
+		logErrorString(tFileDir);
+		abortSystem();
+	}
+
 	fileSeek(file, 0, 0);
 	int i;
 	for (i = 0; i < FONT_CHARACTER_AMOUNT; i++) {
@@ -39,6 +47,10 @@ void loadFontTexture(char tFileDir[]) {
 void setFont(char tFileDirHeader[], char tFileDirTexture[]) {
 	if (isFontDataLoaded) {
 		unloadFont();
+	}
+
+	if (!isFile(tFileDirHeader)) {
+		return;
 	}
 
 	loadFontHeader(tFileDirHeader);

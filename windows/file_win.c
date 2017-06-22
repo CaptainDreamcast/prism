@@ -15,7 +15,6 @@ static struct {
 
 
 void initFileSystem(){
-	logg("Initiate file system.");
 	sprintf(gData.cwd, "/");
 	gData.mFileSystem[0] = '\0';
 	debugString(gData.cwd);
@@ -100,7 +99,7 @@ FileHandler fileOpen(char* tPath, int tFlags){
 
 	debugLog("Open file.");
 	debugString(tPath);
-	debugString(gData.fileSystem);
+	debugString(gData.mFileSystem);
 	debugString(gData.cwd);
 
 	char flags[100];

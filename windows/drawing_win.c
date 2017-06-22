@@ -49,8 +49,12 @@ extern SDL_Window* gSDLWindow;
 SDL_Renderer* gRenderer;
 
 void initDrawing() {
-	logg("Initiate drawing.");
 	setDrawingParametersToIdentity();
+
+	if (gSDLWindow == NULL) {
+		logError("Unable to create renderer because no window was found.");
+		abortSystem();
+	}
 
 	gRenderer = SDL_CreateRenderer(gSDLWindow, -1, SDL_RENDERER_ACCELERATED);
 	if (gRenderer == NULL) {
@@ -68,6 +72,7 @@ void initDrawing() {
 	gData.mEffectStack = new_vector();
 	gData.mIsScaleEffectCenterAbsolute = 1;
 	gData.mIsRotationEffectCenterAbsolute = 1;
+	
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {

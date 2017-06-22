@@ -350,6 +350,12 @@ void setAnimationPosition(int tID, Position tPosition) {
 	e->mPosition = tPosition;
 }
 
+void setAnimationTexturePosition(int tID, Rectangle tTexturePosition)
+{
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	e->mTexturePosition = tTexturePosition;
+}
+
 void removeAnimationCB(int tID) {
 	setAnimationCB(tID, NULL, NULL);
 }

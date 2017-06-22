@@ -146,6 +146,7 @@
     <ClCompile Include="..\..\framerate.c" />
     <ClCompile Include="..\..\geometry.c" />
     <ClCompile Include="..\..\input.c" />
+    <ClCompile Include="..\..\logoscreen.c" />
     <ClCompile Include="..\..\math.c" />
     <ClCompile Include="..\..\memoryhandler.c" />
     <ClCompile Include="..\..\optionhandler.c" />
@@ -167,6 +168,7 @@
     <ClCompile Include="..\file_win.c" />
     <ClCompile Include="..\framerateselect_win.c" />
     <ClCompile Include="..\input_win.c" />
+    <ClCompile Include="..\logoscreen_win.c" />
     <ClCompile Include="..\log_win.c" />
     <ClCompile Include="..\math_win.c" />
     <ClCompile Include="..\memoryhandler_win.c" />
@@ -197,6 +199,7 @@
     <ClInclude Include="..\..\include\tari\geometry.h" />
     <ClInclude Include="..\..\include\tari\input.h" />
     <ClInclude Include="..\..\include\tari\log.h" />
+    <ClInclude Include="..\..\include\tari\logoscreen.h" />
     <ClInclude Include="..\..\include\tari\math.h" />
     <ClInclude Include="..\..\include\tari\memoryhandler.h" />
     <ClInclude Include="..\..\include\tari\optionhandler.h" />

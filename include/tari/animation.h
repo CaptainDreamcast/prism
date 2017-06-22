@@ -51,6 +51,7 @@ fup void setAnimationColorType(int tID, Color tColor);
 fup void setAnimationTransparency(int tID, double a);
 fup void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller);
 fup void setAnimationPosition(int tID, Position tPosition);
+fup void setAnimationTexturePosition(int tID, Rectangle tTexturePosition);
 fup void removeAnimationCB(int tID);
 fup void fadeInAnimation(int tID, Duration tDuration);
 fup void setAnimationCenter(int tID, Position tCenter);

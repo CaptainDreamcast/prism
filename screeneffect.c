@@ -106,7 +106,7 @@ static void updateFadeIn(void* tCaller) {
 	addTimerCB(0, updateFadeIn, e);
 }
 
-static void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller, Vector3D tStartPatchSize, Vector3D tFullPatchSize, Vector3D tSizeDelta, double tStartAlpha, double tAlphaDelta, IsScreenEffectOverFunction tIsOverFunc) {
+static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller, Vector3D tStartPatchSize, Vector3D tFullPatchSize, Vector3D tSizeDelta, double tStartAlpha, double tAlphaDelta, IsScreenEffectOverFunction tIsOverFunc) {
 	if (!gData.mIsActive) {
 		unloadedBehaviour(tDuration, tOptionalCB, tCaller);
 		return;
@@ -152,9 +152,31 @@ static void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, vo
 	addTimerCB(0, updateFadeIn, e);
 }
 
+static int isFadeInOver(FadeIn* e) {
+	return (*e->mAlpha) <= 0;
+}
+
+void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
+	double da = -1 / (double)tDuration;
+	Vector3D patchSize = makePosition(getScreenSize().x, getScreenSize().y, 1);
+	addFadeIn_internal(tDuration, tOptionalCB, tCaller, patchSize, patchSize, makePosition(0, 0, 0), 1, da, isFadeInOver);
+}
+
 void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
 	double dy = -gData.mFullLineSize / (double)tDuration;
-	addFadeIn(tDuration, tOptionalCB, tCaller, makePosition(getScreenSize().x, gData.mFullLineSize+1, 1), makePosition(getScreenSize().x, gData.mFullLineSize, 1), makePosition(0, dy, 0), 1, 0, isVerticalLineFadeInOver);
+	addFadeIn_internal(tDuration, tOptionalCB, tCaller, makePosition(getScreenSize().x, gData.mFullLineSize+1, 1), makePosition(getScreenSize().x, gData.mFullLineSize, 1), makePosition(0, dy, 0), 1, 0, isVerticalLineFadeInOver);
+}
+
+typedef struct {
+	void* mCaller;
+	ScreenEffectFinishedCB mCB;
+} FadeOutData;
+
+static void fadeOutOverCB(void* tCaller) {
+	FadeOutData* e = tCaller;
+	setScreenBlack();
+	e->mCB(e->mCaller);
+	freeMemory(e);
 }
 
 static int isFadeOutOver(FadeIn* e) {
@@ -164,7 +186,11 @@ static int isFadeOutOver(FadeIn* e) {
 void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
 	double da = 1 / (double)tDuration;
 	Vector3D patchSize = makePosition(getScreenSize().x, getScreenSize().y, 1);
-	addFadeIn(tDuration, tOptionalCB, tCaller, patchSize, patchSize, makePosition(0, 0, 0), 0, da, isFadeOutOver);
+	FadeOutData* e = allocMemory(sizeof(FadeOutData));
+	e->mCB = tOptionalCB;
+	e->mCaller = tCaller;
+
+	addFadeIn_internal(tDuration, fadeOutOverCB, e, patchSize, patchSize, makePosition(0, 0, 0), 0, da, isFadeOutOver);
 }
 
 void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
@@ -182,12 +208,16 @@ void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
 }
 
 void setScreenBlack() {
+	if (!gData.mIsActive) return;
+
 	gData.mScreenFillID = playAnimationLoop(makePosition(0,0,gData.mZ), &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
 	setAnimationSize(gData.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));
 	setAnimationColor(gData.mScreenFillID, 0, 0, 0);
 }
 
 void unsetScreenBlack() {
+	if (!gData.mIsActive) return;
+
 	if (gData.mScreenFillID == -1) {
 		logError("Screen not set to black, unable to reset");
 		abortSystem();
