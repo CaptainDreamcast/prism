@@ -10,6 +10,7 @@
 #include "tari/log.h"
 #include "tari/pvr.h"
 #include "tari/geometry.h"
+#include "tari/math.h"
 
 
 void abortSystem(){
@@ -71,9 +72,8 @@ void initSystem() {
 
 	setToProgramDirectory();
 	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 	
-
 	if (gData.mGameName[0] == '\0') {
 		sprintf(gData.mGameName, "Unnamed libtari game port");
 	}
@@ -99,7 +99,11 @@ static void resizeWindow(SDL_Event* e) {
 	double scaleX = gData.mDisplayedWindowSizeX /(double)sz.x;
 	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
 
+	scaleX = fmin(scaleX, scaleY);
+	scaleY = fmin(scaleX, scaleY);
+
 	SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY);
+	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
 }
 static void checkWindowEvents(SDL_Event* e) {
 	if (e->window.event == SDL_WINDOWEVENT_RESIZED) {
