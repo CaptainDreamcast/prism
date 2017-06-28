@@ -3,22 +3,68 @@
 #include <kos.h>
 
 #include "tari/log.h"
+#include "tari/screeneffect.h"
 
 typedef struct {
 	maple_device_t* mCont;
 	cont_state_t* mState;
 } Controller;
 
+typedef struct {
+	int mIsActive;
+	int mHasPolledGun;
+	int mGunIsFired;
+	int mHasDisplayedWhiteLongEnough;
+} LightGun;
+
 static struct {
 	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
+	LightGun mLightGuns[MAXIMUM_CONTROLLER_AMOUNT];
 } gData;
+
+static void updateSingleLightGun(int i) {
+	gData.mLightGuns[i].mIsActive = 1;
+
+	if(hasPressedASingle(i)) {
+		
+		if(!gData.mLightGuns[i].mHasPolledGun) {
+			setScreenWhite();
+			gData.mLightGuns[i].mHasPolledGun = 1;	
+		} else if(!gData.mLightGuns[i].mGunIsFired){
+			gData.mLightGuns[i].mGunIsFired = 1;
+		}
+		else if(!gData.mLightGuns[i].mHasDisplayedWhiteLongEnough){
+			gData.mLightGuns[i].mHasDisplayedWhiteLongEnough = 1;
+			unsetScreenWhite();
+		}
+	} else {
+		gData.mLightGuns[i].mHasPolledGun = 0;
+		gData.mLightGuns[i].mGunIsFired = 0;
+		gData.mLightGuns[i].mHasDisplayedWhiteLongEnough = 0;
+		unsetScreenColor();
+	}
+}
+
+static void disableSingleLightGun(int i) {
+		gData.mLightGuns[i].mIsActive = 0;
+		gData.mLightGuns[i].mHasPolledGun = 0;
+		gData.mLightGuns[i].mGunIsFired = 0;
+		gData.mLightGuns[i].mHasDisplayedWhiteLongEnough = 0;
+		unsetScreenColor();
+}
 
 static void updateSingleInput(int i) {
 	  if ((gData.mControllers[i].mCont = maple_enum_dev(i, 0)) != NULL) {
 	    gData.mControllers[i].mState = (cont_state_t *) maple_dev_status(gData.mControllers[i].mCont);
+	    if(gData.mControllers[i].mCont->info.functions & MAPLE_FUNC_CONTROLLER)  {
+		updateSingleLightGun(i);
+	    } else if(gData.mLightGuns[i].mIsActive) {
+		disableSingleLightGun(i);
+            }
 	  } else {
 	    gData.mControllers[i].mState = (cont_state_t*)0;
 	  }
+
 }
 
 void updateInput() {
@@ -131,10 +177,12 @@ double getSingleRNormalized(int i) {
 }
 
 int hasShotGunSingle(int i)  {
-	return hasPressedBFlankSingle(i); // TODO
+	return gData.mLightGuns[i].mGunIsFired;
 }
 
 Vector3D getShotPositionSingle(int i) {
-	(void) i;
-	return makePosition(0,0,0); // TODO
+	(void)i; // TODO: light gun multiplayer
+	int x, y;
+	maple_gun_read_pos(&x, &y);
+	return makePosition(x, y, 0);
 }

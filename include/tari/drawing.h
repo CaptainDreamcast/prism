@@ -38,6 +38,9 @@ fup void waitForScreen();
 fup void startDrawing();
 fup void stopDrawing();
 
+fup void disableDrawing();
+fup void enableDrawing();
+
 fup void scaleDrawing(double tFactor, Position tScalePosition);
 fup void scaleDrawing3D(Vector3D tFactor, Position tScalePosition);
 fup void setDrawingBaseColor(Color tColor);

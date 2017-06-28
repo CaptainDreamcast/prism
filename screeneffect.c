@@ -210,6 +210,9 @@ void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
 void setScreenBlack() {
 	if (!gData.mIsActive) return;
 
+	setScreenColor(COLOR_BLACK);
+	return;
+
 	gData.mScreenFillID = playAnimationLoop(makePosition(0,0,gData.mZ), &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
 	setAnimationSize(gData.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));
 	setAnimationColor(gData.mScreenFillID, 0, 0, 0);
@@ -218,10 +221,21 @@ void setScreenBlack() {
 void unsetScreenBlack() {
 	if (!gData.mIsActive) return;
 
+	unsetScreenColor();
+	return;
+
 	if (gData.mScreenFillID == -1) {
 		logError("Screen not set to black, unable to reset");
 		abortSystem();
 	}
 
 	removeHandledAnimation(gData.mScreenFillID);
+}
+
+void setScreenWhite() {
+	setScreenColor(COLOR_WHITE);
+}
+
+void unsetScreenWhite() {
+	unsetScreenColor();
 }

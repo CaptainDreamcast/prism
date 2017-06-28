@@ -333,7 +333,7 @@ static void setStagePatchVisible(void* tCaller, void* tData) {
 }
 
 static void setStagePatchInvisible(void* tCaller, void* tData) {
-	SingleBackgroundData* data = tCaller;
+	(void) tCaller;
 	BackgroundPatchData* e = tData;
 
 	if (!e->mIsLoaded) return;

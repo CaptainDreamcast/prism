@@ -216,7 +216,7 @@ static void performScreenIteration() {
 #endif
 }
 
-static Screen* showScreen(Screen* tScreen) {
+static Screen* showScreen() {
 	logg("Show screen");
 
 	// TODO: make Emscripten less hacky
@@ -244,7 +244,7 @@ void startScreenHandling(Screen* tScreen) {
 	gData.mIsAborted = 0;
 	while(!gData.mIsAborted) {
 		loadScreen(tScreen);
-		Screen* next = showScreen(tScreen);
+		Screen* next = showScreen();
 		unloadScreen(tScreen);
 		tScreen = next;
 	}

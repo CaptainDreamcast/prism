@@ -12,5 +12,10 @@ fup void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void
 
 fup void drawColoredRectangle(GeoRectangle tRect, Color tColor);
 
+fup void setScreenColor(Color tColor);
+fup void unsetScreenColor();
 fup void setScreenBlack();
 fup void unsetScreenBlack();
+
+fup void setScreenWhite();
+fup void unsetScreenWhite();
