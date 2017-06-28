@@ -58,10 +58,10 @@ static void* allocTextureFunc(size_t tSize) {
 
 static void freeTextureFunc(void* tData) {
 	TextureMemory tMem = tData;
-	removeFromUsageQueue(tMem);
 	if(tMem->mIsVirtual) {
 		free(tMem->mData);
 	} else {
+		removeFromUsageQueue(tMem);
 		increaseAvailableTextureMemoryHW(tMem->mSize);
 		freeTextureHW(tMem->mData);
 	}
@@ -220,6 +220,13 @@ static void virtualizeTextureMemory(size_t tSize) {
 		sizeLeft -= cur->mSize;
 		cur = next;
 		if(sizeLeft <= 0) break;
+	}
+
+	if(sizeLeft > 0) {
+		logError("Unable to virtualize enough space for texture.");
+		logErrorInteger(tSize);
+		logErrorInteger(sizeLeft);
+		abortSystem();
 	}
 }
 

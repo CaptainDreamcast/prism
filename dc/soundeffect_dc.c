@@ -27,3 +27,6 @@ int playSoundEffect(int tID) {
 	return snd_sfx_play(tID, getVolume(), getPanningValue());
 }
 
+void stopSoundEffect(int tSFX) {
+	snd_sfx_stop(tSFX);
+}
