@@ -61,8 +61,10 @@ typedef struct {
 
 
 fup Vector new_vector();
+fup Vector new_vector_with_allocated_size(int tSize);
 fup void delete_vector(Vector* tVector);
 fup void vector_empty(Vector* tVector);
+fup void vector_empty_to_previous_size(Vector* tVector);
 fup void vector_push_back(Vector* tVector, void* tData);
 fup void vector_push_back_owned(Vector* tVector, void* tData);
 fup void* vector_push_back_new_buffer(Vector* tVector, int tSize);

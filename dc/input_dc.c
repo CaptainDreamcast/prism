@@ -56,7 +56,7 @@ static void disableSingleLightGun(int i) {
 static void updateSingleInput(int i) {
 	  if ((gData.mControllers[i].mCont = maple_enum_dev(i, 0)) != NULL) {
 	    gData.mControllers[i].mState = (cont_state_t *) maple_dev_status(gData.mControllers[i].mCont);
-	    if(gData.mControllers[i].mCont->info.functions & MAPLE_FUNC_CONTROLLER)  {
+	    if(gData.mControllers[i].mCont->info.functions & MAPLE_FUNC_LIGHTGUN)  {
 		updateSingleLightGun(i);
 	    } else if(gData.mLightGuns[i].mIsActive) {
 		disableSingleLightGun(i);
@@ -182,6 +182,7 @@ int hasShotGunSingle(int i)  {
 
 Vector3D getShotPositionSingle(int i) {
 	(void)i; // TODO: light gun multiplayer
+	if(!gData.mLightGuns[i].mIsActive) return makePosition(0,0,0);
 	int x, y;
 	maple_gun_read_pos(&x, &y);
 	return makePosition(x, y, 0);

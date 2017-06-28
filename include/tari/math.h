@@ -7,10 +7,10 @@
 
 #ifdef DREAMCAST
 
-#define min(x, y) ((x < y) ? (x) : (y));
-#define max(x, y) ((x > y) ? (x) : (y));
-#define fmin min
-#define fmax max
+#define min(x, y) ((x < y) ? (x) : (y))
+#define max(x, y) ((x > y) ? (x) : (y))
+#define fmin	min
+#define fmax	max
 // TODO: sort out the math header stuff
 
 extern double cos(double r);

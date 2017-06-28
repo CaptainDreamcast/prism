@@ -27,6 +27,12 @@ typedef enum {
   COLOR_DARK_YELLOW,
 } Color;
 
+typedef enum {
+	SPRITE_TYPE_TRANSPARENT,
+	SPRITE_TYPE_PUNCH_THROUGH,
+} SpriteType;
+
+
 typedef int TextSize;
 
 fup void initDrawing();
@@ -48,6 +54,8 @@ fup void setDrawingBaseColorAdvanced(double r, double g, double b);
 fup void setDrawingTransparency(double tAlpha);
 fup void setDrawingRotationZ(double tAngle, Position tPosition);
 fup void setDrawingParametersToIdentity();
+fup void setDrawingPunchThrough();
+fup void setDrawingTransparent();
 
 fup void pushDrawingTranslation(Vector3D tTranslation);
 fup void pushDrawingRotationZ(double tAngle, Vector3D tCenter);

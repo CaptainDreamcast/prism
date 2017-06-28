@@ -6,6 +6,7 @@
 #include "tari/memoryhandler.h"
 #include "tari/log.h"
 #include "tari/system.h"
+#include "tari/math.h"
 
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
 	ListElement* e = allocMemory(sizeof(ListElement));
@@ -213,6 +214,7 @@ void delete_vector(Vector* tVector) {
 	tVector->mAlloc = 0;
 }
 
+
 void vector_empty(Vector* tVector) {
 	int i;
 	for(i = 0; i < tVector->mSize; i++) {
@@ -223,6 +225,18 @@ void vector_empty(Vector* tVector) {
 	tVector->mSize = 0;		
 	tVector->mAlloc = 2;
 	tVector->mData = reallocMemory(tVector->mData, sizeof(VectorElement)*tVector->mAlloc);
+}
+
+void vector_empty_to_previous_size(Vector* tVector) {
+	int i;
+	for(i = 0; i < tVector->mSize; i++) {
+		VectorElement* e = &tVector->mData[i];
+		if(e->mIsOwned) freeMemory(e->mData);
+	}
+
+	tVector->mAlloc = max(tVector->mSize, 2);
+	tVector->mSize = 0;
+	tVector->mData = reallocMemory(tVector->mData, sizeof(VectorElement)*tVector->mAlloc);	
 }
 
 static void vector_push_back_internal(Vector* tVector, void* tData, int tIsOwned) {

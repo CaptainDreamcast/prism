@@ -6,7 +6,7 @@ dc/soundeffect_dc.o dc/sound_dc.o dc/memoryhandler_dc.o dc/screeneffect_dc.o
 
 defaultall: create_addons_link $(OBJS) subdirs linklib
 
-KOS_CFLAGS += -W -Wall -Werror -DDREAMCAST -I ./include
+KOS_CFLAGS += -W -Wall -DDREAMCAST -I ./include
 
 include $(KOS_BASE)/addons/Makefile.prefab
 
