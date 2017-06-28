@@ -68,12 +68,10 @@ void unloadSoundEffect(int tID) {
 
 int playSoundEffect(int tID) {
 	SoundEffectEntry* e = list_get(&gData.mAllocatedChunks, tID);
-	return 0;
 	return Mix_PlayChannel(-1, e->mChunk, 0);
 }
 
 void stopSoundEffect(int tSFX) {
-	return;
 	Mix_HaltChannel(tSFX);
 }
 

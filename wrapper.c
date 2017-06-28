@@ -31,6 +31,7 @@ static struct {
 	int mIsAborted;
 	Screen* mNext;
 	Screen* mScreen;
+	int mIsPaused;
 } gData;
 
 void initTariWrapperWithDefaultFlags() {
@@ -63,13 +64,22 @@ void shutdownTariWrapper() {
 }
 
 void pauseWrapper() {
+	if (gData.mIsPaused) return;
 	pausePhysics();
 	pauseDurationHandling();
+	gData.mIsPaused = 1;
 }
 
 void resumeWrapper() {
+	if (!gData.mIsPaused) return;
 	resumePhysics();
 	resumeDurationHandling();
+	gData.mIsPaused = 0;
+}
+
+int isWrapperPaused()
+{
+	return gData.mIsPaused;
 }
 
 
@@ -175,6 +185,7 @@ static void drawScreen() {
 	drawHandledAnimations();
 	drawHandledTexts();
 	drawHandledCollisions();
+	drawActorHandler();
 
 	if (gData.mScreen->mDraw) {
 		gData.mScreen->mDraw();
