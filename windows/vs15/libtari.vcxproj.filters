@@ -136,6 +136,9 @@
     <ClCompile Include="..\logoscreen_win.c">
       <Filter>src\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\screeneffect_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

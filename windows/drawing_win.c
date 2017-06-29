@@ -31,6 +31,8 @@ typedef struct {
 	int mFrameStartTime;
 
 	Vector mEffectStack;
+
+	int mIsDisabled;
 } DrawingData;
 
 typedef struct {
@@ -72,10 +74,13 @@ void initDrawing() {
 	gData.mEffectStack = new_vector();
 	gData.mIsScaleEffectCenterAbsolute = 1;
 	gData.mIsRotationEffectCenterAbsolute = 1;
-	
+
+	gData.mIsDisabled = 0;
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
+
+	if (gData.mIsDisabled) return;
 
   debugLog("Draw Sprite");
   debugInteger(tTexture.mTextureSize.x);
@@ -203,7 +208,6 @@ static void drawSorted(void* tCaller, void* tData) {
 }
 
 void stopDrawing() {
-	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 	vector_sort(&gDrawVector,cmpZ, NULL);
 	vector_map(&gDrawVector, drawSorted, NULL);
 	vector_empty(&gDrawVector);
@@ -403,5 +407,15 @@ void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTa
 	rect.h = h;
 	SDL_UpdateTexture(dst->mTexture, &rect, gPixelBuffer, w*sizeof(uint32_t));
 }
+
+
+void disableDrawing() {
+	gData.mIsDisabled = 1;
+}
+
+void enableDrawing() {
+	gData.mIsDisabled = 0;
+}
+
 
 

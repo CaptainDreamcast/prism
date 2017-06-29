@@ -11,5 +11,8 @@ fup void setVolume(double tVolume);
 fup double getPanningValue();
 
 fup void playTrack(int tTrack);
+fup void stopTrack();
+fup void pauseTrack();
+fup void resumeTrack();
 
 #endif 
