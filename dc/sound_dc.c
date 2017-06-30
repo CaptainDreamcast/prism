@@ -5,7 +5,7 @@
 
 static struct {
 
-	double mVolume;
+	int mVolume;
 	double mPanning;
 
 } gData;
@@ -25,7 +25,8 @@ double getVolume() {
 }
 
 void setVolume(double tVolume) {
-	gData.mVolume = tVolume;
+	gData.mVolume = (int)(15*tVolume);
+	spu_cdda_volume(gData.mVolume, gData.mVolume);
 }
 
 double getPanningValue() {
@@ -34,21 +35,17 @@ double getPanningValue() {
 
 
 void playTrack(int tTrack) {
-	return;
 	 cdrom_cdda_play(tTrack, tTrack, 15, CDDA_TRACKS);
 }
 
 void stopTrack() {
-	return;
 	cdrom_cdda_pause();
 }
 
 void pauseTrack() {
-	return;
 	cdrom_cdda_pause();
 }
 
 void resumeTrack() {
-	return;
 	cdrom_cdda_resume();
 }
