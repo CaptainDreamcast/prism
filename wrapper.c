@@ -116,7 +116,8 @@ static void loadScreen(Screen* tScreen) {
 	setupActorHandler();
 	logg("Setting up input flanks");
 	resetInput();
-	
+	enableDrawing();	
+
 	if (tScreen->mLoad) {
 		logg("Loading user screen data");
 		tScreen->mLoad();
