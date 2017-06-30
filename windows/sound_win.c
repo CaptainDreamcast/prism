@@ -39,11 +39,12 @@ void shutdownSound() {
 }
 
 double getVolume() {
-	return gData.mVolume / 255.0;
+	return gData.mVolume / 128.0;
 }
 
 void setVolume(double tVolume) {
-	gData.mVolume = (int)(tVolume * 255);
+	gData.mVolume = (int)(tVolume * 128);
+	Mix_Volume(-1, gData.mVolume);
 }
 
 double getPanningValue() {

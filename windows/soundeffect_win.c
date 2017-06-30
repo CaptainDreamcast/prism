@@ -25,7 +25,7 @@ static struct {
 } gData;
 
 void initSoundEffects() {
-	setSoundEffectVolume(1);
+	
 }
 
 void setupSoundEffectHandler() {

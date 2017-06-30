@@ -220,7 +220,9 @@ void waitForScreen() {
 	int waitTime = frameEndTime-SDL_GetTicks();
 
 	if (waitTime > 0) {
+#ifndef __EMSCRIPTEN__
 		SDL_Delay(waitTime);
+#endif
 	}
 
 	gData.mFrameStartTime = SDL_GetTicks();
