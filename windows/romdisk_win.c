@@ -1,6 +1,7 @@
 #include "tari/windows/romdisk_win.h"
 
 #include <string.h>
+#include <errno.h>
 
 #include "tari/datastructures.h"
 #include "tari/system.h"
@@ -296,10 +297,11 @@ size_t fileSeekRomdisk(FileHandler tHandler, size_t tOffset, int tWhence) {
 		abortSystem();
 	}
 
+	int32_t offset = (int32_t)tOffset;
 	/* Update current position according to arguments */
 	switch (tWhence) {
 	case SEEK_SET:
-		if (tOffset < 0) {
+		if (offset < 0) {
 			logError("Invalid offset");
 			logErrorInteger(tOffset);
 			abortSystem();
@@ -309,7 +311,7 @@ size_t fileSeekRomdisk(FileHandler tHandler, size_t tOffset, int tWhence) {
 		break;
 
 	case SEEK_CUR:
-		if (tOffset < 0 && (-(int32_t)tOffset) > (int32_t)gFileHandlers[fd].ptr) {
+		if (offset < 0 && (-offset) > (int32_t)gFileHandlers[fd].ptr) {
 			logError("Invalid offset");
 			logErrorInteger(tOffset);
 			abortSystem();
@@ -319,7 +321,7 @@ size_t fileSeekRomdisk(FileHandler tHandler, size_t tOffset, int tWhence) {
 		break;
 
 	case SEEK_END:
-		if (tOffset < 0 && (-(int32_t)tOffset) >(int32_t)gFileHandlers[fd].size) {
+		if (offset < 0 && (-offset) >(int32_t)gFileHandlers[fd].size) {
 			logError("Invalid offset");
 			logErrorInteger(tOffset);
 			abortSystem();

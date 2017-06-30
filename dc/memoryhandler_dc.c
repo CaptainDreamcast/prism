@@ -1,6 +1,8 @@
 #include "tari/memoryhandler.h"
 
 #include "tari/math.h"
+#include "tari/system.h"
+#include "tari/log.h"
 
 static struct {
 
@@ -24,6 +26,13 @@ void increaseAvailableTextureMemoryHW(size_t tSize) {
 }
 
 void decreaseAvailableTextureMemoryHW(size_t tSize) {
+	if(gData.mAvailableMemory < (int)tSize) {
+		logError("Completely out of texture memory. Virtualization failed.");
+		logErrorInteger(gData.mAvailableMemory);
+		logErrorInteger(tSize);
+		abortSystem();
+	}
+
 	gData.mAvailableMemory -= tSize;
 }
 

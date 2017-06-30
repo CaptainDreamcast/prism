@@ -1,7 +1,6 @@
 #include "tari/file.h"
 
 #include <stdio.h>
-#include <windows.h>
 
 #include "tari/log.h"
 #include "tari/memoryhandler.h"
@@ -16,7 +15,6 @@ static struct {
 
 
 void initFileSystem(){
-	logg("Initiate file system.");
 	sprintf(gData.cwd, "/");
 	gData.mFileSystem[0] = '\0';
 	debugString(gData.cwd);
@@ -101,7 +99,7 @@ FileHandler fileOpen(char* tPath, int tFlags){
 
 	debugLog("Open file.");
 	debugString(tPath);
-	debugString(gData.fileSystem);
+	debugString(gData.mFileSystem);
 	debugString(gData.cwd);
 
 	char flags[100];
@@ -179,7 +177,14 @@ void unmountRomdisk(char* tMountPath) {
 	unmountRomdiskWindows(tMountPath);
 }
 
+#ifdef _WIN32
+
+#include <Windows.h>
+
+#endif
+
 void printDirectory(char* tPath) {
+#ifdef _WIN32
 	char path[1024];
 	wchar_t wpath[1024];
 	getFullPath(path, tPath);
@@ -210,5 +215,6 @@ void printDirectory(char* tPath) {
 	} while (FindNextFile(hFind, &findFileData));
 
 	FindClose(hFind);
+#endif
 }
 

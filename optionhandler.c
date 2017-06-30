@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "tari/datastructures.h"
 #include "tari/drawing.h"
@@ -17,7 +18,8 @@ static struct {
 	int mIsUsingStart;
 	Color mColor;
 	int mIsDisabled;
-	
+	int mBreakSize;
+
 	Position mSelectorBasePosition;
 } gData;
 
@@ -39,6 +41,7 @@ void setupOptionHandler(){
 	gData.mIsUsingStart = 0;
 	gData.mIsDisabled = 0;
 	gData.mColor = COLOR_WHITE;
+	gData.mBreakSize = 0;
 
 	gData.mSelectorBasePosition = makePosition(0, 0, 10);
 }
@@ -67,8 +70,18 @@ int addOption(Position tPosition, char* tText, OptionCB tCB, void* tCaller){
 	return id;
 }
 
+void removeOption(int tID)
+{
+	list_remove(&gData.mOptionList, tID);
+}
+
 void setOptionTextSize(int tSize){
 	gData.mTextSize = tSize;
+}
+
+void setOptionTextBreakSize(int tBreakSize)
+{
+	gData.mBreakSize = tBreakSize;
 }
 
 void setOptionButtonA(){
@@ -110,7 +123,7 @@ static void drawOption(void* tCaller, void* tRaw) {
 	(void) tCaller;
 	HandledOption* data = tRaw;
 
-	drawText(data->mText, data->mPosition, gData.mTextSize, gData.mColor);
+	drawAdvancedText(data->mText, data->mPosition, makePosition(gData.mTextSize, gData.mTextSize, 1), gData.mColor, gData.mBreakSize);
 
 	if(data->mNumber == gData.mSelectedOption) {
 		gData.mSelectorBasePosition = data->mPosition;
@@ -131,8 +144,39 @@ static void drawSelector() {
 
 void drawOptionHandler(){
 	if(!list_size(&gData.mOptionList)) return;
-
 	list_map(&gData.mOptionList, drawOption, NULL);
 	drawSelector();
+}
+
+static void setupOptionHandlerBlueprint(void* tData) {
+	(void)tData;
+	setupOptionHandler();
+}
+
+static void updateOptionHandlerBlueprint(void* tData) {
+	(void)tData;
+	updateOptionHandler();
+}
+
+static void drawOptionHandlerBlueprint(void* tData) {
+	(void)tData;
+	drawOptionHandler();
+}
+
+static void shutdownOptionHandlerBlueprint(void* tData) {
+	(void)tData;
+	shutdownOptionHandler();
+}
+
+static ActorBlueprint gOptionHandler = {
+	.mLoad = setupOptionHandlerBlueprint,
+	.mUpdate = updateOptionHandlerBlueprint,
+	.mDraw = drawOptionHandlerBlueprint,
+	.mUnload = shutdownOptionHandlerBlueprint,
+};
+
+ActorBlueprint getOptionHandlerBlueprint()
+{
+	return gOptionHandler;
 }
 

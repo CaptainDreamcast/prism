@@ -11,6 +11,8 @@ fup int addToPhysicsHandler(Position tPosition);
 fup void removeFromPhysicsHandler(int tID);
 fup PhysicsObject* getPhysicsFromHandler(int tID);
 fup Position* getHandledPhysicsPositionReference(int tID);
+fup Velocity* getHandledPhysicsVelocityReference(int tID);
+fup Acceleration* getHandledPhysicsAccelerationReference(int tID);
 fup void addAccelerationToHandledPhysics(int tID, Acceleration tAccel);
 fup void stopHandledPhysics(int tID);
 

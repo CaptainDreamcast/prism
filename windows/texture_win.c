@@ -26,15 +26,17 @@ static TextureData textureFromSurface(SDL_Surface* tSurface) {
 		abortSystem();
 	}
 
-	SDL_FreeSurface(tSurface);
-
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
 	Texture texture = returnData.mTexture->mData;
 	texture->mTexture = newTexture;
+	
 	int access;
 	Uint32 format;
 	SDL_QueryTexture(newTexture, &format, &access, &returnData.mTextureSize.x, &returnData.mTextureSize.y);
+	
+	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, format, 0);
+	SDL_FreeSurface(tSurface);
 
 	return returnData;
 }

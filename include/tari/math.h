@@ -7,11 +7,19 @@
 
 #ifdef DREAMCAST
 
-#define min(x, y) ((x < y) ? (x) : (y));
-#define max(x, y) ((x > y) ? (x) : (y));
+#define min(x, y) ((x < y) ? (x) : (y))
+#define max(x, y) ((x > y) ? (x) : (y))
+#define fmin	min
+#define fmax	max
+// TODO: sort out the math header stuff
 
 extern double cos(double r);
 extern double sin(double r);
+
+#elif defined __EMSCRIPTEN__
+
+#define min(x, y) ((x < y) ? (x) : (y));
+#define max(x, y) ((x > y) ? (x) : (y));
 
 #endif
 
@@ -20,6 +28,7 @@ extern double sin(double r);
 #define INF 1000000000
 
 fup double randfrom(double tMin, double tMax);
+fup int randfromInteger(int tMin, int tMax);
 
 fup double fatan2(double y, double x);
 

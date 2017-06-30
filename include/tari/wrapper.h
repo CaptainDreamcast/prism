@@ -20,8 +20,10 @@ fup void initTariWrapperWithDefaultFlags();
 fup void shutdownTariWrapper();
 fup void pauseWrapper();
 fup void resumeWrapper();
+fup int isWrapperPaused();
 
 fup void startScreenHandling(Screen* tScreen);
 fup void abortScreenHandling();
+fup void setNewScreen(Screen* tScreen);
 
 #endif 

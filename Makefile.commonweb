@@ -1,0 +1,4 @@
+.c.o:
+	emcc $< -c -O2 -s USE_SDL=2 -I$(TARI_INCLUDE) -o $@
+	
+	

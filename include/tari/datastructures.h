@@ -61,8 +61,10 @@ typedef struct {
 
 
 fup Vector new_vector();
+fup Vector new_vector_with_allocated_size(int tSize);
 fup void delete_vector(Vector* tVector);
 fup void vector_empty(Vector* tVector);
+fup void vector_empty_to_previous_size(Vector* tVector);
 fup void vector_push_back(Vector* tVector, void* tData);
 fup void vector_push_back_owned(Vector* tVector, void* tData);
 fup void* vector_push_back_new_buffer(Vector* tVector, int tSize);
@@ -92,5 +94,22 @@ fup void string_map_remove(StringMap* tMap, char* tKey);
 fup void* string_map_get(StringMap* tMap, char* tKey);
 fup void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller);
 fup int string_map_contains(StringMap* tMap, char* tKey);
+
+
+typedef StringMap IntMap;
+
+fup IntMap new_int_map();
+fup void delete_int_map(IntMap* tMap);
+fup void int_map_empty(IntMap* tMap);
+fup void int_map_push_owned(IntMap* tMap, int tKey, void* tData);
+fup int int_map_push_back_owned(IntMap* tMap, void* tData);
+fup void int_map_push(IntMap* tMap, int tKey, void* tData);
+fup int int_map_push_back(IntMap* tMap, void* tData);
+fup void int_map_remove(IntMap* tMap, int tKey);
+fup void* int_map_get(IntMap* tMap, int tKey);
+fup void int_map_map(IntMap* tMap, mapCB tCB, void* tCaller);
+fup void int_map_remove_predicate(IntMap* tMap, predicateCB tCB, void* tCaller);
+fup int int_map_contains(IntMap* tMap, int tKey);
+
 
 #endif

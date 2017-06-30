@@ -23,7 +23,14 @@ int loadSoundEffect(char* tPath) {
 	return snd_sfx_load(fullPath);
 }
 
-void playSoundEffect(int tID) {
-	snd_sfx_play(tID, getVolume(), getPanningValue());
+int playSoundEffect(int tID) {
+	return snd_sfx_play(tID, getVolume(), getPanningValue());
 }
 
+void stopSoundEffect(int tSFX) {
+	snd_sfx_stop(tSFX);
+}
+
+void setSoundEffectVolume(double tVolume) {
+	(void) tVolume;
+}

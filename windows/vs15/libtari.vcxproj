@@ -105,12 +105,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -133,6 +133,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\actorhandler.c" />
     <ClCompile Include="..\..\animation.c" />
     <ClCompile Include="..\..\animationtree.c" />
     <ClCompile Include="..\..\collision.c" />
@@ -145,6 +146,7 @@
     <ClCompile Include="..\..\framerate.c" />
     <ClCompile Include="..\..\geometry.c" />
     <ClCompile Include="..\..\input.c" />
+    <ClCompile Include="..\..\logoscreen.c" />
     <ClCompile Include="..\..\math.c" />
     <ClCompile Include="..\..\memoryhandler.c" />
     <ClCompile Include="..\..\optionhandler.c" />
@@ -153,22 +155,26 @@
     <ClCompile Include="..\..\quicklz.c" />
     <ClCompile Include="..\..\screeneffect.c" />
     <ClCompile Include="..\..\script.c" />
+    <ClCompile Include="..\..\soundeffect.c" />
     <ClCompile Include="..\..\stagehandler.c" />
     <ClCompile Include="..\..\storyboard.c" />
     <ClCompile Include="..\..\texthandler.c" />
     <ClCompile Include="..\..\texture.c" />
     <ClCompile Include="..\..\texturepool.c" />
     <ClCompile Include="..\..\timer.c" />
+    <ClCompile Include="..\..\tweening.c" />
     <ClCompile Include="..\..\wrapper.c" />
     <ClCompile Include="..\drawing_win.c" />
     <ClCompile Include="..\file_win.c" />
     <ClCompile Include="..\framerateselect_win.c" />
     <ClCompile Include="..\input_win.c" />
+    <ClCompile Include="..\logoscreen_win.c" />
     <ClCompile Include="..\log_win.c" />
     <ClCompile Include="..\math_win.c" />
     <ClCompile Include="..\memoryhandler_win.c" />
     <ClCompile Include="..\pvr_win.c" />
     <ClCompile Include="..\romdisk_win.c" />
+    <ClCompile Include="..\screeneffect_win.c" />
     <ClCompile Include="..\soundeffect_win.c" />
     <ClCompile Include="..\sound_win.c" />
     <ClCompile Include="..\system_win.c" />
@@ -178,6 +184,7 @@
     <None Include="..\..\README.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\tari\actorhandler.h" />
     <ClInclude Include="..\..\include\tari\animation.h" />
     <ClInclude Include="..\..\include\tari\animationtree.h" />
     <ClInclude Include="..\..\include\tari\collision.h" />
@@ -193,6 +200,7 @@
     <ClInclude Include="..\..\include\tari\geometry.h" />
     <ClInclude Include="..\..\include\tari\input.h" />
     <ClInclude Include="..\..\include\tari\log.h" />
+    <ClInclude Include="..\..\include\tari\logoscreen.h" />
     <ClInclude Include="..\..\include\tari\math.h" />
     <ClInclude Include="..\..\include\tari\memoryhandler.h" />
     <ClInclude Include="..\..\include\tari\optionhandler.h" />
@@ -211,6 +219,7 @@
     <ClInclude Include="..\..\include\tari\texture.h" />
     <ClInclude Include="..\..\include\tari\texturepool.h" />
     <ClInclude Include="..\..\include\tari\timer.h" />
+    <ClInclude Include="..\..\include\tari\tweening.h" />
     <ClInclude Include="..\..\include\tari\windows\romdisk_win.h" />
     <ClInclude Include="..\..\include\tari\wrapper.h" />
   </ItemGroup>

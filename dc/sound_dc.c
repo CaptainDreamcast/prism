@@ -1,5 +1,6 @@
 #include "tari/sound.h"
 
+#include <kos.h>
 #include <dc/sound/sound.h>
 
 static struct {
@@ -32,4 +33,22 @@ double getPanningValue() {
 }
 
 
+void playTrack(int tTrack) {
+	return;
+	 cdrom_cdda_play(tTrack, tTrack, 15, CDDA_TRACKS);
+}
 
+void stopTrack() {
+	return;
+	cdrom_cdda_pause();
+}
+
+void pauseTrack() {
+	return;
+	cdrom_cdda_pause();
+}
+
+void resumeTrack() {
+	return;
+	cdrom_cdda_resume();
+}

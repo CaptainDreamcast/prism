@@ -14,6 +14,17 @@ double randfrom(double tMin, double tMax) {
 	return tMin + (rand() / div);
 }
 
+int randfromInteger(int tMin, int tMax)
+{
+	int val = tMin - 1;
+	int iters = 0;
+	while (val < tMin || val > tMax) {
+		val = (int)randfrom(tMin, tMax + 0.99);
+		if (iters++ > 100) break;
+	}
+	return val;
+}
+
 #define PI_FLOAT     3.14159265f
 #define PIBY2_FLOAT  1.5707963f
 

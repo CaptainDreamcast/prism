@@ -1,8 +1,7 @@
 #include "tari/system.h"
 
-#include <direct.h>
 #include <string.h>
-#include <windows.h>
+#include <assert.h>
 
 #include <stdlib.h>
 #include <SDL.h>
@@ -10,8 +9,12 @@
 
 #include "tari/log.h"
 #include "tari/pvr.h"
+#include "tari/geometry.h"
+#include "tari/math.h"
+
 
 void abortSystem(){
+	assert(0);
 	exit(0);
 }	
 
@@ -22,6 +25,9 @@ static struct {
 	int mScreenSizeX;
 	int mScreenSizeY;
 
+	int mDisplayedWindowSizeX;
+	int mDisplayedWindowSizeY;
+
 	int mIsFullscreen;
 
 	char mGameName[100];
@@ -31,8 +37,8 @@ SDL_Window* gSDLWindow;
 
 static void initScreenDefault() {
 	gData.mIsLoaded = 1;
-	gData.mScreenSizeX = 640;
-	gData.mScreenSizeY = 480;
+	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = 640;
+	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = 480;
 
 	gData.mIsFullscreen = 0;
 }
@@ -41,7 +47,14 @@ void setGameName(char* tName) {
 	strcpy(gData.mGameName, tName);
 }
 
+
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#endif
+
 static void setToProgramDirectory() {
+#ifdef _WIN32
 	TCHAR wbuf[1024];
 	char buf[1024];
 	GetModuleFileName(NULL, wbuf, 1024);
@@ -52,15 +65,15 @@ static void setToProgramDirectory() {
 	end[1] = '\0';
 
 	_chdir(buf);
+#endif
 }
 
 void initSystem() {
 
 	setToProgramDirectory();
 	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 	
-
 	if (gData.mGameName[0] == '\0') {
 		sprintf(gData.mGameName, "Unnamed libtari game port");
 	}
@@ -80,17 +93,30 @@ static void resizeWindow(SDL_Event* e) {
 	if (gRenderer == NULL) return;
 
 	ScreenSize sz = getScreenSize();
+	gData.mDisplayedWindowSizeX = e->window.data1;
+	gData.mDisplayedWindowSizeY = e->window.data2;
 
-	double scaleX = e->window.data1 /(double)sz.x;
-	double scaleY = e->window.data2 / (double)sz.y;
+	double scaleX = gData.mDisplayedWindowSizeX /(double)sz.x;
+	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
+
+	scaleX = fmin(scaleX, scaleY);
+	scaleY = fmin(scaleX, scaleY);
 
 	SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY);
+	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
 }
 static void checkWindowEvents(SDL_Event* e) {
 	if (e->window.event == SDL_WINDOWEVENT_RESIZED) {
 		resizeWindow(e);
 	}
 	
+}
+
+Vector3D correctSDLWindowPosition(Vector3D v) {
+	ScreenSize sz = getScreenSize();
+	double scaleX = gData.mDisplayedWindowSizeX / (double)sz.x;
+	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
+	return vecScale3D(v, makePosition(1 / scaleX, 1 / scaleY, 1));
 }
 
 static void switchFullscreen() {
@@ -117,7 +143,7 @@ void updateSystem() {
 	while (SDL_PollEvent(&e) != 0) { 
 		if( e.type == SDL_QUIT ) 
 		{  
-			abortSystem();
+			returnToMenu();
 		}
 		else if (e.type == SDL_WINDOWEVENT) {
 			checkWindowEvents(&e);
@@ -132,15 +158,15 @@ void setScreen(int tX, int tY, int tFramerate, int tIsVGA) {
 	(void)tIsVGA;
 	(void)tFramerate;
 	if(!gData.mIsLoaded) initScreenDefault();
-	gData.mScreenSizeX = tX;
-	gData.mScreenSizeY = tY;
+	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = tX;
+	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = tY;
 }
 
 void setScreenSize(int tX, int tY) {
 	if(!gData.mIsLoaded) initScreenDefault();
 
-	gData.mScreenSizeX = tX;
-	gData.mScreenSizeY = tY;
+	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = tX;
+	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = tY;
 }
 
 ScreenSize getScreenSize() {

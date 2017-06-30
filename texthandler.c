@@ -25,6 +25,12 @@ typedef struct {
 
 	Duration mSingleLetterBuildupNow;
 	Duration mSingleLetterBuildupDuration;
+
+	int mHasSoundEffects;
+	SoundEffectCollection mSoundEffects;
+
+	int mHasBasePositionReference;
+	Position* mBasePositionReference;
 } HandledText;
 
 static struct {
@@ -59,6 +65,11 @@ static void increaseDrawnText(HandledText* e) {
 	}
 
 	e->mSingleLetterBuildupNow = 0;
+
+	if (e->mHasSoundEffects) {
+		playRandomSoundEffectFromCollection(e->mSoundEffects);
+	}
+	
 }
 
 static int updateSingleText(void* tCaller, void* tData) {
@@ -84,9 +95,14 @@ static void drawSingleText(void* tCaller, void* tData) {
 	(void) tCaller;
 	HandledText* e = tData;
 
+	Position p = e->mPosition;
+	if (e->mHasBasePositionReference) {
+		p = vecAdd(p, *e->mBasePositionReference);
+	}
+
 	// TODO: set font to correct font 
 	e->mColor = COLOR_WHITE;
-	drawMultilineText(e->mDrawnText, e->mPosition, e->mFontSize, e->mColor, e->mBreakSize, e->mTextBoxSize);
+	drawMultilineText(e->mDrawnText, e->mText, p, e->mFontSize, e->mColor, e->mBreakSize, e->mTextBoxSize);
 }
 
 void drawHandledTexts() {
@@ -114,15 +130,52 @@ int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vec
 	e->mSingleLetterBuildupNow = 0;
 	e->mSingleLetterBuildupDuration = INF;
 
+	e->mHasSoundEffects = 0;
+
+	e->mHasBasePositionReference = 0;
+	e->mBasePositionReference = NULL;
+
 	return list_push_front_owned(&gData.mTexts, e);
 }
 
-int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration, Duration tBuildupSpeed) {
+int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration, Duration tBuildupDuration) {
 	int id = addHandledText(tPosition, tText, tFont, tColor, tFontSize, tBreakSize, tTextBoxSize, tDuration);
 	HandledText* e = list_get(&gData.mTexts, id);
-	e->mSingleLetterBuildupDuration = tBuildupSpeed / strlen(tText);
+	e->mSingleLetterBuildupDuration = tBuildupDuration / strlen(tText);
 	e->mDrawnText[0] = '\0';
 	return id;
+}
+
+int addHandledTextWithInfiniteDurationOnOneLine(Position tPosition, char * tText, int tFont, Color tColor, Vector3D tFontSize)
+{
+	return addHandledText(tPosition, tText, tFont, tColor, tFontSize, makePosition(0, 0, 0), makePosition(INF, INF, INF), INF);
+}
+
+void setHandledText(int tID, char * tText)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	strcpy(e->mText, tText);
+	strcpy(e->mDrawnText, tText);
+}
+
+void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	e->mHasSoundEffects = 1;
+	e->mSoundEffects = tSoundEffects;
+}
+
+void setHandledTextPosition(int tID, Position tPosition)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	e->mPosition = tPosition;
+}
+
+void setHandledTextBasePositionReference(int tID, Position * tPosition)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	e->mHasBasePositionReference = 1;
+	e->mBasePositionReference = tPosition;
 }
 
 void removeHandledText(int tID) {

@@ -1,9 +1,8 @@
 #ifndef TARI_TEXTURE
 #define TARI_TEXTURE
 
-#include "common/header.h"
-
 #include "memoryhandler.h"
+#include "geometry.h"
 
 typedef struct {
   int x;
@@ -26,6 +25,7 @@ fup TextureData loadTexturePKG(char tFileDir[]);
 fup TextureData loadTexture(char tFileDir[]);
 fup void unloadTexture(TextureData tTexture);
 
+fup void loadConsecutiveTextures(TextureData* tDst, char* tBaseFileDir, int tAmount);
 fup TextureData getFontTexture();
 fup FontCharacterData getFontCharacterData(char tChar);
 fup void setFont(char tFileDirHeader[], char tFileDirTexture[]);

@@ -25,6 +25,11 @@ int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller){
 	return list_push_front_owned(&gData.mList, (void*)e);
 }
 
+void removeTimer(int tID)
+{
+	list_remove(&gData.mList, tID);
+}
+
 void setupTimer(){
 	gData.mList = new_list();
 }

@@ -23,12 +23,16 @@ typedef struct {
 	Vector3D mTranslation;
 	Vector3D mScale;
 	Vector3D mAngle;
-	Position mEffectCenter;
-	int mIsEffectCenterAbsolute;
+	Position mScaleEffectCenter;
+	Position mRotationEffectCenter;
+	int mIsScaleEffectCenterAbsolute;
+	int mIsRotationEffectCenterAbsolute;
 
 	int mFrameStartTime;
 
 	Vector mEffectStack;
+
+	int mIsDisabled;
 } DrawingData;
 
 typedef struct {
@@ -47,8 +51,12 @@ extern SDL_Window* gSDLWindow;
 SDL_Renderer* gRenderer;
 
 void initDrawing() {
-	logg("Initiate drawing.");
 	setDrawingParametersToIdentity();
+
+	if (gSDLWindow == NULL) {
+		logError("Unable to create renderer because no window was found.");
+		abortSystem();
+	}
 
 	gRenderer = SDL_CreateRenderer(gSDLWindow, -1, SDL_RENDERER_ACCELERATED);
 	if (gRenderer == NULL) {
@@ -64,10 +72,15 @@ void initDrawing() {
 
 	gData.mTranslation = makePosition(0, 0, 0);
 	gData.mEffectStack = new_vector();
-	gData.mIsEffectCenterAbsolute = 1;
+	gData.mIsScaleEffectCenterAbsolute = 1;
+	gData.mIsRotationEffectCenterAbsolute = 1;
+
+	gData.mIsDisabled = 0;
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
+
+	if (gData.mIsDisabled) return;
 
   debugLog("Draw Sprite");
   debugInteger(tTexture.mTextureSize.x);
@@ -158,16 +171,24 @@ static void drawSorted(void* tCaller, void* tData) {
 	dstRect.w = sizeX;
 	dstRect.h = sizeY;
 
-	dstRect = scaleSDLRect(dstRect, e->mData.mScale, e->mData.mEffectCenter);
+	dstRect = scaleSDLRect(dstRect, e->mData.mScale, e->mData.mScaleEffectCenter);
 
 	Position realEffectPos;
-	if (e->mData.mIsEffectCenterAbsolute) {
-		realEffectPos = vecAdd(e->mData.mEffectCenter, vecScale(e->mPos, -1));
+	if (e->mData.mIsScaleEffectCenterAbsolute) {
+		realEffectPos = vecAdd(e->mData.mScaleEffectCenter, vecScale(e->mPos, -1));
 	}
 	else {
-		realEffectPos = e->mData.mEffectCenter;
+		realEffectPos = e->mData.mScaleEffectCenter;
 	}
 	realEffectPos = vecScale3D(realEffectPos, e->mData.mScale);
+
+
+	if (e->mData.mIsRotationEffectCenterAbsolute) {
+		realEffectPos = vecAdd(e->mData.mRotationEffectCenter, vecScale(e->mPos, -1));
+	}
+	else {
+		realEffectPos = e->mData.mRotationEffectCenter;
+	}
 
 	SDL_Point effectCenter;
 	effectCenter.x = (int)realEffectPos.x;
@@ -187,7 +208,6 @@ static void drawSorted(void* tCaller, void* tData) {
 }
 
 void stopDrawing() {
-	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 	vector_sort(&gDrawVector,cmpZ, NULL);
 	vector_map(&gDrawVector, drawSorted, NULL);
 	vector_empty(&gDrawVector);
@@ -200,7 +220,9 @@ void waitForScreen() {
 	int waitTime = frameEndTime-SDL_GetTicks();
 
 	if (waitTime > 0) {
+#ifndef __EMSCRIPTEN__
 		SDL_Delay(waitTime);
+#endif
 	}
 
 	gData.mFrameStartTime = SDL_GetTicks();
@@ -229,7 +251,7 @@ static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position
 	return (after.x > bottomRight.x);
 }
 
-void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
 	int current = 0;
 
 	setDrawingBaseColor(tColor);
@@ -256,8 +278,8 @@ void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Colo
 		pos.x += tFontSize.x + tBreakSize.x;
 		current++;
 
-		if (hasToLinebreak(tText, current, tPosition, pos, tFontSize, tBreakSize, tTextBoxSize)) {
-			pos.x = tPosition.x;
+		if (hasToLinebreak(tFullText, current, tPosition, pos, tFontSize, tBreakSize, tTextBoxSize)) {
+			pos.x = tPosition.x - (tFontSize.x + tBreakSize.x);
 			pos.y += tFontSize.y + tBreakSize.y;
 		}
 	}
@@ -267,12 +289,12 @@ void drawMultilineText(char* tText, Position tPosition, Vector3D tFontSize, Colo
 
 void scaleDrawing(double tFactor, Position tScalePosition){
 	gData.mScale = makePosition(tFactor,tFactor,1);
-	gData.mEffectCenter = tScalePosition;
+	gData.mScaleEffectCenter = tScalePosition;
 }
 
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition){
 	gData.mScale = tFactor;
-	gData.mEffectCenter = tScalePosition;
+	gData.mScaleEffectCenter = tScalePosition;
 }
 
 void setDrawingBaseColor(Color tColor){
@@ -291,7 +313,7 @@ void setDrawingTransparency(double tAlpha){
 
 void setDrawingRotationZ(double tAngle, Position tPosition){
 	gData.mAngle.z = tAngle;
-	gData.mEffectCenter = tPosition;
+	gData.mRotationEffectCenter = tPosition;
 }
 
 void setDrawingParametersToIdentity(){
@@ -299,14 +321,6 @@ void setDrawingParametersToIdentity(){
 	setDrawingTransparency(1.0);
 	scaleDrawing(1, makePosition(0, 0, 0));
 	setDrawingRotationZ(0, makePosition(0,0,0));
-}
-
-void setEffectCenterRelative() {
-	gData.mIsEffectCenterAbsolute = 0;
-}
-
-void setEffectCenterAbsolute() {
-	gData.mIsEffectCenterAbsolute = 1;
 }
 
 typedef struct {
@@ -328,13 +342,12 @@ void pushDrawingTranslation(Vector3D tTranslation) {
 	vector_push_back_owned(&gData.mEffectStack, e);
 }
 void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
-	gData.mEffectCenter = tCenter;
+	gData.mRotationEffectCenter = tCenter;
 	gData.mAngle.z += tAngle;
 
 	RotationZEffect* e = allocMemory(sizeof(RotationZEffect));
 	e->mAngle = tAngle;
 	vector_push_back_owned(&gData.mEffectStack, e);
-	
 }
 
 void popDrawingRotationZ() {
@@ -354,5 +367,57 @@ void popDrawingTranslation() {
 
 	vector_remove(&gData.mEffectStack, ind);
 }
+
+
+static uint32_t* getPixelFromSurface(SDL_Surface* tSurface, int x, int y) {
+	uint32_t* pixels = tSurface->pixels;
+	return &pixels[y*tSurface->w + x];
+}
+
+#define PIXEL_BUFFER_SIZE 1000
+uint32_t gPixelBuffer[PIXEL_BUFFER_SIZE];
+
+void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget) {
+	Texture dst = tDst.mTexture->mData;
+
+	double rd, gd, bd;
+	getRGBFromColor(tColor, &rd, &gd, &bd);
+	uint8_t r = (uint8_t)(rd * 255);
+	uint8_t g = (uint8_t)(gd * 255);
+	uint8_t b = (uint8_t)(bd * 255);
+	
+	int w = tTarget.bottomRight.x - tTarget.topLeft.x + 1;
+	int h = tTarget.bottomRight.y - tTarget.topLeft.y + 1;
+	if (w * h >= PIXEL_BUFFER_SIZE) {
+		logError("Over pixel buffer limit.");
+		logErrorInteger(w);
+		logErrorInteger(h);
+		abortSystem();
+	}
+
+	uint32_t val = SDL_MapRGB(dst->mSurface->format, r, g, b);
+	int i;
+	for (i = 0; i < w*h; i++) {
+		gPixelBuffer[i] = val;
+	}
+
+
+	SDL_Rect rect;
+	rect.x = tTarget.topLeft.x;
+	rect.y = tTarget.topLeft.y;
+	rect.w = w;
+	rect.h = h;
+	SDL_UpdateTexture(dst->mTexture, &rect, gPixelBuffer, w*sizeof(uint32_t));
+}
+
+
+void disableDrawing() {
+	gData.mIsDisabled = 1;
+}
+
+void enableDrawing() {
+	gData.mIsDisabled = 0;
+}
+
 
 

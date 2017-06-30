@@ -2,8 +2,7 @@
 
 #define MAXIMUM_CONTROLLER_AMOUNT 2
 
-
-#include "common/header.h"
+#include "geometry.h"
 
 fup void updateInput();
 fup void resetInput();
@@ -39,12 +38,16 @@ fup double getLeftStickNormalizedY();
 fup double getLNormalized();
 fup double getRNormalized();
 
+fup int hasShotGun();
+fup int hasShotGunFlank();
+fup Vector3D getShotPosition();
+
 fup int hasPressedASingle(int i);
 fup int hasPressedBSingle(int i);
 fup int hasPressedXSingle(int i);
 fup int hasPressedYSingle(int i);
-fup int hasPressedLeftSingle();
-fup int hasPressedRightSingle();
+fup int hasPressedLeftSingle(int i);
+fup int hasPressedRightSingle(int i);
 fup int hasPressedUpSingle(int i);
 fup int hasPressedDownSingle(int i);
 fup int hasPressedLSingle(int i);
@@ -69,6 +72,10 @@ fup double getSingleLeftStickNormalizedX(int i);
 fup double getSingleLeftStickNormalizedY(int i);
 fup double getSingleLNormalized(int i);
 fup double getSingleRNormalized(int i);
+
+fup int hasShotGunSingle(int i);
+fup int hasShotGunFlankSingle(int i);
+fup Vector3D getShotPositionSingle(int i);
 
 fup void setMainController(int i);
 fup int getMainController();

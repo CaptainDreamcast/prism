@@ -29,3 +29,5 @@ tools/kompressor/windows/Release/*
 *.TMP
 *.iobj
 *.cache
+
+bin/*

@@ -3,6 +3,7 @@
 #include "tari/log.h"
 #include "tari/math.h"
 
+// TODO: refactor
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 	if (tColor == COLOR_BLACK) {
 		(*tR) = (*tG) = (*tB) = 0;
@@ -11,16 +12,32 @@ void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 		(*tR) = 1.0f;
 		(*tG) = (*tB) = 0;
 	}
+	else if (tColor == COLOR_DARK_RED) {
+		(*tR) = 0.5f;
+		(*tG) = (*tB) = 0;
+	}
 	else if (tColor == COLOR_GREEN) {
 		(*tG) = 1.0f;
+		(*tR) = (*tB) = 0;
+	}
+	else if (tColor == COLOR_DARK_GREEN) {
+		(*tG) = 0.5f;
 		(*tR) = (*tB) = 0;
 	}
 	else if (tColor == COLOR_BLUE) {
 		(*tB) = 1.0f;
 		(*tG) = (*tR) = 0;
 	}
+	else if (tColor == COLOR_DARK_BLUE) {
+		(*tB) = 0.5f;
+		(*tG) = (*tR) = 0;
+	}
 	else if (tColor == COLOR_YELLOW) {
 		(*tG) = (*tR) = 1.0f;
+		(*tB) = 0;
+	}
+	else if (tColor == COLOR_DARK_YELLOW) {
+		(*tG) = (*tR) = 0.5f;
 		(*tB) = 0;
 	}
 	else {
@@ -77,7 +94,7 @@ void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
 }
 
 void drawAdvancedText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize) {
-	drawMultilineText(tText, tPosition, tFontSize, tColor, makeFontSize(tBreakSize, 0), makePosition(INF, INF, INF));
+	drawMultilineText(tText, tText, tPosition, tFontSize, tColor, makeFontSize(tBreakSize, 0), makePosition(INF, INF, INF));
 }
 
 Vector3D makeFontSize(int x, int y) {

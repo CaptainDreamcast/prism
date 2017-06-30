@@ -1,5 +1,7 @@
 #include "tari/stagehandler.h"
 
+#include <stdlib.h>
+
 #include "tari/script.h"
 #include "tari/datastructures.h"
 #include "tari/memoryhandler.h"
@@ -9,11 +11,15 @@
 #include "tari/math.h"
 #include "tari/texturepool.h"
 
-static struct {
-	List mList;
 
-	int mIsLoadingTexturesDirectly;
-} gData;
+
+
+typedef struct {
+
+	Acceleration mAccel;
+
+} BackgroundScrollData;
+
 
 typedef struct {
 
@@ -32,19 +38,51 @@ typedef struct {
 	double mScrollingFactor;
 	double mMaxVelocity;
 	PhysicsObject mPhysics;
+	Position mReferencedPosition;
+	Position mTweeningTarget;
 	double mZ;
+	int mIsVisible;
+
 	List mPatchList;
 	ListIterator mCurrentStartPatch;
 	ListIterator mCurrentEndPatch;
 } SingleBackgroundData;
 
+typedef void(*StageHandlerCameraUpdateFunction)(SingleBackgroundData* tData);
+typedef void(*StageHandlerCameraAddMovementFunction)(SingleBackgroundData* tData, BackgroundScrollData tScroll);
+
+typedef struct {
+	StageHandlerCameraUpdateFunction mUpdate;
+	StageHandlerCameraAddMovementFunction mAddMovement;
+} StageHandlerCameraStrategy;
+
+typedef struct {
+	Position mDirection;
+	double mStrength;
+	double mMaximum;
+} ScreenShake;
+
+static struct {
+	List mList;
+	StageHandlerCameraStrategy mCamera;
+
+	GeoRectangle mCameraRange;
+	int mIsLoadingTexturesDirectly;
+	ScreenShake mShake;
+} gData;
+
 void setupStageHandler() {
 	gData.mList = new_list();
 	gData.mIsLoadingTexturesDirectly = 0;
+	gData.mCameraRange = makeGeoRectangle(-INF, -INF, INF * 2, INF * 2);
+	gData.mShake.mStrength = 0;
+	gData.mShake.mMaximum = INF;
+	setStageHandlerAccelerationPhysics();
+	
 }
 
 static void emptyAll(void* tCaller, void* tData) {
-	(void) tCaller;
+	(void)tCaller;
 	SingleBackgroundData* data = tData;
 	list_empty(&data->mPatchList);
 }
@@ -54,24 +92,37 @@ void shutdownStageHandler() {
 	list_empty(&gData.mList);
 }
 
+static void setPatchAnimationActive(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
+	tData->mAnimationID = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
+	setAnimationScreenPositionReference(tData->mAnimationID, &tBackgroundData->mReferencedPosition);
+
+}
+
+static void setPatchAnimationInactive(BackgroundPatchData* tData) {
+	removeHandledAnimation(tData->mAnimationID);
+
+}
+
 
 static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
-	if(tData->mIsLoaded) return;
+	if (tData->mIsLoaded) return;
 
 	Frame i;
-	for(i = 0; i < tData->mAnimation.mFrameAmount; i++) {
+	for (i = 0; i < tData->mAnimation.mFrameAmount; i++) {
 		char fPath[100];
 		getPathWithNumberAffixedFromAssetPath(fPath, tData->mPath, i);
 		tData->mTextureData[i] = loadTextureFromPool(fPath);
 	}
 
-	tData->mAnimationID = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
-	setAnimationScreenPositionReference(tData->mAnimationID, &tBackgroundData->mPhysics.mPosition);
-
+	if (tBackgroundData->mIsVisible) {
+		setPatchAnimationActive(tData, tBackgroundData);
+	}
+	
 	tData->mIsLoaded = 1;
 }
 
 static int isStagePatchOutOfBounds(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
+	if (gData.mIsLoadingTexturesDirectly) return 0;
 
 	double sl = tBackgroundData->mPhysics.mPosition.x;
 	double sr = sl + 640.0;
@@ -83,20 +134,26 @@ static int isStagePatchOutOfBounds(BackgroundPatchData* tData, SingleBackgroundD
 	return isOut;
 }
 
-static void unloadStagePatchIfNecessary(BackgroundPatchData* tData) {
-	if (!tData->mIsLoaded || gData.mIsLoadingTexturesDirectly) return;
-	removeHandledAnimation(tData->mAnimationID);
 
+
+static void unloadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
+	if (!tData->mIsLoaded) return;
+
+	if (tBackgroundData->mIsVisible) {
+		setPatchAnimationInactive(tData);
+	}
+	
 	Frame i;
-	for(i = 0; i < tData->mAnimation.mFrameAmount; i++) {
+	for (i = 0; i < tData->mAnimation.mFrameAmount; i++) {
 		unloadTextureFromPool(tData->mTextureData[i]);
 	}
 
 	tData->mIsLoaded = 0;
-
 }
 
 static void setSingleStagePatches(SingleBackgroundData* data) {
+	if (!data->mIsVisible) return;
+
 	while (data->mCurrentEndPatch != NULL && !isStagePatchOutOfBounds(list_iterator_get(data->mCurrentEndPatch), data)) {
 		loadStagePatchIfNecessary(list_iterator_get(data->mCurrentEndPatch), data);
 
@@ -106,27 +163,45 @@ static void setSingleStagePatches(SingleBackgroundData* data) {
 	}
 
 	while (data->mCurrentStartPatch != NULL && isStagePatchOutOfBounds(list_iterator_get(data->mCurrentStartPatch), data)) {
-		unloadStagePatchIfNecessary(list_iterator_get(data->mCurrentStartPatch));
+		unloadStagePatchIfNecessary(list_iterator_get(data->mCurrentStartPatch), data);
 
 		if (list_has_next(data->mCurrentStartPatch)) list_iterator_increase(&data->mCurrentStartPatch);
 		else data->mCurrentStartPatch = NULL;
 	}
 }
 
+static void clampCameraRange(Vector3D* v, double tScrollingFactor) {
+	GeoRectangle rect = scaleGeoRectangleByFactor(gData.mCameraRange, tScrollingFactor);
+	*v = clampPositionToGeoRectangle(*v, rect);
+}
+
+static void setReferencedPosition(SingleBackgroundData* e) {
+	double l = gData.mShake.mStrength*e->mScrollingFactor;
+	e->mReferencedPosition = vecAdd(e->mPhysics.mPosition, vecScale(gData.mShake.mDirection, l));
+}
+
 static void updateSingleStage(void* tCaller, void* tData) {
-	(void) tCaller;
+	(void)tCaller;
 	SingleBackgroundData* data = tData;
 
-	setDragCoefficient(makePosition(0.1, 0.1, 0.1));
-	setMaxVelocityDouble(data->mMaxVelocity);
-	handlePhysics(&data->mPhysics);
-	resetMaxVelocity();
-	resetDragCoefficient();
+	gData.mCamera.mUpdate(data);
+	clampCameraRange(&data->mPhysics.mPosition, data->mScrollingFactor);
+	setReferencedPosition(data);
 
 	setSingleStagePatches(data);
 }
 
+static void updateCameraShake() {
+	gData.mShake.mStrength *= 0.9;
+	if (gData.mShake.mStrength < 0.5) gData.mShake.mStrength = 0;
+	gData.mShake.mStrength = min(gData.mShake.mStrength, gData.mShake.mMaximum);
+
+	double angle = randfrom(0, M_PI * 2);
+	gData.mShake.mDirection = getDirectionFromAngleZ(angle);
+}
+
 void updateStageHandler() {
+	updateCameraShake();
 	list_map(&gData.mList, updateSingleStage, NULL);
 }
 
@@ -140,28 +215,32 @@ int addScrollingBackground(double tScrollingFactor, double tZ) {
 	data->mMaxVelocity = INF;
 	resetPhysicsObject(&data->mPhysics);
 	data->mPhysics.mPosition = makePosition(0, 0, 0);
+	data->mTweeningTarget = data->mPhysics.mPosition;
+	data->mReferencedPosition = data->mPhysics.mPosition;
 	data->mZ = tZ;
+	data->mIsVisible = 1;
 	data->mPatchList = new_list();
 	data->mCurrentStartPatch = NULL;
 	data->mCurrentEndPatch = NULL;
+	
 
 	return list_push_front_owned(&gData.mList, data);
 }
 
 int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Animation tAnimation) {
 	SingleBackgroundData* data = list_get(&gData.mList, tBackgroundID);
-	
+
 	BackgroundPatchData* pData = allocMemory(sizeof(BackgroundPatchData));
 	pData->mIsLoaded = 0;
 	pData->mPosition = tPosition;
-	pData->mPosition.z = data->mZ+list_size(&data->mPatchList)*0.001;
+	pData->mPosition.z = data->mZ + list_size(&data->mPatchList)*0.001;
 	pData->mAnimation = tAnimation;
 	strcpy(pData->mPath, tPath);
 
-	int id = list_push_back_owned(&data->mPatchList, pData);	
+	int id = list_push_back_owned(&data->mPatchList, pData);
 
-	if(data->mCurrentStartPatch == NULL) data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
-		
+	if (data->mCurrentStartPatch == NULL) data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
+
 	if (gData.mIsLoadingTexturesDirectly) {
 		loadStagePatchIfNecessary(pData, data);
 	}
@@ -169,19 +248,19 @@ int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Ani
 	return id;
 }
 
+TextureData* getBackgroundElementTextureData(int tBackgroundID, int tElementID)
+{
+	SingleBackgroundData* data = list_get(&gData.mList, tBackgroundID);
+	BackgroundPatchData* e = list_get(&data->mPatchList, tElementID);
+	return e->mTextureData;
+}
+
 Position getRealScreenPosition(int tBackgroundID, Position tPos) {
 	SingleBackgroundData* data = list_get(&gData.mList, tBackgroundID);
-	Position p = vecAdd(tPos, vecScale(data->mPhysics.mPosition, -1));
+	Position p = vecAdd(tPos, vecScale(data->mReferencedPosition, -1));
 	p.z = tPos.z;
 	return p;
 }
-
-
-typedef struct {
-
-	Acceleration mAccel; 
-
-} BackgroundScrollData;
 
 static BackgroundScrollData newBackgroundScrollData(Acceleration tAccel) {
 	BackgroundScrollData ret;
@@ -193,7 +272,7 @@ static void scrollSingleBackground(void* tCaller, void* tData) {
 	SingleBackgroundData* data = tData;
 	BackgroundScrollData* sData = tCaller;
 
-	data->mPhysics.mAcceleration = vecAdd(data->mPhysics.mAcceleration, vecScale(sData->mAccel, data->mScrollingFactor));
+	gData.mCamera.mAddMovement(data, *sData);
 }
 
 void scrollBackgroundRight(double tAccel) {
@@ -202,18 +281,29 @@ void scrollBackgroundRight(double tAccel) {
 	list_map(&gData.mList, scrollSingleBackground, &sData);
 }
 
+void scrollBackgroundDown(double tAccel)
+{
+	BackgroundScrollData sData = newBackgroundScrollData(makePosition(0, tAccel, 0));
+	list_map(&gData.mList, scrollSingleBackground, &sData);
+}
+
 Position* getScrollingBackgroundPositionReference(int tID) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 
-	return &data->mPhysics.mPosition;
+	return &data->mReferencedPosition;
 }
 
+
+static void resetScrollingBackgroundPatchLoading(SingleBackgroundData* data) {
+	data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
+	setSingleStagePatches(data);
+}
 
 void setScrollingBackgroundPosition(int tID, Position tPos) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 	data->mPhysics.mPosition = tPos;
-	data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
-	setSingleStagePatches(data);
+	data->mReferencedPosition = tPos;
+	resetScrollingBackgroundPatchLoading(data);
 }
 
 void setScrollingBackgroundMaxVelocity(int tID, double tVel) {
@@ -229,6 +319,50 @@ PhysicsObject* getScrollingBackgroundPhysics(int tID) {
 void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics) {
 	SingleBackgroundData* data = list_get(&gData.mList, tID);
 	data->mPhysics = tPhysics;
+	data->mReferencedPosition = data->mPhysics.mPosition;
+}
+
+
+static void setStagePatchVisible(void* tCaller, void* tData) {
+	SingleBackgroundData* data = tCaller;
+	BackgroundPatchData* e = tData;
+
+	if (!e->mIsLoaded) return;
+
+	setPatchAnimationActive(e, data);
+}
+
+static void setStagePatchInvisible(void* tCaller, void* tData) {
+	(void) tCaller;
+	BackgroundPatchData* e = tData;
+
+	if (!e->mIsLoaded) return;
+
+	setPatchAnimationInactive(e);
+}
+
+void setScrollingBackgroundInvisible(int tID)
+{
+	SingleBackgroundData* data = list_get(&gData.mList, tID);
+	data->mIsVisible = 0;
+	list_map(&data->mPatchList, setStagePatchInvisible, data);
+}
+
+void setScrollingBackgroundVisible(int tID)
+{
+	SingleBackgroundData* data = list_get(&gData.mList, tID);
+	data->mIsVisible = 1;
+	list_map(&data->mPatchList, setStagePatchVisible, data);
+}
+
+void addStageHandlerScreenShake(double tStrength)
+{
+	gData.mShake.mStrength += tStrength;
+}
+
+void setStageHandlerMaximumScreenShake(double tStrength)
+{
+	gData.mShake.mMaximum = tStrength;
 }
 
 typedef struct {
@@ -342,4 +476,64 @@ void loadStageFromScript(char* tPath) {
 	ScriptRegion reg = getScriptRegion(s, "STAGE");
 
 	executeOnScriptRegion(reg, loadStageScriptStage, NULL);
+}
+
+
+static void updatePhysicsCamera(SingleBackgroundData* tData) {
+	setDragCoefficient(makePosition(0.1, 0.1, 0.1));
+	setMaxVelocityDouble(tData->mMaxVelocity);
+	handlePhysics(&tData->mPhysics);
+	resetMaxVelocity();
+	resetDragCoefficient();
+}
+
+static void addCameraPhysicsMovement(SingleBackgroundData* tData, BackgroundScrollData tScroll) {
+	tData->mPhysics.mAcceleration = vecAdd(tData->mPhysics.mAcceleration, vecScale(tScroll.mAccel, tData->mScrollingFactor));
+}
+
+static void updateTweeningCamera(SingleBackgroundData* tData) {
+	double tweeningFactor = 0.1;
+	Vector3D delta = vecScale(vecSub(tData->mTweeningTarget, tData->mPhysics.mPosition), tweeningFactor);
+	if (vecLength(delta) > tData->mMaxVelocity) {
+		delta = vecScaleToSize(delta, tData->mMaxVelocity);	
+	}
+
+	tData->mPhysics.mPosition = vecAdd(tData->mPhysics.mPosition, delta);
+}
+
+static void addCameraTweeningMovement(SingleBackgroundData* tData, BackgroundScrollData tScroll) {
+	tData->mTweeningTarget = vecAdd(tData->mTweeningTarget, vecScale(tScroll.mAccel, tData->mScrollingFactor));
+	clampCameraRange(&tData->mTweeningTarget, tData->mScrollingFactor);
+}
+
+static StageHandlerCameraStrategy PhysicsCamera = {
+	.mUpdate = updatePhysicsCamera,
+	.mAddMovement = addCameraPhysicsMovement
+};
+
+static StageHandlerCameraStrategy TweeningCamera = {
+	.mUpdate = updateTweeningCamera,
+	.mAddMovement = addCameraTweeningMovement
+};
+
+void setStageHandlerAccelerationPhysics()
+{
+	gData.mCamera = PhysicsCamera;
+}
+
+static void setSingleBackgroundTweening(void* tCaller, void* tData) {
+	(void)tCaller;
+	SingleBackgroundData* data = tData;
+	data->mTweeningTarget = data->mPhysics.mPosition;
+}
+
+void setStageHandlerTweening()
+{
+	gData.mCamera = TweeningCamera;
+	list_map(&gData.mList, setSingleBackgroundTweening, NULL);
+}
+
+void setStageCameraRange(GeoRectangle tRange)
+{
+	gData.mCameraRange = tRange;
 }

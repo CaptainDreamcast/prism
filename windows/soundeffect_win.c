@@ -1,6 +1,12 @@
 #include "tari/soundeffect.h"
 
+#include <SDL.h>
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_mixer.h>
+#elif defined _WIN32
 #include <SDL_mixer.h>
+#endif
+
 
 #include "tari/file.h"
 #include "tari/sound.h"
@@ -19,7 +25,7 @@ static struct {
 } gData;
 
 void initSoundEffects() {
-	setSoundEffectVolume(1);
+	
 }
 
 void setupSoundEffectHandler() {
@@ -60,9 +66,13 @@ void unloadSoundEffect(int tID) {
 	list_remove(&gData.mAllocatedChunks, tID);
 }
 
-void playSoundEffect(int tID) {
+int playSoundEffect(int tID) {
 	SoundEffectEntry* e = list_get(&gData.mAllocatedChunks, tID);
-	Mix_PlayChannel(-1, e->mChunk, 0);
+	return Mix_PlayChannel(-1, e->mChunk, 0);
+}
+
+void stopSoundEffect(int tSFX) {
+	Mix_HaltChannel(tSFX);
 }
 
 double getSoundEffectVolume() {
