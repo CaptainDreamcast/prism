@@ -178,16 +178,16 @@ static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 	
 	Position p = getAnimationPositionWithAllReferencesIncluded(cur);
 
-	if(cur->mIsScaled) {
-		Position sPosition = cur->mScaleEffectCenter;
-		sPosition = vecAdd(sPosition, p);
-		scaleDrawing3D(cur->mScale, sPosition);
-	}
-
 	if (cur->mIsRotated) {
 		Position rPosition = cur->mRotationEffectCenter;
 		rPosition = vecAdd(rPosition, p);
 		setDrawingRotationZ(cur->mRotationZ, rPosition);
+	}
+
+	if(cur->mIsScaled) {
+		Position sPosition = cur->mScaleEffectCenter;
+		sPosition = vecAdd(sPosition, p);
+		scaleDrawing3D(cur->mScale, sPosition);
 	}
 
 	if (cur->mHasBaseColor) {

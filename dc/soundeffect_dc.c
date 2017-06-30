@@ -30,3 +30,7 @@ int playSoundEffect(int tID) {
 void stopSoundEffect(int tSFX) {
 	snd_sfx_stop(tSFX);
 }
+
+void setSoundEffectVolume(double tVolume) {
+	(void) tVolume;
+}
