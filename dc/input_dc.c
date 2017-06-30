@@ -26,7 +26,7 @@ static void updateSingleLightGun(int i) {
 	gData.mLightGuns[i].mIsActive = 1;
 
 	if(hasPressedASingle(i)) {
-		
+		maple_gun_enable(gData.mControllers[i].mCont->port);
 		if(!gData.mLightGuns[i].mHasPolledGun) {
 			setScreenWhite();
 			gData.mLightGuns[i].mHasPolledGun = 1;	
