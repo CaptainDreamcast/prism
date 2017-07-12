@@ -7,7 +7,7 @@
 #include "collisionhandler.h"
 
 typedef struct {
-	Vector mFrames;
+	Vector mFrames; // holds Colliders // TODO: rename
 
 	Animation mAnimation;
 } CollisionAnimation;

@@ -66,5 +66,6 @@ fup int checkIntersectCircRect(Circle tCirc, GeoRectangle tRect);
 
 fup Vector3D clampPositionToGeoRectangle(Vector3D v, GeoRectangle tRect);
 fup GeoRectangle scaleGeoRectangleByFactor(GeoRectangle tRect, double tFac);
+fup GeoRectangle scaleGeoRectangleByFactor2D(GeoRectangle tRect, Vector3D tFac);
 
 #endif

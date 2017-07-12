@@ -97,3 +97,9 @@ double overshootTweeningFunction(double t) {
 	else return linearTweeningFunction(overshoot + ((t-0.8) / 0.2) * (1.0 - overshoot));
 }
 
+double transformAtEndTweeningFunction(double t)
+{
+	if (t >= 1) return 1;
+	else return 0;
+}
+

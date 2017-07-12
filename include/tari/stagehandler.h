@@ -13,7 +13,9 @@ fup void setStageHandlerTweening();
 fup void setStageCameraRange(GeoRectangle tRange);
 
 fup int addScrollingBackground(double tScrollingFactor, double tZ);
+fup int addScrollingBackgroundWithMovementIn2D(double tDeltaX, double tDeltaY, double tZ);
 fup int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Animation tAnimation);
+fup int addBackgroundElementWithTextureData(int tBackgroundID, Position tPosition, TextureData* tTextureData, Animation tAnimation);
 fup TextureData* getBackgroundElementTextureData(int tBackgroundID, int tElementID);
 
 fup Position getRealScreenPosition(int tBackgroundID, Position tPos);

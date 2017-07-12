@@ -15,3 +15,4 @@ fup void removeTween(int tID);
 fup double linearTweeningFunction(double t);
 fup double quadraticTweeningFunction(double t);
 fup double overshootTweeningFunction(double t);
+fup double transformAtEndTweeningFunction(double t);

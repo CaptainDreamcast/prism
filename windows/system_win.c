@@ -29,7 +29,7 @@ static struct {
 	int mDisplayedWindowSizeY;
 
 	int mIsFullscreen;
-
+	
 	char mGameName[100];
 } gData;
 

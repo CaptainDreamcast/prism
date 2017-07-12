@@ -30,11 +30,14 @@
 #define debugInteger(x) logInteger(x)
 #define debugDouble(x) logDouble(x)
 #define debugString(x) logString(x)
+#define debugPointer(x) logPointer(x)
+
 #else
 #define debugLog(x) {}
 #define debugInteger(x) {}
 #define debugDouble(x) {}
 #define debugString(x) {}
+#define debugPointer(x) {}
 #endif	
 
 #ifdef DEBUG

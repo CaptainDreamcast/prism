@@ -249,7 +249,12 @@ Vector3D clampPositionToGeoRectangle(Vector3D v, GeoRectangle tRect)
 
 GeoRectangle scaleGeoRectangleByFactor(GeoRectangle tRect, double tFac)
 {
-	tRect.mTopLeft = vecScale(tRect.mTopLeft, tFac);
-	tRect.mBottomRight = vecScale(tRect.mBottomRight, tFac);
+	return scaleGeoRectangleByFactor2D(tRect, makePosition(tFac, tFac, 1));
+}
+
+GeoRectangle scaleGeoRectangleByFactor2D(GeoRectangle tRect, Vector3D tFac)
+{
+	tRect.mTopLeft = vecScale(tRect.mTopLeft, tFac.x);
+	tRect.mBottomRight = vecScale(tRect.mBottomRight, tFac.y);
 	return tRect;
 }

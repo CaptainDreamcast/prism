@@ -198,3 +198,16 @@ int canLoadTexture(char* tPath) {
 
 	return 0;
 }
+
+TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
+	uint32_t amask = 0xff000000;
+	uint32_t rmask = 0x00ff0000;
+	uint32_t gmask = 0x0000ff00;
+	uint32_t bmask = 0x000000ff;
+	
+	int depth = 32;
+	int pitch = 4 * tWidth;
+
+	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(b.mData, tWidth, tHeight, depth, pitch, rmask, gmask, bmask, amask);
+	return textureFromSurface(surface);
+}

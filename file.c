@@ -51,6 +51,13 @@ void getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i)
 
 }
 
+void getPathToFile(char * tDest, char * tPath)
+{
+	strcpy(tDest, tPath);
+	char* pathEnd = strrchr(tDest, '/');
+	if (pathEnd != NULL) pathEnd[1] = '\0';
+}
+
 static int isFileMemoryMapped(FileHandler tFile) {
 	void* data = fileMemoryMap(tFile);
 	return data != NULL;
@@ -67,6 +74,25 @@ int isDirectory(char* tPath) {
 	struct stat sb;
 
 	return (stat(tPath, &sb) == 0 && (sb.st_mode & S_IFDIR));
+}
+
+static Buffer makeBufferInternal(void * tData, uint32_t tLength, int tIsOwned)
+{
+	Buffer b;
+	b.mData = tData;
+	b.mLength = tLength;
+	b.mIsOwned = tIsOwned;
+	return b;
+}
+
+Buffer makeBuffer(void * tData, uint32_t tLength)
+{
+	return makeBufferInternal(tData, tLength, 0);
+}
+
+Buffer makeBufferOwned(void * tData, uint32_t tLength)
+{
+	return makeBufferInternal(tData, tLength, 1);
 }
 
 Buffer fileToBuffer(char* tFileDir) {

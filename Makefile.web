@@ -4,16 +4,18 @@ windows/framerateselect_win.o windows/file_win.o windows/math_win.o windows/syst
 windows/soundeffect_win.o windows/sound_win.o windows/memoryhandler_win.o windows/romdisk_win.o \
 windows/screeneffect_win.o windows/logoscreen_win.o
 
-TARI_INCLUDE = include
+all: $(TARGET)
+
+TARI_PATH = .
 include Makefile.commonweb
 
-all: $(TARGET)
 
 clean:
 	-del *.o
 	-rmdir /s /q bin
 	
 libtari.a: $(OBJS)
+	echo "has"
 	emar rcs $@ $(OBJS)
 	-mkdir bin
 	move $@ bin\$@

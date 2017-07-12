@@ -44,6 +44,8 @@ fup void* fileMemoryMap(FileHandler tHandler);
 fup int isFile(char* tPath);
 fup int isDirectory(char* tPath);
 
+fup Buffer makeBuffer(void* tData, uint32_t tLength);
+fup Buffer makeBufferOwned(void* tData, uint32_t tLength);
 fup Buffer fileToBuffer(char* path);
 fup void bufferToFile(char* tPath, Buffer tBuffer);
 fup void freeBuffer(Buffer buffer);
@@ -66,6 +68,7 @@ fup char* getFileExtension(char* tPath);
 fup void getPathWithoutFileExtension(char* tDest, char* tPath);
 fup void  getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i);
 fup void getFullPath(char* tDest, char* tPath);
+fup void getPathToFile(char* tDest, char* tPath);
 
 fup void printDirectory(char* tPath);
 
