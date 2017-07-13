@@ -104,7 +104,7 @@ static void setPatchAnimationInactive(BackgroundPatchData* tData) {
 }
 
 
-static void loadStagePatchFromPath(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
+static void loadStagePatchFromPath(BackgroundPatchData* tData) {
 	tData->mTextureData = allocMemory(tData->mAnimation.mFrameAmount * sizeof(TextureData));
 	Frame i;
 	for (i = 0; i < tData->mAnimation.mFrameAmount; i++) {
@@ -118,7 +118,7 @@ static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgrou
 	if (tData->mIsLoaded) return;
 
 	if (tData->mCanBeUnloaded) {
-		loadStagePatchFromPath(tData, tBackgroundData);
+		loadStagePatchFromPath(tData);
 	}
 
 	
