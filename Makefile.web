@@ -15,7 +15,6 @@ clean:
 	-rmdir /s /q bin
 	
 libtari.a: $(OBJS)
-	echo "has"
 	emar rcs $@ $(OBJS)
 	-mkdir bin
 	move $@ bin\$@
