@@ -72,7 +72,7 @@ void initSystem() {
 
 	setToProgramDirectory();
 	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 	
 	if (gData.mGameName[0] == '\0') {
 		sprintf(gData.mGameName, "Unnamed libtari game port");

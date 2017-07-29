@@ -82,3 +82,10 @@ FontCharacterData getFontCharacterData(char tChar) {
 
 	return gFontCharacterData[i];
 }
+
+TextureSize makeTextureSize(int x, int y) {
+	TextureSize ret;
+	ret.x = x;
+	ret.y = y;
+	return ret;
+}
