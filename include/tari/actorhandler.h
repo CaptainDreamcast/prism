@@ -27,3 +27,4 @@ fup int instantiateActor(ActorBlueprint tBP);
 fup int instantiateActorWithData(ActorBlueprint tBP, void* tData, int tIsOwned);
 fup void performOnActor(int tID, ActorInteractionFunction tFunc, void* tCaller);
 fup void removeActor(int tID);
+fup void* getActorData(int tID);

@@ -101,7 +101,7 @@
       }
     </style>
   </head>
-  <body>
+  <body onkeydown="preventUseOfDefaultKeys(event);">
  
     <div class="spinner" id='spinner'></div>
     <div class="emscripten" id="status">Downloading...</div>
@@ -224,6 +224,12 @@ window.onload = function(){
 
 window.onclick = function(){
     window.focus();
+}
+
+ function preventUseOfDefaultKeys(event) {
+            if (event.keyCode == 32 || event.keyCode == 27 || event.keyCode == 37 || event.keyCode == 38 || event.keyCode == 39  || event.keyCode == 40) {
+                event.preventDefault();
+       }
 }
 </script>
 

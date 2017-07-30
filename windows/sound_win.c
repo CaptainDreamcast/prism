@@ -74,7 +74,7 @@ void playTrack(int tTrack) {
 	if (gData.mHasLoadedTrack) unloadTrack();
 	
 	loadTrack(tTrack);
-	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, 0);
+	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, -1);
 	gData.mIsPaused = 0;
 	gData.mIsPlayingTrack = 1;
 }

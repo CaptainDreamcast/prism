@@ -38,8 +38,8 @@ static void unloadActor(Actor* e) {
 
 static int removeActorCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	Actor* e = tData;
-	unloadActor(e);
+	(void)tData;
+	// TODO: unload Actor properly
 	return 1;
 }
 
@@ -109,4 +109,10 @@ void removeActor(int tID)
 	Actor* e = int_map_get(&gData.mActors, tID);
 	unloadActor(e);
 	int_map_remove(&gData.mActors, tID);
+}
+
+void * getActorData(int tID)
+{
+	Actor* e = int_map_get(&gData.mActors, tID);
+	return e->mData;
 }
