@@ -64,6 +64,8 @@ static int isFileMemoryMapped(FileHandler tFile) {
 }
 
 int isFile(char* tPath) {
+	if(isDirectory(tPath)) return 0;
+
 	FileHandler file = fileOpen(tPath, O_RDONLY);
 	if (file == FILEHND_INVALID) return 0;
 	fileClose(file);
@@ -72,9 +74,12 @@ int isFile(char* tPath) {
 
 int isDirectory(char* tPath) {
 	struct stat sb;
+	char path[1024];
+	getFullPath(path, tPath);
 
-	return (stat(tPath, &sb) == 0 && (sb.st_mode & S_IFDIR));
+	return (stat(path, &sb) == 0 && (sb.st_mode & S_IFDIR));
 }
+
 
 static Buffer makeBufferInternal(void * tData, uint32_t tLength, int tIsOwned)
 {
