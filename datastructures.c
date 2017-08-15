@@ -2,11 +2,24 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "tari/memoryhandler.h"
 #include "tari/log.h"
 #include "tari/system.h"
 #include "tari/math.h"
+
+void turnStringLowercase(char* tString) {
+	int n = strlen(tString);
+
+	char* pos = tString;
+	int i;
+	for (i = 0; i < n; i++) {
+		*pos = tolower(*pos);
+		pos++;
+	}
+}
+
 
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
 	ListElement* e = allocMemory(sizeof(ListElement));

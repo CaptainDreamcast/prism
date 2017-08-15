@@ -3,6 +3,9 @@
 
 #include "common/header.h"
 
+fup void turnStringLowercase(char* tString);
+
+
 typedef struct ListElement_internal {
 
 	int mID;

@@ -32,6 +32,11 @@ typedef enum {
 	SPRITE_TYPE_PUNCH_THROUGH,
 } SpriteType;
 
+typedef enum {
+	BLEND_TYPE_NORMAL,
+	BLEND_TYPE_ADDITION,
+} BlendType;
+
 
 typedef int TextSize;
 
@@ -56,6 +61,7 @@ fup void setDrawingRotationZ(double tAngle, Position tPosition);
 fup void setDrawingParametersToIdentity();
 fup void setDrawingPunchThrough();
 fup void setDrawingTransparent();
+fup void setDrawingBlendType(BlendType tBlendType);
 
 fup void pushDrawingTranslation(Vector3D tTranslation);
 fup void pushDrawingRotationZ(double tAngle, Vector3D tCenter);

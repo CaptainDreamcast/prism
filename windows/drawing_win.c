@@ -1,8 +1,11 @@
 #include "../include/tari/drawing.h"
 
 #include <stdlib.h>
+#include <assert.h>
+
 #include <SDL.h>
 #include <SDL_image.h>
+
 
 #include "tari/log.h"
 #include "tari/system.h"
@@ -33,6 +36,8 @@ typedef struct {
 	Vector mEffectStack;
 
 	int mIsDisabled;
+
+	BlendType mBlendType;
 } DrawingData;
 
 typedef struct {
@@ -198,11 +203,18 @@ static void drawSorted(void* tCaller, void* tData) {
 	if (e->mTexturePosition.bottomRight.x < e->mTexturePosition.topLeft.x) flip |= SDL_FLIP_HORIZONTAL;
 	if (e->mTexturePosition.bottomRight.y < e->mTexturePosition.topLeft.y) flip |= SDL_FLIP_VERTICAL;
 
-	double angleDegrees = 360-((e->mData.mAngle.z * 180)/ M_PI);
-
+	double angleDegrees = 360 - ((e->mData.mAngle.z * 180) / M_PI);
+	
 	Texture texture = e->mTexture.mTexture->mData;
-	SDL_SetTextureColorMod(texture->mTexture, (Uint8)(e->mData.r*0xFF), (Uint8)(e->mData.g*0xFF), (Uint8)(e->mData.b*0xFF));
+	SDL_SetTextureColorMod(texture->mTexture, (Uint8)(e->mData.r * 0xFF), (Uint8)(e->mData.g * 0xFF), (Uint8)(e->mData.b * 0xFF));
 	SDL_SetTextureAlphaMod(texture->mTexture, (Uint8)(e->mData.a * 0xFF));
+
+	if (e->mData.mBlendType == BLEND_TYPE_ADDITION) {
+		SDL_SetTextureBlendMode(texture->mTexture, SDL_BLENDMODE_ADD);
+	}
+	else {
+		SDL_SetTextureBlendMode(texture->mTexture, SDL_BLENDMODE_BLEND);
+	}
 
 	SDL_RenderCopyEx(gRenderer, texture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
 }
@@ -321,7 +333,14 @@ void setDrawingParametersToIdentity(){
 	setDrawingTransparency(1.0);
 	scaleDrawing(1, makePosition(0, 0, 0));
 	setDrawingRotationZ(0, makePosition(0,0,0));
+	setDrawingBlendType(BLEND_TYPE_NORMAL);
 }
+
+void setDrawingBlendType(BlendType tBlendType)
+{
+	gData.mBlendType = tBlendType;
+}
+
 
 typedef struct {
 	Vector3D mTranslation;
