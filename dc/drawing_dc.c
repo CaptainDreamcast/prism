@@ -255,6 +255,11 @@ void setDrawingTransparency(double tAlpha){
 	gData.a = tAlpha;
 }
 
+void setDrawingBlendType(BlendType tBlendType) {
+	(void)tBlendType; // TODO
+}
+
+
 void setDrawingRotationZ(double tAngle, Position tPosition){
 	mat_translate(tPosition.x, tPosition.y, tPosition.z);
 	mat_rotate_z(tAngle);
