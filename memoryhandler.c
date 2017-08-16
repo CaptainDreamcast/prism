@@ -186,7 +186,7 @@ static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
 
 static const int COMPRESSION_BUFFER = 400;
 
-static int compressMemoryAndReturnNewSize(void** tBuffer, int tSrcSize) {
+static void compressMemory(void** tBuffer, int tSrcSize) {
 	qlz_state_compress state_compress;
 	
 	char* src = *tBuffer;
@@ -196,11 +196,9 @@ static int compressMemoryAndReturnNewSize(void** tBuffer, int tSrcSize) {
 
 	free(src);
 	*tBuffer = dst;
-
-	return dstLength;
 }
 
-static int decompressMemoryAndReturnNewSize(void** tBuffer) {
+static void decompressMemory(void** tBuffer) {
 	qlz_state_decompress state_decompress;
 	
 	char* src = *tBuffer;
@@ -212,9 +210,6 @@ static int decompressMemoryAndReturnNewSize(void** tBuffer) {
 
 	free(src);
 	*tBuffer = dst;	
-
-
-	return dstLength;
 }
 
 static void virtualizeSingleTextureMemory(TextureMemory tMem) {
@@ -225,11 +220,10 @@ static void virtualizeSingleTextureMemory(TextureMemory tMem) {
 	void* mainMemoryBuffer = malloc(tMem->mSize);
 	memcpy(mainMemoryBuffer, tMem->mData, tMem->mSize);
 
-	int newSize = compressMemoryAndReturnNewSize(&mainMemoryBuffer, tMem->mSize);
+	compressMemory(&mainMemoryBuffer, tMem->mSize);
 
 	freeTextureHW(tMem->mData);
 	tMem->mData = mainMemoryBuffer;
-	tMem->mSize = newSize;
 
 	tMem->mIsVirtual = 1;
 }
@@ -238,7 +232,7 @@ static void unvirtualizeSingleTextureMemory(TextureMemory tMem) {
 	debugLog("Unvirtualizing texture memory.");
 	debugInteger(tMem->mSize);
   
-	tMem->mSize = decompressMemoryAndReturnNewSize(&tMem->mData);
+	decompressMemory(&tMem->mData);
 
 	void* textureMemoryBuffer = allocTextureHW(tMem->mSize);
 	memcpy(textureMemoryBuffer, tMem->mData, tMem->mSize);

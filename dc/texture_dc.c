@@ -76,16 +76,19 @@ static Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc, int tWidth, int tHei
 	char* src = tSrc.mData;
 	assert((int)tSrc.mLength >= dstSize*2);
 
+	int n = dstSize / 2;
 	int i;
-	for(i = 0; i < dstSize; i++) {
-		int srcPos = 2*i;
-		int dstPos = i;
+	for(i = 0; i < n; i++) {
+		int srcPos = 4*i;
+		int dstPos = 2*i;
 
-		uint8_t val = ((uint8_t)src[srcPos]) / 2;
-		dst[dstPos] = val;
-
-		val = ((uint8_t)src[srcPos+1]) / 2;
-		dst[dstPos] |= (val << 4);
+		uint8_t a = ((uint8_t)src[srcPos + 3]) >> 4;
+		uint8_t r = ((uint8_t)src[srcPos + 2]) >> 4;
+		uint8_t g = ((uint8_t)src[srcPos + 1]) >> 4;
+		uint8_t b = ((uint8_t)src[srcPos + 0]) >> 4;
+		
+		dst[dstPos + 0] = (g << 4) | b;
+		dst[dstPos + 1] = (a << 4) | r;
 	}
 
 
