@@ -2,6 +2,7 @@
 
 #include "tari/log.h"
 #include "tari/system.h"
+#include "tari/quicklz.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -183,28 +184,69 @@ static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
 	addToUsageQueueFront(tMem);
 }
 
+static const int COMPRESSION_BUFFER = 400;
+
+static int compressMemoryAndReturnNewSize(void** tBuffer, int tSrcSize) {
+	qlz_state_compress state_compress;
+	
+	char* src = *tBuffer;
+	char* dst = malloc(tSrcSize + COMPRESSION_BUFFER);
+	int dstLength = qlz_compress(src, dst, tSrcSize, &state_compress);
+	dst = realloc(dst, dstLength);
+
+	free(src);
+	*tBuffer = dst;
+
+	return dstLength;
+}
+
+static int decompressMemoryAndReturnNewSize(void** tBuffer) {
+	qlz_state_decompress state_decompress;
+	
+	char* src = *tBuffer;
+	size_t uncompressedLength = qlz_size_decompressed(src);
+
+	char* dst = malloc(uncompressedLength);
+	int dstLength = qlz_decompress(src, dst, &state_decompress);
+	dst = realloc(dst, dstLength);
+
+	free(src);
+	*tBuffer = dst;	
+
+
+	return dstLength;
+}
+
 static void virtualizeSingleTextureMemory(TextureMemory tMem) {
 	debugLog("Virtualizing texture memory.");
 	debugInteger(tMem->mSize);
+	increaseAvailableTextureMemoryHW(tMem->mSize);
 
 	void* mainMemoryBuffer = malloc(tMem->mSize);
 	memcpy(mainMemoryBuffer, tMem->mData, tMem->mSize);
-	increaseAvailableTextureMemoryHW(tMem->mSize);
+
+	int newSize = compressMemoryAndReturnNewSize(&mainMemoryBuffer, tMem->mSize);
+
 	freeTextureHW(tMem->mData);
 	tMem->mData = mainMemoryBuffer;
+	tMem->mSize = newSize;
+
 	tMem->mIsVirtual = 1;
 }
 
 static void unvirtualizeSingleTextureMemory(TextureMemory tMem) {
 	debugLog("Unvirtualizing texture memory.");
 	debugInteger(tMem->mSize);
+  
+	tMem->mSize = decompressMemoryAndReturnNewSize(&tMem->mData);
 
-	decreaseAvailableTextureMemoryHW(tMem->mSize);
 	void* textureMemoryBuffer = allocTextureHW(tMem->mSize);
 	memcpy(textureMemoryBuffer, tMem->mData, tMem->mSize);
 	free(tMem->mData);
 	tMem->mData = textureMemoryBuffer;
 	tMem->mIsVirtual = 0;
+
+	decreaseAvailableTextureMemoryHW(tMem->mSize);
 
 	addToUsageQueueFront(tMem);
 }
