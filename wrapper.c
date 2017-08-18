@@ -70,11 +70,15 @@ void pauseWrapper() {
 	gData.mIsPaused = 1;
 }
 
-void resumeWrapper() {
-	if (!gData.mIsPaused) return;
+static void resumeWrapperComponentsForced() {
 	resumePhysics();
 	resumeDurationHandling();
 	gData.mIsPaused = 0;
+}
+
+void resumeWrapper() {
+	if (!gData.mIsPaused) return;
+	resumeWrapperComponentsForced();
 }
 
 int isWrapperPaused()
@@ -247,6 +251,7 @@ void startScreenHandling(Screen* tScreen) {
 		loadScreen(tScreen);
 		Screen* next = showScreen();
 		unloadScreen(tScreen);
+		resumeWrapperComponentsForced();
 		tScreen = next;
 	}
 	

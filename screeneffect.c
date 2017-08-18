@@ -175,7 +175,9 @@ typedef struct {
 static void fadeOutOverCB(void* tCaller) {
 	FadeOutData* e = tCaller;
 	setScreenBlack();
-	e->mCB(e->mCaller);
+	if (e->mCB) {
+		e->mCB(e->mCaller);
+	}
 	freeMemory(e);
 }
 
