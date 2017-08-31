@@ -1,6 +1,7 @@
 #include "tari/drawing.h"
 
 #include <stdlib.h>
+#include <math.h>
 
 #include <kos.h>
 #include <dc/matrix3d.h>
@@ -27,9 +28,14 @@ static void applyDrawingMatrix(pvr_vertex_t* tVert) {
   mat_trans_single3(tVert->x, tVert->y, tVert->z);
 }
 
+static void forceSingleValueToInteger(float* tVal) {
+	*tVal = floor(*tVal);
+}
+
 static void forceToInteger(pvr_vertex_t* tVert) {
-  tVert->x = (int)tVert->x;
-  tVert->y = (int)tVert->y;
+  
+  forceSingleValueToInteger(&tVert->x);
+  forceSingleValueToInteger(&tVert->y);
 }
 
 
@@ -58,10 +64,10 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   int sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
   int sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
 
-  double left = tTexturePosition.topLeft.x / ((double) (tTexture.mTextureSize.x - 1));
-  double right = tTexturePosition.bottomRight.x / ((double) (tTexture.mTextureSize.x - 1));
-  double up = tTexturePosition.topLeft.y / ((double) (tTexture.mTextureSize.y - 1));
-  double down = tTexturePosition.bottomRight.y / ((double) (tTexture.mTextureSize.y - 1));
+  double left = tTexturePosition.topLeft.x / ((double) tTexture.mTextureSize.x - 1);
+  double right = tTexturePosition.bottomRight.x / ((double)tTexture.mTextureSize.x - 1);
+  double up = tTexturePosition.topLeft.y / ((double) tTexture.mTextureSize.y - 1);
+  double down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y - 1);
 
   referenceTextureMemory(tTexture.mTexture);
 
@@ -69,7 +75,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   pvr_poly_hdr_t hdr;
   pvr_vertex_t vert;
 
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_BILINEAR);
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
 
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
