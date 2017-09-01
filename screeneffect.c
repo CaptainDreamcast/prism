@@ -49,7 +49,7 @@ void initScreenEffects() {
 
 	gData.mWhiteTexture = loadTexture("$/rd/effects/white.pkg");
 	gData.mFullLineSize = 10;
-	gData.mZ = 13;
+	gData.mZ = 80;
 	gData.mScreenFillID = -1;
 	gData.mIsActive = 1;
 }
