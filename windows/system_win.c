@@ -68,6 +68,20 @@ static void setToProgramDirectory() {
 #endif
 }
 
+extern SDL_Renderer* gRenderer;
+
+static void setWindowSize() {
+	ScreenSize sz = getScreenSize();
+	double scaleX = gData.mDisplayedWindowSizeX / (double)sz.x;
+	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
+
+	scaleX = fmin(scaleX, scaleY);
+	scaleY = fmin(scaleX, scaleY);
+
+	SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY);
+	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
+}
+
 void initSystem() {
 
 	setToProgramDirectory();
@@ -77,7 +91,7 @@ void initSystem() {
 	if (gData.mGameName[0] == '\0') {
 		sprintf(gData.mGameName, "Unnamed libtari game port");
 	}
-	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, getScreenSize().x, getScreenSize().y, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 }
 
 void shutdownSystem() {
@@ -87,23 +101,13 @@ void shutdownSystem() {
 	SDL_Quit();
 }
 
-extern SDL_Renderer* gRenderer;
-
 static void resizeWindow(SDL_Event* e) {
 	if (gRenderer == NULL) return;
 
-	ScreenSize sz = getScreenSize();
 	gData.mDisplayedWindowSizeX = e->window.data1;
 	gData.mDisplayedWindowSizeY = e->window.data2;
 
-	double scaleX = gData.mDisplayedWindowSizeX /(double)sz.x;
-	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
-
-	scaleX = fmin(scaleX, scaleY);
-	scaleY = fmin(scaleX, scaleY);
-
-	SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY);
-	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
+	setWindowSize();
 }
 static void checkWindowEvents(SDL_Event* e) {
 	if (e->window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -158,15 +162,15 @@ void setScreen(int tX, int tY, int tFramerate, int tIsVGA) {
 	(void)tIsVGA;
 	(void)tFramerate;
 	if(!gData.mIsLoaded) initScreenDefault();
-	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = tX;
-	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = tY;
+	gData.mScreenSizeX = tX;
+	gData.mScreenSizeY = tY;
 }
 
 void setScreenSize(int tX, int tY) {
 	if(!gData.mIsLoaded) initScreenDefault();
 
-	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = tX;
-	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = tY;
+	gData.mScreenSizeX = tX;
+	gData.mScreenSizeY = tY;
 }
 
 ScreenSize getScreenSize() {

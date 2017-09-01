@@ -63,12 +63,16 @@ void initDrawing() {
 		abortSystem();
 	}
 
+	
 	gRenderer = SDL_CreateRenderer(gSDLWindow, -1, SDL_RENDERER_ACCELERATED);
 	if (gRenderer == NULL) {
 		logError("Unable to create renderer.");
 		abortSystem();
 	}
 	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+
+	ScreenSize sz = getScreenSize();
+	SDL_RenderSetScale(gRenderer, (float)(640.0 / sz.x), (float)(480.0 / sz.y));
 
 	IMG_Init(IMG_INIT_PNG);
 
