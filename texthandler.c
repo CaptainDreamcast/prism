@@ -178,6 +178,18 @@ void setHandledTextBasePositionReference(int tID, Position * tPosition)
 	e->mBasePositionReference = tPosition;
 }
 
+void setHandledTextBuiltUp(int tID)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	strcpy(e->mDrawnText, e->mText);
+}
+
+int isHandledTextBuiltUp(int tID)
+{
+	HandledText* e = list_get(&gData.mTexts, tID);
+	return !strcmp(e->mDrawnText, e->mText);
+}
+
 void removeHandledText(int tID) {
 	list_remove(&gData.mTexts, tID);
 }
