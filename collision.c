@@ -67,7 +67,7 @@ int checkCollisionCirc(CollisionCirc tCirc1, CollisionCirc tCirc2){
 	Vector3D delta;
 	delta.x = tCirc1.mCenter.x - tCirc2.mCenter.x;
 	delta.y = tCirc1.mCenter.y - tCirc2.mCenter.y;
-	delta.z = tCirc1.mCenter.z - tCirc2.mCenter.z;
+	delta.z = 0;
 	double l = vecLength(delta);
 
 	return l < tCirc1.mRadius+tCirc2.mRadius;

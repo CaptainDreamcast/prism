@@ -22,6 +22,7 @@ typedef struct {
 } Animation;
 
 fup int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration);
+fup int isDurationOver(Duration tNow, Duration tDuration);
 fup AnimationResult animateWithoutLoop(Animation* tAnimation);
 fup void animate(Animation* tAnimation);
 fup void resetAnimation(Animation* tAnimation);

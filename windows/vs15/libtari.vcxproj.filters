@@ -139,6 +139,24 @@
     <ClCompile Include="..\screeneffect_win.c">
       <Filter>src\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\mugendefreader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lz5.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenspritefilereader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenanimationreader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenanimationhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenscriptparser.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -275,6 +293,22 @@
       <Filter>hdr</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\tari\logoscreen.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugendefreader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugenspritefilereader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\lz5.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugenanimationreader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugenanimationhandler.h" />
+    <ClInclude Include="..\..\include\tari\mugenscriptparser.h">
       <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>

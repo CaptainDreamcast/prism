@@ -189,7 +189,7 @@ void setCollisionHandlerOwningColliders() {
 	gData.mIsOwningColliders = 1;
 }
 
-#define DEBUG_Z 12
+#define DEBUG_Z 99
 
 static void drawCollisionRect(CollisionRect tRect, Position* tBasePosition){
 	double dx = tRect.mBottomRight.x -  tRect.mTopLeft.x;

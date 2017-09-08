@@ -95,7 +95,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   debugInteger(tTexture.mTextureSize.x);
   debugInteger(tTexture.mTextureSize.y);
 
-  if (tTexture.mTextureSize.x < 0 || tTexture.mTextureSize.y < 0 || tTexture.mTextureSize.x % 2 != 0 || tTexture.mTextureSize.y % 2 != 0) {
+  if (tTexture.mTextureSize.x < 0 || tTexture.mTextureSize.y < 0) {
     logError("Called with invalid textureSize");
     logErrorInteger(tTexture.mTextureSize.x);
     logErrorInteger(tTexture.mTextureSize.y);

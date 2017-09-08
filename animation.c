@@ -22,11 +22,16 @@ int getDurationInFrames(Duration tDuration){
 int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration) {
   if(gData.mIsPaused) return 0;
   (*tNow)++;
-  if ((*tNow) >= getDurationInFrames(tDuration)) {
-    return 1;
-  }
+ 
+  return isDurationOver(*tNow, tDuration);
+}
 
-  return 0;
+int isDurationOver(Duration tNow, Duration tDuration) {
+	if (tNow >= getDurationInFrames(tDuration)) {
+		return 1;
+	}
+
+	return 0;
 }
 
 AnimationResult animateWithoutLoop(Animation* tAnimation) {
