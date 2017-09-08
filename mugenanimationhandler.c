@@ -1,6 +1,7 @@
 #include "tari/mugenanimationhandler.h"
 
 #include "tari/collisionhandler.h"
+#include "tari/math.h"
 
 typedef int MugenDuration;
 

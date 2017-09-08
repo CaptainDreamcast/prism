@@ -226,7 +226,7 @@ static Buffer decodeRLE8BufferAndReturnOwnedBuffer(Buffer b, int tFinalSize) {
 	uint32_t dstpos = 0;
 	uint32_t srcpos = 0;
 
-	while (srcpos < (int)b.mLength)
+	while (srcpos < (uint32_t)b.mLength)
 	{
 		if (((input[srcpos] & 0xC0) == 0x40))
 		{

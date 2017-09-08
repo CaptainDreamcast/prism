@@ -6,4 +6,6 @@ wrapper.o physicshandler.o script.o stagehandler.o collisionhandler.o \
 collisionanimation.o animationtree.o texturepool.o \
 storyboard.o screeneffect.o texthandler.o compression.o soundeffect.o \
 actorhandler.o tweening.o logoscreen.o \
+mugendefreader.o mugenanimationreader.o mugenanimationhandler.o \
+mugenscriptparser.o lz5.o mugenspritefilereader.o \
 quicklz.o
