@@ -9,11 +9,12 @@
         font-family: arial;
         margin: 0;
         padding: none;
+		background-color: black;
       }
 
       .emscripten { padding-right: 0; margin-left: auto; margin-right: auto; display: block; }
       div.emscripten { text-align: center; }      
-      div.emscripten_border { border: 1px solid black; }
+      div.emscripten_border { border: 0px solid black; }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
       canvas.emscripten { border: 0px none; }
 
@@ -80,8 +81,8 @@
         display: inline-block;
         float: right;
         vertical-align: top;
-        margin-top: 30px;
-        margin-right: 20px;
+        margin-top: 0px;
+        margin-right: 200px;
       }
 
       #output {
@@ -102,13 +103,17 @@
     </style>
   </head>
   <body onkeydown="preventUseOfDefaultKeys(event);">
- 
+
+    <div class="emscripten_border">
+      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    </div>
+  
     <div class="spinner" id='spinner'></div>
     <div class="emscripten" id="status">Downloading...</div>
 
 <span id='controls'>
-  <span><input type="checkbox" id="resize">Resize canvas</span>
-  <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>
+  <span><input type="checkbox" style="display:none" id="resize"></span>
+  <span><input type="checkbox" style="display:none" id="pointerLock" checked></span>
   <span><input type="button" value="Fullscreen" onclick="Module.requestFullScreen(document.getElementById('pointerLock').checked, 
                                                                             document.getElementById('resize').checked)">
   </span>
@@ -118,10 +123,6 @@
       <progress value="0" max="100" id="progress" hidden=1></progress>
     </div>
 
-    
-    <div class="emscripten_border">
-      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-    </div>
     <textarea id="output" rows="8"></textarea>
 
     <script type='text/javascript'>
