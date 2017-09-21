@@ -31,7 +31,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -74,8 +74,8 @@
     <LibraryPath>C:\Users\Legion\Documents\Visual Studio 2015\SDL2_image-2.0.1\lib\x86;C:\Users\Legion\Documents\Visual Studio 2015\SDL2-2.0.5\lib\x86;C:\Users\Legion\Documents\Visual Studio 2015\SDL2_mixer-2.0.1\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\libtari\include;C:\Users\Legion\Documents\Visual Studio 2015\SDL2_mixer-2.0.1\include;C:\Users\Legion\Documents\Visual Studio 2015\SDL2_image-2.0.1\include;C:\Users\Legion\Documents\Visual Studio 2015\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Legion\Documents\Visual Studio 2015\SDL2_mixer-2.0.1\lib\x86;C:\Users\Legion\Documents\Visual Studio 2015\SDL2_image-2.0.1\lib\x86;C:\Users\Legion\Documents\Visual Studio 2015\SDL2-2.0.5\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2-2.0.5\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_image-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_mixer-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\libtari\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>C:\Users\Legion\Documents\Visual Studio 2015\SDL2_mixer-2.0.1\include;C:\Users\Legion\Documents\Visual Studio 2015\SDL2_image-2.0.1\include;C:\Users\Legion\Documents\Visual Studio 2015\SDL2-2.0.5\include;$(IncludePath)</IncludePath>
@@ -110,8 +110,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

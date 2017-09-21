@@ -12,7 +12,6 @@ tools/kompressor/windows/Release/*
 *.idb
 *.ipch
 *.lastbuildstate
-*.lib
 *.log
 *.manifest
 *.obj
