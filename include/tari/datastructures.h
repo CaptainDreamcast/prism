@@ -36,6 +36,7 @@ fup int list_push_front_owned(List* tList, void* tData);
 fup int list_push_back(List* tList, void* tData);
 fup int list_push_back_owned(List* tList, void* tData);
 fup void* list_get(List* tList, int tID);
+fup void* list_get_by_ordered_index(List* tList, int tIndex);
 fup void list_remove(List* tList, int tID);
 fup void list_empty(List* tList);
 fup void list_map(List* tList, mapCB tCB, void* tCaller);

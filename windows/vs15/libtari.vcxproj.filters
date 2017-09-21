@@ -157,6 +157,12 @@
     <ClCompile Include="..\..\mugenscriptparser.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\mugenassignment.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenassignmentevaluator.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -307,8 +313,16 @@
     <ClInclude Include="..\..\include\tari\mugenanimationreader.h">
       <Filter>hdr</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\tari\mugenanimationhandler.h" />
     <ClInclude Include="..\..\include\tari\mugenscriptparser.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugenassignment.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugenassignmentevaluator.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugenanimationhandler.h">
       <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>

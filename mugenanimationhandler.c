@@ -468,6 +468,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	}
 
 	scaleDrawing3D(caller->mScale, caller->mScalePosition);
+	setDrawingRotationZ(e->mBaseDrawAngle, caller->mScalePosition);
 	drawSprite(sprite->mTexture, p, texturePos);
 	setDrawingParametersToIdentity();
 }

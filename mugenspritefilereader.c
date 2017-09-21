@@ -352,6 +352,17 @@ static void freeSubImageBufferList(List tList) {
 	list_remove_predicate(&tList, removeSingleSubImageBufferEntryCB, NULL);
 }
 
+static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
+
+	List textures = new_list();
+	MugenSpriteFileSubSprite* e = allocMemory(sizeof(MugenSpriteFileSubSprite));
+	e->mOffset = makeVector3DI(0, 0, 0);
+	e->mTexture = loadTextureFromRawPNGBuffer(tRawPNGBuffer, tWidth, tHeight);
+	list_push_back_owned(&textures, e);
+
+	return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
+}
+
 static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(Buffer tRawImageBuffer, Buffer tPaletteBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
 
 	List subImagelist = breakImageBufferUpIntoMultipleBuffers(tRawImageBuffer, tWidth, tHeight);
@@ -362,7 +373,7 @@ static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(B
 
 	return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
 }
-
+ 
 static MugenSpriteFileSprite* loadTextureFromPCXBuffer(MugenSpriteFile* tDst, int mIsUsingOwnPalette, Buffer b, Vector3D tAxisOffset) { // TODO: refactor
 	PCXHeader header;
 	
@@ -589,14 +600,18 @@ static Buffer readRawLZ5Sprite2(BufferPointer p, uint32_t tSize) {
 
 }
 
-
-static Buffer readRawSprite2(Buffer b, SFFSprite2* tSprite, SFFHeader2* tHeader) {
-	BufferPointer p = getBufferPointer(b);
+static BufferPointer getBufferPointerToSpriteData(BufferPointer p, SFFSprite2* tSprite, SFFHeader2* tHeader) {
 	uint32_t realOffset;
 	if (tSprite->mFlags) realOffset = tHeader->mTDataOffset;
 	else realOffset = tHeader->mLDataOffset;
 
 	p += realOffset + tSprite->mDataOffset;
+	return p;
+}
+
+static Buffer readRawSprite2(Buffer b, SFFSprite2* tSprite, SFFHeader2* tHeader) {
+	BufferPointer p = getBufferPointer(b);
+	p = getBufferPointerToSpriteData(p, tSprite, tHeader);
 
 	if (tSprite->mFormat == 2) {		
 		return readRawRLE8Sprite2(p, tSprite->mDataLength);
@@ -633,16 +648,40 @@ static void loadSingleSprite2(Buffer b, BufferPointer* p, SFFHeader2* tHeader, M
 		return;
 	}
 
-	Buffer rawBuffer = readRawSprite2(b, &sprite, tHeader);
+	int isPaletted = sprite.mFormat == 2 || sprite.mFormat == 4;
+	int isRawPNG = sprite.mFormat == 10 || sprite.mFormat == 12;
 
-	int palette;
-	tPreferredPalette = -1; // TODO: fix
-	if (tPreferredPalette == -1) palette = sprite.mPaletteIndex;
-	else palette = tPreferredPalette;
+	MugenSpriteFileSprite* e;
+	if (isPaletted) {
+		Buffer rawBuffer = readRawSprite2(b, &sprite, tHeader);
 
-	Buffer* paletteBuffer = vector_get(&tDst->mPalettes, palette);
+		int palette;
+		tPreferredPalette = -1; // TODO: fix
+		if (tPreferredPalette == -1) palette = sprite.mPaletteIndex;
+		else palette = tPreferredPalette;
 
-	MugenSpriteFileSprite* e = makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawBuffer, *paletteBuffer, sprite.mWidth, sprite.mHeight, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
+		Buffer* paletteBuffer = vector_get(&tDst->mPalettes, palette);
+
+		e = makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawBuffer, *paletteBuffer, sprite.mWidth, sprite.mHeight, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
+		
+	}
+	else if (isRawPNG) {
+		BufferPointer p = getBufferPointer(b);
+		p = getBufferPointerToSpriteData(p, &sprite, tHeader);
+		uint16_t textureWidth, textureHeight;
+		readFromBufferPointer(&textureWidth, &p, 2);
+		readFromBufferPointer(&textureHeight, &p, 2);
+		Buffer pngBuffer = makeBuffer(p, sprite.mDataLength);
+		
+		e = makeMugenSpriteFileSpriteFromRawPNGBuffer(pngBuffer, sprite.mWidth, sprite.mHeight, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
+	}
+	else {
+		logError("Unrecognized image format.");
+		logErrorInteger(sprite.mFormat);
+		abortSystem();
+		e = NULL;
+	}
+
 	insertTextureIntoSpriteFile(tDst, e, sprite.mGroupNo, sprite.mItemNo);
 }
 

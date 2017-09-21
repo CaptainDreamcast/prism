@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 #include "tari/memoryhandler.h"
 #include "tari/log.h"
@@ -111,6 +112,25 @@ void* list_get(List* tList, int tID) {
 	}
 
 	return NULL;
+}
+
+fup void * list_get_by_ordered_index(List * tList, int tIndex)
+{
+	if (tIndex >= list_size(tList)) {
+		logError("Trying to access invalid index.");
+		logErrorInteger(tIndex);
+		abortSystem();
+		return NULL;
+	}
+
+	int left = tIndex;
+	ListElement* cur = tList->mFirst;
+	while (left--) {
+		cur = cur->mNext;
+		assert(cur);
+	}
+
+	return cur->mData;
 }
 
 void list_remove(List* tList, int tID){

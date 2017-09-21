@@ -854,13 +854,7 @@ int isMugenDefFloatVariable(MugenDefScript * tScript, char * tGroupName, char * 
 	}
 	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
 
-	if (!string_map_contains(&e->mElements, tVariableName)) {
-		return 0;
-	}
-
-	MugenDefScriptGroupElement* element = string_map_get(&e->mElements, tVariableName);
-
-	return isMugenDefFloatVariableAsElement(element);
+	return isMugenDefFloatVariableAsGroup(e, tVariableName);
 }
 
 double getMugenDefFloatVariable(MugenDefScript * tScript, char * tGroupName, char * tVariableName)
@@ -869,6 +863,16 @@ double getMugenDefFloatVariable(MugenDefScript * tScript, char * tGroupName, cha
 	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
 
 	return getMugenDefFloatVariableAsGroup(e, tVariableName);
+}
+
+int isMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
+	if (!string_map_contains(&tGroup->mElements, tVariableName)) {
+		return 0;
+	}
+
+	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+
+	return isMugenDefFloatVariableAsElement(element);
 }
 
 double getMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
@@ -914,13 +918,7 @@ int isMugenDefNumberVariable(MugenDefScript * tScript, char * tGroupName, char *
 	}
 	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
 
-	if (!string_map_contains(&e->mElements, tVariableName)) {
-		return 0;
-	}
-
-	MugenDefScriptGroupElement* element = string_map_get(&e->mElements, tVariableName);
-
-	return isMugenDefNumberVariableAsElement(element);
+	return isMugenDefNumberVariableAsGroup(e, tVariableName);
 }
 
 
@@ -930,6 +928,16 @@ int getMugenDefNumberVariable(MugenDefScript * tScript, char * tGroupName, char 
 	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
 
 	return getMugenDefNumberVariableAsGroup(e, tVariableName);
+}
+
+int isMugenDefNumberVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
+	if (!string_map_contains(&tGroup->mElements, tVariableName)) {
+		return 0;
+	}
+
+	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+
+	return isMugenDefNumberVariableAsElement(element);
 }
 
 int getMugenDefNumberVariableAsGroup(MugenDefScriptGroup * tGroup, char * tVariableName)
@@ -1135,47 +1143,65 @@ void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, char* tGroup, cha
 	}
 }
 
-void getMugenDefFloatOrDefault(double* tDst, MugenDefScript* s, char* tGroup, char* tVariable, double tDefault) {
+double getMugenDefFloatOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, double tDefault) {
 	if (isMugenDefFloatVariable(s, tGroup, tVariable)) {
-		*tDst = getMugenDefFloatVariable(s, tGroup, tVariable);
+		return getMugenDefFloatVariable(s, tGroup, tVariable);
 	}
 	else {
-		*tDst = tDefault;
+		return tDefault;
 	}
 }
 
-void getMugenDefIntegerOrDefault(int* tDst, MugenDefScript* s, char* tGroup, char* tVariable, int tDefault) {
+double getMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, double tDefault) {
+	if (isMugenDefFloatVariableAsGroup(tGroup, tVariable)) {
+		return getMugenDefFloatVariableAsGroup(tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+int getMugenDefIntegerOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, int tDefault) {
 	if (isMugenDefNumberVariable(s, tGroup, tVariable)) {
-		*tDst = getMugenDefNumberVariable(s, tGroup, tVariable);
+		return getMugenDefNumberVariable(s, tGroup, tVariable);
 	}
 	else {
-		*tDst = tDefault;
+		return tDefault;
 	}
 }
 
-void getMugenDefVectorOrDefault(Vector3D* tDst, MugenDefScript* s, char* tGroup, char* tVariable, Vector3D tDefault) {
+int getMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, int tDefault) {
+	if (isMugenDefNumberVariableAsGroup(tGroup, tVariable)) {
+		return getMugenDefNumberVariableAsGroup(tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, Vector3D tDefault) {
 	if (isMugenDefVectorVariable(s, tGroup, tVariable)) {
-		*tDst = getMugenDefVectorVariable(s, tGroup, tVariable);
+		return getMugenDefVectorVariable(s, tGroup, tVariable);
 	}
 	else {
-		*tDst = tDefault;
+		return tDefault;
 	}
 }
 
-void getMugenDefVectorOrDefaultAsGroup(Vector3D* tDst, MugenDefScriptGroup* tGroup, char* tVariable, Vector3D tDefault) {
+Vector3D getMugenDefVectorOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, Vector3D tDefault) {
 	if (isMugenDefVectorVariableAsGroup(tGroup, tVariable)) {
-		*tDst = getMugenDefVectorVariableAsGroup(tGroup, tVariable);
+		return getMugenDefVectorVariableAsGroup(tGroup, tVariable);
 	}
 	else {
-		*tDst = tDefault;
+		return tDefault;
 	}
 }
 
-void getMugenDefVectorIOrDefault(Vector3DI* tDst, MugenDefScript* s, char* tGroup, char* tVariable, Vector3DI tDefault) {
+Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, Vector3DI tDefault) {
 	if (isMugenDefVectorIVariable(s, tGroup, tVariable)) {
-		*tDst = getMugenDefVectorIVariable(s, tGroup, tVariable);
+		return getMugenDefVectorIVariable(s, tGroup, tVariable);
 	}
 	else {
-		*tDst = tDefault;
+		return tDefault;
 	}
 }

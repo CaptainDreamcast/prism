@@ -1,8 +1,10 @@
 .c.o:
-	emcc $< -c -O2 -s USE_SDL=2 -I$(TARI_PATH)/include -o $@
+	emcc $< -c -O3 -s USE_SDL=2 -g -s SAFE_HEAP=1 -I$(TARI_PATH)/include -o $@
 	
 build_develop: $(OBJS) 
-	emcc $(OBJS) -O2 -s TOTAL_MEMORY=103554432 -s USE_SDL=2 -s USE_SDL_IMAGE=2 \
+	emcc $(OBJS) -O3 \
+	-s TOTAL_MEMORY=67108864 -s NO_EXIT_RUNTIME=1 \
+	-s USE_SDL=2 -s USE_SDL_IMAGE=2 \
 	-L$(TARI_PATH)/bin -ltari \
 	--use-preload-plugins \
     $(ADDITIONAL_PRELOADS) --preload-file $(TARI_PATH)\assets\effects@effects --preload-file $(TARI_PATH)\assets\logo@logo --preload-file $(TARI_PATH)\assets\fonts@fonts --preload-file $(TARI_PATH)\assets\debug@debug -o web\game.html

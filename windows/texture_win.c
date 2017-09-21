@@ -211,3 +211,11 @@ TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(b.mData, tWidth, tHeight, depth, pitch, rmask, gmask, bmask, amask);
 	return textureFromSurface(surface);
 }
+
+TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
+	(void)tWidth;
+	(void)tHeight;
+	SDL_RWops* memStream = SDL_RWFromMem(b.mData, b.mLength);
+	SDL_Surface* surface = IMG_LoadPNG_RW(memStream);
+	return textureFromSurface(surface);
+}

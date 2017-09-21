@@ -25,6 +25,7 @@ typedef struct {  // TODO: refactor completely from Dolmexica
 fup TextureData loadTexturePKG(char tFileDir[]);
 fup TextureData loadTexture(char tFileDir[]);
 fup TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight);
+fup TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight);
 fup void unloadTexture(TextureData tTexture);
 
 fup void loadConsecutiveTextures(TextureData* tDst, char* tBaseFileDir, int tAmount);
