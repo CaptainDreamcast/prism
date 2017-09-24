@@ -101,7 +101,6 @@ static void drawSingleText(void* tCaller, void* tData) {
 	}
 
 	// TODO: set font to correct font 
-	e->mColor = COLOR_WHITE;
 	drawMultilineText(e->mDrawnText, e->mText, p, e->mFontSize, e->mColor, e->mBreakSize, e->mTextBoxSize);
 }
 

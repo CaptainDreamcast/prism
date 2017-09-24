@@ -233,7 +233,11 @@ int checkIntersectCircRect(Circle tCirc, GeoRectangle tRect) {
 		checkIntersectLineCircle(makeLine(p1, p2), tCirc) ||
 		checkIntersectLineCircle(makeLine(p2, p3), tCirc) ||
 		checkIntersectLineCircle(makeLine(p3, p4), tCirc) ||
-		checkIntersectLineCircle(makeLine(p4, p1), tCirc));
+		checkIntersectLineCircle(makeLine(p4, p1), tCirc) ||
+		(checkPointInCircle(tCirc, p1) && 
+			checkPointInCircle(tCirc, p2) && 
+			checkPointInCircle(tCirc, p3)  && 
+			checkPointInCircle(tCirc, p4)));
 
 }
 
@@ -257,4 +261,13 @@ GeoRectangle scaleGeoRectangleByFactor2D(GeoRectangle tRect, Vector3D tFac)
 	tRect.mTopLeft = vecScale(tRect.mTopLeft, tFac.x);
 	tRect.mBottomRight = vecScale(tRect.mBottomRight, tFac.y);
 	return tRect;
+}
+
+Vector3D interpolatePositionLinear(Position a, Position b, double t)
+{
+	Vector3D ret;
+	ret.x = interpolateLinear(a.x, b.x, t);
+	ret.y = interpolateLinear(a.y, b.y, t);
+	ret.z = interpolateLinear(a.z, b.z, t);
+	return ret;
 }
