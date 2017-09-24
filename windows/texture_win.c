@@ -1,7 +1,12 @@
 #include "tari/texture.h"
 
 #include <SDL.h>
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_image.h>
+#elif defined _WIN32
 #include <SDL_image.h>
+#endif
+
 #include <string.h>
 
 #include "tari/file.h"
@@ -215,7 +220,22 @@ TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
 	(void)tWidth;
 	(void)tHeight;
+	if (!b.mIsOwned) {
+		printf("creating illegal rw\n");
+	}
 	SDL_RWops* memStream = SDL_RWFromMem(b.mData, b.mLength);
+	if (!memStream) {
+		logError("Unable to create memory stream.");
+		logErrorString(SDL_GetError());
+		abortSystem();
+	}
+
 	SDL_Surface* surface = IMG_LoadPNG_RW(memStream);
+	if (!surface) {
+		logError("Unable to create surface.");
+		logErrorString(SDL_GetError());
+		abortSystem();
+	}
+
 	return textureFromSurface(surface);
 }

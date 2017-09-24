@@ -5,7 +5,11 @@
 
 #include <stdlib.h>
 #include <SDL.h>
+#ifdef __EMSCRIPTEN__
+#include <SDL/SDL_image.h>
+#elif defined _WIN32
 #include <SDL_image.h>
+#endif
 
 #include "tari/log.h"
 #include "tari/pvr.h"

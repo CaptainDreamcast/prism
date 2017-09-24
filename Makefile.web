@@ -12,6 +12,7 @@ include Makefile.commonweb
 
 clean:
 	-del *.o
+	-cd windows && del *.o
 	-rmdir /s /q bin
 	
 libtari.a: $(OBJS)
