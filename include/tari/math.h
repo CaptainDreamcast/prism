@@ -7,14 +7,14 @@
 
 #ifdef DREAMCAST
 
+#include <kos.h>
+
 #define min(x, y) ((x < y) ? (x) : (y))
 #define max(x, y) ((x > y) ? (x) : (y))
 #define fmin	min
 #define fmax	max
+#define fabs 	abs
 // TODO: sort out the math header stuff
-
-extern double cos(double r);
-extern double sin(double r);
 
 #elif defined __EMSCRIPTEN__
 
