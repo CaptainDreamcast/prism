@@ -63,6 +63,7 @@ typedef struct {
 	double mR;
 	double mG;
 	double mB;
+	double mAlpha;
 } MugenAnimationHandlerElement;
 
 static struct {
@@ -246,7 +247,8 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 	e->mIsPaused = 0;
 	e->mIsLooping = 1;
 
-	e->mR = e->mG = e->mB = 1;
+	e->mR = e->mG = e->mB = e->mAlpha = 1;
+
 
 	startNewAnimationWithStartStep(e, 0);
 
@@ -332,6 +334,11 @@ void setMugenAnimationColor(int tID, double tR, double tG, double tB) {
 	e->mR = tR;
 	e->mG = tG;
 	e->mB = tB;
+}
+
+void setMugenAnimationTransparency(int tID, double tOpacity) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mAlpha = tOpacity;
 }
 
 void changeMugenAnimation(int tID, MugenAnimation * tNewAnimation)
@@ -517,6 +524,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	}
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
+	setDrawingTransparency(e->mAlpha);
 	scaleDrawing3D(caller->mScale, caller->mScalePosition);
 	setDrawingRotationZ(e->mBaseDrawAngle, caller->mScalePosition);
 	drawSprite(sprite->mTexture, p, texturePos);

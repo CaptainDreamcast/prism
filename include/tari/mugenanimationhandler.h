@@ -23,6 +23,7 @@ fup void setMugenAnimationInvisible(int tID);
 fup void setMugenAnimationDrawScale(int tID, Vector3D tScale);
 fup void setMugenAnimationDrawAngle(int tID, double tAngle);
 fup void setMugenAnimationColor(int tID, double tR, double tG, double tB);
+fup void setMugenAnimationTransparency(int tID, double tOpacity);
 
 fup void changeMugenAnimation(int tID, MugenAnimation* tNewAnimation);
 fup void changeMugenAnimationWithStartStep(int tID, MugenAnimation* tNewAnimation, int tStartStep);

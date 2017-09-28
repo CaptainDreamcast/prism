@@ -2,6 +2,8 @@
 
 #include <assert.h>
 #include <string.h>
+#include <png.h>
+
 
 #include "tari/file.h"
 #include "tari/log.h"
@@ -162,10 +164,10 @@ typedef struct {
 typedef struct {
 	List* mDst;
 	Buffer mPaletteBuffer;
-} ApplyPaletteToSubImageListCaller;
+} ApplyToSubImageListCaller;
 
 static void loadTextureFromSinglePalettedImageListEntry1bpp(void* tCaller, void* tData) {
-	ApplyPaletteToSubImageListCaller* caller = tCaller;
+	ApplyToSubImageListCaller* caller = tCaller;
 	SubImageBuffer* buffer = tData;
 
 	MugenSpriteFileSubSprite* newSprite = allocMemory(sizeof(MugenSpriteFileSubSprite));
@@ -178,11 +180,33 @@ static void loadTextureFromSinglePalettedImageListEntry1bpp(void* tCaller, void*
 static List loadTextureFromPalettedImageList1bpp(List tBufferList, Buffer tPaletteBuffer) {
 	List ret = new_list();
 
-	ApplyPaletteToSubImageListCaller caller;
+	ApplyToSubImageListCaller caller;
 	caller.mDst = &ret;
 	caller.mPaletteBuffer = tPaletteBuffer;
 
 	list_map(&tBufferList, loadTextureFromSinglePalettedImageListEntry1bpp, &caller);
+
+	return ret;
+}
+
+static void loadTextureFromSingleImageARGB32ListEntry(void* tCaller, void* tData) {
+	ApplyToSubImageListCaller* caller = tCaller;
+	SubImageBuffer* buffer = tData;
+
+	MugenSpriteFileSubSprite* newSprite = allocMemory(sizeof(MugenSpriteFileSubSprite));
+	newSprite->mOffset = buffer->mOffset;
+	newSprite->mTexture = loadTextureFromARGB32Buffer(buffer->mBuffer, buffer->mSize.x, buffer->mSize.y);
+
+	list_push_back_owned(caller->mDst, newSprite);
+}
+
+static List loadTextureFromImageARGB32List(List tBufferList) {
+	List ret = new_list();
+
+	ApplyToSubImageListCaller caller;
+	caller.mDst = &ret;
+
+	list_map(&tBufferList, loadTextureFromSingleImageARGB32ListEntry, &caller);
 
 	return ret;
 }
@@ -277,25 +301,31 @@ static Buffer* loadPCXPaletteToAllocatedBuffer(BufferPointer p, int tEncodedSize
 	return insertPal;
 }
 
-static SubImageBuffer* getSingleAllocatedBufferFromSource(Buffer b, int x, int y, int dx, int dy, int tWidth, int tHeight) {
+static SubImageBuffer* getSingleAllocatedBufferFromSource(Buffer b, int x, int y, int dx, int dy, int tWidth, int tHeight, int tBytesPerPixel) {
 	int dstSize = dx*dy;
-	char* dst = allocMemory(dstSize);
+	char* dst = allocMemory(dstSize*tBytesPerPixel);
 	char* src = b.mData;
 
-	int i, j;
+	int i, j, k;
 	for (j = 0; j < dy; j++) {
 		for (i = 0; i < dx; i++) {
 			assert(get2DBufferIndex(i, j, dx) < (uint32_t)dstSize);
-			if (x + i >= tWidth || y + j >= tHeight) dst[get2DBufferIndex(i, j, dx)] = 0;
+			if (x + i >= tWidth || y + j >= tHeight) {
+				for (k = 0; k < tBytesPerPixel; k++) {
+					dst[get2DBufferIndex(i, j, dx)*tBytesPerPixel + k] = 0;
+				}
+			}
 			else {
-				assert(get2DBufferIndex(x + i, y + j, tWidth) < (uint32_t)b.mLength);
-				dst[get2DBufferIndex(i, j, dx)] = src[get2DBufferIndex(x + i, y + j, tWidth)];
+				assert(get2DBufferIndex(x + i, y + j, tWidth)*tBytesPerPixel < (uint32_t)b.mLength);
+				for (k = 0; k < tBytesPerPixel; k++) {
+					dst[get2DBufferIndex(i, j, dx)*tBytesPerPixel + k] = src[get2DBufferIndex(x + i, y + j, tWidth)*tBytesPerPixel + k];
+				}
 			}
 		}
 	}
 
 	SubImageBuffer* ret = allocMemory(sizeof(SubImageBuffer));
-	ret->mBuffer = makeBufferOwned(dst, dstSize);
+	ret->mBuffer = makeBufferOwned(dst, dstSize*tBytesPerPixel);
 	ret->mOffset = makeVector3DI(x, y, 0);
 	ret->mSize = makeVector3DI(dx, dy, 0);
 	return ret;
@@ -319,7 +349,7 @@ static int getMaximumSizeFit(int tVal) {
 	return 0;
 }
 
-List breakImageBufferUpIntoMultipleBuffers(Buffer b, int tWidth, int tHeight) {
+List breakImageBufferUpIntoMultipleBuffers(Buffer b, int tWidth, int tHeight, int tBytesPerPixel) {
 	List ret = new_list();
 
 	int y = 0;
@@ -330,7 +360,7 @@ List breakImageBufferUpIntoMultipleBuffers(Buffer b, int tWidth, int tHeight) {
 		while (x < tWidth) {
 			int widthLeft = tWidth - x;
 			int dx = getMaximumSizeFit(widthLeft);
-			SubImageBuffer* newBuffer = getSingleAllocatedBufferFromSource(b, x, y, dx, dy, tWidth, tHeight);
+			SubImageBuffer* newBuffer = getSingleAllocatedBufferFromSource(b, x, y, dx, dy, tWidth, tHeight, tBytesPerPixel);
 			list_push_back_owned(&ret, newBuffer);
 			x += dx;
 		}
@@ -352,20 +382,189 @@ static void freeSubImageBufferList(List tList) {
 	list_remove_predicate(&tList, removeSingleSubImageBufferEntryCB, NULL);
 }
 
+typedef struct {
+	BufferPointer p;
+	Buffer b;
+} PNGReadCaller;
+
+static void readPNGDataFromInputStream(png_structp png_ptr, png_bytep outBytes, png_size_t byteCountToRead) {
+	png_voidp io_ptr = png_get_io_ptr(png_ptr);
+	if (io_ptr == NULL) {
+		logError("Did not get caller");
+		abortSystem();
+	}
+
+
+	PNGReadCaller* caller = io_ptr;
+	if (((uint32_t)caller->p) + byteCountToRead > ((uint32_t)caller->b.mData) + caller->b.mLength) {
+		logError("Trying to read outside buffer");
+		abortSystem();
+	}
+	readFromBufferPointer(outBytes, &caller->p, byteCountToRead);
+}
+
+static Buffer parseRGBAPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAlpha, int width, int height)
+{
+	uint8_t* dst = allocMemory(width*height * 4);
+
+	const png_uint_32 bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
+	char* rowData = allocMemory(bytesPerRow);
+
+	// read single row at a time
+	for (uint32_t rowIdx = 0; rowIdx < (uint32_t)height; ++rowIdx)
+	{
+		png_read_row(*png_ptr, (png_bytep)rowData, NULL);
+
+		uint32_t rowOffset = rowIdx * width;
+
+		uint32_t byteIndex = 0;
+		for (uint32_t colIdx = 0; colIdx < (uint32_t)width; ++colIdx)
+		{
+			uint32_t targetPixelIndex = rowOffset + colIdx;
+			dst[targetPixelIndex * 4 + 2] = rowData[byteIndex++];
+			dst[targetPixelIndex * 4 + 1] = rowData[byteIndex++];
+			dst[targetPixelIndex * 4 + 0] = rowData[byteIndex++];
+			dst[targetPixelIndex * 4 + 3] = tHasAlpha ? rowData[byteIndex++] : 255;
+		}
+		assert(byteIndex == bytesPerRow);
+	}
+
+	freeMemory(rowData);
+
+	return makeBufferOwned(dst, width*height*4);
+}
+
+static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAlpha, int width, int height)
+{
+	uint8_t* dst = allocMemory(width*height * 4);
+
+	png_uint_32 bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
+	uint8_t* rowData = allocMemory(bytesPerRow);
+
+	// read single row at a time
+	for (uint32_t rowIdx = 0; rowIdx < (uint32_t)height; ++rowIdx)
+	{
+		png_read_row(*png_ptr, (png_bytep)rowData, NULL);
+
+		uint32_t rowOffset = rowIdx * width;
+		png_colorp palette[256 * 3];
+		int palAmount;
+		png_get_PLTE(*png_ptr, *info_ptr, palette, &palAmount);
+		assert(palAmount <= 256 * 3);
+
+		uint32_t byteIndex = 0;
+		for (uint32_t colIdx = 0; colIdx < (uint32_t)width; ++colIdx)
+		{
+			uint32_t targetPixelIndex = rowOffset + colIdx;
+			int index = rowData[byteIndex++];
+			assert(index < palAmount);
+			dst[targetPixelIndex * 4 + 2] = palette[index]->red;
+			dst[targetPixelIndex * 4 + 1] = palette[index]->green;
+			dst[targetPixelIndex * 4 + 0] = palette[index]->blue;
+			dst[targetPixelIndex * 4 + 3] = 255;
+		}
+		assert(byteIndex == bytesPerRow);
+	}
+
+	freeMemory(rowData);
+
+	return makeBufferOwned(dst, width*height * 4);
+}
+
+static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth, int tHeight) {
+	BufferPointer p = getBufferPointer(tRawPNGBuffer);
+	
+	uint8_t* pngSignature = p;
+	p += 8;
+	if (!png_check_sig(pngSignature, 8)) {
+		logError("Invalid png signature");
+		abortSystem();
+	}
+
+	png_structp png_ptr = NULL;
+	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+	if (png_ptr == NULL) {
+		logError("Cannot create read struct.");
+		abortSystem();
+	}
+
+	png_infop info_ptr = NULL;
+	info_ptr = png_create_info_struct(png_ptr);
+
+	if (info_ptr == NULL)
+	{
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		logError("Cannot create info struct.");
+		abortSystem();
+	}
+
+	PNGReadCaller caller;
+	caller.p = p;
+	caller.b = tRawPNGBuffer;
+
+	png_set_read_fn(png_ptr, &caller, readPNGDataFromInputStream);
+	png_set_sig_bytes(png_ptr, 8);
+
+	png_read_info(png_ptr, info_ptr);
+
+	png_uint_32 width = 0;
+	png_uint_32 height = 0;
+	int bitDepth = 0;
+	int colorType = -1;
+	png_uint_32 retval = png_get_IHDR(png_ptr, info_ptr,
+		&width,
+		&height,
+		&bitDepth,
+		&colorType,
+		NULL, NULL, NULL);
+	assert(width == tWidth);
+	assert(height == tHeight);
+
+	if (retval != 1) {
+		logError("Unable to read image data");
+		abortSystem();
+	}
+
+	Buffer ret;
+	if (colorType == PNG_COLOR_TYPE_RGB) {
+		ret = parseRGBAPNG(&png_ptr, &info_ptr, 0, width, height);
+	}
+	else if (colorType == PNG_COLOR_TYPE_RGB_ALPHA) {
+		ret = parseRGBAPNG(&png_ptr, &info_ptr, 1, width, height);
+	}
+	else if (colorType == PNG_COLOR_TYPE_PALETTE) {
+		ret = parsePalettedPNG(&png_ptr, &info_ptr, 0, width, height);
+	}
+	else {
+		logError("Unrecognized color type");
+		logErrorInteger(colorType);
+		abortSystem();
+		ret = makeBuffer(NULL, 0);
+	}
+	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+	return ret;
+}
+
 static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
 
-	List textures = new_list();
 	MugenSpriteFileSubSprite* e = allocMemory(sizeof(MugenSpriteFileSubSprite));
-	e->mOffset = makeVector3DI(0, 0, 0);
-	e->mTexture = loadTextureFromRawPNGBuffer(tRawPNGBuffer, tWidth, tHeight);
-	list_push_back_owned(&textures, e);
+	Buffer argb32Buffer = loadARGB32BufferFromRawPNGBuffer(tRawPNGBuffer, tWidth, tHeight);
+	freeBuffer(tRawPNGBuffer);
+
+	List subImageList = breakImageBufferUpIntoMultipleBuffers(argb32Buffer, tWidth, tHeight, 4);
+	freeBuffer(argb32Buffer);
+
+	List textures = loadTextureFromImageARGB32List(subImageList);
+	freeSubImageBufferList(subImageList);
 
 	return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
 }
 
 static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(Buffer tRawImageBuffer, Buffer tPaletteBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
 
-	List subImagelist = breakImageBufferUpIntoMultipleBuffers(tRawImageBuffer, tWidth, tHeight);
+	List subImagelist = breakImageBufferUpIntoMultipleBuffers(tRawImageBuffer, tWidth, tHeight, 1);
 	freeBuffer(tRawImageBuffer);
 
 	List textures = loadTextureFromPalettedImageList1bpp(subImagelist, tPaletteBuffer);
