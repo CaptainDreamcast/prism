@@ -220,9 +220,6 @@ TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
 	(void)tWidth;
 	(void)tHeight;
-	if (!b.mIsOwned) {
-		printf("creating illegal rw\n");
-	}
 	SDL_RWops* memStream = SDL_RWFromMem(b.mData, b.mLength);
 	if (!memStream) {
 		logError("Unable to create memory stream.");

@@ -649,7 +649,7 @@ static void loadSingleSprite2(Buffer b, BufferPointer* p, SFFHeader2* tHeader, M
 	}
 
 	int isPaletted = sprite.mFormat == 2 || sprite.mFormat == 4;
-	int isRawPNG = sprite.mFormat == 10 || sprite.mFormat == 12;
+	int isRawPNG = sprite.mFormat == 10 || sprite.mFormat == 11 || sprite.mFormat == 12;
 
 	MugenSpriteFileSprite* e;
 	if (isPaletted) {

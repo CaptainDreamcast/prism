@@ -2,6 +2,8 @@
 
 #include "tari/collisionhandler.h"
 #include "tari/math.h"
+#include <tari/log.h>
+#include <tari/system.h>
 
 typedef int MugenDuration;
 
@@ -56,15 +58,22 @@ typedef struct {
 	Position* mBasePositionReference;
 
 	int mIsPaused;
+	int mIsLooping;
+
+	double mR;
+	double mG;
+	double mB;
 } MugenAnimationHandlerElement;
 
 static struct {
 	IntMap mAnimations;
+	int mIsPaused;
 } gData;
 
 static void loadMugenAnimationHandler(void* tData) {
 	(void)tData;
 	gData.mAnimations = new_int_map();
+	gData.mIsPaused = 0;
 }
 
 static MugenAnimationStep* getCurrentAnimationStep(MugenAnimationHandlerElement* e) {
@@ -156,11 +165,22 @@ static MugenDuration getTimeWhenStepStarts(MugenAnimationHandlerElement* e, int 
 
 }
 
-static void loadNextStep(MugenAnimationHandlerElement* e) {
+static void unloadMugenAnimation(MugenAnimationHandlerElement* e) {
+	removeOldHitboxes(e);
+	delete_list(&e->mActiveHitboxes);
+}
+
+static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* e) {
 	e->mStep++;
 	if (e->mStep == vector_size(&e->mAnimation->mSteps)) {
-		e->mStep = e->mAnimation->mLoopStart;
-		e->mOverallTime = getTimeWhenStepStarts(e, e->mStep); // TODO: test
+		if (e->mIsLooping) {
+			e->mStep = e->mAnimation->mLoopStart;
+			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep); // TODO: test
+		}
+		else {
+			unloadMugenAnimation(e);
+			return 1;
+		}
 	}
 
 	e->mStepTime = 0;
@@ -170,9 +190,13 @@ static void loadNextStep(MugenAnimationHandlerElement* e) {
 	e->mHasSprite = e->mSprite != NULL;
 
 	updateHitboxes(e);
+
+	return 0;
 }
 
 static void increaseMugenDuration(MugenDuration* tDuration) {
+	if (gData.mIsPaused) return;
+
 	(*tDuration)++;
 }
 
@@ -180,7 +204,12 @@ static void startNewAnimationWithStartStep(MugenAnimationHandlerElement* e, int 
 	e->mOverallTime = getTimeWhenStepStarts(e, tStartStep);
 
 	e->mStep = tStartStep - 1;
-	loadNextStep(e);
+	if (loadNextStepAndReturnIfShouldBeRemoved(e)) {
+		logError("Unable to start animation, is already over.");
+		logErrorInteger(e->mAnimation->mID);
+		logErrorInteger(tStartStep);
+		abortSystem();
+	}
 }
 
 int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites, Position tPosition)
@@ -215,6 +244,9 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 	e->mHasBasePositionReference = 0;
 
 	e->mIsPaused = 0;
+	e->mIsLooping = 1;
+
+	e->mR = e->mG = e->mB = 1;
 
 	startNewAnimationWithStartStep(e, 0);
 
@@ -224,9 +256,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 void removeMugenAnimation(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
-	removeOldHitboxes(e);
-	delete_list(&e->mActiveHitboxes);
-
+	unloadMugenAnimation(e);
 	int_map_remove(&gData.mAnimations, tID);
 }
 
@@ -295,6 +325,13 @@ void setMugenAnimationBasePosition(int tID, Position * tBasePosition)
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	e->mHasBasePositionReference = 1;
 	e->mBasePositionReference = tBasePosition;
+}
+
+void setMugenAnimationColor(int tID, double tR, double tG, double tB) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mR = tR;
+	e->mG = tG;
+	e->mB = tB;
 }
 
 void changeMugenAnimation(int tID, MugenAnimation * tNewAnimation)
@@ -372,19 +409,21 @@ int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
 	return ret + 1;
 }
 
-static void updateSingleMugenAnimation(void* tCaller, void* tData) {
+static int updateSingleMugenAnimation(void* tCaller, void* tData) {
 	(void)tCaller;
 	MugenAnimationHandlerElement* e = tData;
 
-	if (e->mIsPaused) return;
+	if (e->mIsPaused) return 0;
 
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	increaseMugenDuration(&e->mOverallTime);
 	increaseMugenDuration(&e->mStepTime);
-	if (step->mDuration == -1) return;
+	if (step->mDuration == -1) return 0;
 	if (e->mStepTime >= step->mDuration) {
-		loadNextStep(e);
+		return loadNextStepAndReturnIfShouldBeRemoved(e);
 	}
+
+	return 0;
 }
 
 void pauseMugenAnimation(int tID)
@@ -399,11 +438,17 @@ void unpauseMugenAnimation(int tID)
 	e->mIsPaused = 0;
 }
 
+void pauseMugenAnimationHandler() {
+	gData.mIsPaused = 1;
+}
+void unpauseMugenAnimationHandler() {
+	gData.mIsPaused = 0;
+}
 
 static void updateMugenAnimationHandler(void* tData) {
 	(void)tData;
 
-	int_map_map(&gData.mAnimations, updateSingleMugenAnimation, NULL);
+	int_map_remove_predicate(&gData.mAnimations, updateSingleMugenAnimation, NULL);
 }
 
 void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData) 
@@ -417,6 +462,10 @@ void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(
 	e->mHitCaller = tCaller;
 }
 
+void setMugenAnimationNoLoop(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mIsLooping = 0;
+}
 
 typedef struct {
 	MugenAnimationHandlerElement* e;
@@ -467,6 +516,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		setDrawingBlendType(BLEND_TYPE_ADDITION);
 	}
 
+	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 	scaleDrawing3D(caller->mScale, caller->mScalePosition);
 	setDrawingRotationZ(e->mBaseDrawAngle, caller->mScalePosition);
 	drawSprite(sprite->mTexture, p, texturePos);

@@ -12,6 +12,13 @@ void setFramerate(Framerate tFramerate) {
   gFramerate = tFramerate;
 }
 
+fup Framerate getFramerate()
+{
+	if (!gFramerate) return 60;
+
+	return gFramerate;
+}
+
 double getFramerateFactor() {
   if (!gFramerate) return 1;
   else {

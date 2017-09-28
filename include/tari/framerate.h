@@ -11,6 +11,7 @@ typedef enum {
 #define FRAMERATE_AMOUNT 2
 
 fup void setFramerate(Framerate tFramerate);
+fup Framerate getFramerate();
 fup double getFramerateFactor();
 fup double getInverseFramerateFactor();
 
