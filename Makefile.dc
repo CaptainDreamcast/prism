@@ -7,7 +7,7 @@ dc/logoscreen_dc.o
 
 defaultall: create_addons_link $(OBJS) subdirs linklib
 
-KOS_CFLAGS += -W -Wall -DDREAMCAST -I ./include
+KOS_CFLAGS += -W -Wall -DDREAMCAST -I ./include -lpng
 
 include $(KOS_BASE)/addons/Makefile.prefab
 

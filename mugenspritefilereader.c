@@ -2,8 +2,12 @@
 
 #include <assert.h>
 #include <string.h>
-#include <png.h>
 
+#ifdef DREAMCAST
+#include <png/png.h>
+#else
+#include <png.h>
+#endif
 
 #include "tari/file.h"
 #include "tari/log.h"
@@ -336,7 +340,7 @@ static int getMaximumSizeFit(int tVal) {
 
 	int i = 8;
 	while(i < 5000) {
-		if (i <= tVal && i * 2 > tVal) {
+		if (i <= tVal && (i * 2 > tVal || i == 64)) {
 			return i;
 		}
 
@@ -411,14 +415,16 @@ static Buffer parseRGBAPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAl
 	char* rowData = allocMemory(bytesPerRow);
 
 	// read single row at a time
-	for (uint32_t rowIdx = 0; rowIdx < (uint32_t)height; ++rowIdx)
+	uint32_t rowIdx;
+	for (rowIdx = 0; rowIdx < (uint32_t)height; ++rowIdx)
 	{
 		png_read_row(*png_ptr, (png_bytep)rowData, NULL);
 
 		uint32_t rowOffset = rowIdx * width;
 
 		uint32_t byteIndex = 0;
-		for (uint32_t colIdx = 0; colIdx < (uint32_t)width; ++colIdx)
+		uint32_t colIdx;
+		for (colIdx = 0; colIdx < (uint32_t)width; ++colIdx)
 		{
 			uint32_t targetPixelIndex = rowOffset + colIdx;
 			dst[targetPixelIndex * 4 + 2] = rowData[byteIndex++];
@@ -434,15 +440,15 @@ static Buffer parseRGBAPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAl
 	return makeBufferOwned(dst, width*height*4);
 }
 
-static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAlpha, int width, int height)
+static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int width, int height)
 {
 	uint8_t* dst = allocMemory(width*height * 4);
 
 	png_uint_32 bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
 	uint8_t* rowData = allocMemory(bytesPerRow);
 
-	// read single row at a time
-	for (uint32_t rowIdx = 0; rowIdx < (uint32_t)height; ++rowIdx)
+	uint32_t rowIdx;
+	for (rowIdx = 0; rowIdx < (uint32_t)height; ++rowIdx)
 	{
 		png_read_row(*png_ptr, (png_bytep)rowData, NULL);
 
@@ -453,7 +459,8 @@ static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int tH
 		assert(palAmount <= 256 * 3);
 
 		uint32_t byteIndex = 0;
-		for (uint32_t colIdx = 0; colIdx < (uint32_t)width; ++colIdx)
+		uint32_t colIdx;
+		for (colIdx = 0; colIdx < (uint32_t)width; ++colIdx)
 		{
 			uint32_t targetPixelIndex = rowOffset + colIdx;
 			int index = rowData[byteIndex++];
@@ -474,7 +481,7 @@ static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int tH
 static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth, int tHeight) {
 	BufferPointer p = getBufferPointer(tRawPNGBuffer);
 	
-	uint8_t* pngSignature = p;
+	uint8_t* pngSignature = (uint8_t*)p;
 	p += 8;
 	if (!png_check_sig(pngSignature, 8)) {
 		logError("Invalid png signature");
@@ -518,8 +525,8 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 		&bitDepth,
 		&colorType,
 		NULL, NULL, NULL);
-	assert(width == tWidth);
-	assert(height == tHeight);
+	assert((int)width == tWidth);
+	assert((int)height == tHeight);
 
 	if (retval != 1) {
 		logError("Unable to read image data");
@@ -534,7 +541,7 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 		ret = parseRGBAPNG(&png_ptr, &info_ptr, 1, width, height);
 	}
 	else if (colorType == PNG_COLOR_TYPE_PALETTE) {
-		ret = parsePalettedPNG(&png_ptr, &info_ptr, 0, width, height);
+		ret = parsePalettedPNG(&png_ptr, &info_ptr, width, height);
 	}
 	else {
 		logError("Unrecognized color type");
@@ -549,7 +556,6 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 
 static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
 
-	MugenSpriteFileSubSprite* e = allocMemory(sizeof(MugenSpriteFileSubSprite));
 	Buffer argb32Buffer = loadARGB32BufferFromRawPNGBuffer(tRawPNGBuffer, tWidth, tHeight);
 	freeBuffer(tRawPNGBuffer);
 

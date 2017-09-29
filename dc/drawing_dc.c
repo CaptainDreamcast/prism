@@ -10,6 +10,7 @@
 #include "tari/datastructures.h"
 #include "tari/memoryhandler.h"
 #include "tari/system.h"
+#include "tari/math.h"
 
 static struct {
 
@@ -46,6 +47,53 @@ void initDrawing(){
 	gData.mIsDisabled = 0;
 }
 
+static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pvr_vertex_t* vert) {
+  referenceTextureMemory(tTexture.mTexture);
+
+  pvr_poly_cxt_t cxt;
+  pvr_poly_hdr_t hdr;
+
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
+
+  pvr_poly_compile(&hdr, &cxt);
+  pvr_prim(&hdr, sizeof(hdr));
+
+  double left = tTexturePosition.topLeft.x / ((double) tTexture.mTextureSize.x - 1);
+  double right = tTexturePosition.bottomRight.x / ((double)tTexture.mTextureSize.x - 1);
+  double up = tTexturePosition.topLeft.y / ((double) tTexture.mTextureSize.y - 1);
+  double down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y - 1);
+
+
+  vert[0].argb = PVR_PACK_COLOR(gData.a, gData.r, gData.g, gData.b);
+  vert[0].oargb = 0;
+  vert[0].flags = PVR_CMD_VERTEX;
+  vert[0].u = left;
+  vert[0].v = up;
+  pvr_prim(&vert[0], sizeof(pvr_vertex_t));
+
+  vert[1].argb = vert[0].argb;
+  vert[1].oargb = 0;
+  vert[1].flags = PVR_CMD_VERTEX;
+  vert[1].u = right;
+  vert[1].v = up;
+  pvr_prim(&vert[1], sizeof(pvr_vertex_t));
+
+  vert[2].argb = vert[0].argb;
+  vert[2].oargb = 0;
+  vert[2].flags = PVR_CMD_VERTEX;
+  vert[2].u = left;
+  vert[2].v = down;
+  pvr_prim(&vert[2], sizeof(pvr_vertex_t));
+
+ vert[3].argb = vert[0].argb;
+  vert[3].oargb = 0;
+  vert[3].flags = PVR_CMD_VERTEX_EOL;
+  vert[3].u = right;
+  vert[3].v = down;
+  pvr_prim(&vert[3], sizeof(pvr_vertex_t));
+
+}
+
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
   if(gData.mIsDisabled) return;
 
@@ -64,62 +112,46 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   int sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
   int sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
 
-  double left = tTexturePosition.topLeft.x / ((double) tTexture.mTextureSize.x - 1);
-  double right = tTexturePosition.bottomRight.x / ((double)tTexture.mTextureSize.x - 1);
-  double up = tTexturePosition.topLeft.y / ((double) tTexture.mTextureSize.y - 1);
-  double down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y - 1);
+  pvr_vertex_t vert[4];
+  
 
-  referenceTextureMemory(tTexture.mTexture);
+  vert[0].x = tPos.x;
+  vert[0].y = tPos.y;
+  vert[0].z = tPos.z;
+  applyDrawingMatrix(&vert[0]);
+  forceToInteger(&vert[0]);
+  
 
-  pvr_poly_cxt_t cxt;
-  pvr_poly_hdr_t hdr;
-  pvr_vertex_t vert;
+  vert[1].x = tPos.x + sizeX;
+  vert[1].y = tPos.y;
+  vert[1].z = tPos.z;
+  applyDrawingMatrix(&vert[1]);
+  forceToInteger(&vert[1]);
 
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
+  vert[2].x = tPos.x;
+  vert[2].y = tPos.y + sizeY;
+  vert[2].z = tPos.z;
+  applyDrawingMatrix(&vert[2]);
+  forceToInteger(&vert[2]);
 
-  pvr_poly_compile(&hdr, &cxt);
-  pvr_prim(&hdr, sizeof(hdr));
+  vert[3].x = tPos.x + sizeX;
+  vert[3].y = tPos.y + sizeY;
+  vert[3].z = tPos.z;
+  applyDrawingMatrix(&vert[3]);
+  forceToInteger(&vert[3]);
+  
+  double minX = min(vert[0].x, min(vert[1].x, min(vert[2].x, vert[3].x)));
+  double maxX = max(vert[0].x, max(vert[1].x, max(vert[2].x, vert[3].x)));
+  double minY = min(vert[0].y, min(vert[1].y, min(vert[2].y, vert[3].y)));
+  double maxY = max(vert[0].y, max(vert[1].y, max(vert[2].y, vert[3].y)));
 
-  vert.argb = PVR_PACK_COLOR(gData.a, gData.r, gData.g, gData.b);
-  vert.oargb = 0;
-  vert.flags = PVR_CMD_VERTEX;
+  ScreenSize sz = getScreenSize();
+  if(maxX < 0) return;
+  if(minX >= sz.x) return;
+  if(maxY < 0) return;
+  if(minY >= sz.y) return;
 
-  vert.x = tPos.x;
-  vert.y = tPos.y;
-  vert.z = tPos.z;
-  vert.u = left;
-  vert.v = up;
-  applyDrawingMatrix(&vert);
-  forceToInteger(&vert);
-  pvr_prim(&vert, sizeof(vert));
-
-  vert.x = tPos.x + sizeX;
-  vert.y = tPos.y;
-  vert.z = tPos.z;
-  vert.u = right;
-  vert.v = up;
-  applyDrawingMatrix(&vert);
-  forceToInteger(&vert);
-  pvr_prim(&vert, sizeof(vert));
-
-  vert.x = tPos.x;
-  vert.y = tPos.y + sizeY;
-  vert.z = tPos.z;
-  vert.u = left;
-  vert.v = down;
-  applyDrawingMatrix(&vert);
-  forceToInteger(&vert);
-  pvr_prim(&vert, sizeof(vert));
-
-  vert.x = tPos.x + sizeX;
-  vert.y = tPos.y + sizeY;
-  vert.z = tPos.z;
-  vert.u = right;
-  vert.v = down;
-  vert.flags = PVR_CMD_VERTEX_EOL;
-  applyDrawingMatrix(&vert);
-  forceToInteger(&vert);
-  pvr_prim(&vert, sizeof(vert));
+  sendSpriteToPVR(tTexture, tTexturePosition, vert);
 }
 
 void startDrawing() {
