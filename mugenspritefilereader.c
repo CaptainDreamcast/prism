@@ -440,6 +440,8 @@ static Buffer parseRGBAPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAl
 	return makeBufferOwned(dst, width*height*4);
 }
 
+static png_colorp gPalette[256 * 3];
+
 static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int width, int height)
 {
 	uint8_t* dst = allocMemory(width*height * 4);
@@ -447,17 +449,16 @@ static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int wi
 	png_uint_32 bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
 	uint8_t* rowData = allocMemory(bytesPerRow);
 
+	int palAmount;
+	assert(png_get_PLTE(*png_ptr, *info_ptr, gPalette, &palAmount));
+	assert(palAmount <= 256 * 3);
+
 	uint32_t rowIdx;
 	for (rowIdx = 0; rowIdx < (uint32_t)height; ++rowIdx)
 	{
 		png_read_row(*png_ptr, (png_bytep)rowData, NULL);
 
 		uint32_t rowOffset = rowIdx * width;
-		png_colorp palette[256 * 3];
-		int palAmount;
-		png_get_PLTE(*png_ptr, *info_ptr, palette, &palAmount);
-		assert(palAmount <= 256 * 3);
-
 		uint32_t byteIndex = 0;
 		uint32_t colIdx;
 		for (colIdx = 0; colIdx < (uint32_t)width; ++colIdx)
@@ -465,10 +466,15 @@ static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int wi
 			uint32_t targetPixelIndex = rowOffset + colIdx;
 			int index = rowData[byteIndex++];
 			assert(index < palAmount);
-			dst[targetPixelIndex * 4 + 2] = palette[index]->red;
-			dst[targetPixelIndex * 4 + 1] = palette[index]->green;
-			dst[targetPixelIndex * 4 + 0] = palette[index]->blue;
-			dst[targetPixelIndex * 4 + 3] = 255;
+			if (gPalette[index]) { // TODO: find out what's going on
+				dst[targetPixelIndex * 4 + 2] = gPalette[index]->red;
+				dst[targetPixelIndex * 4 + 1] = gPalette[index]->green;
+				dst[targetPixelIndex * 4 + 0] = gPalette[index]->blue;
+				dst[targetPixelIndex * 4 + 3] = 255;
+			}
+			else {
+				dst[targetPixelIndex * 4 + 3] = 0;
+			}
 		}
 		assert(byteIndex == bytesPerRow);
 	}
