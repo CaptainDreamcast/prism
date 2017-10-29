@@ -9,6 +9,7 @@ fup void setupCollisionHandler();
 fup void shutdownCollisionHandler();
 fup void updateCollisionHandler();
 
+fup int addCollisionRectangleToCollisionHandler(int tListID, Position* tBasePosition, CollisionRect tRect, CollisionCallback tCB, void* tCaller, void* tCollisionData);
 fup int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData);
 fup void addCollisionHandlerCheck(int tListID1, int tListID2);
 fup int addCollisionListToHandler();

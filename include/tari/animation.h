@@ -26,6 +26,7 @@ fup int isDurationOver(Duration tNow, Duration tDuration);
 fup AnimationResult animateWithoutLoop(Animation* tAnimation);
 fup void animate(Animation* tAnimation);
 fup void resetAnimation(Animation* tAnimation);
+fup Animation createAnimation(int tFrameAmount, Duration tDuration);
 fup Animation createEmptyAnimation();
 fup Animation createOneFrameAnimation();
 fup void pauseDurationHandling();
@@ -53,14 +54,19 @@ fup void setAnimationTransparency(int tID, double a);
 fup void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller);
 fup void setAnimationPosition(int tID, Position tPosition);
 fup void setAnimationTexturePosition(int tID, Rectangle tTexturePosition);
+fup void setAnimationLoop(int tID, int tIsLooping);
 fup void removeAnimationCB(int tID);
 fup void fadeInAnimation(int tID, Duration tDuration);
 fup void setAnimationCenter(int tID, Position tCenter);
 fup void inverseAnimationVertical(int tID);
+fup void inverseAnimationHorizontal(int tID);
+fup void setAnimationVerticalInversion(int tID, int tValue);
+fup void setAnimationHorizontalInversion(int tID, int tValue);
 fup void setAnimationHandlerScreenRotationZ(double tAngle, Vector3D tCenter);
 fup void setAnimationHandlerScreenTint(double r, double g, double b);
 fup void resetAnimationHandlerScreenTint();
 
 fup void removeHandledAnimation(int tID);
+fup int isHandledAnimation(int tID);
 fup void shutdownAnimationHandler();
 #endif

@@ -229,6 +229,11 @@ int list_has_next(ListIterator tIterator)  {
 	return tIterator->mNext != NULL;
 }
 
+void * list_front(List * tList)
+{
+	return list_get_by_ordered_index(tList, 0);
+}
+
 
 
 Vector new_vector() {
@@ -431,10 +436,12 @@ void string_map_push(StringMap* tMap, char* tKey, void* tData) {
 	string_map_push_internal(tMap, tKey, tData, 0);
 }
 
-static void string_map_remove_element(StringMapBucketListEntry* e) {
+static void string_map_remove_element(StringMap* tMap, StringMapBucketListEntry* e) {
 	if (e->mIsOwned) {
 		freeMemory(e->mData);
 	}
+
+	tMap->mSize--;
 }
 
 void string_map_remove(StringMap* tMap, char* tKey) {
@@ -451,7 +458,7 @@ void string_map_remove(StringMap* tMap, char* tKey) {
 		
 		StringMapBucketListEntry* e = list_iterator_get(it);
 		if (!strcmp(tKey, e->mKey)) {
-			string_map_remove_element(e);
+			string_map_remove_element(tMap, e);
 			list_iterator_remove(&bucket->mEntries, it);
 			return;
 		}
@@ -543,6 +550,10 @@ int string_map_contains(StringMap* tMap, char* tKey) {
 	return 0;
 }
 
+int string_map_size(StringMap* tMap) {
+	return tMap->mSize;
+}
+
 IntMap new_int_map()
 {
 	return new_string_map();
@@ -629,6 +640,7 @@ void int_map_map(IntMap* tMap, mapCB tCB, void* tCaller) {
 typedef struct {
 	void* mCaller;
 	predicateCB mCB;
+	IntMap* mMap;
 } IntPredicateCaller;
 
 static int int_map_remove_predicate_single_list_entry(void* tCaller, void* tData) {
@@ -637,7 +649,7 @@ static int int_map_remove_predicate_single_list_entry(void* tCaller, void* tData
 
 	int ret = caller->mCB(caller->mCaller, e->mData);
 	if (ret) {
-		string_map_remove_element(e);
+		string_map_remove_element(caller->mMap, e);
 	}
 	return ret;
 }
@@ -653,6 +665,7 @@ void int_map_remove_predicate(IntMap * tMap, predicateCB tCB, void * tCaller)
 	IntPredicateCaller caller;
 	caller.mCaller = tCaller;
 	caller.mCB = tCB;
+	caller.mMap = tMap;
 	vector_map(&tMap->mBuckets, int_map_remove_predicate_single_bucket, &caller);
 }
 
@@ -661,4 +674,8 @@ int int_map_contains(IntMap * tMap, int tKey)
 	char str[100];
 	sprintf(str, "%d", tKey);
 	return string_map_contains(tMap, str);
+}
+
+int int_map_size(IntMap* tMap) {
+	return string_map_size(tMap);
 }

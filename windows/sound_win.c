@@ -11,6 +11,23 @@
 
 #include "tari/log.h"
 #include "tari/file.h"
+#include "tari/datastructures.h"
+#include "tari/memoryhandler.h"
+#include "tari/system.h"
+
+
+#define MICROPHONE_SAMPLE_AMOUNT  50000
+
+
+typedef struct {
+	int mIsMicrophoneActive;
+	SDL_AudioDeviceID mMicrophone;
+
+	int mSampleAmount;
+	uint8_t mSamples[MICROPHONE_SAMPLE_AMOUNT];
+	int mSampleSum;
+	int mSamplePointer;
+} Microphone;
 
 static struct {
 
@@ -22,6 +39,8 @@ static struct {
 	int mIsPaused;
 	Mix_Chunk* mTrackChunk;
 	int mTrackChannel;
+	
+	Microphone mMicrophone;
 } gData;
 
 void initSound() {
@@ -32,6 +51,8 @@ void initSound() {
 
 	gData.mHasLoadedTrack = 0;
 	gData.mIsPlayingTrack = 0;
+
+	gData.mMicrophone.mIsMicrophoneActive = 0;
 }
 
 void shutdownSound() {
@@ -103,3 +124,72 @@ void resumeTrack()
 }
 
 
+static void microphoneCB(void *userdata, Uint8 *stream, int len) {
+	(void)userdata;
+
+	int i;
+	for (i = 0; i < len; i++) {
+		gData.mMicrophone.mSamplePointer = (gData.mMicrophone.mSamplePointer + 1) % MICROPHONE_SAMPLE_AMOUNT;
+		
+		if (gData.mMicrophone.mSampleAmount > MICROPHONE_SAMPLE_AMOUNT) {
+			gData.mMicrophone.mSampleSum -= gData.mMicrophone.mSamples[gData.mMicrophone.mSamplePointer];
+			gData.mMicrophone.mSampleAmount--;
+		}
+
+		gData.mMicrophone.mSamples[gData.mMicrophone.mSamplePointer] = stream[i];
+		gData.mMicrophone.mSampleSum += stream[i];
+		gData.mMicrophone.mSampleAmount++;
+	}
+}
+
+
+static void startMicrophone(void* tData)
+{
+
+	SDL_AudioSpec want, have;
+
+	SDL_zero(want);
+	want.freq = 44100;
+	want.format = AUDIO_S16SYS;
+	want.channels = 1;
+	want.samples = 1024;
+	want.callback = microphoneCB;
+	gData.mMicrophone.mMicrophone = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(0, 1), 1, &want, &have, 0);
+	logg("Opening audio device");
+	logString(SDL_GetAudioDeviceName(0, 1));
+	if (have.format != want.format) {
+		logError("We didn't get the wanted format.");
+		abortSystem();
+		return;
+	}
+
+	SDL_PauseAudioDevice(gData.mMicrophone.mMicrophone, 0);
+
+	gData.mMicrophone.mSampleSum = 0;
+	gData.mMicrophone.mSamplePointer = 0;
+	gData.mMicrophone.mSampleAmount = 0;
+	gData.mMicrophone.mIsMicrophoneActive = 1;
+}
+
+static void stopMicrophone(void* tData)
+{
+	SDL_CloseAudioDevice(gData.mMicrophone.mMicrophone);
+
+	gData.mMicrophone.mIsMicrophoneActive = 0;
+}
+
+static ActorBlueprint MicrophoneHandler = {
+	.mLoad = startMicrophone,
+	.mUnload = stopMicrophone,
+};
+
+ActorBlueprint getMicrophoneHandlerActorBlueprint()
+{
+	return MicrophoneHandler;
+}
+
+double getMicrophoneVolume()
+{
+	double avg = gData.mMicrophone.mSampleSum / (double)gData.mMicrophone.mSampleAmount;
+	return avg / 255.0;
+}

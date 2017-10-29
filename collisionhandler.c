@@ -11,6 +11,8 @@
 
 typedef struct {
 	int mListID;
+	
+	int mIsColliderOwned;
 	Collider mCollider;
 
 	CollisionCallback mCB;
@@ -59,7 +61,7 @@ void setupCollisionHandler() {
 }
 
 static void destroyCollisionElement(CollisionListElement* e) {
-	if (gData.mIsOwningColliders) {
+	if (gData.mIsOwningColliders || e->mIsColliderOwned) {
 		destroyCollider(&e->mCollider);
 	}
 }
@@ -136,6 +138,19 @@ void updateCollisionHandler() {
 	int_map_map(&gData.mCollisionListPairs, updateSingleCollisionPair, NULL);
 }
 
+static void setColliderOwned(int tListID, int tID) {
+	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
+	CollisionListElement* e = int_map_get(&list->mCollisionElements, tID);
+
+	e->mIsColliderOwned = 1;
+}
+
+int addCollisionRectangleToCollisionHandler(int tListID, Position* tBasePosition, CollisionRect tRect, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
+	Collider collider = makeColliderFromRect(tRect);
+	int id = addColliderToCollisionHandler(tListID, tBasePosition, collider, tCB, tCaller, tCollisionData);
+	setColliderOwned(tListID, id);
+	return id;
+}
 
 int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
 	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
@@ -145,6 +160,7 @@ int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider
 
 	e->mCollider = tCollider;
 	setColliderBasePosition(&e->mCollider, tBasePosition);
+	e->mIsColliderOwned = 0;
 
 	e->mCB = tCB;
 	e->mCaller = tCaller;
@@ -181,6 +197,10 @@ void removeFromCollisionHandler(int tListID, int tElementID) {
 void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider) {
 	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
 	CollisionListElement* e = int_map_get(&list->mCollisionElements, tElementID);
+
+	if (e->mIsColliderOwned) {
+		destroyCollider(&e->mCollider);
+	}
 
 	e->mCollider = tCollider;
 }

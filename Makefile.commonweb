@@ -11,3 +11,14 @@ build_develop: $(OBJS)
     $(ADDITIONAL_PRELOADS) --preload-file $(TARI_PATH)\assets\effects@effects --preload-file $(TARI_PATH)\assets\logo@logo --preload-file $(TARI_PATH)\assets\fonts@fonts --preload-file $(TARI_PATH)\assets\debug@debug -o web\game.html
 	-del web\game.html
 	-copy $(TARI_PATH)\web\index.html web\index.html
+
+complete: make_folder build_develop
+
+make_folder:
+	-mkdir web
+
+clean: clean_user clean_general
+
+clean_general:
+	-rmdir /s /q web
+	-del *.o

@@ -1,7 +1,8 @@
-#ifndef TARI_SOUND_H
-#define TARI_SOUND_H
+#pragma once
 
 #include "common/header.h"
+
+#include <tari/actorhandler.h>
 
 fup void initSound();
 fup void shutdownSound();
@@ -15,4 +16,5 @@ fup void stopTrack();
 fup void pauseTrack();
 fup void resumeTrack();
 
-#endif 
+fup ActorBlueprint getMicrophoneHandlerActorBlueprint();
+double getMicrophoneVolume();

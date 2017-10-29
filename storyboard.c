@@ -79,10 +79,13 @@ static void destroyStoryboardTexture(Storyboard* e, int tSlot) {
 		abortSystem();
 	}
 
-	removeHandledAnimation(e->mState.mTextures[tSlot].mID);
+	if (isHandledAnimation(e->mState.mTextures[tSlot].mID)) {
+		removeHandledAnimation(e->mState.mTextures[tSlot].mID);
+	}
 
 	if (e->mState.mTextures[tSlot].mPhysicsID != -1) {
 		removeFromPhysicsHandler(e->mState.mTextures[tSlot].mPhysicsID);
+		e->mState.mTextures[tSlot].mPhysicsID = -1;
 	}
 
 	int i;
@@ -212,6 +215,7 @@ static void loadStoryboardTexture(Storyboard* e, StoryBoardTextureStruct* tTextu
 
 	if (e->mState.mTextures[slot].mPhysicsID != -1) {
 		removeFromPhysicsHandler(e->mState.mTextures[slot].mPhysicsID);
+		e->mState.mTextures[slot].mPhysicsID = -1;
 	}
 
 	e->mState.mTextures[slot].mPhysicsID = addToPhysicsHandler(makePosition(tTexture->PositionX, tTexture->PositionY, tTexture->PositionZ));
@@ -239,10 +243,19 @@ static void loadStoryboardTextures(Storyboard* e, StoryBoardHeaderStruct* tHeade
 }
 
 
+static int parseDolmexicaColor(int tDolmexicaColor) {
+	(void)tDolmexicaColor;
+	return COLOR_WHITE; // TODO
+}
 
 static void loadStoryboardText(Storyboard* e, StoryBoardTextStruct* tText) {
 	int slot = tText->TextID;
 
+	if (e->mState.mTexts[slot].mID != -1) {
+		destroyStoryboardText(e, slot);
+	}
+
+	tText->FontColor = parseDolmexicaColor(tText->FontColor);
 	if (tText->BuildUp) e->mState.mTexts[slot].mID = addHandledTextWithBuildup(makePosition(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), makePosition(tText->BreakSizeX, tText->BreakSizeY, 0), makePosition(tText->SizeX, tText->SizeY, 0), INF, tText->BuildUpSpeed);
 	else e->mState.mTexts[slot].mID = addHandledText(makePosition(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), makePosition(tText->BreakSizeX, tText->BreakSizeY, 0), makePosition(tText->SizeX, tText->SizeY, 0), INF);
 }
@@ -410,6 +423,8 @@ void setStoryboardFinishedCB(int tID, StoryboardFinishedCB tCB, void* tCaller) {
 }
 
 int isStoryboard(char* tPath) {
+	if (!strcmp("", tPath)) return 0;
+
 	int isBoard = isFile(tPath);
 	if (isBoard) return 1;
 
@@ -417,4 +432,31 @@ int isStoryboard(char* tPath) {
 	getPathWithoutFileExtension(folderPath, tPath);
 	isBoard = isDirectory(folderPath);
 	return isBoard;
+}
+
+static void loadStoryboardsCB(void* tCaller) {
+	(void)tCaller;
+	setupStoryboards();
+}
+
+static void unloadStoryboardsCB(void* tCaller) {
+	(void)tCaller;
+	shutdownStoryboards();
+}
+
+static void updateStoryboardsCB(void* tCaller) {
+	(void)tCaller;
+	updateStoryboards();
+}
+
+
+static ActorBlueprint StoryboardHandler = {
+	.mLoad = loadStoryboardsCB,
+	.mUnload = unloadStoryboardsCB,
+	.mUpdate = updateStoryboardsCB,
+};
+
+ActorBlueprint getStoryboardHandlerActorBlueprint()
+{
+	return StoryboardHandler;
 }

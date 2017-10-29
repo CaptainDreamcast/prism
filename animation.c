@@ -63,6 +63,13 @@ void resetAnimation(Animation* tAnimation) {
   tAnimation->mFrame = 0;
 }
 
+Animation createAnimation(int tFrameAmount, Duration tDuration) {
+	Animation ret = createEmptyAnimation();
+	ret.mFrameAmount = tFrameAmount;
+	ret.mDuration = tDuration;
+	return ret;
+}
+
 Animation createEmptyAnimation(){
   Animation ret;
   ret.mFrame = 0;
@@ -215,6 +222,16 @@ static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 		texturePos.bottomRight.x = cur->mTexturePosition.topLeft.x;
 	}
 
+	if (cur->mInversionState.y) {
+		Position center = vecAdd(cur->mCenter, p);
+		double deltaY = center.y - p.y;
+		double nDownY = center.y + deltaY;
+		double nUpY = nDownY - abs(cur->mTexturePosition.bottomRight.y - cur->mTexturePosition.topLeft.y);
+		p.y = nUpY;
+		texturePos.topLeft.y = cur->mTexturePosition.bottomRight.y;
+		texturePos.bottomRight.y = cur->mTexturePosition.topLeft.y;
+	}
+
 	drawSprite(cur->mTextureData[frame], p, texturePos);	
 
 	if(cur->mIsScaled || cur->mIsRotated || cur->mHasBaseColor || cur->mHasTransparency) {
@@ -361,6 +378,11 @@ void setAnimationTexturePosition(int tID, Rectangle tTexturePosition)
 	e->mTexturePosition = tTexturePosition;
 }
 
+void setAnimationLoop(int tID, int tIsLooping) {
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	e->mIsLooped = tIsLooping;
+}
+
 void removeAnimationCB(int tID) {
 	setAnimationCB(tID, NULL, NULL);
 }
@@ -397,6 +419,21 @@ void fadeInAnimation(int tID, Duration tDuration) {
 void inverseAnimationVertical(int tID) {
 	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
 	e->mInversionState.x ^= 1;
+}
+
+void inverseAnimationHorizontal(int tID) {
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	e->mInversionState.y ^= 1;
+}
+
+void setAnimationVerticalInversion(int tID, int tValue) {
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	e->mInversionState.x = tValue;
+}
+
+void setAnimationHorizontalInversion(int tID, int tValue) {
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	e->mInversionState.y = tValue;
 }
 
 typedef struct {
@@ -450,6 +487,10 @@ void resetAnimationHandlerScreenTint()
 
 void removeHandledAnimation(int tID) {
 	int_map_remove(&gAnimationHandler.mList, tID);
+}
+
+int isHandledAnimation(int tID) {
+	return int_map_contains(&gAnimationHandler.mList, tID);
 }
 
 void shutdownAnimationHandler(){

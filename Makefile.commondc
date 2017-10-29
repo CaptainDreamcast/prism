@@ -1,0 +1,80 @@
+TARGET = 1ST_READ
+
+OBJS += romdisk.o 
+OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -DDREAMCAST -Wall
+KOS_CFLAGS+= $(OPTFLAGS) 
+KOS_ROMDISK_DIR = romdisk_boot
+
+complete: clean build_images build_develop
+
+romdisk: clean build_images to_romdisk build_romdisk
+
+build_images: copy_debug make_filesystem copy_assets copy_logo copy_effects convert_assets actions_user
+
+copy_debug:
+	$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/debug/*.png)
+	find assets/debug -name '*.kmg' | xargs $(KOS_BASE)/addons/libtari/tools/bin/kompressor
+	$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/fonts/*.png)
+	find assets/fonts -name '*.kmg' | xargs $(KOS_BASE)/addons/libtari/tools/bin/kompressor
+	mkdir romdisk_boot
+	mkdir romdisk_boot/fonts
+	cp assets/fonts/* romdisk_boot/fonts
+	find romdisk_boot/fonts/ -name '*.png' | xargs rm -f
+	find romdisk_boot/fonts/ -name '*.kmg' | xargs rm -f
+	mkdir romdisk_boot/debug
+	cp assets/debug/*.pkg romdisk_boot/debug
+	
+make_filesystem:
+	mkdir filesystem
+	mkdir filesystem/assets
+	mkdir filesystem/logo
+	mkdir filesystem/effects
+
+copy_assets
+	cp -r assets/* filesystem/assets
+
+copy_logo
+	cp -r $(KOS_BASE)/addons/libtari/assets/logo/LOGO_DC.png filesystem/logo/LOGO_DC.png
+
+copy_effects
+	cp -r $(KOS_BASE)/addons/libtari/assets/effects/* filesystem/effects		
+
+convert_assets
+	find filesystem/ -name '*.png' | xargs $(KOS_BASE)/utils/kmgenc/kmgenc -a4 
+	find filesystem/ -name '*.kmg' | xargs $(KOS_BASE)/addons/libtari/tools/bin/kompressor
+	find filesystem/ -name '*.png' | xargs rm -f
+	find filesystem/ -name '*.kmg' | xargs rm -f
+	find filesystem/ -name '*.xcf' | xargs rm -f
+	find filesystem/ -name '*.wav' | xargs rm -f
+	find assets/ -name '*.wav' | xargs -I {} sox {} -b 16 filesystem/{}
+	
+	mkdir romdisk_boot/effects
+	cp -r filesystem/effects romdisk_boot
+	
+to_romdisk:
+	cp -r filesystem/* romdisk_boot
+	
+clean: clean_user clean_general
+	
+clean_general:
+	-rm -f $(TARGET).elf $(OBJS)
+	-rm -f $(TARGET).BIN
+	-rm -f assets/debug/*.pkg
+	-rm -r -f romdisk_boot
+	-rm -r -f filesystem
+	-rm -f romdisk.img
+
+build_develop: $(OBJS) 
+	$(KOS_CC) $(KOS_CFLAGS) -DDEVELOP -I${KOS_BASE}/../extensions/include $(KOS_LDFLAGS) \
+	-o $(TARGET).elf $(KOS_START) \
+	$(OBJS) -lkmg $(OPTIONAL_LIBS) -ltari -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
+	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
+
+build_romdisk: $(OBJS) 
+	$(KOS_CC) $(KOS_CFLAGS) -DDEVELOP -I${KOS_BASE}/../extensions/include $(KOS_LDFLAGS) \
+	-o $(TARGET).elf $(KOS_START) \
+	$(OBJS) -lkmg $(OPTIONAL_LIBS) -ltari -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
+	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
+
+	
+include $(KOS_BASE)/Makefile.rules

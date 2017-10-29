@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <tari/actorhandler.h>
+
 #define MaximumStoryModeLength				30
 
 #define StoryBoardMaximumTextSize			0x100
@@ -157,3 +159,5 @@ fup int playStoryboard(char* tPath);
 fup void setStoryboardFinishedCB(int tID, StoryboardFinishedCB tCB, void* tCaller);
 
 fup int isStoryboard(char* tPath);
+
+fup ActorBlueprint getStoryboardHandlerActorBlueprint();

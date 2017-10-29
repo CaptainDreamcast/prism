@@ -49,6 +49,7 @@ fup void* list_iterator_get(ListIterator tIterator);
 fup void list_iterator_increase(ListIterator* tIterator);
 fup void list_iterator_remove(List* tList, ListIterator tIterator);
 fup int list_has_next(ListIterator tIterator);
+fup void * list_front(List * tList);
 
 typedef struct {
 
@@ -98,6 +99,7 @@ fup void string_map_remove(StringMap* tMap, char* tKey);
 fup void* string_map_get(StringMap* tMap, char* tKey);
 fup void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller);
 fup int string_map_contains(StringMap* tMap, char* tKey);
+fup int string_map_size(StringMap* tMap);
 
 
 typedef StringMap IntMap;
@@ -114,6 +116,7 @@ fup void* int_map_get(IntMap* tMap, int tKey);
 fup void int_map_map(IntMap* tMap, mapCB tCB, void* tCaller);
 fup void int_map_remove_predicate(IntMap* tMap, predicateCB tCB, void* tCaller);
 fup int int_map_contains(IntMap* tMap, int tKey);
+fup int int_map_size(IntMap* tMap);
 
 
 #endif

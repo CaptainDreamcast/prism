@@ -38,8 +38,8 @@ static void unloadActor(Actor* e) {
 
 static int removeActorCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	(void)tData;
-	// TODO: unload Actor properly
+	Actor* e = tData;
+	unloadActor(e);
 	return 1;
 }
 

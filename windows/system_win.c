@@ -18,7 +18,7 @@
 
 
 void abortSystem(){
-	assert(0);
+ 	assert(0);
 	exit(0);
 }	
 
@@ -31,7 +31,7 @@ static struct {
 
 	int mDisplayedWindowSizeX;
 	int mDisplayedWindowSizeY;
-
+	
 	int mIsFullscreen;
 	
 	char mGameName[100];
