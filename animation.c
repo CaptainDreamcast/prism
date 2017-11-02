@@ -485,6 +485,12 @@ void resetAnimationHandlerScreenTint()
 	setAnimationHandlerScreenTint(1, 1, 1);
 }
 
+double* getAnimationTransparencyReference(int tID)
+{
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	return &e->mTransparency;
+}
+
 void removeHandledAnimation(int tID) {
 	int_map_remove(&gAnimationHandler.mList, tID);
 }

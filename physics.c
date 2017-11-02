@@ -59,14 +59,14 @@ void handlePhysics(PhysicsObject* tObject) {
   tObject->mPosition.y += tObject->mVelocity.y;
   tObject->mPosition.z += tObject->mVelocity.z;
 
+  tObject->mVelocity.x *= gData.mOneMinusDragCoefficient.x;
+  tObject->mVelocity.y *= gData.mOneMinusDragCoefficient.y;
+  tObject->mVelocity.z *= gData.mOneMinusDragCoefficient.z;
+
   double f = getFramerateFactor();
   tObject->mVelocity.x += tObject->mAcceleration.x*f;
   tObject->mVelocity.y += tObject->mAcceleration.y*f;
   tObject->mVelocity.z += tObject->mAcceleration.z*f;
-
-  tObject->mVelocity.x *= gData.mOneMinusDragCoefficient.x;
-  tObject->mVelocity.y *= gData.mOneMinusDragCoefficient.y;
-  tObject->mVelocity.z *= gData.mOneMinusDragCoefficient.z;
 
   //TODO: fix velocity increase problem for 50Hz
   tObject->mVelocity.x = f_max(-gData.mMaxVelocity.x*f, f_min(gData.mMaxVelocity.x*f, tObject->mVelocity.x));

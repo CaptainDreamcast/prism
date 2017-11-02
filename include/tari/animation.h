@@ -66,6 +66,8 @@ fup void setAnimationHandlerScreenRotationZ(double tAngle, Vector3D tCenter);
 fup void setAnimationHandlerScreenTint(double r, double g, double b);
 fup void resetAnimationHandlerScreenTint();
 
+fup double* getAnimationTransparencyReference(int tID);
+
 fup void removeHandledAnimation(int tID);
 fup int isHandledAnimation(int tID);
 fup void shutdownAnimationHandler();
