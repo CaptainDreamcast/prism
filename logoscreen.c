@@ -13,6 +13,9 @@ static struct {
 
 	TextureData mBGTexture;
 	int mBG;
+
+	int mHasSetFadeOutColor;
+	Color mFadeOutColor;
 } gData;
 
 extern char gLogoScreenFileName[100];
@@ -29,6 +32,10 @@ static void endLogoFadeOut(void* tCaller) {
 
 static void startLogoFadeOut(void* tCaller) {
 	(void)tCaller;
+
+	if (gData.mHasSetFadeOutColor) {
+		setFadeColor(gData.mFadeOutColor);
+	}
 
 	addFadeOut(20, endLogoFadeOut, NULL);
 }
@@ -78,4 +85,9 @@ Screen* getLogoScreenFromWrapper() {
 void setScreenAfterWrapperLogoScreen(Screen * tScreen)
 {
 	gData.mNextScreen = tScreen;
+}
+
+void setLogoScreenFadeOutColor(Color tColor) {
+	gData.mFadeOutColor = tColor;
+	gData.mHasSetFadeOutColor = 1;
 }

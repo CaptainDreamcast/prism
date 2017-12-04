@@ -19,6 +19,7 @@ static struct {
 	Color mColor;
 	int mIsDisabled;
 	int mBreakSize;
+	int mIsActive;
 
 	Position mSelectorBasePosition;
 } gData;
@@ -42,6 +43,7 @@ void setupOptionHandler(){
 	gData.mIsDisabled = 0;
 	gData.mColor = COLOR_WHITE;
 	gData.mBreakSize = 0;
+	gData.mIsActive = 1;
 
 	gData.mSelectorBasePosition = makePosition(0, 0, 10);
 }
@@ -51,6 +53,8 @@ void setupOptionHandler(){
 void shutdownOptionHandler() {
 	delete_list(&gData.mOptionList);
 	unloadTexture(gData.mSelector);
+
+	gData.mIsActive = 0;
 }
 
 void disableOptionHandler() {
@@ -95,6 +99,7 @@ static void performSelectedAction(void* tCaller, void* tRaw) {
 	(void) tCaller;
 	HandledOption* data = tRaw;
 
+	printf("%X\n", data);
 	if(data->mNumber != gData.mSelectedOption) return;
 
 	data->mCB(data->mCaller);
@@ -115,7 +120,17 @@ void updateOptionHandler(){
 	int hasValidA = gData.mIsUsingA && hasPressedAFlank();
 	int hasValidStart = gData.mIsUsingStart && hasPressedStartFlank();
 	if(hasValidA || hasValidStart) {
-		list_map(&gData.mOptionList, performSelectedAction, NULL);
+		ListIterator iterator = list_iterator_begin(&gData.mOptionList);
+		while (iterator != NULL) {
+			performSelectedAction(NULL, list_iterator_get(iterator));
+			if (!gData.mIsActive) return;
+			if (list_has_next(iterator)) {
+				list_iterator_increase(&iterator);
+			}
+			else {
+				break;
+			}
+		}
 	}
 }
 
@@ -165,6 +180,7 @@ static void drawOptionHandlerBlueprint(void* tData) {
 
 static void shutdownOptionHandlerBlueprint(void* tData) {
 	(void)tData;
+	printf("shutting it down\n");
 	shutdownOptionHandler();
 }
 

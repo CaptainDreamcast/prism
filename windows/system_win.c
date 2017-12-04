@@ -8,6 +8,10 @@
 #ifdef __EMSCRIPTEN__
 #include <SDL/SDL_image.h>
 #elif defined _WIN32
+
+#define GL3_PROTOTYPES 1
+#include <GL/glew.h>
+
 #include <SDL_image.h>
 #endif
 
@@ -38,6 +42,7 @@ static struct {
 } gData;
 
 SDL_Window* gSDLWindow;
+SDL_GLContext* gGLContext;
 
 static void initScreenDefault() {
 	gData.mIsLoaded = 1;
@@ -86,6 +91,16 @@ static void setWindowSize() {
 	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
 }
 
+static void initOpenGL() {
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
+
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+}
+
 void initSystem() {
 
 	setToProgramDirectory();
@@ -95,10 +110,15 @@ void initSystem() {
 	if (gData.mGameName[0] == '\0') {
 		sprintf(gData.mGameName, "Unnamed libtari game port");
 	}
-	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+	gGLContext = SDL_GL_CreateContext(gSDLWindow);
+
+	initOpenGL();
 }
 
 void shutdownSystem() {
+	SDL_GL_DeleteContext(gGLContext);
+	
 	SDL_DestroyWindow(gSDLWindow);
 
 	IMG_Quit();

@@ -39,6 +39,8 @@ static struct {
 	int mFullLineSize;
 
 	int mScreenFillID;
+
+	Color mFadeColor;
 } gData;
 
 void initScreenEffects() {
@@ -51,6 +53,8 @@ void initScreenEffects() {
 	gData.mFullLineSize = 10;
 	gData.mZ = 80;
 	gData.mScreenFillID = -1;
+	gData.mFadeColor = COLOR_BLACK;
+
 	gData.mIsActive = 1;
 }
 
@@ -140,7 +144,7 @@ static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptio
 	for (i = 0; i < e->mAnimationAmount; i++) {
 		e->mAnimationIDs[i] = playAnimationLoop(p, &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
 		updateSingleFadeInAnimation(e, i);
-		setAnimationColor(e->mAnimationIDs[i], 0, 0, 0);
+		setAnimationColorType(e->mAnimationIDs[i], gData.mFadeColor);
 
 		p = vecAdd(p, makePosition(tFullPatchSize.x, 0, 0));
 		if (p.x >= screen.x) {
@@ -195,6 +199,10 @@ void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tC
 	addFadeIn_internal(tDuration, fadeOutOverCB, e, patchSize, patchSize, makePosition(0, 0, 0), 0, da, isFadeOutOver);
 }
 
+void setFadeColor(Color tColor) {
+	gData.mFadeColor = tColor;
+}
+
 void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
 	if (!gData.mIsActive) return;
 
@@ -217,7 +225,7 @@ void setScreenBlack() {
 
 	gData.mScreenFillID = playAnimationLoop(makePosition(0,0,gData.mZ), &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
 	setAnimationSize(gData.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));
-	setAnimationColor(gData.mScreenFillID, 0, 0, 0);
+	setAnimationColorType(gData.mScreenFillID, gData.mFadeColor);
 }
 
 void unsetScreenBlack() {

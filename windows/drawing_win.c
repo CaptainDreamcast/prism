@@ -192,15 +192,16 @@ static void drawSorted(void* tCaller, void* tData) {
 	else {
 		realEffectPos = e->mData.mScaleEffectCenter;
 	}
-	realEffectPos = vecScale3D(realEffectPos, e->mData.mScale);
-
-
+	
+	
 	if (e->mData.mIsRotationEffectCenterAbsolute) {
 		realEffectPos = vecAdd(e->mData.mRotationEffectCenter, vecScale(e->mPos, -1));
 	}
 	else {
 		realEffectPos = e->mData.mRotationEffectCenter;
 	}
+	realEffectPos = vecScale3D(realEffectPos, e->mData.mScale);
+
 
 	SDL_Point effectCenter;
 	effectCenter.x = (int)realEffectPos.x;

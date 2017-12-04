@@ -9,6 +9,7 @@ fup void shutdownScreenEffects();
 fup void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
 fup void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
 fup void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
+fup void setFadeColor(Color tColor);
 
 fup void drawColoredRectangle(GeoRectangle tRect, Color tColor);
 

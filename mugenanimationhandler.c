@@ -310,6 +310,15 @@ void setMugenAnimationDrawScale(int tID, Vector3D tScale)
 	e->mBaseDrawScale = tScale;
 }
 
+void setMugenAnimationDrawSize(int tID, Vector3D tSize)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	double scaleX = tSize.x / e->mSprite->mOriginalTextureSize.x;
+	double scaleY = tSize.y / e->mSprite->mOriginalTextureSize.y;
+	double scaleZ = tSize.z / 1;
+	setMugenAnimationDrawScale(tID, makePosition(scaleX, scaleY, scaleZ));
+}
+
 void setMugenAnimationDrawAngle(int tID, double tAngle)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
@@ -339,6 +348,48 @@ void setMugenAnimationColor(int tID, double tR, double tG, double tB) {
 void setMugenAnimationTransparency(int tID, double tOpacity) {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	e->mAlpha = tOpacity;
+}
+
+double getMugenAnimationColorRed(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mR;
+}
+
+double getMugenAnimationColorGreen(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mG;
+}
+
+double getMugenAnimationColorBlue(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mB;
+}
+
+double * getMugenAnimationColorRedReference(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return &e->mR;
+}
+
+double * getMugenAnimationColorGreenReference(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return &e->mG;
+}
+
+double * getMugenAnimationColorBlueReference(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return &e->mB;
+}
+
+double * getMugenAnimationTransparencyReference(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return &e->mAlpha;
 }
 
 void changeMugenAnimation(int tID, MugenAnimation * tNewAnimation)
@@ -525,6 +576,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 	setDrawingTransparency(e->mAlpha);
+	
 	scaleDrawing3D(caller->mScale, caller->mScalePosition);
 	setDrawingRotationZ(e->mBaseDrawAngle, caller->mScalePosition);
 	drawSprite(sprite->mTexture, p, texturePos);
@@ -543,6 +595,10 @@ static void drawSingleMugenAnimation(void* tCaller, void* tData) {
 
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 
+	Vector3D drawScale = e->mBaseDrawScale;
+	drawScale = vecScale(drawScale, e->mDrawScale);
+	drawScale.z = 1;
+
 	if (e->mHasBasePositionReference) {
 		e->mPlayerPositionReference = *e->mBasePositionReference;
 	}
@@ -552,10 +608,6 @@ static void drawSingleMugenAnimation(void* tCaller, void* tData) {
 
 	e->mPlayerPositionReference = vecAdd(e->mPlayerPositionReference, e->mOffset);
 	Position p = e->mPlayerPositionReference;
-
-	Vector3D drawScale = e->mBaseDrawScale;
-	drawScale = vecScale(drawScale, e->mDrawScale);
-	drawScale.z = 1;
 
 	if (e->mHasCameraPositionReference) {
 		p = vecSub(p, *e->mCameraPositionReference);
@@ -590,7 +642,7 @@ static ActorBlueprint MugenAnimationHandler = {
 	.mDraw = drawMugenAnimationHandler,
 };
 
-fup ActorBlueprint getMugenAnimationHandlerActorBlueprint()
+ActorBlueprint getMugenAnimationHandlerActorBlueprint()
 {
 	return MugenAnimationHandler;
 }
