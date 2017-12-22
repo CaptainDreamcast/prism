@@ -4,6 +4,7 @@
 
 #include <tari/datastructures.h>
 #include <tari/memoryhandler.h>
+#include <tari/math.h>
 
 typedef struct {
 	double* mDst;
@@ -75,6 +76,8 @@ int tweenDouble(double * tDst, double tStart, double tEnd, TweeningFunction tFun
 	e->mCB = tCB;
 	e->mCaller = tCaller;
 
+	*tDst = tStart;
+
 	return int_map_push_back_owned(&gData.mTweens, e);
 }
 
@@ -89,6 +92,14 @@ double linearTweeningFunction(double t) {
 
 double quadraticTweeningFunction(double t) {
 	return t*t;
+}
+
+double inverseQuadraticTweeningFunction(double t) {
+	return 1-quadraticTweeningFunction(1-t);
+}
+
+double squareRootTweeningFunction(double t) {
+	return sqrt(t);
 }
 
 double overshootTweeningFunction(double t) {

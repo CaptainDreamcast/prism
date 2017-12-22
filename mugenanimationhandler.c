@@ -30,6 +30,10 @@ typedef struct {
 	void* mHitCaller;
 	void(*mHitCB)(void* tCaller, void* tCollisionData);
 
+	int mHasAnimationFinishedCallback;
+	void* mAnimationFinishedCaller;
+	void(*mAnimationFinishedCB)(void* tCaller);
+
 	int mHasHitboxes;
 	int mCollisionList;
 	void* mCollisionData;
@@ -46,6 +50,9 @@ typedef struct {
 
 	int mHasRectangleWidth;
 	int mRectangleWidth;
+
+	int mHasRectangleHeight;
+	int mRectangleHeight;
 
 	int mHasCameraPositionReference;
 	Position* mCameraPositionReference;
@@ -174,6 +181,10 @@ static void unloadMugenAnimation(MugenAnimationHandlerElement* e) {
 static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* e) {
 	e->mStep++;
 	if (e->mStep == vector_size(&e->mAnimation->mSteps)) {
+		if (e->mHasAnimationFinishedCallback) {
+			e->mAnimationFinishedCB(e->mAnimationFinishedCaller);
+		}
+		
 		if (e->mIsLooping) {
 			e->mStep = e->mAnimation->mLoopStart;
 			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep); // TODO: test
@@ -227,6 +238,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 	e->mHasSprite = 0;
 
 	e->mHasHitCB = 0;
+	e->mHasAnimationFinishedCallback = 0;
 
 	e->mHasHitboxes = 0;
 	e->mActiveHitboxes = new_list();
@@ -237,6 +249,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 
 	e->mOffset = tPosition;
 	e->mHasRectangleWidth = 0;
+	e->mHasRectangleHeight = 0;
 
 	e->mHasCameraPositionReference = 0;
 	e->mIsInvisible = 0;
@@ -289,6 +302,13 @@ void setMugenAnimationRectangleWidth(int tID, int tWidth)
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	e->mHasRectangleWidth = 1;
 	e->mRectangleWidth = tWidth;
+}
+
+void setMugenAnimationRectangleHeight(int tID, int tHeight)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mHasRectangleHeight = 1;
+	e->mRectangleHeight = tHeight;
 }
 
 void setMugenAnimationCameraPositionReference(int tID, Position * tCameraPosition)
@@ -350,6 +370,12 @@ void setMugenAnimationTransparency(int tID, double tOpacity) {
 	e->mAlpha = tOpacity;
 }
 
+void setMugenAnimationPosition(int tID, Position tPosition)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mOffset = tPosition;
+}
+
 double getMugenAnimationColorRed(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
@@ -390,6 +416,29 @@ double * getMugenAnimationTransparencyReference(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	return &e->mAlpha;
+}
+
+double * getMugenAnimationScaleXReference(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return &e->mBaseDrawScale.x;
+}
+
+double* getMugenAnimationScaleYReference(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return &e->mBaseDrawScale.y;
+}
+
+double * getMugenAnimationBaseScaleReference(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return &e->mDrawScale;
+}
+
+Position * getMugenAnimationPositionReference(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return &e->mOffset;
 }
 
 void changeMugenAnimation(int tID, MugenAnimation * tNewAnimation)
@@ -525,6 +574,13 @@ void setMugenAnimationNoLoop(int tID) {
 	e->mIsLooping = 0;
 }
 
+void setMugenAnimationCallback(int tID, void(*tFunc)(void*), void* tCaller) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mHasAnimationFinishedCallback = 1;
+	e->mAnimationFinishedCB = tFunc;
+	e->mAnimationFinishedCaller = tCaller;
+}
+
 typedef struct {
 	MugenAnimationHandlerElement* e;
 	MugenAnimationStep* mStep;
@@ -550,6 +606,13 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		if (newWidth <= 0) return;
 		newWidth = min(newWidth, sprite->mTexture.mTextureSize.x);
 		texturePos.bottomRight.x = texturePos.topLeft.x + newWidth;
+	}
+
+	if (e->mHasRectangleHeight) {
+		int newHeight = e->mRectangleHeight - sprite->mOffset.y;
+		if (newHeight <= 0) return;
+		newHeight = min(newHeight, sprite->mTexture.mTextureSize.y);
+		texturePos.bottomRight.y = texturePos.topLeft.y + newHeight;
 	}
 
 	int isFacingRight = e->mIsFacingRight;

@@ -46,7 +46,7 @@ static struct {
 void initSound() {
 	gData.mVolume = 255;
 	gData.mPanning = 128;
-	Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 	Mix_AllocateChannels(1024);
 
 	gData.mHasLoadedTrack = 0;

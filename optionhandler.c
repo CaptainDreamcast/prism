@@ -99,7 +99,6 @@ static void performSelectedAction(void* tCaller, void* tRaw) {
 	(void) tCaller;
 	HandledOption* data = tRaw;
 
-	printf("%X\n", data);
 	if(data->mNumber != gData.mSelectedOption) return;
 
 	data->mCB(data->mCaller);
@@ -180,7 +179,6 @@ static void drawOptionHandlerBlueprint(void* tData) {
 
 static void shutdownOptionHandlerBlueprint(void* tData) {
 	(void)tData;
-	printf("shutting it down\n");
 	shutdownOptionHandler();
 }
 

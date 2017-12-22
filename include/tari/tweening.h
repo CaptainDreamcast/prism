@@ -5,14 +5,16 @@
 typedef double(*TweeningFunction)(double t);
 typedef void(*TweeningCBFunction)(void* tCaller);
 
-fup void setupTweening();
-fup void shutdownTweening();
-fup void updateTweening();
+void setupTweening();
+void shutdownTweening();
+void updateTweening();
 
-fup int tweenDouble(double* tDst, double tStart, double tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void* tCaller);
-fup void removeTween(int tID);
+int tweenDouble(double* tDst, double tStart, double tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void* tCaller);
+void removeTween(int tID);
 
-fup double linearTweeningFunction(double t);
-fup double quadraticTweeningFunction(double t);
-fup double overshootTweeningFunction(double t);
-fup double transformAtEndTweeningFunction(double t);
+double linearTweeningFunction(double t);
+double quadraticTweeningFunction(double t);
+double inverseQuadraticTweeningFunction(double t);
+double squareRootTweeningFunction(double t);
+double overshootTweeningFunction(double t);
+double transformAtEndTweeningFunction(double t);

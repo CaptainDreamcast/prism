@@ -31,6 +31,7 @@ void setupPhysicsHandler() {
 }
 
 void shutdownPhysicsHandler() {
+	if (!gData.mIsActive) return;
 	int_map_empty(&gData.mList);
 	gData.mIsActive = 0;
 

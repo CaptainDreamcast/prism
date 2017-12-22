@@ -32,7 +32,7 @@ static struct {
 	
 	int mScreenSizeX;
 	int mScreenSizeY;
-
+	
 	int mDisplayedWindowSizeX;
 	int mDisplayedWindowSizeY;
 	
@@ -47,7 +47,7 @@ SDL_GLContext* gGLContext;
 static void initScreenDefault() {
 	gData.mIsLoaded = 1;
 	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = 640;
-	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = 480;
+	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = 480; 
 
 	gData.mIsFullscreen = 0;
 }
