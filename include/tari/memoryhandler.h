@@ -27,6 +27,7 @@ struct TextureMemory_internal {
 	size_t mSize;
 
 	int mIsVirtual;
+	int mIsCompressed;
 
 	struct TextureMemory_internal* mPrevInUsageList;
 	struct TextureMemory_internal* mNextInUsageList;
