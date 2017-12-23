@@ -394,7 +394,7 @@ static Storyboard* loadStoryboard(char* tPath) {
 	mountRomdisk(tPath, "STORY");
 
 
-	e->mBuffer = fileToBuffer("/STORY/STORYBOARD");
+	e->mBuffer = fileToBuffer("$/STORY/STORYBOARD");
 	memcpy(&e->mHeader, e->mBuffer.mData, sizeof(StoryBoardUberHeaderStruct));
 	
 	e->mFinishedCB = NULL;

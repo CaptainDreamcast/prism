@@ -325,5 +325,8 @@
     <ClInclude Include="..\..\include\tari\mugenanimationhandler.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\tari\khash.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

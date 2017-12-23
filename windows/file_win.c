@@ -73,6 +73,7 @@ static int isAbsoluteWindowsDirectory(char* tPath) {
 void getFullPath(char* tDest, char* tPath) {
 
 	if (isRomdiskPath(tPath) || isAbsoluteWindowsDirectory(tPath)) {
+		if (tPath[0] == '$') tPath++;
 		strcpy(tDest, tPath);
 		return;
 	}

@@ -172,6 +172,7 @@ static uint32_t romdisk_find(rd_image_t * mnt, const char *fn, int dir) {
 
 static void getPotentialMountFromPath(char* tPotentialMount, char* tPath) {
 	tPotentialMount[0] = '\0';
+	if (tPath[0] == '$') tPath++;
 	if (tPath[0] != '/') return;
 
 	strcpy(tPotentialMount, tPath + 1);

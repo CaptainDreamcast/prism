@@ -210,6 +210,7 @@
     <ClInclude Include="..\..\include\tari\framerateselectscreen.h" />
     <ClInclude Include="..\..\include\tari\geometry.h" />
     <ClInclude Include="..\..\include\tari\input.h" />
+    <ClInclude Include="..\..\include\tari\khash.h" />
     <ClInclude Include="..\..\include\tari\log.h" />
     <ClInclude Include="..\..\include\tari\logoscreen.h" />
     <ClInclude Include="..\..\include\tari\lz5.h" />
