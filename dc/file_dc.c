@@ -97,10 +97,19 @@ void* fileMemoryMap(FileHandler tHandler) {
 
 
 
-
+void fixMountPath(char* tDst, char* tSrc) {
+	if(tSrc[0] != '/') {
+		sprintf(tDst, "/%s", tSrc);	
+	} else {
+		strcpy(tDst, tSrc);
+	}
+}
 
 
 void mountRomdisk(char* tFilePath, char* tMountPath) {
+	char mountPath[200];
+	fixMountPath(mountPath, tMountPath);
+
 	file_t romDiskFile;
 	uint8* romDiskBuffer;
 	long romDiskSize;
@@ -110,13 +119,16 @@ void mountRomdisk(char* tFilePath, char* tMountPath) {
 
 	romDiskBuffer = malloc(romDiskSize);
 	fileRead(romDiskFile, romDiskBuffer, romDiskSize);
-	fs_romdisk_mount(tMountPath, romDiskBuffer, 1);
+	fs_romdisk_mount(mountPath, romDiskBuffer, 1);
 
 	fileClose(romDiskFile);
 }
 
 void unmountRomdisk(char* tMountPath) {
-	fs_romdisk_unmount(tMountPath);
+	char mountPath[200];
+	fixMountPath(mountPath, tMountPath);
+
+	fs_romdisk_unmount(mountPath);
 }
 
 void printDirectory(char* tPath) {

@@ -174,7 +174,7 @@ static void loadStoryboardTextureTexture(Storyboard* e, StoryBoardTextureStruct*
 
 	if (!tTexture->WhichFrame) {
 		char path[1024];
-		sprintf(path, "/STORY/%d.pkg", tTexture->TextureNameID);
+		sprintf(path, "$/STORY/%d.pkg", tTexture->TextureNameID);
 		e->mState.mTextures[slot].mTextures[0] = loadTexture(path);
 		e->mState.mTextures[slot].mAnimation.mDuration = INF;
 	}
@@ -182,7 +182,7 @@ static void loadStoryboardTextureTexture(Storyboard* e, StoryBoardTextureStruct*
 		int i;
 		for (i = 1; i <= tTexture->FrameAmount; i++) {
 			char path[1024];
-			sprintf(path, "/STORY/%d_%d.pkg", tTexture->TextureNameID, i);
+			sprintf(path, "$/STORY/%d_%d.pkg", tTexture->TextureNameID, i);
 			e->mState.mTextures[slot].mTextures[i-1] = loadTexture(path);
 		}
 	}
@@ -290,7 +290,7 @@ static void loadStoryboardSoundEffect(Storyboard* e, StoryBoardSoundEffectStruct
 	if (e->mState.mSoundEffects[slot].mID != -1) destroyStoryboardSoundEffect(e, slot);
 
 	char path[1024];
-	sprintf(path, "/STORY/%d.wav", tSoundEffect->SoundEffectNameID);
+	sprintf(path, "$/STORY/%d.wav", tSoundEffect->SoundEffectNameID);
 	e->mState.mSoundEffects[slot].mID = loadSoundEffect(path);
 	
 	addTimerCB(tSoundEffect->SoundEffectPlayTime, playStoryboardSoundEffect, &e->mState.mSoundEffects[slot]);
