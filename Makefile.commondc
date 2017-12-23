@@ -30,23 +30,23 @@ make_filesystem:
 	mkdir filesystem/logo
 	mkdir filesystem/effects
 
-copy_assets
+copy_assets:
 	cp -r assets/* filesystem/assets
 
-copy_logo
+copy_logo:
 	cp -r $(KOS_BASE)/addons/libtari/assets/logo/LOGO_DC.png filesystem/logo/LOGO_DC.png
 
-copy_effects
+copy_effects:
 	cp -r $(KOS_BASE)/addons/libtari/assets/effects/* filesystem/effects		
 
-convert_assets
+convert_assets:
 	find filesystem/ -name '*.png' | xargs $(KOS_BASE)/utils/kmgenc/kmgenc -a4 
 	find filesystem/ -name '*.kmg' | xargs $(KOS_BASE)/addons/libtari/tools/bin/kompressor
 	find filesystem/ -name '*.png' | xargs rm -f
 	find filesystem/ -name '*.kmg' | xargs rm -f
 	find filesystem/ -name '*.xcf' | xargs rm -f
 	find filesystem/ -name '*.wav' | xargs rm -f
-	find assets/ -name '*.wav' | xargs -I {} sox {} -b 16 filesystem/{}
+	#find assets/ -name '*.wav' | xargs -I {} sox {} -b 16 filesystem/{}
 	
 	mkdir romdisk_boot/effects
 	cp -r filesystem/effects romdisk_boot

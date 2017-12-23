@@ -23,6 +23,10 @@ int loadSoundEffect(char* tPath) {
 	return snd_sfx_load(fullPath);
 }
 
+void unloadSoundEffect(int tID) {
+	snd_sfx_unload(tID);
+}
+
 int playSoundEffect(int tID) {
 	return snd_sfx_play(tID, getVolume(), getPanningValue());
 }

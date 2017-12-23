@@ -187,6 +187,8 @@ static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
 static const int COMPRESSION_BUFFER = 400;
 
 static void compressMemory(void** tBuffer, int tSrcSize) {
+	return;
+
 	qlz_state_compress state_compress;
 	
 	char* src = *tBuffer;
@@ -199,6 +201,8 @@ static void compressMemory(void** tBuffer, int tSrcSize) {
 }
 
 static void decompressMemory(void** tBuffer) {
+	return;
+
 	qlz_state_decompress state_decompress;
 	
 	char* src = *tBuffer;

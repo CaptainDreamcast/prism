@@ -49,3 +49,15 @@ void pauseTrack() {
 void resumeTrack() {
 	cdrom_cdda_resume();
 }
+
+static ActorBlueprint MicrophoneHandler; // TODO: implement microphone
+
+ActorBlueprint getMicrophoneHandlerActorBlueprint()
+{
+	return MicrophoneHandler;
+}
+
+double getMicrophoneVolume()
+{
+	return 0; // TODO: implement microphone
+}
