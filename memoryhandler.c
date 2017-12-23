@@ -105,6 +105,9 @@ static struct {
 	MemoryListStack mMemoryStack;
 	MemoryListStack mTextureMemoryStack;
 	TextureMemoryUsageList mTextureMemoryUsageList;
+
+	int mIsCompressionActive;
+
 	int mActive;
 } gMemoryHandler;
 
@@ -187,7 +190,7 @@ static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
 static const int COMPRESSION_BUFFER = 400;
 
 static void compressMemory(void** tBuffer, int tSrcSize) {
-	return;
+	if(!gMemoryHandler.mIsCompressionActive) return;
 
 	qlz_state_compress state_compress;
 	
@@ -201,7 +204,7 @@ static void compressMemory(void** tBuffer, int tSrcSize) {
 }
 
 static void decompressMemory(void** tBuffer) {
-	return;
+	if(!gMemoryHandler.mIsCompressionActive) return;
 
 	qlz_state_decompress state_decompress;
 	
@@ -613,6 +616,7 @@ void initMemoryHandler() {
 	}
 
 	gMemoryHandler.mActive = 1;
+	gMemoryHandler.mIsCompressionActive = 0;
 	gMemoryHandler.mMemoryStack.mHead = -1;
 	gMemoryHandler.mTextureMemoryStack.mHead = -1;
 	initTextureMemoryUsageList();
@@ -627,3 +631,11 @@ void shutdownMemoryHandler() {
 	emptyMemoryListStack(&gMemoryHandler.mTextureMemoryStack, freeTextureFunc);
 }
 
+
+void setMemoryHandlerCompressionActive() {
+	gMemoryHandler.mIsCompressionActive = 1;
+}
+
+void setMemoryHandlerCompressionInactive() {
+	gMemoryHandler.mIsCompressionActive = 0;
+}

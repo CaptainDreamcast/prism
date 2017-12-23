@@ -49,6 +49,9 @@ fup void popTextureMemoryStack();
 fup void initMemoryHandler();
 fup void shutdownMemoryHandler();
 
+void setMemoryHandlerCompressionActive();
+void setMemoryHandlerCompressionInactive();
+
 fup void debugPrintMemoryStack();
 fup int getAvailableTextureMemory();
 
