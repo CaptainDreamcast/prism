@@ -187,3 +187,6 @@ Vector3D getShotPositionSingle(int i) {
 	maple_gun_read_pos(&x, &y);
 	return makePosition(x, y, 0);
 }
+
+void forceMouseCursorToWindow() {}
+void releaseMouseCursorFromWindow() {}

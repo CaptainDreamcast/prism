@@ -38,6 +38,10 @@ void playTrack(int tTrack) {
 	 cdrom_cdda_play(tTrack, tTrack, 15, CDDA_TRACKS);
 }
 
+void playTrackOnce(int tTrack) {
+	 cdrom_cdda_play(tTrack, tTrack, 0, CDDA_TRACKS);
+}
+
 void stopTrack() {
 	cdrom_cdda_pause();
 }
