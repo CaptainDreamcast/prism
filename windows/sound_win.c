@@ -14,7 +14,7 @@
 #include "tari/datastructures.h"
 #include "tari/memoryhandler.h"
 #include "tari/system.h"
-
+#include "tari/math.h"
 
 #define MICROPHONE_SAMPLE_AMOUNT 128
 
