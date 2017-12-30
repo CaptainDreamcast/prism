@@ -32,6 +32,9 @@ static struct {
 	Screen* mNext;
 	Screen* mScreen;
 	int mIsPaused;
+
+	double mUpdateTimeCounter;
+	double mGlobalTimeDilatation;
 } gData;
 
 void initTariWrapperWithDefaultFlags() {
@@ -55,7 +58,8 @@ void initTariWrapperWithDefaultFlags() {
 	setFont("$/rd/fonts/dolmexica.hdr", "$/rd/fonts/dolmexica.pkg");
 	logg("Initiating screen effects.");
 	initScreenEffects();
-	
+
+	gData.mGlobalTimeDilatation = 1;
 }
 void shutdownTariWrapper() {
 	shutdownSound();
@@ -136,6 +140,8 @@ static void unloadScreen(Screen* tScreen) {
 		tScreen->mUnload();
 	}
 
+	stopTrack();
+
 	logg("Shutting down Actorhandling");
 	shutdownActorHandler();
 	logg("Shutting down Soundeffecthandling");
@@ -200,7 +206,14 @@ static void drawScreen() {
 }
 
 static void performScreenIteration() {
-	updateScreen();
+	gData.mUpdateTimeCounter += gData.mGlobalTimeDilatation;
+
+	int updateAmount = (int)gData.mUpdateTimeCounter;
+	int i;
+	for (i = 0; i < updateAmount; i++) {
+		updateScreen();
+		gData.mUpdateTimeCounter = 0;
+	}
 	drawScreen();
 	if (gData.mScreen->mGetNextScreen && !gData.mNext) {
 		gData.mNext = gData.mScreen->mGetNextScreen();
@@ -255,4 +268,11 @@ void startScreenHandling(Screen* tScreen) {
 		tScreen = next;
 	}
 	
+}
+
+
+
+void setWrapperTimeDilatation(double tDilatation)
+{
+	gData.mGlobalTimeDilatation = tDilatation;
 }

@@ -15,6 +15,7 @@ fup void playTrack(int tTrack);
 fup void stopTrack();
 fup void pauseTrack();
 fup void resumeTrack();
+void playTrackOnce(int tTrack);
 
 fup ActorBlueprint getMicrophoneHandlerActorBlueprint();
 double getMicrophoneVolume();

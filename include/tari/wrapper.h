@@ -26,4 +26,6 @@ fup void startScreenHandling(Screen* tScreen);
 fup void abortScreenHandling();
 fup void setNewScreen(Screen* tScreen);
 
+void setWrapperTimeDilatation(double tDilatation);
+
 #endif 

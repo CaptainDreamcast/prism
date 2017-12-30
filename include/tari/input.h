@@ -80,3 +80,5 @@ fup Vector3D getShotPositionSingle(int i);
 fup void setMainController(int i);
 fup int getMainController();
 
+void forceMouseCursorToWindow();
+void releaseMouseCursorFromWindow();

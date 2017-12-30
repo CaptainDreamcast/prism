@@ -16,7 +16,7 @@
 #include "tari/system.h"
 
 
-#define MICROPHONE_SAMPLE_AMOUNT  50000
+#define MICROPHONE_SAMPLE_AMOUNT 128
 
 
 typedef struct {
@@ -27,6 +27,8 @@ typedef struct {
 	uint8_t mSamples[MICROPHONE_SAMPLE_AMOUNT];
 	int mSampleSum;
 	int mSamplePointer;
+
+	int mMasterPeakVolume;
 } Microphone;
 
 static struct {
@@ -90,14 +92,18 @@ static void unloadTrack() {
 	gData.mHasLoadedTrack = 0;
 }
 
-void playTrack(int tTrack) {
+static void playTrackGeneral(int tTrack, int tLoopAmount) {
 	if (gData.mIsPlayingTrack) stopTrack();
 	if (gData.mHasLoadedTrack) unloadTrack();
-	
+
 	loadTrack(tTrack);
-	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, -1);
+	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, tLoopAmount);
 	gData.mIsPaused = 0;
 	gData.mIsPlayingTrack = 1;
+}
+
+void playTrack(int tTrack) {
+	playTrackGeneral(tTrack, -1);
 }
 
 void stopTrack()
@@ -123,6 +129,11 @@ void resumeTrack()
 	gData.mIsPaused = 0;
 }
 
+void playTrackOnce(int tTrack)
+{
+	playTrackGeneral(tTrack, 1);
+}
+
 
 static void microphoneCB(void *userdata, Uint8 *stream, int len) {
 	(void)userdata;
@@ -130,7 +141,7 @@ static void microphoneCB(void *userdata, Uint8 *stream, int len) {
 	int i;
 	for (i = 0; i < len; i++) {
 		gData.mMicrophone.mSamplePointer = (gData.mMicrophone.mSamplePointer + 1) % MICROPHONE_SAMPLE_AMOUNT;
-		
+
 		if (gData.mMicrophone.mSampleAmount > MICROPHONE_SAMPLE_AMOUNT) {
 			gData.mMicrophone.mSampleSum -= gData.mMicrophone.mSamples[gData.mMicrophone.mSamplePointer];
 			gData.mMicrophone.mSampleAmount--;
@@ -139,6 +150,11 @@ static void microphoneCB(void *userdata, Uint8 *stream, int len) {
 		gData.mMicrophone.mSamples[gData.mMicrophone.mSamplePointer] = stream[i];
 		gData.mMicrophone.mSampleSum += stream[i];
 		gData.mMicrophone.mSampleAmount++;
+	}
+
+	gData.mMicrophone.mMasterPeakVolume = 0;
+	for (i = 0; i < MICROPHONE_SAMPLE_AMOUNT; i++) {
+		gData.mMicrophone.mMasterPeakVolume = max(gData.mMicrophone.mMasterPeakVolume, gData.mMicrophone.mSamples[i]);
 	}
 }
 
@@ -150,9 +166,9 @@ static void startMicrophone(void* tData)
 
 	SDL_zero(want);
 	want.freq = 44100;
-	want.format = AUDIO_S16SYS;
+	want.format = AUDIO_U8;
 	want.channels = 1;
-	want.samples = 1024;
+	want.samples = 256;
 	want.callback = microphoneCB;
 	gData.mMicrophone.mMicrophone = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(0, 1), 1, &want, &have, 0);
 	logg("Opening audio device");
@@ -169,6 +185,7 @@ static void startMicrophone(void* tData)
 	gData.mMicrophone.mSamplePointer = 0;
 	gData.mMicrophone.mSampleAmount = 0;
 	gData.mMicrophone.mIsMicrophoneActive = 1;
+	gData.mMicrophone.mMasterPeakVolume = 0;
 }
 
 static void stopMicrophone(void* tData)
@@ -190,6 +207,8 @@ ActorBlueprint getMicrophoneHandlerActorBlueprint()
 
 double getMicrophoneVolume()
 {
-	double avg = gData.mMicrophone.mSampleSum / (double)gData.mMicrophone.mSampleAmount;
-	return avg / 255.0;
+	printf("%d\n", gData.mMicrophone.mMasterPeakVolume);
+	return gData.mMicrophone.mMasterPeakVolume / 255.0;
+
+
 }

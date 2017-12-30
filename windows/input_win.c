@@ -242,3 +242,14 @@ double getSingleRNormalized(int i) {
 	}
 	else return gData.mCurrentKeyStates[gKeys[i][9]];
 }
+
+extern SDL_Window* gSDLWindow;
+
+void forceMouseCursorToWindow() {
+	SDL_SetWindowGrab(gSDLWindow, SDL_TRUE);
+}
+
+void releaseMouseCursorFromWindow() {
+	printf("hey\n");
+	SDL_SetWindowGrab(gSDLWindow, SDL_FALSE);
+}

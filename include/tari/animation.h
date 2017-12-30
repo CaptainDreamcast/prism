@@ -67,6 +67,7 @@ fup void setAnimationHandlerScreenTint(double r, double g, double b);
 fup void resetAnimationHandlerScreenTint();
 
 fup double* getAnimationTransparencyReference(int tID);
+Position* getAnimationPositionReference(int tID);
 
 fup void removeHandledAnimation(int tID);
 fup int isHandledAnimation(int tID);

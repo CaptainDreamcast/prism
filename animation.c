@@ -491,6 +491,11 @@ double* getAnimationTransparencyReference(int tID)
 	return &e->mTransparency;
 }
 
+Position* getAnimationPositionReference(int tID) {
+	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	return &e->mPosition;
+}
+
 void removeHandledAnimation(int tID) {
 	int_map_remove(&gAnimationHandler.mList, tID);
 }

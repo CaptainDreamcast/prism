@@ -140,6 +140,13 @@ GeoRectangle makeGeoRectangle(double x, double y, double w, double h)
 	return ret;
 }
 
+Vector3DI vecAddI(Vector3DI v1, Vector3DI v2) {
+	v1.x += v2.x;
+	v1.y += v2.y;
+	v1.z += v2.z;
+	return v1;
+}
+
 
 double getAngleFromDirection(Vector3D tDirection) {
 	return -fatan2(tDirection.y, tDirection.x) + M_PI;
