@@ -251,3 +251,11 @@ int getMainController() {
 int isUsingController() {
 	return isUsingControllerSingle(getMainController());
 }
+
+double getFishingRodIntensity() {
+	return getFishingRodIntensitySingle(getMainController());
+}
+
+double getFishingRodIntensitySingle(int i) {
+	return getSingleRNormalized(i);
+}

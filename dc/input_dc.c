@@ -190,3 +190,8 @@ Vector3D getShotPositionSingle(int i) {
 
 void forceMouseCursorToWindow() {}
 void releaseMouseCursorFromWindow() {}
+
+int isUsingControllerSingle(int i) {
+	(void)i;
+	return 1;
+}

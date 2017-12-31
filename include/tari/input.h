@@ -85,3 +85,6 @@ void releaseMouseCursorFromWindow();
 
 int isUsingControllerSingle(int i);
 int isUsingController();
+
+double getFishingRodIntensity();
+double getFishingRodIntensitySingle(int i);
