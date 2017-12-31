@@ -318,7 +318,7 @@ static void loadNextStoryboardAction(Storyboard* e) {
 	e->mState.mPosition += sizeof(StoryBoardHeaderStruct);
 
 	if (header->SoundTrack != 0) {
-		playTrack(header->SoundTrack);
+		// playTrack(header->SoundTrack);
 	}
 	
 	loadStoryboardTextures(e, header);
