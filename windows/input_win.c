@@ -250,6 +250,9 @@ void forceMouseCursorToWindow() {
 }
 
 void releaseMouseCursorFromWindow() {
-	printf("hey\n");
 	SDL_SetWindowGrab(gSDLWindow, SDL_FALSE);
+}
+
+int isUsingControllerSingle(int i) {
+	return gData.mControllers[i].mIsUsingController;
 }

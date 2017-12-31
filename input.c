@@ -247,3 +247,7 @@ void setMainController(int i) {
 int getMainController() {
 	return gData.mMainController;
 }
+
+int isUsingController() {
+	return isUsingControllerSingle(getMainController());
+}

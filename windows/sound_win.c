@@ -131,7 +131,7 @@ void resumeTrack()
 
 void playTrackOnce(int tTrack)
 {
-	playTrackGeneral(tTrack, 1);
+	playTrackGeneral(tTrack, 0);
 }
 
 

@@ -82,3 +82,6 @@ fup int getMainController();
 
 void forceMouseCursorToWindow();
 void releaseMouseCursorFromWindow();
+
+int isUsingControllerSingle(int i);
+int isUsingController();
