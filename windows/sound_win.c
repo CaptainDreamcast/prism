@@ -48,6 +48,8 @@ static struct {
 void initSound() {
 	gData.mVolume = 255;
 	gData.mPanning = 128;
+	Mix_Init(MIX_INIT_OGG);
+
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 	Mix_AllocateChannels(1024);
 
@@ -79,7 +81,7 @@ static void loadTrack(int tTrack) {
 
 	char path[1024];
 	char fullPath[1024];
-	sprintf(path, "tracks/%d.wav", tTrack);
+	sprintf(path, "tracks/%d.ogg", tTrack);
 	getFullPath(fullPath, path);
 	gData.mTrackChunk = Mix_LoadWAV(fullPath);
 	gData.mHasLoadedTrack = 1;
@@ -93,6 +95,10 @@ static void unloadTrack() {
 }
 
 static void playTrackGeneral(int tTrack, int tLoopAmount) {
+#ifdef __EMSCRIPTEN__
+	return;
+#endif
+
 	if (gData.mIsPlayingTrack) stopTrack();
 	if (gData.mHasLoadedTrack) unloadTrack();
 
@@ -207,7 +213,6 @@ ActorBlueprint getMicrophoneHandlerActorBlueprint()
 
 double getMicrophoneVolume()
 {
-	printf("%d\n", gData.mMicrophone.mMasterPeakVolume);
 	return gData.mMicrophone.mMasterPeakVolume / 255.0;
 
 

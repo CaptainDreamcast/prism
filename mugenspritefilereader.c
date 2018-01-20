@@ -629,6 +629,23 @@ static MugenSpriteFileSprite* loadTextureFromPCXBuffer(MugenSpriteFile* tDst, in
 	
 }
 
+// TODO: refactor+simplify
+static MugenSpriteFile makeEmptySpriteFile();
+static void unloadSinglePalette(void* tCaller, void* tData);
+
+MugenSpriteFileSprite* loadSingleTextureFromPCXBuffer(Buffer tBuffer) {
+	MugenSpriteFile sprites = makeEmptySpriteFile();
+
+	MugenSpriteFileSprite* sprite = loadTextureFromPCXBuffer(&sprites, 1, tBuffer, makePosition(0, 0, 0));
+	
+	delete_int_map(&sprites.mGroups);
+	delete_vector(&sprites.mAllSprites);
+	vector_map(&sprites.mPalettes, unloadSinglePalette, NULL);
+	delete_vector(&sprites.mPalettes);
+
+	return sprite;
+}
+
 static void insertTextureIntoSpriteFile(MugenSpriteFile* tDst, MugenSpriteFileSprite* tTexture, int tGroup, int tSprite) {
 
 	if (!int_map_contains(&tDst->mGroups, tGroup)) {
@@ -814,6 +831,16 @@ static Buffer readRawLZ5Sprite2(BufferPointer p, uint32_t tSize) {
 
 }
 
+static Buffer readRawUncompressedSprite2(BufferPointer p, uint32_t tSize) {
+	uint8_t* out = allocMemory(tSize + 10);
+
+	Buffer b = makeBuffer(p, tSize);
+	memcpy(out, b.mData, tSize);
+
+	return makeBufferOwned(out, tSize);
+}
+
+
 static BufferPointer getBufferPointerToSpriteData(BufferPointer p, SFFSprite2* tSprite, SFFHeader2* tHeader) {
 	uint32_t realOffset;
 	if (tSprite->mFlags) realOffset = tHeader->mTDataOffset;
@@ -827,7 +854,10 @@ static Buffer readRawSprite2(Buffer b, SFFSprite2* tSprite, SFFHeader2* tHeader)
 	BufferPointer p = getBufferPointer(b);
 	p = getBufferPointerToSpriteData(p, tSprite, tHeader);
 
-	if (tSprite->mFormat == 2) {		
+	if (tSprite->mFormat == 0) {
+		return readRawUncompressedSprite2(p, tSprite->mDataLength);
+	}
+	else if (tSprite->mFormat == 2) {		
 		return readRawRLE8Sprite2(p, tSprite->mDataLength);
 	} else if (tSprite->mFormat == 4) {
 		return readRawLZ5Sprite2(p, tSprite->mDataLength);
@@ -862,7 +892,7 @@ static void loadSingleSprite2(Buffer b, BufferPointer* p, SFFHeader2* tHeader, M
 		return;
 	}
 
-	int isPaletted = sprite.mFormat == 2 || sprite.mFormat == 4;
+	int isPaletted = sprite.mFormat == 0 || sprite.mFormat == 2 || sprite.mFormat == 4;
 	int isRawPNG = sprite.mFormat == 10 || sprite.mFormat == 11 || sprite.mFormat == 12;
 
 	MugenSpriteFileSprite* e;
@@ -970,6 +1000,21 @@ MugenSpriteFile loadMugenSpriteFile(char * tPath, int tPreferredPalette, int tHa
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(char * tPath)
 {
 	return loadMugenSpriteFile(tPath, -1, 0, NULL);
+}
+
+static void unloadSinglePalette(void* tCaller, void* tData) {
+	(void)tCaller;
+	Buffer* b = tData;
+	freeBuffer(*b);
+}
+
+void unloadMugenSpriteFile(MugenSpriteFile* tFile) {
+	logError("Unloading unimplemented");
+	abortSystem();
+
+	vector_map(&tFile->mPalettes, unloadSinglePalette, NULL);
+	delete_vector(&tFile->mPalettes);
+	// TODO unload sprites;
 }
 
 MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite)

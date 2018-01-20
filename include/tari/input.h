@@ -5,7 +5,7 @@
 #include "geometry.h"
 
 fup void updateInput();
-fup void resetInput();
+fup void resetInputForAllControllers();
 
 fup int hasPressedA();
 fup int hasPressedB();

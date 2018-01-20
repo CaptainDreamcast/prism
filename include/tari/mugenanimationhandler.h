@@ -25,9 +25,11 @@ void setMugenAnimationInvisible(int tID);
 void setMugenAnimationDrawScale(int tID, Vector3D tScale);
 void setMugenAnimationDrawSize(int tID, Vector3D tSize);
 void setMugenAnimationDrawAngle(int tID, double tAngle);
+void addMugenAnimationDrawAngle(int tID, double tAngle);
 void setMugenAnimationColor(int tID, double tR, double tG, double tB);
 void setMugenAnimationTransparency(int tID, double tOpacity);
 void setMugenAnimationPosition(int tID, Position tPosition);
+void setMugenAnimationBlendType(int tID, BlendType tBlendType);
 
 double getMugenAnimationColorRed(int tID);
 double getMugenAnimationColorGreen(int tID);
@@ -49,6 +51,8 @@ void changeMugenAnimationWithStartStep(int tID, MugenAnimation* tNewAnimation, i
 int isStartingMugenAnimationElementWithID(int tID, int tStepID);
 int getTimeFromMugenAnimationElement(int tID, int tStep);
 int getMugenAnimationElementFromTimeOffset(int tID, int tTime);
+
+void advanceMugenAnimationOneTick(int tID);
 
 void pauseMugenAnimation(int tID);
 void unpauseMugenAnimation(int tID);

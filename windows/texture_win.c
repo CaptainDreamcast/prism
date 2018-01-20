@@ -5,6 +5,7 @@
 #include <SDL/SDL_image.h>
 #elif defined _WIN32
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #endif
 
 #include <string.h>
@@ -235,4 +236,26 @@ TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
 	}
 
 	return textureFromSurface(surface);
+}
+
+
+TruetypeFont loadTruetypeFont(char * tName, double tSize)
+{
+	char path[1024];
+	if (isFile(tName)) {
+		strcpy(path, tName);
+	}
+	else {
+		sprintf(path, "C:/Windows/Fonts/%s", tName); // TODO: properly
+		if (!isFile(path)) {
+			logError("Unable to open font file.");
+			logErrorString(tName);
+			logErrorString(path);
+			abortSystem();
+		}
+	}
+
+	TTF_Font* font = TTF_OpenFont(path, (int)tSize);
+	
+	return font;
 }

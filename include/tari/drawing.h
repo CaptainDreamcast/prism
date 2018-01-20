@@ -35,6 +35,7 @@ typedef enum {
 typedef enum {
 	BLEND_TYPE_NORMAL,
 	BLEND_TYPE_ADDITION,
+	BLEND_TYPE_SUBTRACTION,
 } BlendType;
 
 
@@ -45,6 +46,7 @@ fup void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosit
 fup void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor);
 fup void drawAdvancedText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize);
 fup void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize);
+void drawTruetypeText(char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Color tColor);
 fup void waitForScreen();
 fup void startDrawing();
 fup void stopDrawing();

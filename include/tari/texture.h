@@ -22,6 +22,8 @@ typedef struct {  // TODO: refactor completely from Dolmexica
   float mFilePositionY2;
 } FontCharacterData;
 
+typedef void* TruetypeFont;
+
 fup TextureData loadTexturePKG(char tFileDir[]);
 fup TextureData loadTexture(char tFileDir[]);
 fup TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight);
@@ -32,6 +34,7 @@ fup void loadConsecutiveTextures(TextureData* tDst, char* tBaseFileDir, int tAmo
 fup TextureData getFontTexture();
 fup FontCharacterData getFontCharacterData(char tChar);
 fup void setFont(char tFileDirHeader[], char tFileDirTexture[]);
+TruetypeFont loadTruetypeFont(char* tName, double tSize);
 
 fup int getTextureHash(TextureData tTexture); 
 fup int canLoadTexture(char* tPath);

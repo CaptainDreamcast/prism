@@ -123,7 +123,7 @@ static void loadScreen(Screen* tScreen) {
 	logg("Setting up Actorhandling");
 	setupActorHandler();
 	logg("Setting up input flanks");
-	resetInput();
+	resetInputForAllControllers();
 	enableDrawing();	
 
 	if (tScreen->mLoad) {

@@ -2,6 +2,7 @@
 
 #include "datastructures.h"
 #include "geometry.h"
+#include "file.h"
 
 #define MUGEN_DEF_STRING_LENGTH 500
 
@@ -55,10 +56,12 @@ typedef struct {
 } MugenDefScript;
 
 fup MugenDefScript loadMugenDefScript(char* tPath);
+fup MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer);
 fup void unloadMugenDefScript(MugenDefScript tScript);
 
 fup int isMugenDefStringVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
 fup char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
+fup int isMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 fup char* getAllocatedMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 fup int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
 fup char* getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
@@ -88,10 +91,12 @@ fup int isMugenDefVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 fup Vector3D getMugenDefVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 
 fup int isMugenDefVectorIVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
+fup int isMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 fup Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 fup Vector3DI getMugenDefVectorIVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
 
 fup int isMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
+fup MugenStringVector getMugenDefStringVectorVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
 fup MugenStringVector getMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 fup MugenStringVector copyMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElement);
 
@@ -104,3 +109,4 @@ fup int getMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tV
 fup Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, Vector3D tDefault);
 fup Vector3D getMugenDefVectorOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, Vector3D tDefault);
 fup Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, Vector3DI tDefault);
+fup Vector3DI getMugenDefVectorIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, Vector3DI tDefault);

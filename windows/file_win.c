@@ -50,8 +50,15 @@ const char* getFileSystem() {
 
 
 void setWorkingDirectory(char* path) {
-	char expandedPath[1024];
-	expandPath(expandedPath, path);
+	char expandedPath[1024], absolutePath[1024];
+	if (path[0] != '/') {
+		sprintf(absolutePath, "%s%s", gData.cwd, path);
+	}
+	else {
+		strcpy(absolutePath, path);
+	}
+
+	expandPath(expandedPath, absolutePath);
 	strcpy(gData.cwd, expandedPath);
 	debugString(gData.cwd);
 

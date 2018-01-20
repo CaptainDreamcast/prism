@@ -28,5 +28,6 @@ tools/kompressor/windows/Release/*
 *.TMP
 *.iobj
 *.cache
+*.psd
 
 bin/*

@@ -8,6 +8,7 @@
 #include <SDL/SDL_image.h>
 #elif defined _WIN32
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #endif
 
 #include "tari/log.h"
@@ -49,6 +50,27 @@ typedef struct {
 	Rectangle mTexturePosition;
 
 	DrawingData mData;
+
+} DrawListSpriteElement;
+
+typedef struct {
+	char mText[1024];
+	TTF_Font* mFont;
+	Position mPos;
+	Vector3DI mTextSize;
+	Color mColor;
+} DrawListTruetypeElement;
+
+typedef enum {
+	DRAW_LIST_ELEMENT_TYPE_SPRITE,
+	DRAW_LIST_ELEMENT_TYPE_TRUETYPE,
+
+} DrawListElementType;
+
+typedef struct {
+	DrawListElementType mType;
+	void* mData;
+	double mZ;
 } DrawListElement;
 
 
@@ -66,7 +88,7 @@ void initDrawing() {
 		abortSystem();
 	}
 
-	
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
 	gRenderer = SDL_CreateRenderer(gSDLWindow, -1, SDL_RENDERER_ACCELERATED);
 	if (gRenderer == NULL) {
 		logError("Unable to create renderer.");
@@ -78,6 +100,7 @@ void initDrawing() {
 	SDL_RenderSetScale(gRenderer, (float)(640.0 / sz.x), (float)(480.0 / sz.y));
 
 	IMG_Init(IMG_INIT_PNG);
+	TTF_Init();
 
 	gDrawVector = new_vector();
 	gData.mFrameStartTime = 0;
@@ -106,18 +129,35 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
     return;
   }
 
-  DrawListElement* e = allocMemory(sizeof(DrawListElement));
+
+  DrawListSpriteElement* e = allocMemory(sizeof(DrawListSpriteElement));
   e->mTexture = tTexture;
   e->mPos = tPos;
   e->mPos = vecAdd(e->mPos, gData.mTranslation);
   e->mTexturePosition = tTexturePosition;
   e->mData = gData;
-  vector_push_back_owned(&gDrawVector, e);
+
+  DrawListElement* listElement = allocMemory(sizeof(DrawListElement));
+  listElement->mType = DRAW_LIST_ELEMENT_TYPE_SPRITE;
+  listElement->mData = e;
+  listElement->mZ = tPos.z;
+  vector_push_back_owned(&gDrawVector, listElement);
+}
+
+static void clearSingleDrawElement(void* tCaller, void* tData) {
+	(void)tCaller;
+	DrawListElement* e = tData;
+	freeMemory(e->mData);
+}
+
+static void clearDrawVector() {
+	vector_map(&gDrawVector, clearSingleDrawElement, NULL);
+	vector_empty(&gDrawVector);
 }
 
 void startDrawing() {
 	SDL_RenderClear(gRenderer);
-	vector_empty(&gDrawVector);
+	clearDrawVector();
 }
 
 static int cmpZ(void* tCaller, void* tData1, void* tData2) {
@@ -125,8 +165,8 @@ static int cmpZ(void* tCaller, void* tData1, void* tData2) {
 	DrawListElement* e1 = tData1;
 	DrawListElement* e2 = tData2;
 	
-	if (e1->mPos.z < e2->mPos.z) return -1;
-	if (e1->mPos.z > e2->mPos.z) return 1;
+	if (e1->mZ < e2->mZ) return -1;
+	if (e1->mZ > e2->mZ) return 1;
 	else return 0;
 }
 
@@ -163,11 +203,7 @@ static SDL_Rect scaleSDLRect(SDL_Rect tRect, Vector3D tScale, Position tCenter) 
 	return makeSDLRectFromRectangle(rect);
 }
 
-static void drawSorted(void* tCaller, void* tData) {
-	(void)tCaller;
-
-	DrawListElement* e = tData;
-
+static void drawSortedSprite(DrawListSpriteElement* e) {
 	int sizeX = abs(e->mTexturePosition.bottomRight.x - e->mTexturePosition.topLeft.x) + 1;
 	int sizeY = abs(e->mTexturePosition.bottomRight.y - e->mTexturePosition.topLeft.y) + 1;
 
@@ -192,8 +228,8 @@ static void drawSorted(void* tCaller, void* tData) {
 	else {
 		realEffectPos = e->mData.mScaleEffectCenter;
 	}
-	
-	
+
+
 	if (e->mData.mIsRotationEffectCenterAbsolute) {
 		realEffectPos = vecAdd(e->mData.mRotationEffectCenter, vecScale(e->mPos, -1));
 	}
@@ -212,7 +248,7 @@ static void drawSorted(void* tCaller, void* tData) {
 	if (e->mTexturePosition.bottomRight.y < e->mTexturePosition.topLeft.y) flip |= SDL_FLIP_VERTICAL;
 
 	double angleDegrees = 360 - ((e->mData.mAngle.z * 180) / M_PI);
-	
+
 	Texture texture = e->mTexture.mTexture->mData;
 	SDL_SetTextureColorMod(texture->mTexture, (Uint8)(e->mData.r * 0xFF), (Uint8)(e->mData.g * 0xFF), (Uint8)(e->mData.b * 0xFF));
 	SDL_SetTextureAlphaMod(texture->mTexture, (Uint8)(e->mData.a * 0xFF));
@@ -220,17 +256,67 @@ static void drawSorted(void* tCaller, void* tData) {
 	if (e->mData.mBlendType == BLEND_TYPE_ADDITION) {
 		SDL_SetTextureBlendMode(texture->mTexture, SDL_BLENDMODE_ADD);
 	}
-	else {
+	else if(e->mData.mBlendType == BLEND_TYPE_NORMAL){
 		SDL_SetTextureBlendMode(texture->mTexture, SDL_BLENDMODE_BLEND);
+	} else if (e->mData.mBlendType == BLEND_TYPE_SUBTRACTION) {
+		SDL_BlendMode blendMode = SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDOPERATION_REV_SUBTRACT, SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD);
+		SDL_SetTextureBlendMode(texture->mTexture, blendMode);
+	}
+	else {
+		logError("Unimplemented blend type");
+		logErrorInteger(e->mData.mBlendType);
+		abortSystem();
 	}
 
 	SDL_RenderCopyEx(gRenderer, texture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
 }
 
+static void drawSortedTruetype(DrawListTruetypeElement* e) {
+
+	double r, g, b;
+	getRGBFromColor(e->mColor, &r, &g, &b);
+	SDL_Color color;
+	color.a = 0xFF;
+	color.r = 0xFF;
+	color.g = 0xFF;
+	color.b = 0xFF;
+
+	SDL_Surface* surface = TTF_RenderText_Blended(e->mFont, e->mText, color); 
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(gRenderer, surface); 
+
+	SDL_Rect rect; 
+	rect.x = (int)e->mPos.x; 
+	rect.y = (int)e->mPos.y;
+	rect.w = strlen(e->mText)*e->mTextSize.x; 
+	rect.h = e->mTextSize.y; 
+
+	SDL_RenderCopy(gRenderer, texture, NULL, &rect);
+
+	SDL_DestroyTexture(texture);
+	SDL_FreeSurface(surface);
+}
+
+static void drawSorted(void* tCaller, void* tData) {
+	(void)tCaller;
+	DrawListElement* e = tData;
+
+	if (e->mType == DRAW_LIST_ELEMENT_TYPE_SPRITE) {
+		drawSortedSprite(e->mData);
+	} else if (e->mType == DRAW_LIST_ELEMENT_TYPE_TRUETYPE) {
+		drawSortedTruetype(e->mData);
+	}
+	else {
+		logError("Unrecognized draw type");
+		logErrorInteger(e->mType);
+		abortSystem();
+	}
+	
+}
+
 void stopDrawing() {
 	vector_sort(&gDrawVector,cmpZ, NULL);
 	vector_map(&gDrawVector, drawSorted, NULL);
-	vector_empty(&gDrawVector);
+	clearDrawVector();
 	SDL_RenderPresent(gRenderer);
 }
 
@@ -305,6 +391,22 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
 	}
 
 	setDrawingParametersToIdentity();
+}
+
+void drawTruetypeText(char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Color tColor)
+{
+	DrawListTruetypeElement* e = allocMemory(sizeof(DrawListTruetypeElement));
+	strcpy(e->mText, tText);
+	e->mFont = tFont;
+	e->mPos = tPosition;
+	e->mTextSize = tTextSize;
+	e->mColor = tColor;
+
+	DrawListElement* listElement = allocMemory(sizeof(DrawListElement));
+	listElement->mType = DRAW_LIST_ELEMENT_TYPE_TRUETYPE;
+	listElement->mData = e;
+	listElement->mZ = tPosition.z;
+	vector_push_back_owned(&gDrawVector, listElement);
 }
 
 void scaleDrawing(double tFactor, Position tScalePosition){

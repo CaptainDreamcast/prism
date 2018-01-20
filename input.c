@@ -24,7 +24,7 @@ static struct {
 	int mMainController;
 } gData;
 
-void resetInput() {
+void resetInputForAllControllers() {
 	int i;
 	for (i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
 		hasPressedAFlankSingle(i);

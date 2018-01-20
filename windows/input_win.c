@@ -246,10 +246,16 @@ double getSingleRNormalized(int i) {
 extern SDL_Window* gSDLWindow;
 
 void forceMouseCursorToWindow() {
+#ifdef __EMSCRIPTEN__
+	return;
+#endif
 	SDL_SetWindowGrab(gSDLWindow, SDL_TRUE);
 }
 
 void releaseMouseCursorFromWindow() {
+#ifdef __EMSCRIPTEN__
+	return;
+#endif
 	SDL_SetWindowGrab(gSDLWindow, SDL_FALSE);
 }
 

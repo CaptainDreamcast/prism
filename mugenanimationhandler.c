@@ -64,6 +64,9 @@ typedef struct {
 	int mHasBasePositionReference;
 	Position* mBasePositionReference;
 
+	int mHasBlendType;
+	BlendType mBlendType;
+
 	int mIsPaused;
 	int mIsLooping;
 
@@ -256,6 +259,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 	e->mBaseDrawAngle = 0;
 
 	e->mHasBasePositionReference = 0;
+	e->mHasBlendType = 0;
 
 	e->mIsPaused = 0;
 	e->mIsLooping = 1;
@@ -345,6 +349,12 @@ void setMugenAnimationDrawAngle(int tID, double tAngle)
 	e->mBaseDrawAngle = tAngle;
 }
 
+void addMugenAnimationDrawAngle(int tID, double tAngle)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mBaseDrawAngle += tAngle;
+}
+
 void setMugenAnimationBaseDrawScale(int tID, double tScale)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
@@ -374,6 +384,13 @@ void setMugenAnimationPosition(int tID, Position tPosition)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	e->mOffset = tPosition;
+}
+
+void setMugenAnimationBlendType(int tID, BlendType tBlendType)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mBlendType = tBlendType;
+	e->mHasBlendType = 1;
 }
 
 double getMugenAnimationColorRed(int tID)
@@ -516,10 +533,7 @@ int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
 	return ret + 1;
 }
 
-static int updateSingleMugenAnimation(void* tCaller, void* tData) {
-	(void)tCaller;
-	MugenAnimationHandlerElement* e = tData;
-
+static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	if (e->mIsPaused) return 0;
 
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
@@ -531,6 +545,22 @@ static int updateSingleMugenAnimation(void* tCaller, void* tData) {
 	}
 
 	return 0;
+}
+
+static int updateSingleMugenAnimationCB(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenAnimationHandlerElement* e = tData;
+
+	return updateSingleMugenAnimation(e);
+}
+
+void advanceMugenAnimationOneTick(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	int shouldBeRemoved = updateSingleMugenAnimation(e); // TODO: think about replacing this
+	if (shouldBeRemoved) {
+		removeMugenAnimation(tID);
+	}
 }
 
 void pauseMugenAnimation(int tID)
@@ -555,7 +585,7 @@ void unpauseMugenAnimationHandler() {
 static void updateMugenAnimationHandler(void* tData) {
 	(void)tData;
 
-	int_map_remove_predicate(&gData.mAnimations, updateSingleMugenAnimation, NULL);
+	int_map_remove_predicate(&gData.mAnimations, updateSingleMugenAnimationCB, NULL);
 }
 
 void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData) 
@@ -635,6 +665,9 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 
 	if (step->mIsAddition) {
 		setDrawingBlendType(BLEND_TYPE_ADDITION);
+	}
+	else if (e->mHasBlendType) {
+		setDrawingBlendType(e->mBlendType); // TODO: work out step/animation blend type mixing
 	}
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
