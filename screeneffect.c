@@ -31,6 +31,13 @@ typedef struct FadeInStruct {
 	IsScreenEffectOverFunction mIsOverFunction;
 } FadeIn;
 
+typedef struct {
+	double mR;
+	double mG;
+	double mB;
+
+} FadeColor;
+
 static struct {
 	TextureData mWhiteTexture;
 	int mIsActive;
@@ -40,7 +47,7 @@ static struct {
 
 	int mScreenFillID;
 
-	Color mFadeColor;
+	FadeColor mFadeColor;
 } gData;
 
 void initScreenEffects() {
@@ -53,7 +60,7 @@ void initScreenEffects() {
 	gData.mFullLineSize = 10;
 	gData.mZ = 80;
 	gData.mScreenFillID = -1;
-	gData.mFadeColor = COLOR_BLACK;
+	gData.mFadeColor.mR = gData.mFadeColor.mG = gData.mFadeColor.mB = 0;
 
 	gData.mIsActive = 1;
 }
@@ -144,7 +151,7 @@ static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptio
 	for (i = 0; i < e->mAnimationAmount; i++) {
 		e->mAnimationIDs[i] = playAnimationLoop(p, &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
 		updateSingleFadeInAnimation(e, i);
-		setAnimationColorType(e->mAnimationIDs[i], gData.mFadeColor);
+		setAnimationColor(e->mAnimationIDs[i], gData.mFadeColor.mR, gData.mFadeColor.mG, gData.mFadeColor.mB);
 
 		p = vecAdd(p, makePosition(tFullPatchSize.x, 0, 0));
 		if (p.x >= screen.x) {
@@ -200,7 +207,13 @@ void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tC
 }
 
 void setFadeColor(Color tColor) {
-	gData.mFadeColor = tColor;
+	getRGBFromColor(tColor, &gData.mFadeColor.mR, &gData.mFadeColor.mG, &gData.mFadeColor.mB);
+}
+
+void setFadeColorRGB(double r, double g, double b) {
+	gData.mFadeColor.mR = r;
+	gData.mFadeColor.mG = g;
+	gData.mFadeColor.mB = b;
 }
 
 void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
@@ -225,7 +238,7 @@ void setScreenBlack() {
 
 	gData.mScreenFillID = playAnimationLoop(makePosition(0,0,gData.mZ), &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
 	setAnimationSize(gData.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));
-	setAnimationColorType(gData.mScreenFillID, gData.mFadeColor);
+	setAnimationColor(gData.mScreenFillID, gData.mFadeColor.mR, gData.mFadeColor.mG, gData.mFadeColor.mB);
 }
 
 void unsetScreenBlack() {

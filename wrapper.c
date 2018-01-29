@@ -35,6 +35,10 @@ static struct {
 
 	double mUpdateTimeCounter;
 	double mGlobalTimeDilatation;
+
+	int mHasBetweenScreensCB;
+	void(*mBetweenScreensCB)(void*);
+	void* mBetweenScreensCaller;
 } gData;
 
 void initTariWrapperWithDefaultFlags() {
@@ -132,6 +136,14 @@ static void loadScreen(Screen* tScreen) {
 	}
 }
 
+static void callBetweenScreensCB() {
+	if (!gData.mHasBetweenScreensCB) return;
+
+	logg("Calling user CB");
+	gData.mBetweenScreensCB(gData.mBetweenScreensCaller);
+	gData.mHasBetweenScreensCB = 0;
+}
+
 static void unloadScreen(Screen* tScreen) {
 	logg("Unloading handled screen");
 	
@@ -167,6 +179,8 @@ static void unloadScreen(Screen* tScreen) {
 	logg("Popping Memory Stacks");
 	popTextureMemoryStack();
 	popMemoryStack();
+
+	callBetweenScreensCB();
 
 	logMemoryState();
 	logTextureMemoryState();
@@ -275,4 +289,11 @@ void startScreenHandling(Screen* tScreen) {
 void setWrapperTimeDilatation(double tDilatation)
 {
 	gData.mGlobalTimeDilatation = tDilatation;
+}
+
+void setWrapperBetweenScreensCB(void(*tCB)(void *), void* tCaller)
+{
+	gData.mBetweenScreensCB = tCB;
+	gData.mBetweenScreensCaller = tCaller;
+	gData.mHasBetweenScreensCB = 1;
 }

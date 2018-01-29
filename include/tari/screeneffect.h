@@ -10,10 +10,12 @@ fup void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void*
 fup void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
 fup void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
 fup void setFadeColor(Color tColor);
+fup void setFadeColorRGB(double r, double g, double b);
 
 fup void drawColoredRectangle(GeoRectangle tRect, Color tColor);
 
 fup void setScreenColor(Color tColor);
+fup void setScreenBackgroundColorRGB(double tR, double tG, double tB);
 fup void unsetScreenColor();
 fup void setScreenBlack();
 fup void unsetScreenBlack();

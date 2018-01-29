@@ -6,6 +6,7 @@
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
 #include <SDL/SDL_image.h>
+#include <SDL/SDL_ttf.h>
 #elif defined _WIN32
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -58,7 +59,8 @@ typedef struct {
 	TTF_Font* mFont;
 	Position mPos;
 	Vector3DI mTextSize;
-	Color mColor;
+	Vector3D mColor;
+	double mTextBoxWidth;
 } DrawListTruetypeElement;
 
 typedef enum {
@@ -272,23 +274,23 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 }
 
 static void drawSortedTruetype(DrawListTruetypeElement* e) {
+	if (!strlen(e->mText)) return;
 
-	double r, g, b;
-	getRGBFromColor(e->mColor, &r, &g, &b);
 	SDL_Color color;
 	color.a = 0xFF;
-	color.r = 0xFF;
-	color.g = 0xFF;
-	color.b = 0xFF;
+	color.r = (Uint8)(0xFF * e->mColor.x);
+	color.g = (Uint8)(0xFF * e->mColor.y);
+	color.b = (Uint8)(0xFF * e->mColor.z);
 
-	SDL_Surface* surface = TTF_RenderText_Blended(e->mFont, e->mText, color); 
+	SDL_Surface* surface = TTF_RenderText_Blended_Wrapped(e->mFont, e->mText, color, (Uint32)e->mTextBoxWidth); 
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(gRenderer, surface); 
 
 	SDL_Rect rect; 
 	rect.x = (int)e->mPos.x; 
 	rect.y = (int)e->mPos.y;
-	rect.w = strlen(e->mText)*e->mTextSize.x; 
-	rect.h = e->mTextSize.y; 
+	rect.w = surface->w;
+	rect.h = surface->h;
+
 
 	SDL_RenderCopy(gRenderer, texture, NULL, &rect);
 
@@ -393,7 +395,7 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
 	setDrawingParametersToIdentity();
 }
 
-void drawTruetypeText(char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Color tColor)
+void drawTruetypeText(char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth)
 {
 	DrawListTruetypeElement* e = allocMemory(sizeof(DrawListTruetypeElement));
 	strcpy(e->mText, tText);
@@ -401,6 +403,7 @@ void drawTruetypeText(char * tText, TruetypeFont tFont, Position tPosition, Vect
 	e->mPos = tPosition;
 	e->mTextSize = tTextSize;
 	e->mColor = tColor;
+	e->mTextBoxWidth = tTextBoxWidth;
 
 	DrawListElement* listElement = allocMemory(sizeof(DrawListElement));
 	listElement->mType = DRAW_LIST_ELEMENT_TYPE_TRUETYPE;

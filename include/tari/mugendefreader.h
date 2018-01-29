@@ -100,6 +100,13 @@ fup MugenStringVector getMugenDefStringVectorVariable(MugenDefScript* tScript, c
 fup MugenStringVector getMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 fup MugenStringVector copyMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElement);
 
+int isMugenDefGeoRectangleVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
+int isMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+int isMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement);
+GeoRectangle getMugenDefGeoRectangleVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
+GeoRectangle getMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+GeoRectangle getMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement);
+
 fup void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, char* tGroup, char* tVariable, char* tDefault);
 
 fup double getMugenDefFloatOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, double tDefault);
@@ -110,3 +117,6 @@ fup Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, char* tGroup, char* t
 fup Vector3D getMugenDefVectorOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, Vector3D tDefault);
 fup Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, Vector3DI tDefault);
 fup Vector3DI getMugenDefVectorIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, Vector3DI tDefault);
+
+GeoRectangle getMugenDefGeoRectangleOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, GeoRectangle tDefault);
+GeoRectangle getMugenDefGeoRectangleOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, GeoRectangle tDefault);

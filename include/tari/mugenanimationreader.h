@@ -52,3 +52,4 @@ fup MugenAnimation* createOneFrameMugenAnimationForSprite(int tSpriteGroup, int 
 fup void destroyMugenAnimation(MugenAnimation* tAnimation);
 
 fup Vector3DI  getAnimationFirstElementSpriteSize(MugenAnimation* tAnimation, MugenSpriteFile* tSprites);
+Vector3D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, MugenSpriteFile* tSprites);

@@ -312,6 +312,7 @@ static int isTextStatement(Buffer* b, BufferPointer p) {
 	int ret = 0;
 	ret |= !strcmp("[Infobox Text]", text);
 	ret |= !strcmp("[ja.Infobox Text]", text);
+	ret |= !strcmp("[ExtraStages]", text); // TODO: check
 	ret |= !strcmp("[Map]", text); // TODO: check
 
 	return ret;
@@ -695,6 +696,7 @@ static int isTextStatementToken(MugenDefToken* tToken) {
 
 	if (!strcmp(gScriptMaker.mGroup, "Infobox Text")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "ja.Infobox Text")) return 1;
+	if (!strcmp(gScriptMaker.mGroup, "ExtraStages")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "Map")) return 1; // TODO: check
 
 	return 0;
@@ -1191,6 +1193,53 @@ MugenStringVector getMugenDefStringVectorVariableAsElement(MugenDefScriptGroupEl
 	return vectorElement->mVector;
 }
 
+int isMugenDefGeoRectangleVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName) {
+	if (!string_map_contains(&tScript->mGroups, tGroupName)) {
+		return 0;
+	}
+	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	return isMugenDefGeoRectangleVariableAsGroup(e, tVariableName);
+}
+
+int isMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
+	if (!string_map_contains(&tGroup->mElements, tVariableName)) {
+		return 0;
+	}
+
+	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	return isMugenDefGeoRectangleVariableAsElement(element);
+}
+
+int isMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement) {
+	if (tElement->mType != MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) return 0;
+
+	MugenDefScriptVectorElement* vectorElement = tElement->mData;
+	return vectorElement->mVector.mSize >= 4;
+}
+
+GeoRectangle getMugenDefGeoRectangleVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName) {
+	assert(string_map_contains(&tScript->mGroups, tGroupName)); 
+	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	return getMugenDefGeoRectangleVariableAsGroup(e, tVariableName);
+}
+GeoRectangle getMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
+	assert(string_map_contains(&tGroup->mElements, tVariableName));
+	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	return getMugenDefGeoRectangleVariableAsElement(element);
+}
+GeoRectangle getMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement) {
+	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
+	MugenDefScriptVectorElement* vectorElement = tElement->mData;
+	assert(vectorElement->mVector.mSize >= 4);
+	GeoRectangle ret;
+	ret.mTopLeft.x = atof(vectorElement->mVector.mElement[0]);
+	ret.mTopLeft.y = atof(vectorElement->mVector.mElement[1]);
+	ret.mBottomRight.x = atof(vectorElement->mVector.mElement[2]);
+	ret.mBottomRight.y = atof(vectorElement->mVector.mElement[3]);
+
+	return ret;
+}
+
 MugenStringVector copyMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
@@ -1287,6 +1336,26 @@ Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, char* tGroup, char* tVa
 Vector3DI getMugenDefVectorIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, Vector3DI tDefault) {
 	if (isMugenDefVectorIVariableAsGroup(tGroup, tVariable)) {
 		return getMugenDefVectorIVariableAsGroup(tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+
+
+GeoRectangle getMugenDefGeoRectangleOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, GeoRectangle tDefault) {
+	if (isMugenDefGeoRectangleVariable(s, tGroup, tVariable)) {
+		return getMugenDefGeoRectangleVariable(s, tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+GeoRectangle getMugenDefGeoRectangleOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, GeoRectangle tDefault) {
+	if (isMugenDefGeoRectangleVariableAsGroup(tGroup, tVariable)) {
+		return getMugenDefGeoRectangleVariableAsGroup(tGroup, tVariable);
 	}
 	else {
 		return tDefault;

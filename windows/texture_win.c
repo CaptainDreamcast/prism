@@ -243,7 +243,7 @@ TruetypeFont loadTruetypeFont(char * tName, double tSize)
 {
 	char path[1024];
 	if (isFile(tName)) {
-		strcpy(path, tName);
+		getFullPath(path, tName);
 	}
 	else {
 		sprintf(path, "C:/Windows/Fonts/%s", tName); // TODO: properly
@@ -255,7 +255,16 @@ TruetypeFont loadTruetypeFont(char * tName, double tSize)
 		}
 	}
 
-	TTF_Font* font = TTF_OpenFont(path, (int)tSize);
+	printf("%s\n", path);
 	
+	TTF_Font* font = TTF_OpenFont(path, (int)tSize);
+	printf("err: %s\n", TTF_GetError());
+
 	return font;
+}
+
+void unloadTruetypeFont(TruetypeFont tFont)
+{
+	TTF_Font* font = tFont;
+	TTF_CloseFont(font);
 }

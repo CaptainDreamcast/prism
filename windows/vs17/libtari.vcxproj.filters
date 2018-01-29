@@ -163,6 +163,12 @@
     <ClCompile Include="..\..\mugenassignmentevaluator.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\mugensoundfilereader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugentexthandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -326,6 +332,12 @@
       <Filter>hdr</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\tari\khash.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugensoundfilereader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\tari\mugentexthandler.h">
       <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>

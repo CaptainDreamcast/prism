@@ -49,15 +49,25 @@ void shutdownSoundEffectHandler() {
 	list_remove_predicate(&gData.mAllocatedChunks, unloadSingleSoundEffect, NULL);
 }
 
+static int addChunkToSoundEffectHandler(Mix_Chunk* tChunk) {
+	SoundEffectEntry* e = allocMemory(sizeof(SoundEffectEntry));
+	e->mChunk = tChunk;
+	return list_push_back_owned(&gData.mAllocatedChunks, e);
+}
+
 int loadSoundEffect(char* tPath) {
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);
 	Mix_Chunk* chunk = Mix_LoadWAV(fullPath);
+	return addChunkToSoundEffectHandler(chunk);
+}
 
-	SoundEffectEntry* e = allocMemory(sizeof(SoundEffectEntry));
-	e->mChunk = chunk;
-	
-	return list_push_back_owned(&gData.mAllocatedChunks, e);
+static int gDummy;
+
+int loadSoundEffectFromBuffer(Buffer tBuffer) {
+	SDL_RWops* rwOps = SDL_RWFromConstMem(tBuffer.mData, tBuffer.mLength);
+	Mix_Chunk* chunk = Mix_LoadWAV_RW(rwOps, 0);
+	return addChunkToSoundEffectHandler(chunk);
 }
 
 void unloadSoundEffect(int tID) {

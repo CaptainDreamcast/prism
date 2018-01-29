@@ -27,5 +27,6 @@ fup void abortScreenHandling();
 fup void setNewScreen(Screen* tScreen);
 
 void setWrapperTimeDilatation(double tDilatation);
+void setWrapperBetweenScreensCB(void(*tCB)(void*), void* tCaller);
 
 #endif 

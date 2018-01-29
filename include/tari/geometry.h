@@ -55,6 +55,7 @@ fup Line makeLine(Vector3D tStart, Vector3D tEnd);
 fup GeoRectangle makeGeoRectangle(double x, double y, double w, double h);
 
 Vector3DI vecAddI(Vector3DI v1, Vector3DI v2);
+int vecEqualsI(Vector3DI v1, Vector3DI v2);
 
 fup double getAngleFromDirection(Vector3D tDirection);
 fup Vector3D getDirectionFromAngleZ(double tAngle);

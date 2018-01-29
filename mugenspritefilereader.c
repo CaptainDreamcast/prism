@@ -130,6 +130,11 @@ typedef struct {
 	char mFiller[58];
 } PCXHeader;
 
+static struct {
+	int mIsOnlyLoadingPortraits;
+
+} gData;
+
 static uint32_t get2DBufferIndex(uint32_t i, uint32_t j, uint32_t w) {
 	return j * w + i;
 }
@@ -662,17 +667,7 @@ static void insertTextureIntoSpriteFile(MugenSpriteFile* tDst, MugenSpriteFileSp
 
 static int gPreviousGroup;
 
-static void loadSingleSFFFile(Buffer b, BufferPointer* p, MugenSpriteFile* tDst) {
-	SFFSubFileHeader subHeader;
-
-	readFromBufferPointer(&subHeader, p, sizeof(SFFSubFileHeader));
-
-	debugInteger(sizeof(SFFSubFileHeader));
-	debugPointer(subHeader.mNextFilePosition);
-	debugInteger(subHeader.mSubfileLength);
-	debugInteger(subHeader.mGroup);
-	debugInteger(subHeader.mImage);
-	debugString(subHeader.mComments);
+static void loadSingleSFFFileAndInsertIntoSpriteFile(SFFSubFileHeader subHeader, BufferPointer* p, MugenSpriteFile* tDst) {
 
 	MugenSpriteFileSprite* texture;
 
@@ -692,6 +687,23 @@ static void loadSingleSFFFile(Buffer b, BufferPointer* p, MugenSpriteFile* tDst)
 	}
 
 	insertTextureIntoSpriteFile(tDst, texture, subHeader.mGroup, subHeader.mImage);
+}
+
+static void loadSingleSFFFile(Buffer b, BufferPointer* p, MugenSpriteFile* tDst) {
+	SFFSubFileHeader subHeader;
+
+	readFromBufferPointer(&subHeader, p, sizeof(SFFSubFileHeader));
+
+	debugInteger(sizeof(SFFSubFileHeader));
+	debugPointer(subHeader.mNextFilePosition);
+	debugInteger(subHeader.mSubfileLength);
+	debugInteger(subHeader.mGroup);
+	debugInteger(subHeader.mImage);
+	debugString(subHeader.mComments);
+
+	if (!gData.mIsOnlyLoadingPortraits || subHeader.mGroup == 9000) { // TODO: non-hardcoded
+		loadSingleSFFFileAndInsertIntoSpriteFile(subHeader, p, tDst);
+	}
 
 	if (!subHeader.mNextFilePosition) {
 		*p = NULL;
@@ -887,6 +899,10 @@ static void loadSingleSprite2(Buffer b, BufferPointer* p, SFFHeader2* tHeader, M
 	debugInteger(sprite.mItemNo);
 	debugInteger(sprite.mFormat);
 
+	if (gData.mIsOnlyLoadingPortraits && sprite.mGroupNo != 9000) { // TODO: non-hardcoded
+		return;
+	}
+
 	if (!sprite.mDataLength) {
 		insertLinkedTextureIntoSpriteFile2(tDst, &sprite);
 		return;
@@ -963,7 +979,7 @@ static MugenSpriteFile loadMugenSpriteFile2(Buffer b, int tPreferredPalette, int
 	return ret;
 }
 
-MugenSpriteFile loadMugenSpriteFile(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile)
+static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile)
 {
 	debugLog("Loading sprite file.");
 	debugString(tPath);
@@ -997,6 +1013,16 @@ MugenSpriteFile loadMugenSpriteFile(char * tPath, int tPreferredPalette, int tHa
 	return ret;
 }
 
+MugenSpriteFile loadMugenSpriteFile(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile) {
+	gData.mIsOnlyLoadingPortraits = 0;
+	return loadMugenSpriteFileGeneral(tPath, tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
+}
+
+MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile) {
+	gData.mIsOnlyLoadingPortraits = 1;
+	return loadMugenSpriteFileGeneral(tPath, tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
+}
+
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(char * tPath)
 {
 	return loadMugenSpriteFile(tPath, -1, 0, NULL);
@@ -1015,6 +1041,22 @@ void unloadMugenSpriteFile(MugenSpriteFile* tFile) {
 	vector_map(&tFile->mPalettes, unloadSinglePalette, NULL);
 	delete_vector(&tFile->mPalettes);
 	// TODO unload sprites;
+}
+
+static int unloadSingleMugenSpriteFileSubSprite(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenSpriteFileSubSprite* subSprite = tData;
+	unloadTexture(subSprite->mTexture);
+
+	return 1;
+}
+
+void unloadMugenSpriteFileSprite(MugenSpriteFileSprite* tSprite) {
+
+	if (!tSprite->mIsLinked) {
+		list_remove_predicate(&tSprite->mTextures, unloadSingleMugenSpriteFileSubSprite, NULL);
+		delete_list(&tSprite->mTextures);
+	}
 }
 
 MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite)

@@ -12,6 +12,9 @@ void setMugenAnimationBaseDrawScale(int tID, double tScale);
 void setMugenAnimationBasePosition(int tID, Position* tPosition);
 
 void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData);
+void setMugenAnimationPassiveCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData);
+void setMugenAnimationAttackCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData);
+
 void setMugenAnimationNoLoop(int tID);
 void setMugenAnimationCallback(int tID, void(*tFunc)(void*), void* tCaller);
 
@@ -30,6 +33,8 @@ void setMugenAnimationColor(int tID, double tR, double tG, double tB);
 void setMugenAnimationTransparency(int tID, double tOpacity);
 void setMugenAnimationPosition(int tID, Position tPosition);
 void setMugenAnimationBlendType(int tID, BlendType tBlendType);
+void setMugenAnimationSprites(int tID, MugenSpriteFile* tSprites);
+void setMugenAnimationConstraintRectangle(int tID, GeoRectangle tConstraintRectangle);
 
 double getMugenAnimationColorRed(int tID);
 double getMugenAnimationColorGreen(int tID);

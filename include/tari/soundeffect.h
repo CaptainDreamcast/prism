@@ -3,6 +3,8 @@
 
 #include "common/header.h"
 
+#include "file.h"
+
 typedef struct {
 	int mAmount;
 	int* mSoundEffects;
@@ -13,6 +15,7 @@ fup void setupSoundEffectHandler();
 fup void shutdownSoundEffectHandler();
 
 fup int loadSoundEffect(char* tPath);
+int loadSoundEffectFromBuffer(Buffer tBuffer);
 fup void unloadSoundEffect(int tID);
 fup int playSoundEffect(int tID);
 fup void stopSoundEffect(int tSFX);

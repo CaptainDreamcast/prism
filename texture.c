@@ -89,3 +89,14 @@ TextureSize makeTextureSize(int x, int y) {
 	ret.y = y;
 	return ret;
 }
+
+TextureData createWhiteTexture() {
+	int length = 16 * 16 * 4;
+	uint8_t* data = allocMemory(length);
+	memset(data, 0xFF, length);
+
+	TextureData ret = loadTextureFromARGB32Buffer(makeBuffer(data, length), 16, 16);
+
+	freeMemory(data);
+	return ret;
+}

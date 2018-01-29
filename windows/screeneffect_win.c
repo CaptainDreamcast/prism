@@ -15,6 +15,15 @@ void setScreenColor(Color tColor) {
 	disableDrawing();
 }
 
+void setScreenBackgroundColorRGB(double tR, double tG, double tB)
+{
+	uint8_t r, g, b;
+	r = (uint8_t)(255 * tR);
+	g = (uint8_t)(255 * tG);
+	b = (uint8_t)(255 * tB);
+	SDL_SetRenderDrawColor(gRenderer, r, g, b, 0xFF);
+}
+
 void unsetScreenColor() {
 	enableDrawing();
 }

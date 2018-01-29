@@ -40,6 +40,10 @@ void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 		(*tG) = (*tR) = 0.5f;
 		(*tB) = 0;
 	}
+	else if (tColor == COLOR_CYAN) {
+		(*tR) = 0;
+		(*tG) = (*tB) = 1.0f;
+	}
 	else {
 		(*tR) = (*tG) = (*tB) = 1.0f;
 	}

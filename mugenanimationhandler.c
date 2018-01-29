@@ -26,17 +26,25 @@ typedef struct {
 	MugenSpriteFileSprite* mSprite;
 	int mHasSprite;
 
-	int mHasHitCB;
-	void* mHitCaller;
-	void(*mHitCB)(void* tCaller, void* tCollisionData);
+	int mHasPassiveHitCB;
+	void* mPassiveHitCaller;
+	void(*mPassiveHitCB)(void* tCaller, void* tCollisionData);
+
+	int mHasAttackHitCB;
+	void* mAttackHitCaller;
+	void(*mAttackHitCB)(void* tCaller, void* tCollisionData);
 
 	int mHasAnimationFinishedCallback;
 	void* mAnimationFinishedCaller;
 	void(*mAnimationFinishedCB)(void* tCaller);
 
-	int mHasHitboxes;
-	int mCollisionList;
-	void* mCollisionData;
+	int mHasPassiveHitboxes;
+	int mPassiveCollisionList;
+	void* mPassiveCollisionData;
+
+	int mHasAttackHitboxes;
+	int mAttackCollisionList;
+	void* mAttackCollisionData;
 
 	List mActiveHitboxes;
 
@@ -67,6 +75,9 @@ typedef struct {
 	int mHasBlendType;
 	BlendType mBlendType;
 
+	int mHasConstraintRectangle;
+	GeoRectangle mConstraintRectangle;
+
 	int mIsPaused;
 	int mIsLooping;
 
@@ -94,20 +105,24 @@ static MugenAnimationStep* getCurrentAnimationStep(MugenAnimationHandlerElement*
 
 static void passiveAnimationHitCB(void* tCaller, void* tCollisionData) {
 	MugenAnimationHandlerElement* e = tCaller;
-	if (!e->mHasHitCB) return;
-	e->mHitCB(e->mHitCaller, tCollisionData);
+	if (!e->mHasPassiveHitCB || e->mPassiveHitCB == NULL) return;
+	e->mPassiveHitCB(e->mPassiveHitCaller, tCollisionData);
 }
 
 
 static void attackAnimationHitCB(void* tCaller, void* tCollisionData) {
 	(void)tCaller;
 	(void)tCollisionData;
+	MugenAnimationHandlerElement* e = tCaller;
+	if (!e->mHasAttackHitCB || e->mAttackHitCB == NULL) return;
+	e->mAttackHitCB(e->mAttackHitCaller, tCollisionData);
 }
 
 typedef struct {
 	MugenAnimationHandlerElement* mElement;
 	int mList;
 	CollisionCallback mCB;
+	void* mCollisionData;
 } HitboxAdditionCaller;
 
 static void addSingleHitbox(void* tCaller, void* tData) {
@@ -127,24 +142,28 @@ static void addSingleHitbox(void* tCaller, void* tData) {
 	e->mCollider = makeColliderFromRect(scaledRectangle);
 
 	e->mList = caller->mList;
-	e->mID = addColliderToCollisionHandler(caller->mList, &caller->mElement->mPlayerPositionReference, e->mCollider, caller->mCB, caller->mElement, caller->mElement->mCollisionData);
+	e->mID = addColliderToCollisionHandler(caller->mList, &caller->mElement->mPlayerPositionReference, e->mCollider, caller->mCB, caller->mElement, caller->mCollisionData);
 
 	list_push_back_owned(&caller->mElement->mActiveHitboxes, e);
 }
 
-static void addNewSingleHitboxType(MugenAnimationHandlerElement* e, List* tHitboxes, int tList, CollisionCallback tCB) {
+static void addNewSingleHitboxType(MugenAnimationHandlerElement* e, List* tHitboxes, int tList, CollisionCallback tCB, void* tCollisionData) {
 	HitboxAdditionCaller caller;
 	caller.mElement = e;
 	caller.mList = tList;
 	caller.mCB = tCB;
+	caller.mCollisionData = tCollisionData;
 
 	list_map(tHitboxes, addSingleHitbox, &caller);
 }
 
 static void addNewHitboxes(MugenAnimationHandlerElement* e, MugenAnimationStep* tStep) {
-	if (!e->mHasHitboxes) return;
-	addNewSingleHitboxType(e, &tStep->mPassiveHitboxes, e->mCollisionList, passiveAnimationHitCB);
-	addNewSingleHitboxType(e, &tStep->mAttackHitboxes, e->mCollisionList, attackAnimationHitCB);
+	if (e->mHasPassiveHitboxes) {
+		addNewSingleHitboxType(e, &tStep->mPassiveHitboxes, e->mPassiveCollisionList, passiveAnimationHitCB, e->mPassiveCollisionData);
+	}
+	if (e->mHasAttackHitboxes) {
+		addNewSingleHitboxType(e, &tStep->mAttackHitboxes, e->mAttackCollisionList, attackAnimationHitCB, e->mAttackCollisionData);
+	}
 }
 
 static int removeSingleHitbox(void* tCaller, void* tData) {
@@ -240,10 +259,12 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 	e->mStepTime = 0;
 	e->mHasSprite = 0;
 
-	e->mHasHitCB = 0;
+	e->mHasPassiveHitCB = 0;
+	e->mHasAttackHitCB = 0;
 	e->mHasAnimationFinishedCallback = 0;
 
-	e->mHasHitboxes = 0;
+	e->mHasPassiveHitboxes = 0;
+	e->mHasAttackHitboxes = 0;
 	e->mActiveHitboxes = new_list();
 
 	e->mPlayerPositionReference = tPosition;
@@ -260,6 +281,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 
 	e->mHasBasePositionReference = 0;
 	e->mHasBlendType = 0;
+	e->mHasConstraintRectangle = 0;
 
 	e->mIsPaused = 0;
 	e->mIsLooping = 1;
@@ -391,6 +413,19 @@ void setMugenAnimationBlendType(int tID, BlendType tBlendType)
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	e->mBlendType = tBlendType;
 	e->mHasBlendType = 1;
+}
+
+void setMugenAnimationSprites(int tID, MugenSpriteFile * tSprites)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mSprites = tSprites;
+}
+
+void setMugenAnimationConstraintRectangle(int tID, GeoRectangle tConstraintRectangle)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mConstraintRectangle = tConstraintRectangle;
+	e->mHasConstraintRectangle = 1;
 }
 
 double getMugenAnimationColorRed(int tID)
@@ -590,13 +625,30 @@ static void updateMugenAnimationHandler(void* tData) {
 
 void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData) 
 {
+	setMugenAnimationPassiveCollisionActive(tID, tCollisionList, tFunc, tCaller, tCollisionData);
+	setMugenAnimationAttackCollisionActive(tID, tCollisionList, NULL, NULL, NULL);	
+}
+
+void setMugenAnimationPassiveCollisionActive(int tID, int tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
+{
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
-	e->mHasHitboxes = 1;
-	e->mCollisionList = tCollisionList;
-	e->mCollisionData = tCollisionData;
-	e->mHasHitCB = 1;
-	e->mHitCB = tFunc;
-	e->mHitCaller = tCaller;
+	e->mHasPassiveHitboxes = 1;
+	e->mPassiveCollisionList = tCollisionList;
+	e->mPassiveCollisionData = tCollisionData;
+	e->mHasPassiveHitCB = 1;
+	e->mPassiveHitCB = tFunc;
+	e->mPassiveHitCaller = tCaller;
+}
+
+void setMugenAnimationAttackCollisionActive(int tID, int tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mHasAttackHitboxes = 1;
+	e->mAttackCollisionList = tCollisionList;
+	e->mAttackCollisionData = tCollisionData;
+	e->mHasAttackHitCB = 1;
+	e->mAttackHitCB = tFunc;
+	e->mAttackHitCaller = tCaller;
 }
 
 void setMugenAnimationNoLoop(int tID) {
@@ -643,6 +695,33 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		if (newHeight <= 0) return;
 		newHeight = min(newHeight, sprite->mTexture.mTextureSize.y);
 		texturePos.bottomRight.y = texturePos.topLeft.y + newHeight;
+	}
+
+	if (e->mHasConstraintRectangle) {
+		
+		int minWidth = texturePos.topLeft.x;
+		int maxWidth = texturePos.bottomRight.x;
+		int sizeX = maxWidth - minWidth;
+
+		int leftX = max(minWidth, min(maxWidth, (int)(e->mConstraintRectangle.mTopLeft.x - p.x)));
+		int rightX = max(minWidth, min(maxWidth, (int)(e->mConstraintRectangle.mBottomRight.x - p.x)));
+		if (leftX == rightX) return;
+
+		p.x += leftX - texturePos.topLeft.x;
+		texturePos.topLeft.x = leftX;
+		texturePos.bottomRight.x = rightX;
+
+		int minHeight = texturePos.topLeft.y;
+		int maxHeight = texturePos.bottomRight.y;
+		int sizeY = maxHeight - minHeight;
+
+		int upY = max(minHeight, min(maxHeight, (int)(e->mConstraintRectangle.mTopLeft.y - p.y)));
+		int downY = max(minHeight, min(maxHeight, (int)(e->mConstraintRectangle.mBottomRight.y - p.y)));
+		if (upY == downY) return;
+
+		p.y += upY - texturePos.topLeft.y;
+		texturePos.topLeft.y = upY;
+		texturePos.bottomRight.y = downY;	
 	}
 
 	int isFacingRight = e->mIsFacingRight;

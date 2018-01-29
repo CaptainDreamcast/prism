@@ -35,10 +35,13 @@ fup TextureData getFontTexture();
 fup FontCharacterData getFontCharacterData(char tChar);
 fup void setFont(char tFileDirHeader[], char tFileDirTexture[]);
 TruetypeFont loadTruetypeFont(char* tName, double tSize);
+void unloadTruetypeFont(TruetypeFont tFont);
+
 
 fup int getTextureHash(TextureData tTexture); 
 fup int canLoadTexture(char* tPath);
 
 fup TextureSize makeTextureSize(int x, int y);
+fup TextureData createWhiteTexture();
 
 #endif

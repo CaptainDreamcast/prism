@@ -31,7 +31,10 @@ typedef struct {
 
 
 fup MugenSpriteFile loadMugenSpriteFile(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile);
+fup MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile);
+
 void unloadMugenSpriteFile(MugenSpriteFile* tFile);
+void unloadMugenSpriteFileSprite(MugenSpriteFileSprite* tSprite);
 fup MugenSpriteFile loadMugenSpriteFileWithoutPalette(char* tPath);
 fup MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite);
 

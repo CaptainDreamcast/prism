@@ -9,6 +9,7 @@ all: $(TARGET)
 TARI_PATH = .
 include Makefile.commonweb
 
+clean_user:
 
 clean:
 	-del *.o
