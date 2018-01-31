@@ -9,6 +9,8 @@
 #include <SDL/SDL_image.h>
 #elif defined _WIN32
 
+
+#define GLEW_STATIC
 #define GL3_PROTOTYPES 1
 #include <GL/glew.h>
 
@@ -101,6 +103,11 @@ static void initOpenGL() {
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 }
 
+static void initGlew() {
+	glewExperimental = GL_TRUE;
+	glewInit();
+}
+
 void initSystem() {
 
 	setToProgramDirectory();
@@ -111,9 +118,10 @@ void initSystem() {
 		sprintf(gData.mGameName, "Unnamed libtari game port");
 	}
 	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
-	gGLContext = SDL_GL_CreateContext(gSDLWindow);
 
 	initOpenGL();
+	gGLContext = SDL_GL_CreateContext(gSDLWindow);
+	initGlew();
 }
 
 void shutdownSystem() {

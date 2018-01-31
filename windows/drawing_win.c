@@ -163,7 +163,7 @@ void startDrawing() {
 }
 
 static int cmpZ(void* tCaller, void* tData1, void* tData2) {
-	(void*)tCaller;
+	(void)tCaller;
 	DrawListElement* e1 = tData1;
 	DrawListElement* e2 = tData2;
 	
