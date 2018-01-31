@@ -10,9 +10,9 @@
 #elif defined _WIN32
 
 
-#define GLEW_STATIC
 #define GL3_PROTOTYPES 1
 #include <GL/glew.h>
+#include <GL/glu.h>
 
 #include <SDL_image.h>
 #endif
@@ -79,8 +79,6 @@ static void setToProgramDirectory() {
 #endif
 }
 
-extern SDL_Renderer* gRenderer;
-
 static void setWindowSize() {
 	ScreenSize sz = getScreenSize();
 	double scaleX = gData.mDisplayedWindowSizeX / (double)sz.x;
@@ -89,18 +87,45 @@ static void setWindowSize() {
 	scaleX = fmin(scaleX, scaleY);
 	scaleY = fmin(scaleX, scaleY);
 
-	SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY);
+	// SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY); // TODO
 	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
 }
 
 static void initOpenGL() {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	ScreenSize sz = getScreenSize();
+	float ratio = (float)sz.x / (float)sz.y;
+
+	/* Our shading model--Gouraud (smooth). */
+	glShadeModel(GL_SMOOTH);
+
+	/* Culling. */
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+	glEnable(GL_CULL_FACE);
+
+	/* Set the clear color. */
+	glClearColor(0, 0, 0, 0);
+
+	/* Setup our viewport. */
+	glViewport(0, 0, sz.x, sz.y);
+
+	/*
+	* Change to the projection matrix and set
+	* our viewing volume.
+	*/
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	/*
+	* EXERCISE:
+	* Replace this with a call to glFrustum.
+	*/
+	glOrtho(-1, 1, -1, 1, 5, 100);
 }
 
 static void initGlew() {
@@ -134,8 +159,6 @@ void shutdownSystem() {
 }
 
 static void resizeWindow(SDL_Event* e) {
-	if (gRenderer == NULL) return;
-
 	gData.mDisplayedWindowSizeX = e->window.data1;
 	gData.mDisplayedWindowSizeY = e->window.data2;
 

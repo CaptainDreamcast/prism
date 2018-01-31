@@ -19,29 +19,14 @@
 
 
 
-extern SDL_Renderer* gRenderer;
-
 static TextureData textureFromSurface(SDL_Surface* tSurface) {
-	
-	SDL_Texture* newTexture;
-	newTexture = SDL_CreateTextureFromSurface(gRenderer, tSurface);
-	if (newTexture == NULL)
-	{
-		logError("Unable to create texture");
-		logErrorString(SDL_GetError());
-		abortSystem();
-	}
-
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
+	returnData.mTextureSize.x = tSurface->w;
+	returnData.mTextureSize.y = tSurface->h;
 	Texture texture = returnData.mTexture->mData;
-	texture->mTexture = newTexture;
 	
-	int access;
-	Uint32 format;
-	SDL_QueryTexture(newTexture, &format, &access, &returnData.mTextureSize.x, &returnData.mTextureSize.y);
-	
-	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, format, 0);
+	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_BGRA32, 0);
 	SDL_FreeSurface(tSurface);
 
 	return returnData;

@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include <SDL.h>
+#include <GL/glew.h>
 #ifdef __EMSCRIPTEN__
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_ttf.h>
@@ -80,26 +81,19 @@ static Vector gDrawVector;
 static DrawingData gData;
 
 extern SDL_Window* gSDLWindow;
-SDL_Renderer* gRenderer;
 
 void initDrawing() {
 	setDrawingParametersToIdentity();
 
 	if (gSDLWindow == NULL) {
-		logError("Unable to create renderer because no window was found.");
+		logError("Unable to init drawing without SDL window.");
 		abortSystem();
 	}
 
-	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengles2");
-	gRenderer = SDL_CreateRenderer(gSDLWindow, -1, SDL_RENDERER_ACCELERATED);
-	if (gRenderer == NULL) {
-		logError("Unable to create renderer.");
-		abortSystem();
-	}
-	SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+	glClearColor(0, 0, 0, 1);
 
 	ScreenSize sz = getScreenSize();
-	SDL_RenderSetScale(gRenderer, (float)(640.0 / sz.x), (float)(480.0 / sz.y));
+	// SDL_RenderSetScale(gRenderer, (float)(640.0 / sz.x), (float)(480.0 / sz.y)); // TODO: set rendering scale 
 
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
@@ -158,7 +152,16 @@ static void clearDrawVector() {
 }
 
 void startDrawing() {
-	SDL_RenderClear(gRenderer);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glLoadIdentity();
+
+	glMatrixMode(GL_MODELVIEW);
+
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glLoadIdentity();
 	clearDrawVector();
 }
 
@@ -203,6 +206,51 @@ static SDL_Rect scaleSDLRect(SDL_Rect tRect, Vector3D tScale, Position tCenter) 
 	rect = translateRectangle(rect, tCenter);
 
 	return makeSDLRectFromRectangle(rect);
+}
+
+static void drawSDLSurface(SDL_Surface* tSurface, SDL_Rect tSrcRect, SDL_Rect tDstRect) {
+	GLint colors = tSurface->format->BytesPerPixel;
+	GLenum texture_format;
+	if (colors == 4) {  
+		if (tSurface->format->Rmask == 0x000000ff)
+			texture_format = GL_RGBA;
+		else
+			texture_format = GL_BGRA;
+	}
+	else {            
+		if (tSurface->format->Rmask == 0x000000ff)
+			texture_format = GL_RGB;
+		else
+			texture_format = GL_BGR;
+	}
+
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, colors, tSurface->w, tSurface->h, 0,
+		texture_format, GL_UNSIGNED_BYTE, tSurface->pixels);
+
+	ScreenSize sz = getScreenSize();
+	double pl = (tDstRect.x / (double)sz.x) * 2 - 1;
+	double pr = ((tDstRect.x + tDstRect.w) / (double)sz.x) * 2 - 1;
+
+	double pu = -((tDstRect.y / (double)sz.y) * 2 - 1);
+	double pd = -(((tDstRect.y + tDstRect.h) / (double)sz.y) * 2 - 1);
+
+
+	glBegin(GL_QUADS);
+	{
+		glTexCoord2f(0.0f, 0.0f); glVertex2f(pl, pu);
+		glTexCoord2f(1.0f, 0.0f); glVertex2f(pr, pu);
+		glTexCoord2f(1.0f, 1.0f); glVertex2f(pr, pd);
+		glTexCoord2f(0.0f, 1.0f); glVertex2f(pl, pd);
+	}
+	glEnd();
+
+	glDeleteTextures(1, &texture);
 }
 
 static void drawSortedSprite(DrawListSpriteElement* e) {
@@ -252,17 +300,18 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	double angleDegrees = 360 - ((e->mData.mAngle.z * 180) / M_PI);
 
 	Texture texture = e->mTexture.mTexture->mData;
-	SDL_SetTextureColorMod(texture->mTexture, (Uint8)(e->mData.r * 0xFF), (Uint8)(e->mData.g * 0xFF), (Uint8)(e->mData.b * 0xFF));
-	SDL_SetTextureAlphaMod(texture->mTexture, (Uint8)(e->mData.a * 0xFF));
 
+
+	glBlendColor((GLclampf)e->mData.r, (GLclampf)e->mData.g, (GLclampf)e->mData.b, (GLclampf)e->mData.a);
+	
+	
 	if (e->mData.mBlendType == BLEND_TYPE_ADDITION) {
-		SDL_SetTextureBlendMode(texture->mTexture, SDL_BLENDMODE_ADD);
+		//glBlendEquation(GL_FUNC_ADD);
 	}
 	else if(e->mData.mBlendType == BLEND_TYPE_NORMAL){
-		SDL_SetTextureBlendMode(texture->mTexture, SDL_BLENDMODE_BLEND);
+		//glBlendEquation(GL_FUNC_ADD);
 	} else if (e->mData.mBlendType == BLEND_TYPE_SUBTRACTION) {
-		SDL_BlendMode blendMode = SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_DST_ALPHA, SDL_BLENDOPERATION_REV_SUBTRACT, SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_ADD);
-		SDL_SetTextureBlendMode(texture->mTexture, blendMode);
+		//glBlendEquation(GL_FUNC_SUBTRACT);
 	}
 	else {
 		logError("Unimplemented blend type");
@@ -270,7 +319,8 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 		abortSystem();
 	}
 
-	SDL_RenderCopyEx(gRenderer, texture->mTexture, &srcRect, &dstRect, angleDegrees, &effectCenter, flip);
+	// TODO: angle, flip, scale, effect center
+	drawSDLSurface(texture->mSurface, srcRect, dstRect);
 }
 
 static void drawSortedTruetype(DrawListTruetypeElement* e) {
@@ -282,6 +332,7 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 	color.g = (Uint8)(0xFF * e->mColor.y);
 	color.b = (Uint8)(0xFF * e->mColor.z);
 
+	/*
 	SDL_Surface* surface = TTF_RenderText_Blended_Wrapped(e->mFont, e->mText, color, (Uint32)e->mTextBoxWidth); 
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(gRenderer, surface); 
 
@@ -296,6 +347,8 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(surface);
+
+	*/
 }
 
 static void drawSorted(void* tCaller, void* tData) {
@@ -319,7 +372,7 @@ void stopDrawing() {
 	vector_sort(&gDrawVector,cmpZ, NULL);
 	vector_map(&gDrawVector, drawSorted, NULL);
 	clearDrawVector();
-	SDL_RenderPresent(gRenderer);
+	SDL_GL_SwapWindow(gSDLWindow);
 }
 
 void waitForScreen() {
@@ -539,7 +592,7 @@ void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTa
 	rect.y = tTarget.topLeft.y;
 	rect.w = w;
 	rect.h = h;
-	SDL_UpdateTexture(dst->mTexture, &rect, gPixelBuffer, w*sizeof(uint32_t));
+	// SDL_UpdateTexture(dst->mTexture, &rect, gPixelBuffer, w*sizeof(uint32_t)); // TODO
 }
 
 
