@@ -83,6 +83,8 @@ static void setToProgramDirectory() {
 #endif
 }
 
+extern void setDrawingScreenScale(double tScaleX, double tScaleY);
+
 static void setWindowSize() {
 	ScreenSize sz = getScreenSize();
 	double scaleX = gData.mDisplayedWindowSizeX / (double)sz.x;
@@ -91,7 +93,7 @@ static void setWindowSize() {
 	scaleX = fmin(scaleX, scaleY);
 	scaleY = fmin(scaleX, scaleY);
 
-	// SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY); // TODO
+	setDrawingScreenScale(scaleX, scaleY);
 	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
 }
 
@@ -103,15 +105,9 @@ static void initOpenGL() {
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-	printf("attribeue set\n");
 
 	ScreenSize sz = getScreenSize();
 	float ratio = (float)sz.x / (float)sz.y;
-
-	printf("ratue set\n");
 
 	gGLContext = SDL_GL_CreateContext(gSDLWindow);
 }
@@ -132,11 +128,7 @@ void initSystem() {
 	}
 	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 
-	printf("window created\n");
 	initOpenGL();
-	printf("opengl inited\n");
-
-	printf("context created\n");
 
 	initGlew();
 }

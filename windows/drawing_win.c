@@ -23,7 +23,7 @@
 
 static const GLchar *vertex_shader =
 "uniform mat4 ProjMtx;\n"
-"attribute vec2 Position;\n"
+"attribute vec3 Position;\n"
 "attribute vec2 UV;\n"
 "attribute vec4 Color;\n"
 "varying vec2 Frag_UV;\n"
@@ -32,7 +32,7 @@ static const GLchar *vertex_shader =
 "{\n"
 "	Frag_UV = UV;\n"
 "	Frag_Color = Color;\n"
-"	gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
+"	gl_Position = ProjMtx * vec4(Position.xyz,1);\n"
 "}\n";
 
 static const GLchar* fragment_shader =
@@ -111,6 +111,7 @@ static struct {
 	int          mAttribLocationPosition, mAttribLocationUV, mAttribLocationColor;
 	unsigned int mVboHandle, mElementsHandle;
 
+	Vector3D mScreenScale;
 } gOpenGLData;
 
 static Vector gDrawVector;
@@ -147,6 +148,8 @@ static void initOpenGL() {
 	glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
 }
 
+void setDrawingScreenScale(double tScaleX, double tScaleY);
+
 void initDrawing() {
 	setDrawingParametersToIdentity();
 
@@ -156,7 +159,7 @@ void initDrawing() {
 	}
 
 	ScreenSize sz = getScreenSize();
-	// SDL_RenderSetScale(gRenderer, (float)(640.0 / sz.x), (float)(480.0 / sz.y)); // TODO: set rendering scale 
+	setDrawingScreenScale((640.0 / sz.x), (480.0 / sz.y));
 
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
@@ -220,6 +223,31 @@ void startDrawing() {
 	glViewport(0, 0, 640, 480);
 	glClearColor(1, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
+	
+	glUseProgram(gOpenGLData.mShaderHandle);
+	glUniform1i(gOpenGLData.mAttribLocationTex, 0);
+
+	// Render command lists
+	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
+	glEnableVertexAttribArray(gOpenGLData.mAttribLocationPosition);
+	glEnableVertexAttribArray(gOpenGLData.mAttribLocationUV);
+	glEnableVertexAttribArray(gOpenGLData.mAttribLocationColor);
+	int stride = sizeof(GLfloat) * 9;
+	glVertexAttribPointer(gOpenGLData.mAttribLocationPosition, 3, GL_FLOAT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(gOpenGLData.mAttribLocationUV, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 3));
+	glVertexAttribPointer(gOpenGLData.mAttribLocationColor, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 5));
+	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gOpenGLData.mElementsHandle);
+
+	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_SCISSOR_TEST);
+	glActiveTexture(GL_TEXTURE0);
+
+
 
 	clearDrawVector();
 }
@@ -267,62 +295,65 @@ static SDL_Rect scaleSDLRect(SDL_Rect tRect, Vector3D tScale, Position tCenter) 
 	return makeSDLRectFromRectangle(rect);
 }
 
-static void setSingleVertex(GLfloat* tDst, double tX, double tY, double tU, double tV) {
-	tDst[0] = tX;
-	tDst[1] = tY;
-	tDst[2] = tU;
-	tDst[3] = tV;
-	tDst[4] = tDst[5] = tDst[6] = tDst[7] = 1;
+static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double tV) {
+	tDst[0] = tPosition.x;
+	tDst[1] = tPosition.y;
+	tDst[2] = 0;
+	tDst[3] = tU;
+	tDst[4] = tV;
+	tDst[5] = tDst[6] = tDst[7] = tDst[8] = 1;
 }
 
-static void drawOpenGLTexture(GLuint tTextureID, SDL_Rect tSrcRect, SDL_Rect tDstRect) {
-	GLint last_program, last_texture, last_array_buffer, last_element_array_buffer;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
-	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
+static void multiplyMatrices(float tDst[4][4], float tB[4][4]) {
 
-	// Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled
-	glEnable(GL_BLEND);
-	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_SCISSOR_TEST);
-	glActiveTexture(GL_TEXTURE0);
+	float tA[4][4];
 
+	int i, j, k;
+	for (j = 0; j < 4; j++) {
+		for (i = 0; i < 4; i++) {
+			tA[j][i] = tDst[j][i];
+		}
+	}
+
+	for (j = 0; j < 4; j++) {
+		for (i = 0; i < 4; i++) {
+			tDst[j][i] = 0;
+			for (k = 0; k < 4; k++) {
+				tDst[j][i] += tA[k][i] * tB[j][k];
+			}
+		}
+	}
+}
+
+static void drawOpenGLTexture(GLuint tTextureID, GeoRectangle tSrcRect, GeoRectangle tDstRect) {
 
 	// Setup orthographic projection matrix
-	const float ortho_projection[4][4] =
+	float matrix[4][4] =
 	{
 		{ 2.0f / 640, 0.0f, 0.0f, 0.0f },
 		{ 0.0f, 2.0f / -480, 0.0f, 0.0f },
 		{ 0.0f, 0.0f, -1.0f, 0.0f },
 		{ -1.0f, 1.0f, 0.0f, 1.0f },
 	};
-	glUseProgram(gOpenGLData.mShaderHandle);
-	glUniform1i(gOpenGLData.mAttribLocationTex, 0);
-	glUniformMatrix4fv(gOpenGLData.mAttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
 
-	// Render command lists
-	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
-	glEnableVertexAttribArray(gOpenGLData.mAttribLocationPosition);
-	glEnableVertexAttribArray(gOpenGLData.mAttribLocationUV);
-	glEnableVertexAttribArray(gOpenGLData.mAttribLocationColor);
+	float scaleMatrix[4][4] =
+	{
+		{ 2.0f, 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 2.0f, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, 1.0f, 0.0f },
+		{ 0.0f, 0.0f, 0.0f, 1.0f },
+	};
 
+	// multiplyMatrices(matrix, scaleMatrix);
+	glUniformMatrix4fv(gOpenGLData.mAttribLocationProjMtx, 1, GL_FALSE, &matrix[0][0]);
 
-	int stride = sizeof(GLfloat) * 8;
-	glVertexAttribPointer(gOpenGLData.mAttribLocationPosition, 2, GL_FLOAT, GL_FALSE, stride, 0);
-	glVertexAttribPointer(gOpenGLData.mAttribLocationUV, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 2));
-	glVertexAttribPointer(gOpenGLData.mAttribLocationColor, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 4));
+	GLfloat vertices[4 * 9];
+	setSingleVertex(&vertices[0 * 9], tDstRect.mTopLeft, tSrcRect.mTopLeft.x, tSrcRect.mTopLeft.y);
+	setSingleVertex(&vertices[1 * 9], makePosition(tDstRect.mBottomRight.x, tDstRect.mTopLeft.y, tDstRect.mTopLeft.z), tSrcRect.mBottomRight.x, tSrcRect.mTopLeft.y);
+	setSingleVertex(&vertices[2 * 9], tDstRect.mBottomRight, tSrcRect.mBottomRight.x, tSrcRect.mBottomRight.y);
+	setSingleVertex(&vertices[3 * 9], makePosition(tDstRect.mTopLeft.x, tDstRect.mBottomRight.y, tDstRect.mTopLeft.z), tSrcRect.mTopLeft.x, tSrcRect.mBottomRight.y);
 
-	GLfloat vertices[4 * 8];
-	setSingleVertex(&vertices[0 * 8], tDstRect.x, tDstRect.y, 0, 0);
-	setSingleVertex(&vertices[1 * 8], tDstRect.x + tDstRect.w, tDstRect.y, 1, 0);
-	setSingleVertex(&vertices[2 * 8], tDstRect.x + tDstRect.w, tDstRect.y + tDstRect.h, 1, 1);
-	setSingleVertex(&vertices[3 * 8], tDstRect.x, tDstRect.y + tDstRect.h, 0, 1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
+	int stride = sizeof(GLfloat) * 9;
 	glBufferData(GL_ARRAY_BUFFER, 4 * stride, vertices, GL_STREAM_DRAW);
 
 	GLuint elements[] = {
@@ -330,25 +361,16 @@ static void drawOpenGLTexture(GLuint tTextureID, SDL_Rect tSrcRect, SDL_Rect tDs
 		2, 3, 0
 	};
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gOpenGLData.mElementsHandle);
+	
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STREAM_DRAW);
 
 	glBindTexture(GL_TEXTURE_2D, tTextureID);
-	// glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 	glDrawElements(GL_TRIANGLES, (GLsizei)6, GL_UNSIGNED_INT, 0);
 
-	// Restore modified state
-	glDisableVertexAttribArray(gOpenGLData.mAttribLocationPosition);
-	glDisableVertexAttribArray(gOpenGLData.mAttribLocationUV);
-	glDisableVertexAttribArray(gOpenGLData.mAttribLocationColor);
-	glUseProgram(last_program);
-	glBindTexture(GL_TEXTURE_2D, last_texture);
-	glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
-	glDisable(GL_SCISSOR_TEST);
+
 }
 
-static void drawSDLSurface(SDL_Surface* tSurface, SDL_Rect tSrcRect, SDL_Rect tDstRect) {
+static void drawSDLSurface(SDL_Surface* tSurface, GeoRectangle tSrcRect, GeoRectangle tDstRect) {
 	GLuint textureID;
 	GLint last_texture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
@@ -371,19 +393,15 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	int sizeX = abs(e->mTexturePosition.bottomRight.x - e->mTexturePosition.topLeft.x) + 1;
 	int sizeY = abs(e->mTexturePosition.bottomRight.y - e->mTexturePosition.topLeft.y) + 1;
 
-	SDL_Rect srcRect;
-	srcRect.x = min(e->mTexturePosition.topLeft.x, e->mTexturePosition.bottomRight.x);
-	srcRect.y = min(e->mTexturePosition.topLeft.y, e->mTexturePosition.bottomRight.y);
-	srcRect.w = sizeX;
-	srcRect.h = sizeY;
+	GeoRectangle srcRect;
+	srcRect.mTopLeft.x = e->mTexturePosition.topLeft.x / (double)(e->mTexture.mTextureSize.x - 1);
+	srcRect.mTopLeft.y = e->mTexturePosition.topLeft.y / (double)(e->mTexture.mTextureSize.y - 1);
+	srcRect.mBottomRight.x = e->mTexturePosition.bottomRight.x / (double)(e->mTexture.mTextureSize.x - 1);
+	srcRect.mBottomRight.y = e->mTexturePosition.bottomRight.y / (double)(e->mTexture.mTextureSize.y - 1);
 
-	SDL_Rect dstRect;
-	dstRect.x = (int)e->mPos.x;
-	dstRect.y = (int)e->mPos.y;
-	dstRect.w = sizeX;
-	dstRect.h = sizeY;
-
-	dstRect = scaleSDLRect(dstRect, e->mData.mScale, e->mData.mScaleEffectCenter);
+	GeoRectangle dstRect;
+	dstRect.mTopLeft = e->mPos;
+	dstRect.mBottomRight = vecAdd(e->mPos, makePosition(sizeX, sizeY, 0));
 
 	Position realEffectPos;
 	if (e->mData.mIsScaleEffectCenterAbsolute) {
@@ -415,16 +433,16 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 
 	Texture texture = e->mTexture.mTexture->mData;
 
-	glBlendColor((GLclampf)e->mData.r, (GLclampf)e->mData.g, (GLclampf)e->mData.b, (GLclampf)e->mData.a);
-	
-	
 	if (e->mData.mBlendType == BLEND_TYPE_ADDITION) {
 		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 	}
 	else if(e->mData.mBlendType == BLEND_TYPE_NORMAL){
 		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	} else if (e->mData.mBlendType == BLEND_TYPE_SUBTRACTION) {
-		glBlendEquation(GL_FUNC_SUBTRACT);
+		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+		glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 	}
 	else {
 		logError("Unimplemented blend type");
@@ -451,6 +469,8 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 	color.g = (Uint8)(0xFF * e->mColor.y);
 	color.b = (Uint8)(0xFF * e->mColor.z);
 
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	Position pos = e->mPos;
 	int i;
@@ -480,17 +500,11 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 
 		SDL_Surface* surface = TTF_RenderText_Blended(e->mFont, text, color);
 
-		SDL_Rect rect;
-		rect.x = (int)pos.x;
-		rect.y = (int)pos.y;
-		rect.w = surface->w;
-		rect.h = surface->h;
+		GeoRectangle rect;
+		rect.mTopLeft = pos;
+		rect.mBottomRight = vecAdd(pos, makePosition(surface->w, surface->h, 0));
 
-		SDL_Rect src;
-		src.x = 0;
-		src.y = 0;
-		src.w = surface->w;
-		src.h = surface->h;
+		GeoRectangle src = makeGeoRectangle(0, 0, surface->w, surface->h);
 
 		pos.y += surface->h;
 		
@@ -544,10 +558,6 @@ void waitForScreen() {
 }
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
-
-static void drawTextInternal() {
-
-}
 
 // TODO: refactor into general drawing code so both have it
 static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize) {
@@ -759,4 +769,9 @@ void enableDrawing() {
 }
 
 
+void setDrawingScreenScale(double tScaleX, double tScaleY) {
+	
+	gOpenGLData.mScreenScale = makePosition(tScaleX, tScaleY, 1);
 
+	printf("saa %f %f\n", gOpenGLData.mScreenScale.x, gOpenGLData.mScreenScale.y);
+}
