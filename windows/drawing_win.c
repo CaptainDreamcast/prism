@@ -21,6 +21,34 @@
 
 
 
+static const GLchar *vertex_shader =
+"uniform mat4 ProjMtx;\n"
+"attribute vec2 Position;\n"
+"attribute vec2 UV;\n"
+"attribute vec4 Color;\n"
+"varying vec2 Frag_UV;\n"
+"varying vec4 Frag_Color;\n"
+"void main()\n"
+"{\n"
+"	Frag_UV = UV;\n"
+"	Frag_Color = Color;\n"
+"	gl_Position = ProjMtx * vec4(Position.xy,0,1);\n"
+"}\n";
+
+static const GLchar* fragment_shader =
+#ifdef __EMSCRIPTEN__
+        // WebGL requires precision specifiers but OpenGL 2.1 disallows
+        // them, so I define the shader without it and then add it here.
+"precision mediump float;\n"
+#endif
+"uniform sampler2D Texture;\n"
+"varying vec2 Frag_UV;\n"
+"varying vec4 Frag_Color;\n"
+"void main()\n"
+"{\n"
+"	gl_FragColor = Frag_Color * texture2D(Texture, Frag_UV);\n"
+"}\n";
+
 
 typedef struct {
 
@@ -77,10 +105,47 @@ typedef struct {
 } DrawListElement;
 
 
+static struct {
+	int          mShaderHandle, mVertHandle, mFragHandle;
+	int          mAttribLocationTex, mAttribLocationProjMtx;
+	int          mAttribLocationPosition, mAttribLocationUV, mAttribLocationColor;
+	unsigned int mVboHandle, mElementsHandle;
+
+} gOpenGLData;
+
 static Vector gDrawVector;
 static DrawingData gData;
 
 extern SDL_Window* gSDLWindow;
+
+static void initOpenGL() {
+	GLint last_texture, last_array_buffer;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
+
+	gOpenGLData.mShaderHandle = glCreateProgram();
+	gOpenGLData.mVertHandle = glCreateShader(GL_VERTEX_SHADER);
+	gOpenGLData.mFragHandle = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(gOpenGLData.mVertHandle, 1, &vertex_shader, NULL);
+	glShaderSource(gOpenGLData.mFragHandle, 1, &fragment_shader, 0);
+	glCompileShader(gOpenGLData.mVertHandle);
+	glCompileShader(gOpenGLData.mFragHandle);
+	glAttachShader(gOpenGLData.mShaderHandle, gOpenGLData.mVertHandle);
+	glAttachShader(gOpenGLData.mShaderHandle, gOpenGLData.mFragHandle);
+	glLinkProgram(gOpenGLData.mShaderHandle);
+	
+	gOpenGLData.mAttribLocationTex = glGetUniformLocation(gOpenGLData.mShaderHandle, "Texture");
+	gOpenGLData.mAttribLocationProjMtx = glGetUniformLocation(gOpenGLData.mShaderHandle, "ProjMtx");
+	gOpenGLData.mAttribLocationPosition = glGetAttribLocation(gOpenGLData.mShaderHandle, "Position");
+	gOpenGLData.mAttribLocationUV = glGetAttribLocation(gOpenGLData.mShaderHandle, "UV");
+	gOpenGLData.mAttribLocationColor = glGetAttribLocation(gOpenGLData.mShaderHandle, "Color");
+	
+	glGenBuffers(1, &gOpenGLData.mVboHandle);
+	glGenBuffers(1, &gOpenGLData.mElementsHandle);
+	
+	glBindTexture(GL_TEXTURE_2D, last_texture);
+	glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
+}
 
 void initDrawing() {
 	setDrawingParametersToIdentity();
@@ -89,8 +154,6 @@ void initDrawing() {
 		logError("Unable to init drawing without SDL window.");
 		abortSystem();
 	}
-
-	glClearColor(0, 0, 0, 1);
 
 	ScreenSize sz = getScreenSize();
 	// SDL_RenderSetScale(gRenderer, (float)(640.0 / sz.x), (float)(480.0 / sz.y)); // TODO: set rendering scale 
@@ -107,10 +170,11 @@ void initDrawing() {
 	gData.mIsRotationEffectCenterAbsolute = 1;
 
 	gData.mIsDisabled = 0;
+
+	initOpenGL();
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
-
 	if (gData.mIsDisabled) return;
 
   debugLog("Draw Sprite");
@@ -152,16 +216,11 @@ static void clearDrawVector() {
 }
 
 void startDrawing() {
+
+	glViewport(0, 0, 640, 480);
+	glClearColor(1, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glLoadIdentity();
 
-	glMatrixMode(GL_MODELVIEW);
-
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glLoadIdentity();
 	clearDrawVector();
 }
 
@@ -208,49 +267,101 @@ static SDL_Rect scaleSDLRect(SDL_Rect tRect, Vector3D tScale, Position tCenter) 
 	return makeSDLRectFromRectangle(rect);
 }
 
-static void drawSDLSurface(SDL_Surface* tSurface, SDL_Rect tSrcRect, SDL_Rect tDstRect) {
-	GLint colors = tSurface->format->BytesPerPixel;
-	GLenum texture_format;
-	if (colors == 4) {  
-		if (tSurface->format->Rmask == 0x000000ff)
-			texture_format = GL_RGBA;
-		else
-			texture_format = GL_BGRA;
-	}
-	else {            
-		if (tSurface->format->Rmask == 0x000000ff)
-			texture_format = GL_RGB;
-		else
-			texture_format = GL_BGR;
-	}
+static void setSingleVertex(GLfloat* tDst, double tX, double tY, double tU, double tV) {
+	tDst[0] = tX;
+	tDst[1] = tY;
+	tDst[2] = tU;
+	tDst[3] = tV;
+	tDst[4] = tDst[5] = tDst[6] = tDst[7] = 1;
+}
 
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
+static void drawOpenGLTexture(GLuint tTextureID, SDL_Rect tSrcRect, SDL_Rect tDstRect) {
+	GLint last_program, last_texture, last_array_buffer, last_element_array_buffer;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
+	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
+
+	// Setup render state: alpha-blending enabled, no face culling, no depth testing, scissor enabled
+	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_SCISSOR_TEST);
+	glActiveTexture(GL_TEXTURE0);
+
+
+	// Setup orthographic projection matrix
+	const float ortho_projection[4][4] =
+	{
+		{ 2.0f / 640, 0.0f, 0.0f, 0.0f },
+		{ 0.0f, 2.0f / -480, 0.0f, 0.0f },
+		{ 0.0f, 0.0f, -1.0f, 0.0f },
+		{ -1.0f, 1.0f, 0.0f, 1.0f },
+	};
+	glUseProgram(gOpenGLData.mShaderHandle);
+	glUniform1i(gOpenGLData.mAttribLocationTex, 0);
+	glUniformMatrix4fv(gOpenGLData.mAttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
+
+	// Render command lists
+	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
+	glEnableVertexAttribArray(gOpenGLData.mAttribLocationPosition);
+	glEnableVertexAttribArray(gOpenGLData.mAttribLocationUV);
+	glEnableVertexAttribArray(gOpenGLData.mAttribLocationColor);
+
+
+	int stride = sizeof(GLfloat) * 8;
+	glVertexAttribPointer(gOpenGLData.mAttribLocationPosition, 2, GL_FLOAT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(gOpenGLData.mAttribLocationUV, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 2));
+	glVertexAttribPointer(gOpenGLData.mAttribLocationColor, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 4));
+
+	GLfloat vertices[4 * 8];
+	setSingleVertex(&vertices[0 * 8], tDstRect.x, tDstRect.y, 0, 0);
+	setSingleVertex(&vertices[1 * 8], tDstRect.x + tDstRect.w, tDstRect.y, 1, 0);
+	setSingleVertex(&vertices[2 * 8], tDstRect.x + tDstRect.w, tDstRect.y + tDstRect.h, 1, 1);
+	setSingleVertex(&vertices[3 * 8], tDstRect.x, tDstRect.y + tDstRect.h, 0, 1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
+	glBufferData(GL_ARRAY_BUFFER, 4 * stride, vertices, GL_STREAM_DRAW);
+
+	GLuint elements[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gOpenGLData.mElementsHandle);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STREAM_DRAW);
+
+	glBindTexture(GL_TEXTURE_2D, tTextureID);
+	// glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+	glDrawElements(GL_TRIANGLES, (GLsizei)6, GL_UNSIGNED_INT, 0);
+
+	// Restore modified state
+	glDisableVertexAttribArray(gOpenGLData.mAttribLocationPosition);
+	glDisableVertexAttribArray(gOpenGLData.mAttribLocationUV);
+	glDisableVertexAttribArray(gOpenGLData.mAttribLocationColor);
+	glUseProgram(last_program);
+	glBindTexture(GL_TEXTURE_2D, last_texture);
+	glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
+	glDisable(GL_SCISSOR_TEST);
+}
+
+static void drawSDLSurface(SDL_Surface* tSurface, SDL_Rect tSrcRect, SDL_Rect tDstRect) {
+	GLuint textureID;
+	GLint last_texture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	glTexImage2D(GL_TEXTURE_2D, 0, colors, tSurface->w, tSurface->h, 0,
-		texture_format, GL_UNSIGNED_BYTE, tSurface->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tSurface->w, tSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tSurface->pixels);
+	glBindTexture(GL_TEXTURE_2D, last_texture);
 
-	ScreenSize sz = getScreenSize();
-	double pl = (tDstRect.x / (double)sz.x) * 2 - 1;
-	double pr = ((tDstRect.x + tDstRect.w) / (double)sz.x) * 2 - 1;
+	drawOpenGLTexture(textureID, tSrcRect, tDstRect);
 
-	double pu = -((tDstRect.y / (double)sz.y) * 2 - 1);
-	double pd = -(((tDstRect.y + tDstRect.h) / (double)sz.y) * 2 - 1);
-
-
-	glBegin(GL_QUADS);
-	{
-		glTexCoord2f(0.0f, 0.0f); glVertex2f(pl, pu);
-		glTexCoord2f(1.0f, 0.0f); glVertex2f(pr, pu);
-		glTexCoord2f(1.0f, 1.0f); glVertex2f(pr, pd);
-		glTexCoord2f(0.0f, 1.0f); glVertex2f(pl, pd);
-	}
-	glEnd();
-
-	glDeleteTextures(1, &texture);
+	glDeleteTextures(1, &textureID);
 }
 
 static void drawSortedSprite(DrawListSpriteElement* e) {
@@ -301,7 +412,6 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 
 	Texture texture = e->mTexture.mTexture->mData;
 
-
 	glBlendColor((GLclampf)e->mData.r, (GLclampf)e->mData.g, (GLclampf)e->mData.b, (GLclampf)e->mData.a);
 	
 	
@@ -320,11 +430,17 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	}
 
 	// TODO: angle, flip, scale, effect center
-	drawSDLSurface(texture->mSurface, srcRect, dstRect);
+	drawOpenGLTexture(texture->mTexture, srcRect, dstRect);
 }
 
+static int isTextPositionEmpty(char tChar) {
+	return tChar == ' ';
+}
+
+
 static void drawSortedTruetype(DrawListTruetypeElement* e) {
-	if (!strlen(e->mText)) return;
+	int l = strlen(e->mText);
+	if (!l) return;
 
 	SDL_Color color;
 	color.a = 0xFF;
@@ -332,23 +448,59 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 	color.g = (Uint8)(0xFF * e->mColor.y);
 	color.b = (Uint8)(0xFF * e->mColor.z);
 
-	/*
-	SDL_Surface* surface = TTF_RenderText_Blended_Wrapped(e->mFont, e->mText, color, (Uint32)e->mTextBoxWidth); 
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(gRenderer, surface); 
+	
+	Position pos = e->mPos;
+	int i;
+	for (i = 0; i < l;) {
+		char text[1024];
 
-	SDL_Rect rect; 
-	rect.x = (int)e->mPos.x; 
-	rect.y = (int)e->mPos.y;
-	rect.w = surface->w;
-	rect.h = surface->h;
+		double size = 0;
+		int start = i;
+		int previousWordStart = 0;
+		int j;
+		for (j = 0; j < l - start; j++) {
+			int w, h;
+			text[j] = e->mText[start + j];
+			text[j + 1] = '\0';
+			TTF_SizeText(e->mFont, text, &w, &h);
+			if (isTextPositionEmpty(text[j])) previousWordStart = j;
 
+			if (w > e->mTextBoxWidth && !isTextPositionEmpty(text[j]) && previousWordStart > 0) {
+				text[previousWordStart + 1] = '\0';
+				break;
+			}
+			else if (j == l - start - 1) {
+				previousWordStart = j;
+			}
+		}
+		int end = start + previousWordStart;
 
-	SDL_RenderCopy(gRenderer, texture, NULL, &rect);
+		SDL_Surface* surface = TTF_RenderText_Blended(e->mFont, text, color);
 
-	SDL_DestroyTexture(texture);
-	SDL_FreeSurface(surface);
+		SDL_Rect rect;
+		rect.x = (int)pos.x;
+		rect.y = (int)pos.y;
+		rect.w = surface->w;
+		rect.h = surface->h;
 
-	*/
+		SDL_Rect src;
+		src.x = 0;
+		src.y = 0;
+		src.w = surface->w;
+		src.h = surface->h;
+
+		pos.y += surface->h;
+		
+
+		SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
+		SDL_FreeSurface(surface);
+		drawSDLSurface(formattedSurface, src, rect);
+
+		SDL_FreeSurface(formattedSurface);
+		
+		
+		i = end + 1;
+	}
 }
 
 static void drawSorted(void* tCaller, void* tData) {

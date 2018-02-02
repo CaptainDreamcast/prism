@@ -12,9 +12,11 @@ typedef pvr_ptr_t Texture;
 
 #elif defined _WIN32 || defined __EMSCRIPTEN__
 #include <SDL.h>
+#include <GL/glew.h>
 
 typedef struct {
 	SDL_Surface* mSurface;
+	GLuint mTexture;
 } SDLTextureData;
 
 typedef SDLTextureData* Texture;

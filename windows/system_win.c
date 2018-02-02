@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
+#define GL3_PROTOTYPES 1
+#include <GL/glew.h>
+#include <GL/glu.h>
+
 #include <SDL/SDL_image.h>
 #elif defined _WIN32
 
@@ -92,40 +96,24 @@ static void setWindowSize() {
 }
 
 static void initOpenGL() {
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 4);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 4);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 4);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 4);
+	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
+	printf("attribeue set\n");
 
 	ScreenSize sz = getScreenSize();
 	float ratio = (float)sz.x / (float)sz.y;
 
-	/* Our shading model--Gouraud (smooth). */
-	glShadeModel(GL_SMOOTH);
+	printf("ratue set\n");
 
-	/* Culling. */
-	glCullFace(GL_BACK);
-	glFrontFace(GL_CCW);
-	glEnable(GL_CULL_FACE);
-
-	/* Set the clear color. */
-	glClearColor(0, 0, 0, 0);
-
-	/* Setup our viewport. */
-	glViewport(0, 0, sz.x, sz.y);
-
-	/*
-	* Change to the projection matrix and set
-	* our viewing volume.
-	*/
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	/*
-	* EXERCISE:
-	* Replace this with a call to glFrustum.
-	*/
-	glOrtho(-1, 1, -1, 1, 5, 100);
+	gGLContext = SDL_GL_CreateContext(gSDLWindow);
 }
 
 static void initGlew() {
@@ -144,8 +132,12 @@ void initSystem() {
 	}
 	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 
+	printf("window created\n");
 	initOpenGL();
-	gGLContext = SDL_GL_CreateContext(gSDLWindow);
+	printf("opengl inited\n");
+
+	printf("context created\n");
+
 	initGlew();
 }
 

@@ -23,10 +23,12 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 #elif defined _WIN32 || defined __EMSCRIPTEN__
 
 #include <SDL.h>
+#include <GL/glew.h>
 #include "tari/texture.h"
 
 void freeSDLTexture(void* tData) {
 	SDLTextureData* e = tData;
+	glDeleteTextures(1, &e->mTexture);
 	SDL_FreeSurface(e->mSurface);
 	free(tData);
 }

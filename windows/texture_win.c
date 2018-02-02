@@ -3,6 +3,7 @@
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
 #include <SDL/SDL_image.h>
+#include <SDL/SDL_ttf.h>
 #elif defined _WIN32
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -19,15 +20,25 @@
 
 
 
-static TextureData textureFromSurface(SDL_Surface* tSurface) {
+TextureData textureFromSurface(SDL_Surface* tSurface) {
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
 	returnData.mTextureSize.x = tSurface->w;
 	returnData.mTextureSize.y = tSurface->h;
 	Texture texture = returnData.mTexture->mData;
 	
-	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_BGRA32, 0);
+	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
 	SDL_FreeSurface(tSurface);
+
+	GLint last_texture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glGenTextures(1, &texture->mTexture);
+	glBindTexture(GL_TEXTURE_2D, texture->mTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->mSurface->w, texture->mSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->mSurface->pixels);
+
+	glBindTexture(GL_TEXTURE_2D, last_texture);
 
 	return returnData;
 }
@@ -226,6 +237,7 @@ TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
 
 TruetypeFont loadTruetypeFont(char * tName, double tSize)
 {
+
 	char path[1024];
 	if (isFile(tName)) {
 		getFullPath(path, tName);
