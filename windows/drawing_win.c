@@ -356,6 +356,9 @@ static void drawSDLSurface(SDL_Surface* tSurface, SDL_Rect tSrcRect, SDL_Rect tD
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tSurface->w, tSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tSurface->pixels);
 	glBindTexture(GL_TEXTURE_2D, last_texture);
 
@@ -416,12 +419,12 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	
 	
 	if (e->mData.mBlendType == BLEND_TYPE_ADDITION) {
-		//glBlendEquation(GL_FUNC_ADD);
+		glBlendEquation(GL_FUNC_ADD);
 	}
 	else if(e->mData.mBlendType == BLEND_TYPE_NORMAL){
-		//glBlendEquation(GL_FUNC_ADD);
+		glBlendEquation(GL_FUNC_ADD);
 	} else if (e->mData.mBlendType == BLEND_TYPE_SUBTRACTION) {
-		//glBlendEquation(GL_FUNC_SUBTRACT);
+		glBlendEquation(GL_FUNC_SUBTRACT);
 	}
 	else {
 		logError("Unimplemented blend type");
@@ -493,11 +496,10 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 		
 
 		SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
-		SDL_FreeSurface(surface);
 		drawSDLSurface(formattedSurface, src, rect);
-
-		SDL_FreeSurface(formattedSurface);
 		
+		SDL_FreeSurface(formattedSurface);
+		SDL_FreeSurface(surface);
 		
 		i = end + 1;
 	}
