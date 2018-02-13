@@ -5,3 +5,4 @@
 double fstsqrt(double x) {
 	return sqrt(x);
 }
+

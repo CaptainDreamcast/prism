@@ -3,6 +3,7 @@
 
 #include "physics.h"
 #include "texture.h"
+#include "file.h"
 
 typedef struct {
   int x;
@@ -84,5 +85,8 @@ fup Vector3D makeFontSize(int x, int y);
 fup void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
 fup void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget);
+
+void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer);
+void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer tBuffer);
 
 #endif

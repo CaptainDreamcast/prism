@@ -25,6 +25,7 @@ TextureData textureFromSurface(SDL_Surface* tSurface) {
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
 	returnData.mTextureSize.x = tSurface->w;
 	returnData.mTextureSize.y = tSurface->h;
+	returnData.mHasPalette = 0;
 	Texture texture = returnData.mTexture->mData;
 	
 	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
@@ -34,12 +35,11 @@ TextureData textureFromSurface(SDL_Surface* tSurface) {
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
 	glGenTextures(1, &texture->mTexture);
 	glBindTexture(GL_TEXTURE_2D, texture->mTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->mSurface->w, texture->mSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->mSurface->pixels);
-
 	glBindTexture(GL_TEXTURE_2D, last_texture);
 
 	return returnData;
@@ -236,6 +236,48 @@ TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
 	return textureFromSurface(surface);
 }
 
+extern SDL_Color* getSDLColorPalette(int tIndex);
+
+TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight) {
+	uint32_t size = tWidth * tHeight * 4;
+	char* data = allocMemory(tWidth * tHeight * 4);
+
+	Buffer b = makeBufferOwned(data, size);
+	TextureData ret = loadTextureFromARGB32Buffer(b, tWidth, tHeight);
+	freeBuffer(b);
+
+	return ret;
+
+	// TODO: fix
+	/*
+
+	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(b.mData, tWidth, tHeight, 8, tWidth, 0, 0, 0, 0);
+
+	TextureData returnData;
+	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
+	returnData.mTextureSize.x = surface->w;
+	returnData.mTextureSize.y = surface->h;
+	returnData.mHasPalette = 1;
+	returnData.mPaletteID = tPaletteID;
+	Texture texture = returnData.mTexture->mData;
+
+	texture->mSurface = surface;
+
+	GLint last_texture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glGenTextures(1, &texture->mTexture);
+	glBindTexture(GL_TEXTURE_2D, texture->mTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, texture->mSurface->w, texture->mSurface->h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, texture->mSurface->pixels);
+
+	glBindTexture(GL_TEXTURE_2D, last_texture);
+
+	return returnData;
+	*/
+}
 
 TruetypeFont loadTruetypeFont(char * tName, double tSize)
 {

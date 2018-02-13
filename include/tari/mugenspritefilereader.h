@@ -39,3 +39,8 @@ fup MugenSpriteFile loadMugenSpriteFileWithoutPalette(char* tPath);
 fup MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite);
 
 MugenSpriteFileSprite* loadSingleTextureFromPCXBuffer(Buffer tBuffer);
+
+void setMugenSpriteFileReaderToBuffer();
+void setMugenSpriteFileReaderToFileOperations();
+void setMugenSpriteFileReaderToUsePalette(int tPaletteID);
+void setMugenSpriteFileReaderToNotUsePalette();

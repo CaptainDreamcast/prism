@@ -74,7 +74,11 @@ static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char
 	int depth = 1;
 
 	while ((depth > 0 || *p != end) && (uint32_t)p < ((uint32_t)b->mData)+b->mLength) {
-		assert(!increaseAndCheckIfOver(b, &p));
+		if (increaseAndCheckIfOver(b, &p)) {
+			logError("Token reached end in wrong place."); // TODO: proper message
+			logErrorString(p);
+			abortSystem();
+		}
 		depth += *p == start;
 		depth -= *p == end;
 	}
@@ -288,7 +292,10 @@ static int isVectorStatement(Buffer* b, BufferPointer p) {
 static int isLoopStartStatement(Buffer* b, BufferPointer p) {
 	char* text = getLineAsAllocatedString(b, p);
 	turnStringLowercase(text);
-	int ret = !strcmp("loopstart", text);
+	int ret = 0;
+	ret |= !strcmp("loopstart", text);
+	ret |= !strcmp("startloop", text); // TODO: check?
+
 	destroyMugenDefString(text);
 	return ret;
 }
@@ -745,6 +752,7 @@ MugenDefScript loadMugenDefScript(char * tPath)
 {
 	debugLog("Start loading script.");
 	debugString(tPath);
+	printf("%s\n", tPath);
 
 	Buffer b = fileToBuffer(tPath);
 	return loadMugenDefScriptFromBuffer(b);

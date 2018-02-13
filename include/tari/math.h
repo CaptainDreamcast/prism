@@ -1,9 +1,9 @@
 #ifndef TARI_MATH
 #define TARI_MATH
 
-#include "common/header.h"
-
 #include <math.h>
+
+#include "geometry.h"
 
 #ifdef DREAMCAST
 
@@ -24,17 +24,27 @@
 #endif
 
 #define fclamp(x, y, z) (fmin(fmax(x, y), z))
-
 #define INF 1000000000
 
-fup double randfrom(double tMin, double tMax);
-fup int randfromInteger(int tMin, int tMax);
+typedef struct {
+	double m[4][4];
+} Matrix4D;
 
-fup double fatan2(double y, double x);
+double randfrom(double tMin, double tMax);
+int randfromInteger(int tMin, int tMax);
 
-fup double getLinearInterpolationFactor(double a, double b, double p);
-fup double interpolateLinear(double a, double b, double t);
+double fatan2(double y, double x);
 
-fup double fstsqrt(double x);
+double getLinearInterpolationFactor(double a, double b, double p);
+double interpolateLinear(double a, double b, double t);
+
+double fstsqrt(double x);
+
+Matrix4D makeIdentityMatrix4D();
+Matrix4D matMult4D(Matrix4D tA, Matrix4D tB);
+Matrix4D createScaleMatrix4D(Vector3D tScale);
+Matrix4D createTranslationMatrix4D(Vector3D tTranslation);
+Matrix4D createRotationZMatrix4D(double tAngle);
+Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, double tUp, double tBottom, double tNear, double tFar);
 
 #endif

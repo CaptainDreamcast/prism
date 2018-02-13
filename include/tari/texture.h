@@ -13,6 +13,8 @@ typedef struct {
 typedef struct {
   TextureSize mTextureSize;
   TextureMemory mTexture;
+  int mHasPalette;
+  int mPaletteID;
 } TextureData;
 
 typedef struct {  // TODO: refactor completely from Dolmexica
@@ -28,6 +30,7 @@ fup TextureData loadTexturePKG(char tFileDir[]);
 fup TextureData loadTexture(char tFileDir[]);
 fup TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight);
 fup TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight);
+fup TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight);
 fup void unloadTexture(TextureData tTexture);
 
 fup void loadConsecutiveTextures(TextureData* tDst, char* tBaseFileDir, int tAmount);
