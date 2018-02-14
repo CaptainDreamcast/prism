@@ -386,8 +386,6 @@ static void drawPalettedSDLSurface(SDL_Surface* tSurface, int tPaletteID, GeoRec
 
 	SDL_SetPaletteColors(tSurface->format->palette, gData.mPalettes[tPaletteID], 0, 256);
 
-	Buffer b = makeBufferOwned();;
-
 	SDL_Surface* surface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
 	drawSDLSurface(surface, tSrcRect, tDstRect, tData);
 	SDL_FreeSurface(surface);
@@ -410,16 +408,16 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	Texture texture = e->mTexture.mTexture->mData;
 
 	if (e->mData.mBlendType == BLEND_TYPE_ADDITION) {
-		//glBlendEquation(GL_FUNC_ADD);
-		//glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 	}
 	else if (e->mData.mBlendType == BLEND_TYPE_NORMAL) {
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	else if (e->mData.mBlendType == BLEND_TYPE_SUBTRACTION) {
-		//glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-		//glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+		glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 	}
 	else {
 		logError("Unimplemented blend type");

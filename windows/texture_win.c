@@ -240,11 +240,23 @@ extern SDL_Color* getSDLColorPalette(int tIndex);
 
 TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight) {
 	uint32_t size = tWidth * tHeight * 4;
-	char* data = allocMemory(tWidth * tHeight * 4);
+	uint8_t* data = allocMemory(tWidth * tHeight * 4);
+	uint8_t* src = b.mData;
 
-	Buffer b = makeBufferOwned(data, size);
-	TextureData ret = loadTextureFromARGB32Buffer(b, tWidth, tHeight);
-	freeBuffer(b);
+	SDL_Color* colors = getSDLColorPalette(tPaletteID);
+	int32_t amount = size / 4;
+	int i;
+	for (i = 0; i < amount; i++) {
+		int pid = src[i];
+		data[i * 4 + 0] = colors[pid].a;
+		data[i * 4 + 1] = colors[pid].r;
+		data[i * 4 + 2] = colors[pid].g;
+		data[i * 4 + 3] = colors[pid].b;
+	}
+
+	Buffer newBuffer = makeBufferOwned(data, size);
+	TextureData ret = loadTextureFromARGB32Buffer(newBuffer, tWidth, tHeight);
+	freeBuffer(newBuffer);
 
 	return ret;
 
