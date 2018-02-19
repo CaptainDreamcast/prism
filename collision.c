@@ -1,10 +1,10 @@
-#include "tari/collision.h"
+#include "prism/collision.h"
 
 #include <string.h>
 
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
 
 
 // TODO: use something better; this will likely cause vibrations

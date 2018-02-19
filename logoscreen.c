@@ -1,12 +1,12 @@
-#include "tari/logoscreen.h"
+#include "prism/logoscreen.h"
 
 #include <stdio.h>
 
-#include <tari/animation.h>
-#include <tari/screeneffect.h>
-#include <tari/timer.h>
-#include <tari/input.h>
-#include <tari/file.h>
+#include <prism/animation.h>
+#include <prism/screeneffect.h>
+#include <prism/timer.h>
+#include <prism/input.h>
+#include <prism/file.h>
 
 static struct {
 	Screen* mNextScreen;

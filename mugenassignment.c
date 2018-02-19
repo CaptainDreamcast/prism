@@ -1,14 +1,14 @@
-#include "tari/mugenassignment.h"
+#include "prism/mugenassignment.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <math.h>
 
-#include "tari/memoryhandler.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/math.h"
+#include "prism/memoryhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/math.h"
 
 static MugenAssignment* makeMugenAssignment(MugenAssignmentType tType, void* tData) {
 	MugenAssignment* e = allocMemory(sizeof(MugenAssignment));

@@ -1,8 +1,8 @@
-#include "tari/input.h"
+#include "prism/input.h"
 
 #include <SDL.h>
 
-#include "tari/log.h"
+#include "prism/log.h"
 
 typedef struct {
 	int mIsUsingController;

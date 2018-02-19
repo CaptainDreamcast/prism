@@ -1,14 +1,14 @@
-#include "tari/mugentexthandler.h"
+#include "prism/mugentexthandler.h"
 
 #include <assert.h>
 
-#include "tari/mugendefreader.h"
-#include "tari/mugenanimationhandler.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/drawing.h"
-#include "tari/texture.h"
-#include "tari/math.h"
+#include "prism/mugendefreader.h"
+#include "prism/mugenanimationhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/drawing.h"
+#include "prism/texture.h"
+#include "prism/math.h"
 
 typedef enum {
 	MUGEN_FONT_TYPE_BITMAP,

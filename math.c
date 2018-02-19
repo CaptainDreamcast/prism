@@ -1,4 +1,4 @@
-#include "tari/math.h"
+#include "prism/math.h"
 
 #include <stdlib.h>
 #include <math.h>

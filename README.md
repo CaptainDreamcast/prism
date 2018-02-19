@@ -1,23 +1,23 @@
-# libtari - Library for Dreamcast / Windows game development
+# Prism - Library for Dreamcast / Windows game development
 
 A loose collection of components that are often used in games (e.g.: physics, collisions, animations, etc.). The Dreamcast part requires KallistiOS, the Windows part requires SDL.  
   
 ## Dreamcast Usage
 Clone in your `$(KOS_ROOT)/addons` folder and compile this library with `make`.  
-Link with `-ltari` when linking your game.  
-Include header files with `<tari/*.h>`.  
+Link with `-lprism` when linking your game.  
+Include header files with `<prism/*.h>`.  
   
 The most important components are as follows:
   
 ## Wrapper / Screen handling
-Used with `#include <tari/wrapper.h>`  
+Used with `#include <prism/wrapper.h>`  
 This is the easiest way to use the library. 
   
 Small example for a main function:
 ```C
   setGameName("THE BEST GAME EVER");
   setScreenSize(640, 480);
-  initTariWrapperWithDefaultFlags();
+  initPrismWrapperWithDefaultFlags();
   setFileSystem("/pc");
   startScreenHandling(&FirstScreen);
 ```
@@ -36,13 +36,13 @@ Screen* (*mGetNextScreen)();
 ```
 
 The load function is called after screen-wide components (physics handler, animation handler, collision handler, etc.) have finished loading. 
-The update function is called once a frame after the libtari components' update functions have been called.
-The draw function is called once a frame after the libtari components' drawing functions have been called. All update functions are called before the drawing functions.
+The update function is called once a frame after the prism components' update functions have been called.
+The draw function is called once a frame after the prism components' drawing functions have been called. All update functions are called before the drawing functions.
 The unload function is called when screen handling is aborted or switches to another screen.
 The getNextScreen function is called once per frame after drawing has concluded and is used to control the game flow. If it returns a NULL pointer, nothing happens. If it calls the abortScreenHandling() function, the program leaves the screen handler and resumes operation after the startScreenHandling function. If it returns a pointer to a screen, screen handling switches to the screen the pointer points to.  
   
 ## Memory handler
-Used with `#include <tari/memoryhandler.h>`  
+Used with `#include <prism/memoryhandler.h>`  
   
 Memory handling for texture memory and standard memory allocation. Works based on stacks. Memory stack entries can be pushed and popped. When a memory stack entry is popped, all memory that was allocated while the entry was on top is deallocated.  
 As an example, this is the way memory handling is used during screen handling: Before the screen is loaded a new entry is pushed to the memory stack. After the screen is unloaded, the entry is popped. On the upside, this reduces memory leaks and faulty memory frees. On the flipside, it makes carrying over allocated data over multiple screens difficult. 
@@ -55,13 +55,13 @@ When memory handling is disabled, these two functions simply call malloc and fre
 
 ## Virtual Texture Memory
 This is a Dreamcast-only feature.  
-If you want to allocate texture memory, but not enough is available, libtari will move the least recently used textures into main memory to free up space. This is an automatic feature.
+If you want to allocate texture memory, but not enough is available, prism will move the least recently used textures into main memory to free up space. This is an automatic feature.
 
 ## Framerate select screen
-Used with `#include <tari/framerateselectscreen.h>`
+Used with `#include <prism/framerateselectscreen.h>`
 
 Dreamcast games run with 50 frames per second on European PAL TVs and with 60 frames per second on NTSC TVs. Usually, Dreamcast games let the player select the framerate themselves. To faciliate this, a simple select screen is included in the library.  
-It is skipped for VGA cables. Windows games are set to run at 60 FPS and do not need a select screen either. Libtari components do not change their outward behaviour based on framerate, e.g. animations still have the same durations and physics still appear to have the same movement speed.  
+It is skipped for VGA cables. Windows games are set to run at 60 FPS and do not need a select screen either. Prism components do not change their outward behaviour based on framerate, e.g. animations still have the same durations and physics still appear to have the same movement speed.  
 A simple example for calling the framerate select screen is given as follows:
 
 ```C
@@ -71,4 +71,4 @@ if (framerateReturnType == FRAMERATE_SCREEN_RETURN_ABORT) {
 }
 ```
 The screen checks for the Dreamcast abort command (A+B+X+Y+START) and returns an abort return value accordingly. The usual way to react to this command is to return to the Dreamcast menu.
-_Important_: It should be called after the screen size is set, but before the libtari wrapper is initialized.
+_Important_: It should be called after the screen size is set, but before the prism wrapper is initialized.

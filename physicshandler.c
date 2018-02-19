@@ -1,12 +1,12 @@
-#include "tari/physicshandler.h"
+#include "prism/physicshandler.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-#include "tari/datastructures.h"
-#include "tari/physics.h"
-#include "tari/memoryhandler.h"
+#include "prism/datastructures.h"
+#include "prism/physics.h"
+#include "prism/memoryhandler.h"
 
 typedef struct {
 

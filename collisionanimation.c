@@ -1,8 +1,8 @@
-#include "tari/collisionanimation.h"
-#include "tari/collisionhandler.h"
-#include "tari/memoryhandler.h"
-#include "tari/log.h"
-#include "tari/system.h"
+#include "prism/collisionanimation.h"
+#include "prism/collisionhandler.h"
+#include "prism/memoryhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
 
 
 CollisionAnimation makeEmptyCollisionAnimation() {

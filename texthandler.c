@@ -1,11 +1,11 @@
-#include "tari/texthandler.h"
+#include "prism/texthandler.h"
 
 #include <string.h>
 
-#include "tari/datastructures.h"
-#include "tari/log.h"
-#include "tari/math.h"
-#include "tari/memoryhandler.h"
+#include "prism/datastructures.h"
+#include "prism/log.h"
+#include "prism/math.h"
+#include "prism/memoryhandler.h"
 
 typedef struct {
 	char mText[1024];

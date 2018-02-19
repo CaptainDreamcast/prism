@@ -1,8 +1,8 @@
-#include "tari/memoryhandler.h"
+#include "prism/memoryhandler.h"
 
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/quicklz.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/quicklz.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +24,7 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 
 #include <SDL.h>
 #include <GL/glew.h>
-#include "tari/texture.h"
+#include "prism/texture.h"
 
 void freeSDLTexture(void* tData) {
 	SDLTextureData* e = tData;

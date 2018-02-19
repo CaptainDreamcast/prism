@@ -1,4 +1,4 @@
-#include "tari/soundeffect.h"
+#include "prism/soundeffect.h"
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
@@ -8,10 +8,10 @@
 #endif
 
 
-#include "tari/file.h"
-#include "tari/sound.h"
-#include "tari/datastructures.h"
-#include "tari/memoryhandler.h"
+#include "prism/file.h"
+#include "prism/sound.h"
+#include "prism/datastructures.h"
+#include "prism/memoryhandler.h"
 
 typedef struct {
 

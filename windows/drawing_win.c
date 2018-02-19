@@ -1,4 +1,4 @@
-#include "../include/tari/drawing.h"
+#include "../include/prism/drawing.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -13,11 +13,11 @@
 #include <SDL_ttf.h>
 #endif
 
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/datastructures.h"
-#include "tari/memoryhandler.h"
-#include "tari/math.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/datastructures.h"
+#include "prism/memoryhandler.h"
+#include "prism/math.h"
 
 
 

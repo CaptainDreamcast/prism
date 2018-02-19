@@ -1,4 +1,4 @@
-#include "tari/texture.h"
+#include "prism/texture.h"
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
@@ -11,12 +11,12 @@
 
 #include <string.h>
 
-#include "tari/file.h"
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
-#include "tari/math.h"
-#include "tari/compression.h"
+#include "prism/file.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
+#include "prism/math.h"
+#include "prism/compression.h"
 
 
 

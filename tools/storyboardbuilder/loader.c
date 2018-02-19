@@ -2,7 +2,7 @@
 
 // TODO: REFACTOR
 
-#include "tari/storyboard.h"
+#include "prism/storyboard.h"
 #include "../common/legacydefinitions.h"
 #include "../common/scriptreader.h"
 

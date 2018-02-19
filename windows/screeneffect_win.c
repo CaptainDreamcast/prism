@@ -1,4 +1,4 @@
-#include "tari/screeneffect.h"
+#include "prism/screeneffect.h"
 
 #include <GL/glew.h>
 

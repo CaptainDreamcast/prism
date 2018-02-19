@@ -1,4 +1,4 @@
-#include "tari/mugenspritefilereader.h"
+#include "prism/mugenspritefilereader.h"
 
 #include <assert.h>
 #include <string.h>
@@ -9,14 +9,14 @@
 #include <png.h>
 #endif
 
-#include "tari/file.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/texture.h"
-#include "tari/math.h"
-#include "tari/drawing.h"
+#include "prism/file.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/texture.h"
+#include "prism/math.h"
+#include "prism/drawing.h"
 
-#include "tari/lz5.h"
+#include "prism/lz5.h"
 
 typedef struct {
 	char mSignature[12];
@@ -999,7 +999,6 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 		gData.mReader.mRead(&gData.mReader, &textureHeight, 2);
 		Buffer pngBuffer = gData.mReader.mReadBufferReadOnly(&gData.mReader, sprite.mDataLength);
 		e = makeMugenSpriteFileSpriteFromRawPNGBuffer(pngBuffer, sprite.mWidth, sprite.mHeight, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
-		freeBuffer(pngBuffer);
 		gData.mReader.mSeek(&gData.mReader, originalPosition);
 	}
 	else {

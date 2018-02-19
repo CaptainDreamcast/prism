@@ -1,4 +1,4 @@
-TARGET = libtari.a
+TARGET = libprism.a
 OBJS = animation.o physics.o framerate.o drawing.o texture.o \
 collision.o input.o file.o math.o geometry.o \
 timer.o optionhandler.o datastructures.o memoryhandler.o \

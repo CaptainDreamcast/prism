@@ -1,4 +1,4 @@
-#include "tari/datastructures.h"
+#include "prism/datastructures.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -7,10 +7,10 @@
 
 
 
-#include "tari/memoryhandler.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/math.h"
+#include "prism/memoryhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/math.h"
 
 void turnStringLowercase(char* tString) {
 	int n = strlen(tString);
@@ -116,7 +116,7 @@ void* list_get(List* tList, int tID) {
 	return NULL;
 }
 
-fup void * list_get_by_ordered_index(List * tList, int tIndex)
+void * list_get_by_ordered_index(List * tList, int tIndex)
 {
 	if (tIndex >= list_size(tList)) {
 		logError("Trying to access invalid index.");

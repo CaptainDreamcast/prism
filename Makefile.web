@@ -6,7 +6,7 @@ windows/screeneffect_win.o windows/logoscreen_win.o
 
 all: $(TARGET)
 
-TARI_PATH = .
+PRISM_PATH = .
 include Makefile.commonweb
 
 clean_library:
@@ -14,7 +14,7 @@ clean_library:
 	-cd windows && del *.o
 	-rmdir /s /q bin
 	
-libtari.a: $(OBJS)
+libprism.a: $(OBJS)
 	emar rcs $@ $(OBJS)
 	-mkdir bin
 	move $@ bin\$@

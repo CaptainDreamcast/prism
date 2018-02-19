@@ -1,10 +1,10 @@
-#include "tari/mugensoundfilereader.h"
+#include "prism/mugensoundfilereader.h"
 
 #include <assert.h>
 
-#include <tari/file.h>
-#include <tari/memoryhandler.h>
-#include <tari/soundeffect.h>
+#include <prism/file.h>
+#include <prism/memoryhandler.h>
+#include <prism/soundeffect.h>
 
 typedef struct {
 	uint32_t mNextFileOffset;

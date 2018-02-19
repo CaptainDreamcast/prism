@@ -1,8 +1,8 @@
-#include "tari/soundeffect.h"
+#include "prism/soundeffect.h"
 
-#include "tari/memoryhandler.h"
-#include "tari/file.h"
-#include "tari/math.h"
+#include "prism/memoryhandler.h"
+#include "prism/file.h"
+#include "prism/math.h"
 
 SoundEffectCollection loadConsecutiveSoundEffectsToCollection(char* tPath, int tAmount) {
 	SoundEffectCollection ret;

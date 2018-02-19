@@ -1,9 +1,9 @@
-#include "tari/compression.h"
+#include "prism/compression.h"
 
-#include "tari/quicklz.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/memoryhandler.h"
+#include "prism/quicklz.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/memoryhandler.h"
 
 static const int COMPRESSION_BUFFER = 400;
 
@@ -29,7 +29,7 @@ void compressBuffer(Buffer* tBuffer) {
 	*tBuffer = dst;
 }
 
-fup void decompressBuffer(Buffer * tBuffer)
+void decompressBuffer(Buffer * tBuffer)
 {
 	if (!tBuffer->mIsOwned) {
 		logError("Unable to decompress unowned Buffer");

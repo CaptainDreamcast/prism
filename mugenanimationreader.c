@@ -1,14 +1,14 @@
-#include "tari/mugenanimationreader.h"
+#include "prism/mugenanimationreader.h"
 
 #include <stdio.h>
 #include <assert.h>
 
-#include "tari/log.h"
-#include "tari/collision.h"
-#include "tari/system.h"
-#include "tari/math.h"
+#include "prism/log.h"
+#include "prism/collision.h"
+#include "prism/system.h"
+#include "prism/math.h"
 
-#include "tari/mugendefreader.h"
+#include "prism/mugendefreader.h"
 
 
 static struct {

@@ -1,8 +1,8 @@
-#include "tari/texture.h"
+#include "prism/texture.h"
 
-#include "tari/file.h"
-#include "tari/log.h"
-#include "tari/system.h"
+#include "prism/file.h"
+#include "prism/log.h"
+#include "prism/system.h"
 
 #define FONT_CHARACTER_AMOUNT 91
 

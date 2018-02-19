@@ -1,8 +1,8 @@
-#include "tari/mugenscriptparser.h"
+#include "prism/mugenscriptparser.h"
 
-#include "tari/memoryhandler.h"
-#include "tari/log.h"
-#include "tari/system.h"
+#include "prism/memoryhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
 
 typedef struct {
 	int(*mIsFunc)(MugenDefScriptGroup *);

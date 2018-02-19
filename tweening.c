@@ -1,10 +1,10 @@
-#include "include/tari/tweening.h"
+#include "prism/tweening.h"
 
 #include <stdio.h>
 
-#include <tari/datastructures.h>
-#include <tari/memoryhandler.h>
-#include <tari/math.h>
+#include <prism/datastructures.h>
+#include <prism/memoryhandler.h>
+#include <prism/math.h>
 
 typedef struct {
 	double* mDst;

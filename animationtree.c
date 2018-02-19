@@ -1,13 +1,13 @@
-#include "tari/animationtree.h"
+#include "prism/animationtree.h"
 
 #include <math.h>
 
-#include "tari/script.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/memoryhandler.h"
-#include "tari/animation.h"
-#include "tari/file.h"
+#include "prism/script.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/memoryhandler.h"
+#include "prism/animation.h"
+#include "prism/file.h"
 
 typedef struct {
 

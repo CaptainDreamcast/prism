@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StoryboardBuilder", "StoryboardBuilder.vcxproj", "{FCD72A86-A11C-4C46-BCB5-AAA1915E5A18}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libtari", "..\..\..\windows\vs15\libtari.vcxproj", "{3572E463-893D-4815-8ECC-E65F3B8C6D90}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonToolFunctions", "..\..\common\windows\CommonToolFunctions.vcxproj", "{72C8CBB9-C136-4458-90F5-55331704B6E1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "prism", "..\..\..\windows\vs17\prism.vcxproj", "{3572E463-893D-4815-8ECC-E65F3B8C6D90}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +25,6 @@ Global
 		{FCD72A86-A11C-4C46-BCB5-AAA1915E5A18}.Release|x64.Build.0 = Release|x64
 		{FCD72A86-A11C-4C46-BCB5-AAA1915E5A18}.Release|x86.ActiveCfg = Release|Win32
 		{FCD72A86-A11C-4C46-BCB5-AAA1915E5A18}.Release|x86.Build.0 = Release|Win32
-		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x64.ActiveCfg = Debug|x64
-		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x64.Build.0 = Debug|x64
-		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x86.ActiveCfg = Debug|Win32
-		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x86.Build.0 = Debug|Win32
-		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x64.ActiveCfg = Release|x64
-		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x64.Build.0 = Release|x64
-		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x86.ActiveCfg = Release|Win32
-		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x86.Build.0 = Release|Win32
 		{72C8CBB9-C136-4458-90F5-55331704B6E1}.Debug|x64.ActiveCfg = Debug|x64
 		{72C8CBB9-C136-4458-90F5-55331704B6E1}.Debug|x64.Build.0 = Debug|x64
 		{72C8CBB9-C136-4458-90F5-55331704B6E1}.Debug|x86.ActiveCfg = Debug|Win32
@@ -41,8 +33,19 @@ Global
 		{72C8CBB9-C136-4458-90F5-55331704B6E1}.Release|x64.Build.0 = Release|x64
 		{72C8CBB9-C136-4458-90F5-55331704B6E1}.Release|x86.ActiveCfg = Release|Win32
 		{72C8CBB9-C136-4458-90F5-55331704B6E1}.Release|x86.Build.0 = Release|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x64.ActiveCfg = Debug|x64
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x64.Build.0 = Debug|x64
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x86.ActiveCfg = Debug|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Debug|x86.Build.0 = Debug|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x64.ActiveCfg = Release|x64
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x64.Build.0 = Release|x64
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x86.ActiveCfg = Release|Win32
+		{3572E463-893D-4815-8ECC-E65F3B8C6D90}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {692EA18D-8996-4DCE-A708-FE50648C8B1C}
 	EndGlobalSection
 EndGlobal

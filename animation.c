@@ -1,14 +1,14 @@
-#include "tari/animation.h"
+#include "prism/animation.h"
 
 #include <stdlib.h>
 
-#include "tari/framerate.h"
-#include "tari/log.h"
-#include "tari/datastructures.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
+#include "prism/framerate.h"
+#include "prism/log.h"
+#include "prism/datastructures.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
 
-#include "tari/timer.h" // TODO: separate animation and animation handler
+#include "prism/timer.h" // TODO: separate animation and animation handler
 
 static struct {
 	int mIsPaused;

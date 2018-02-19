@@ -1,9 +1,9 @@
-#include "tari/mugenanimationhandler.h"
+#include "prism/mugenanimationhandler.h"
 
-#include "tari/collisionhandler.h"
-#include "tari/math.h"
-#include <tari/log.h>
-#include <tari/system.h>
+#include "prism/collisionhandler.h"
+#include "prism/math.h"
+#include <prism/log.h>
+#include <prism/system.h>
 
 typedef int MugenDuration;
 

@@ -1,8 +1,8 @@
-#include "tari/actorhandler.h"
+#include "prism/actorhandler.h"
 
-#include "tari/datastructures.h"
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
+#include "prism/datastructures.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
 
 typedef struct {
 	ActorBlueprint mBP;

@@ -1,7 +1,7 @@
-#include "tari/drawing.h"
+#include "prism/drawing.h"
 
-#include "tari/log.h"
-#include "tari/math.h"
+#include "prism/log.h"
+#include "prism/math.h"
 
 // TODO: refactor
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {

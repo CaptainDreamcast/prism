@@ -1,9 +1,9 @@
-# libtari for Mega Drive
+# Prism for Mega Drive
 Collection of useful routines for use in Mega Drive assembly development.  
 For use, include `wrapper.asm` at the beginning of your project.
 Does basic setup and jumps to a `__main` label, which is where your game should start.  
 Expects a file called `header.asm` where the Mega Drive file header is declared.  
-Expects a folder structure where libtari is located in ../addons/libtari, similar to a KallistiOS setup.  
+Expects a folder structure where prism is located in ../addons/prism, similar to a KallistiOS setup.  
 Expects a label called `__end` at the end of your game.  
 Defines a label called `gLibrarySentinel`, after which variables can be placed in RAM.  
 

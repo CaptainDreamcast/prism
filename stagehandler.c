@@ -1,15 +1,15 @@
-#include "tari/stagehandler.h"
+#include "prism/stagehandler.h"
 
 #include <stdlib.h>
 
-#include "tari/script.h"
-#include "tari/datastructures.h"
-#include "tari/memoryhandler.h"
-#include "tari/file.h"
-#include "tari/system.h"
-#include "tari/log.h"
-#include "tari/math.h"
-#include "tari/texturepool.h"
+#include "prism/script.h"
+#include "prism/datastructures.h"
+#include "prism/memoryhandler.h"
+#include "prism/file.h"
+#include "prism/system.h"
+#include "prism/log.h"
+#include "prism/math.h"
+#include "prism/texturepool.h"
 
 
 

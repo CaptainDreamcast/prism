@@ -1,13 +1,13 @@
-#include "tari/mugendefreader.h"
+#include "prism/mugendefreader.h"
 
 #include <assert.h>
 #include <ctype.h>
 
-#include "tari/file.h"
-#include "tari/memoryhandler.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/math.h"
+#include "prism/file.h"
+#include "prism/memoryhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/math.h"
 
 typedef struct MugenDefToken_t {
 	char* mValue;

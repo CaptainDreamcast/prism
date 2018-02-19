@@ -1,6 +1,6 @@
-#include "tari/framerate.h"
+#include "prism/framerate.h"
 
-#include "tari/log.h"
+#include "prism/log.h"
 
 // TODO: Refactor into system
 
@@ -12,7 +12,7 @@ void setFramerate(Framerate tFramerate) {
   gFramerate = tFramerate;
 }
 
-fup Framerate getFramerate()
+Framerate getFramerate()
 {
 	if (!gFramerate) return 60;
 

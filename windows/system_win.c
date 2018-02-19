@@ -1,4 +1,4 @@
-#include "tari/system.h"
+#include "prism/system.h"
 
 #include <string.h>
 #include <assert.h>
@@ -21,10 +21,10 @@
 #include <SDL_image.h>
 #endif
 
-#include "tari/log.h"
-#include "tari/pvr.h"
-#include "tari/geometry.h"
-#include "tari/math.h"
+#include "prism/log.h"
+#include "prism/pvr.h"
+#include "prism/geometry.h"
+#include "prism/math.h"
 
 
 void abortSystem(){
@@ -33,7 +33,7 @@ void abortSystem(){
 }	
 
 static struct {
-
+	
 	int mIsLoaded;
 	
 	int mScreenSizeX;

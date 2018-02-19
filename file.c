@@ -1,10 +1,10 @@
-#include "tari/file.h"
+#include "prism/file.h"
 
 #include <sys/stat.h>
 
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
 
 char* getPureFileName(char* path) {
 	debugLog("Getting pure filename.");
