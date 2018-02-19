@@ -1,16 +1,17 @@
-#include "tari/drawing.h"
+#include "prism/drawing.h"
 
 #include <stdlib.h>
 #include <math.h>
+#include <assert.h>
 
 #include <kos.h>
 #include <dc/matrix3d.h>
 
-#include "tari/log.h"
-#include "tari/datastructures.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
-#include "tari/math.h"
+#include "prism/log.h"
+#include "prism/datastructures.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
+#include "prism/math.h"
 
 static struct {
 
@@ -21,6 +22,7 @@ static struct {
 
 	Vector mMatrixStack;
 
+	BlendType mBlendType;
 	int mIsDisabled;
 } gData;
 
@@ -42,10 +44,20 @@ static void forceToInteger(pvr_vertex_t* tVert) {
 
 void initDrawing(){
 	logg("Initiate drawing.");
+	pvr_set_pal_format(PVR_PAL_ARGB4444);
 	setDrawingParametersToIdentity();
 	gData.mMatrixStack = new_vector();
 	gData.mIsDisabled = 0;
 }
+
+#define PVR_BLEND_ZERO          0   /**< \brief None of this color */
+#define PVR_BLEND_ONE           1   /**< \brief All of this color */
+#define PVR_BLEND_DESTCOLOR     2   /**< \brief Destination color */
+#define PVR_BLEND_INVDESTCOLOR  3   /**< \brief Inverse of destination color */
+#define PVR_BLEND_SRCALPHA      4   /**< \brief Blend with source alpha */
+#define PVR_BLEND_INVSRCALPHA   5   /**< \brief Blend with inverse source alpha */
+#define PVR_BLEND_DESTALPHA     6   /**< \brief Blend with destination alpha */
+#define PVR_BLEND_INVDESTALPHA  7   /**< \brief Blend with inverse destination alpha */
 
 static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pvr_vertex_t* vert) {
   referenceTextureMemory(tTexture.mTexture);
@@ -55,13 +67,32 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
 
   pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
 
+
+  cxt.blend.src_enable = PVR_BLEND_DISABLE;
+   cxt.blend.dst_enable = PVR_BLEND_DISABLE;
+
+  if(gData.mBlendType == BLEND_TYPE_NORMAL) {
+	cxt.blend.src = PVR_BLEND_SRCALPHA; 
+	cxt.blend.dst = PVR_BLEND_INVSRCALPHA;
+  } else if(gData.mBlendType == BLEND_TYPE_ADDITION) {
+	cxt.blend.src = PVR_BLEND_SRCALPHA; 
+	cxt.blend.dst = PVR_BLEND_ONE;
+  }  else if(gData.mBlendType == BLEND_TYPE_SUBTRACTION) {
+	cxt.blend.src = PVR_BLEND_SRCALPHA; 
+	cxt.blend.dst = PVR_BLEND_ONE;
+  }  else {	
+	logError("Unrecognized blend type.");
+	logErrorInteger(gData.mBlendType);
+	abortSystem();
+  }
+
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
 
-  double left = tTexturePosition.topLeft.x / ((double) tTexture.mTextureSize.x - 1);
-  double right = tTexturePosition.bottomRight.x / ((double)tTexture.mTextureSize.x - 1);
-  double up = tTexturePosition.topLeft.y / ((double) tTexture.mTextureSize.y - 1);
-  double down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y - 1);
+  double left = tTexturePosition.topLeft.x / ((double) tTexture.mTextureSize.x);
+  double right = (tTexturePosition.bottomRight.x + 1) / ((double)tTexture.mTextureSize.x);
+  double up = tTexturePosition.topLeft.y / ((double) tTexture.mTextureSize.y);
+  double down = (tTexturePosition.bottomRight.y + 1) / ((double)tTexture.mTextureSize.y);
 
 
   vert[0].argb = PVR_PACK_COLOR(gData.a, gData.r, gData.g, gData.b);
@@ -266,6 +297,16 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
 
 }
 
+void drawTruetypeText(char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth) {
+	// TODO
+	(void) tText;
+	(void) tFont;
+	(void) tPosition;
+	(void) tTextSize;
+	(void) tColor;
+	(void) tTextBoxWidth;
+}
+
 void scaleDrawing(double tFactor, Position tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor, tFactor, 1);
@@ -294,7 +335,7 @@ void setDrawingTransparency(double tAlpha){
 }
 
 void setDrawingBlendType(BlendType tBlendType) {
-	(void)tBlendType; // TODO
+	gData.mBlendType = tBlendType;
 }
 
 
@@ -308,6 +349,7 @@ void setDrawingParametersToIdentity(){
 	mat_identity();
 	setDrawingBaseColor(COLOR_WHITE);
 	setDrawingTransparency(1.0);
+	gData.mBlendType = BLEND_TYPE_NORMAL;
 }
 
 static void pushMatrixInternal() {
@@ -350,3 +392,40 @@ void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTa
 	(void) tTarget;
 }
 
+static uint32_t packPaletteEntry(uint8_t a, uint8_t r, uint8_t g, uint8_t b) {
+	return ((a / 2) << 12) | ((r / 2) << 8) | ((g / 2) << 4) | ((b / 2) << 0);
+}
+
+void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
+	assert(tBuffer.mLength >= 256*4);
+	uint8_t* src = tBuffer.mData;
+	
+	int start = tPaletteID * 256;
+	int i;
+	for(i = 0; i < 256; i++) {
+		uint8_t a = src[i*4+0];
+		uint8_t r = src[i*4+1];
+		uint8_t g = src[i*4+2];
+		uint8_t b = src[i*4+3];
+		uint32_t value = packPaletteEntry(a, r, g, b);
+		pvr_set_pal_entry(start + i, value);
+	}
+}
+
+void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer tBuffer) {
+	assert(tBuffer.mLength >= 256*3);
+	uint8_t* src = tBuffer.mData;
+	
+	int start = tPaletteID * 256;
+	pvr_set_pal_entry(start, 0);
+
+	int i;
+	for(i = 1; i < 256; i++) {
+		uint8_t r = src[i*3+0];
+		uint8_t g = src[i*3+1];
+		uint8_t b = src[i*3+2];
+		uint8_t a = 0xFF;
+		uint32_t value = packPaletteEntry(a, r, g, b);
+		pvr_set_pal_entry(start + i, value);
+	}
+}

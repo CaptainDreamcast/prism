@@ -12,17 +12,17 @@ romdisk: clean build_images to_romdisk build_romdisk
 build_images: copy_debug make_filesystem copy_assets copy_logo copy_effects convert_assets actions_user
 
 copy_debug:
-	$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/debug/*.png)
-	find assets/debug -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
-	$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/fonts/*.png)
-	find assets/fonts -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
+	-$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/debug/*.png)
+	-find assets/debug -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
+	-$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/fonts/*.png)
+	-find assets/fonts -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
 	mkdir romdisk_boot
 	mkdir romdisk_boot/fonts
-	cp assets/fonts/* romdisk_boot/fonts
-	find romdisk_boot/fonts/ -name '*.png' | xargs rm -f
-	find romdisk_boot/fonts/ -name '*.kmg' | xargs rm -f
+	-cp assets/fonts/* romdisk_boot/fonts
+	-find romdisk_boot/fonts/ -name '*.png' | xargs rm -f
+	-find romdisk_boot/fonts/ -name '*.kmg' | xargs rm -f
 	mkdir romdisk_boot/debug
-	cp assets/debug/*.pkg romdisk_boot/debug
+	-cp assets/debug/*.pkg romdisk_boot/debug
 	
 make_filesystem:
 	mkdir filesystem

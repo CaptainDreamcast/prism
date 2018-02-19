@@ -1262,8 +1262,7 @@ static void seekFileReader(MugenSpriteFileReader* tReader, uint32_t tPosition) {
 }
 
 static Buffer readFileReaderBuffer(MugenSpriteFileReader* tReader, uint32_t tSize) {
-	MugenSpriteFileFileReaderData* data = tReader->mData;
-
+	(void)tReader;
 	uint32_t originalPosition = gData.mReader.mGetCurrentOffset(&gData.mReader);
 	char* dst = allocMemory(tSize + 10);
 	gData.mReader.mRead(&gData.mReader, dst, tSize);

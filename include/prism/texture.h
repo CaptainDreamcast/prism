@@ -44,3 +44,5 @@ int canLoadTexture(char* tPath);
 
 TextureSize makeTextureSize(int x, int y);
 TextureData createWhiteTexture();
+
+Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc);

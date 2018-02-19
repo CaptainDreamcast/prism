@@ -313,7 +313,7 @@ static int isInterpolationStatement(Buffer* b, BufferPointer p) {
 	return ret;
 }
 
-static int isTextStatement(Buffer* b, BufferPointer p) {
+static int isTextStatement() {
 	char* text = gCurrentGroupToken->mValue;
 
 	int ret = 0;
@@ -332,7 +332,7 @@ static MugenDefToken* parseRecursively(Buffer* b, BufferPointer p) {
 
 	if (isComment(p)) return parseComment(b, p);
 	else if (isGroup(p)) return parseGroup(b, p);
-	else if (isTextStatement(b, p)) return parseTextStatement(b, p);
+	else if (isTextStatement()) return parseTextStatement(b, p);
 	else if(isAssignment(b, p, '=')) return parseAssignment(b, p, '=');
 	else if(isAssignment(b, p, ':')) return parseAssignment(b, p, ':');
 	else if (isVectorStatement(b, p)) return parseVectorStatement(b, p);
@@ -699,7 +699,7 @@ static int isInterpolationStatementToken(MugenDefToken* tToken) {
 	return 0;
 }
 
-static int isTextStatementToken(MugenDefToken* tToken) {
+static int isTextStatementToken() {
 
 	if (!strcmp(gScriptMaker.mGroup, "Infobox Text")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "ja.Infobox Text")) return 1;
@@ -714,7 +714,7 @@ static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken) {
 	if (tToken == NULL) return;
 
 	if (isGroupToken(tToken)) setGroup(tScript, tToken);
-	else if (isTextStatementToken(tToken)) {
+	else if (isTextStatementToken()) {
 		setTextStatement(tScript, &tToken);
 	}
 	else if(isAssignmentToken(tToken)){

@@ -1,9 +1,9 @@
-#include "tari/soundeffect.h"
+#include "prism/soundeffect.h"
 
 #include <kos.h>
 
-#include "tari/file.h"
-#include "tari/sound.h"
+#include "prism/file.h"
+#include "prism/sound.h"
 
 void initSoundEffects() {
 
@@ -21,6 +21,17 @@ int loadSoundEffect(char* tPath) {
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);
 	return snd_sfx_load(fullPath);
+}
+
+int loadSoundEffectFromBuffer(Buffer tBuffer) {
+	char tempPath[1024];
+	strcpy(tempPath, "/ram/tempsound.wav");
+
+	bufferToFile(tempPath, tBuffer);
+	int ret = loadSoundEffect(tempPath);
+	fileUnlink(tempPath);
+
+	return ret;
 }
 
 void unloadSoundEffect(int tID) {

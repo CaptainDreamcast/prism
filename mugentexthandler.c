@@ -414,6 +414,7 @@ static struct {
 } gHandler;
 
 static void loadMugenTextHandlerActor(void* tData) {
+	(void) tData;
 	gHandler.mHandledTexts = new_int_map();
 }
 
@@ -433,11 +434,13 @@ static void updateSingleTextBuildup(MugenText* e) {
 
 static void updateSingleText(void* tCaller, void* tData) {
 	(void)tCaller;
+	(void)tData;
 	MugenText* e = tData;
 	updateSingleTextBuildup(e);
 }
 
 static void updateMugenTextHandler(void* tData) {
+	(void)tData;
 	int_map_map(&gHandler.mHandledTexts, updateSingleText, NULL);
 }
 
@@ -576,7 +579,7 @@ static void drawSingleText(void* tCaller, void* tData) {
 }
 
 static void drawMugenTextHandler(void* tData) {
-
+	(void)tData;
 	int_map_map(&gHandler.mHandledTexts, drawSingleText, NULL);
 }
 
@@ -699,6 +702,7 @@ static double getMugenTextSizeX(MugenText* e) {
 		logError("Unimplemented font type.");
 		logErrorInteger(e->mFont->mType);
 		abortSystem();
+		return 0;
 	}
 }
 
