@@ -21,6 +21,7 @@
 TextureData loadTexturePKG(char* tFileDir) {
 
   TextureData returnData;
+  returnData.mHasPalette = 0;
 
   qlz_state_decompress *state_decompress = (qlz_state_decompress *) allocMemory(sizeof(qlz_state_decompress));
   size_t bufferLength;
@@ -79,7 +80,7 @@ TextureData loadTexture(char* tFileDir) {
 /* This twiddling code is copied from pvr_texture.c, and the original
    algorithm was written by Vincent Penne. */
 
-static Buffer twiddleTextureBuffer(Buffer tBuffer, int tWidth, int tHeight) {
+static Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight) {
     int w = tWidth;
     int h = tHeight;
     int mini = min(w, h);
@@ -100,12 +101,34 @@ static Buffer twiddleTextureBuffer(Buffer tBuffer, int tWidth, int tHeight) {
     return makeBufferOwned(vtex, tBuffer.mLength);
 }
 
+static Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
+    int w = tWidth;
+    int h = tHeight;
+    int mini = min(w, h);
+    int mask = mini - 1;
+    uint8 * pixels = (uint8 *)tBuffer.mData;
+    uint8 * vtex = allocMemory(tBuffer.mLength);
+    int x, y, yout;
+
+    for(y = 0; y < h; y++) {
+        yout = y;
+
+        for(x = 0; x < w; x++) {
+            vtex[TWIDOUT(x & mask, yout & mask) +
+                 (x / mini + yout / mini)*mini * mini] = pixels[y * w + x];
+        }
+    }
+
+    return makeBufferOwned(vtex, tBuffer.mLength);
+}
+
 TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 	Buffer argb16Buffer = turnARGB32BufferIntoARGB16Buffer(b);
-	Buffer twiddledBuffer = twiddleTextureBuffer(argb16Buffer, tWidth, tHeight);	
+	Buffer twiddledBuffer = twiddleTextureBuffer16(argb16Buffer, tWidth, tHeight);	
 	freeBuffer(argb16Buffer);
 
 	TextureData returnData;
+	returnData.mHasPalette = 0;
 	returnData.mTextureSize.x = tWidth;
 	returnData.mTextureSize.y = tHeight;
 
@@ -117,7 +140,19 @@ TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 } 
 
 TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight) {
-	assert(0); // TODO
+	Buffer twiddledBuffer = twiddleTextureBuffer8(b, tWidth, tHeight);
+
+	TextureData returnData;
+	returnData.mHasPalette = 1;
+	returnData.mPaletteID = tPaletteID;
+	returnData.mTextureSize.x = tWidth;
+	returnData.mTextureSize.y = tHeight;
+
+	returnData.mTexture = allocTextureMemory(twiddledBuffer.mLength);
+  	sq_cpy(returnData.mTexture->mData, twiddledBuffer.mData, twiddledBuffer.mLength);
+
+	freeBuffer(twiddledBuffer);
+	return returnData;
 }
 
 void unloadTexture(TextureData tTexture) {

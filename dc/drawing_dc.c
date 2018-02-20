@@ -44,7 +44,7 @@ static void forceToInteger(pvr_vertex_t* tVert) {
 
 void initDrawing(){
 	logg("Initiate drawing.");
-	pvr_set_pal_format(PVR_PAL_ARGB4444);
+	pvr_set_pal_format(PVR_PAL_ARGB8888);
 	setDrawingParametersToIdentity();
 	gData.mMatrixStack = new_vector();
 	gData.mIsDisabled = 0;
@@ -65,7 +65,14 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
   pvr_poly_cxt_t cxt;
   pvr_poly_hdr_t hdr;
 
-  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, PVR_TXRFMT_ARGB4444, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
+  uint32_t format;
+  if(tTexture.mHasPalette) {
+	format = (PVR_TXRFMT_PAL8BPP | PVR_TXRFMT_8BPP_PAL(tTexture.mPaletteID));
+  } else {
+	format = PVR_TXRFMT_ARGB4444;
+  }
+
+  pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, format, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
 
 
   cxt.blend.src_enable = PVR_BLEND_DISABLE;
@@ -393,7 +400,7 @@ void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTa
 }
 
 static uint32_t packPaletteEntry(uint8_t a, uint8_t r, uint8_t g, uint8_t b) {
-	return ((a / 2) << 12) | ((r / 2) << 8) | ((g / 2) << 4) | ((b / 2) << 0);
+	return ((a) << 24) | ((r) << 16) | ((g) << 8) | ((b) << 0);
 }
 
 void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
