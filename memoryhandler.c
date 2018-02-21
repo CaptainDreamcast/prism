@@ -73,12 +73,11 @@ static void freeTextureFunc(void* tData) {
 	free(tMem);
 }
 
-KHASH_MAP_INIT_INT64(Bucket, void*)
+KHASH_MAP_INIT_INT(Bucket, void*)
 
 #define MEMORY_STACK_MAX 10
 
 typedef struct {
-	int m;
 	khash_t(Bucket)* mMap;
 } MemoryHandlerMap;
 
@@ -269,7 +268,7 @@ static void makeSpaceInTextureMemory(size_t tSize) {
 static void* addAllocatedMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData) {
 	khiter_t iter;
 	int ret;
-	iter = kh_put(Bucket, tMap->mMap, (khint64_t)tData, &ret);
+	iter = kh_put(Bucket, tMap->mMap, (khint32_t)tData, &ret);
 	kh_val(tMap->mMap, iter) = tData;
 
 
@@ -285,7 +284,7 @@ static void* addMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, int tSize, Mall
 
 static int removeMemoryFromMemoryHandlerMapWithoutFreeingMemory(MemoryHandlerMap* tMap, void* tData) {
 	khiter_t iter;
-	iter = kh_get(Bucket, tMap->mMap, (khint64_t)tData);
+	iter = kh_get(Bucket, tMap->mMap, (khint32_t)tData);
 	if (iter == kh_end(tMap->mMap)) {
 		return 0;
 	}
@@ -419,10 +418,16 @@ void* allocMemory(int tSize) {
 	return addMemoryToMemoryListStack(&gMemoryHandler.mMemoryStack, tSize, malloc);
 }
 
-void* allocClearedMemory(int tSize) {
-	if (!tSize) return NULL;
+void* allocClearedMemory(int tBlockAmount, int tBlockSize) {
+	uint32_t length = tBlockAmount*tBlockSize;
 
-	return addMemoryToMemoryListStack(&gMemoryHandler.mMemoryStack, tSize, calloc);
+	void* data = allocMemory(length);
+
+	if (data) {
+		memset(data, 0, length);
+	}
+
+	return data;
 }
 
 void freeMemory(void* tData) {

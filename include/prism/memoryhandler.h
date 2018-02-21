@@ -34,7 +34,7 @@ struct TextureMemory_internal {
 typedef struct TextureMemory_internal* TextureMemory;
 
 void* allocMemory(int tSize);
-void* allocClearedMemory(int tSize);
+void* allocClearedMemory(int tBlockAmount, int tBlockSize);
 void freeMemory(void* tData);
 void* reallocMemory(void* tData, int tSize);
 TextureMemory allocTextureMemory(int tSize);

@@ -6,6 +6,14 @@
 #include <assert.h>
 
 #include "prism/memoryhandler.h"
+
+
+//#define kcalloc(N,Z) allocClearedMemory(N,Z)
+//#define kmalloc(Z) allocMemory(Z)
+//#define krealloc(P,Z) reallocMemory(P,Z)
+//#define kfree(P) freeMemory(P)
+#include "prism/klib/khash.h"
+
 #include "prism/log.h"
 #include "prism/system.h"
 #include "prism/math.h"
@@ -358,73 +366,70 @@ void vector_pop_back(Vector* tVector) {
 }
 
 
-
-
-#define MAP_MODULO 211
-
 typedef struct {
-	char mKey[100];
+	char mKey[100]; // TODO: fix
 	void* mData;
 	int mIsOwned;
 } StringMapBucketListEntry;
 
-typedef struct {
-	List mEntries;
-} StringMapBucket;
+
+KHASH_MAP_INIT_STR(str, StringMapBucketListEntry*)
 
 StringMap new_string_map() {
+	khash_t(str)* map = kh_init(str);
+
+	printf("create %X\n", (uint32_t)map);
+
 	StringMap ret;
-	ret.mBuckets = new_vector();
-
-	int i;
-	for (i = 0; i < MAP_MODULO; i++) {
-		StringMapBucket* newBucket = allocMemory(sizeof(StringMapBucket));
-		newBucket->mEntries = new_list();
-		vector_push_back_owned(&ret.mBuckets, newBucket);
-	}
-
+	ret.mMap = map;
 	ret.mSize = 0;
 	return ret;
 }
 
-static void deleteStringMapBucket(void* tCaller, void* tData) {
-	(void) tCaller;
-	StringMapBucket* e = tData;
-	delete_list(&e->mEntries);
-}
-
 void delete_string_map(StringMap* tMap) {
 	string_map_empty(tMap);
-	delete_vector(&tMap->mBuckets);
+	khash_t(str)* map = tMap->mMap;
+	kh_destroy(str, map);
+}
+
+static void freeSingleStringMapEntry(StringMapBucketListEntry* e) {
+	if (e->mIsOwned) {
+		freeMemory(e->mData);
+	}
+	freeMemory(e);
 }
 
 void string_map_empty(StringMap* tMap) {
-	vector_map(&tMap->mBuckets, deleteStringMapBucket, NULL);
-	vector_empty(&tMap->mBuckets);
-}
+	khash_t(str)* map = tMap->mMap;
 
-static int getBucketIDFromString(char* tKey) {
-	int l = strlen(tKey);
-	int i;
-	int base = 1;
-	int offset = 0;
-	for (i = 0; i < l; i++) {
-		offset = (offset + (tKey[i] * base)) % MAP_MODULO;
-		base = (base * 10) % MAP_MODULO;
+	khiter_t iter;
+	for (iter = kh_begin(map); iter != kh_end(map); ++iter) {
+		if (kh_exist(map, iter)) {
+			StringMapBucketListEntry* data = kh_value(map, iter);
+			freeSingleStringMapEntry(data);
+		}
 	}
-	return offset;
+
+	kh_clear(str, map);
+	tMap->mSize = 0;
 }
 
 static void string_map_push_internal(StringMap* tMap, char* tKey, void* tData, int tIsOwned) {
-	int offset = getBucketIDFromString(tKey);
-	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
-
 	StringMapBucketListEntry* newEntry = allocMemory(sizeof(StringMapBucketListEntry));
 	strcpy(newEntry->mKey, tKey);
 	newEntry->mData = tData;
 	newEntry->mIsOwned = tIsOwned;
 
-	list_push_back_owned(&bucket->mEntries, newEntry);
+	
+
+	khash_t(str)* map = tMap->mMap;
+	khiter_t iter;
+	int ret;
+	iter = kh_put(str, map, tKey, &ret);
+	kh_val(map, iter) = newEntry;
+
+	printf("%X add %s\n", (uint32_t)map, tKey);
+
 	tMap->mSize++;
 }
 
@@ -436,146 +441,139 @@ void string_map_push(StringMap* tMap, char* tKey, void* tData) {
 	string_map_push_internal(tMap, tKey, tData, 0);
 }
 
-static void string_map_remove_element(StringMap* tMap, StringMapBucketListEntry* e) {
-	if (e->mIsOwned) {
-		freeMemory(e->mData);
+void string_map_remove(StringMap* tMap, char* tKey) {
+	khash_t(str)* map = tMap->mMap;
+
+	khiter_t iter;
+	iter = kh_get(str, map, tKey);
+	if (iter == kh_end(map)) {
+		logError("Unable to find string map entry.");
+		logErrorString(tKey);
+		abortSystem();
 	}
 
+	StringMapBucketListEntry* entry = kh_val(map, iter);
+	freeSingleStringMapEntry(entry);
+	kh_del(str, map, iter);
+	
 	tMap->mSize--;
 }
 
-void string_map_remove(StringMap* tMap, char* tKey) {
-	int offset = getBucketIDFromString(tKey);
-	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
-
-	if (!list_size(&bucket->mEntries)) {
-		logError("Unable to find key in map.");
-		logErrorString(tKey);
-		abortSystem();
-	}
-	ListIterator it = list_iterator_begin(&bucket->mEntries);
-	while (1) {
-		
-		StringMapBucketListEntry* e = list_iterator_get(it);
-		if (!strcmp(tKey, e->mKey)) {
-			string_map_remove_element(tMap, e);
-			list_iterator_remove(&bucket->mEntries, it);
-			return;
-		}
-		
-		if (!list_has_next(it)) {
-			logError("Unable to find key in map.");
-			logErrorString(tKey);
-			abortSystem();
-		}
-
-		list_iterator_increase(&it);
-	}
-}
-
 void* string_map_get(StringMap* tMap, char* tKey) {
-	int offset = getBucketIDFromString(tKey);
-	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+	khash_t(str)* map = tMap->mMap;
 
-	if (!list_size(&bucket->mEntries)) {
-		logError("Unable to find key in map.");
+	khiter_t iter;
+	iter = kh_get(str, map, tKey);
+	if (iter == kh_end(map)) {
+		logError("Unable to find string map entry.");
 		logErrorString(tKey);
 		abortSystem();
 	}
 
-	ListIterator it = list_iterator_begin(&bucket->mEntries);
-	while (1) {
-		StringMapBucketListEntry* e = list_iterator_get(it);
-		if (!strcmp(tKey, e->mKey)) {
-			return e->mData;
-		}
-		
-		if (!list_has_next(it)) {
-			logError("Unable to find key in map.");
-			logErrorString(tKey);
-			abortSystem();
-		}
-
-		list_iterator_increase(&it);
-	}
-
-}
-
-typedef struct {
-	void* mCaller;
-	stringMapMapCB mCB;
-
-} StringMapCaller;
-
-static void string_map_map_single_list_entry(void* tCaller, void* tData) {
-	StringMapCaller* caller = tCaller;
-	StringMapBucketListEntry* e = tData;
-
-	caller->mCB(caller->mCaller, e->mKey, e->mData);
-}
-
-static void string_map_map_single_bucket(void* tCaller, void* tData) {
-	StringMapBucket* e = tData;
-	list_map(&e->mEntries, string_map_map_single_list_entry, tCaller);
-
+	StringMapBucketListEntry* entry = kh_val(map, iter);
+	return entry->mData;
 }
 
 void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller) {
-	StringMapCaller caller;
-	caller.mCaller = tCaller;
-	caller.mCB = tCB;
-	vector_map(&tMap->mBuckets, string_map_map_single_bucket, &caller);
+	khash_t(str)* map = tMap->mMap;
+
+	khiter_t iter;
+	for (iter = kh_begin(map); iter != kh_end(map); ++iter) {
+		if (kh_exist(map, iter)) {
+			StringMapBucketListEntry* e = kh_value(map, iter);
+			tCB(tCaller, e->mKey, e->mData);
+		}
+	}
 }
 
 int string_map_contains(StringMap* tMap, char* tKey) {
-	int offset = getBucketIDFromString(tKey);
-	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+	khash_t(str)* map = tMap->mMap;
 
-	if (!list_size(&bucket->mEntries)) return 0;
-
-	ListIterator it = list_iterator_begin(&bucket->mEntries);
-	while (1) {
-		StringMapBucketListEntry* e = list_iterator_get(it);
-		if (!strcmp(tKey, e->mKey)) {
-			return 1;
-		}
-
-		if (!list_has_next(it)) {
-			break;
-		}
-
-		list_iterator_increase(&it);
+	khiter_t iter;
+	iter = kh_get(str, map, tKey);
+	printf("%X iter1: %d %d\n", (uint32_t)map, iter, kh_end(map));
+	if (iter == kh_end(map)) {
+		printf("can't find %s\n", tKey);
+		return 0;
 	}
 
-	return 0;
+	printf("find %s\n", tKey);
+	return 1;
 }
 
 int string_map_size(StringMap* tMap) {
 	return tMap->mSize;
 }
 
+KHASH_MAP_INIT_INT(integer, void*)
+
 IntMap new_int_map()
 {
-	return new_string_map();
+	khash_t(integer)* map = kh_init(integer);
+
+	IntMap ret;
+	ret.mMap = map;
+	ret.mSize = 0;
+	return ret;
 }
 
 void delete_int_map(IntMap * tMap)
 {
-	delete_string_map(tMap);
+	int_map_empty(tMap);
+	khash_t(integer)* map = tMap->mMap;
+	kh_destroy(integer, map);
+}
+
+typedef struct {
+	int mKey;
+	void* mData;
+	int mIsOwned;
+} IntMapBucketListEntry;
+
+static void freeSingleIntMapEntry(void* tData) {
+	 IntMapBucketListEntry* e = tData;
+	if (e->mIsOwned) {
+		freeMemory(e->mData);
+	}
+	freeMemory(e);
 }
 
 void int_map_empty(IntMap * tMap)
 {
-	string_map_empty(tMap);
+	khash_t(integer)* map = tMap->mMap;
+
+	khiter_t iter;
+	for (iter = kh_begin(map); iter != kh_end(map); ++iter) {
+		if (kh_exist(map, iter)) {
+			void* data = kh_value(map, iter);
+			freeSingleIntMapEntry(data);
+		}
+	}
+
+	kh_clear(integer, map);
+	tMap->mSize = 0;
 }
 
 static int gIntMapIndex;
 
+static void int_map_push_internal(IntMap * tMap, int tKey, void * tData, int tIsOwned) {
+	IntMapBucketListEntry* newEntry = allocMemory(sizeof(IntMapBucketListEntry));
+	newEntry->mKey = tKey;
+	newEntry->mData = tData;
+	newEntry->mIsOwned = tIsOwned;
+
+	khash_t(integer)* map = tMap->mMap;
+	khiter_t iter;
+	int ret;
+	iter = kh_put(integer, map, tKey, &ret);
+	kh_val(map, iter) = newEntry;
+
+	tMap->mSize++;
+}
+
 void int_map_push_owned(IntMap * tMap, int tKey, void * tData)
 {
-	char str[100];
-	sprintf(str, "%d", tKey);
-	string_map_push_owned(tMap, str, tData);
+	int_map_push_internal(tMap, tKey, tData, 1);
 }
 
 int int_map_push_back_owned(IntMap * tMap, void * tData)
@@ -587,9 +585,7 @@ int int_map_push_back_owned(IntMap * tMap, void * tData)
 
 void int_map_push(IntMap * tMap, int tKey, void * tData)
 {
-	char str[100];
-	sprintf(str, "%d", tKey);
-	string_map_push(tMap, str, tData);
+	int_map_push_internal(tMap, tKey, tData, 0);
 }
 
 int int_map_push_back(IntMap * tMap, void * tData)
@@ -601,81 +597,82 @@ int int_map_push_back(IntMap * tMap, void * tData)
 
 void int_map_remove(IntMap * tMap, int tKey)
 {
-	char str[100];
-	sprintf(str, "%d", tKey);
-	string_map_remove(tMap, str);
+	khash_t(integer)* map = tMap->mMap;
+
+	khiter_t iter;
+	iter = kh_get(integer, map, tKey);
+	if (iter == kh_end(map)) {
+		logError("Unable to find int map entry.");
+		logErrorInteger(tKey);
+		abortSystem();
+	}
+
+	IntMapBucketListEntry* entry = kh_val(map, iter);
+	freeSingleIntMapEntry(entry);
+	kh_del(integer, map, iter);
+
+	tMap->mSize--;
 }
 
 void* int_map_get(IntMap * tMap, int tKey)
 {
-	char str[100];
-	sprintf(str, "%d", tKey);
-	return string_map_get(tMap, str);
+	khash_t(integer)* map = tMap->mMap;
+
+	khiter_t iter;
+	iter = kh_get(integer, map, tKey);
+	if (iter == kh_end(map)) {
+		logError("Unable to find int map entry.");
+		logErrorInteger(tKey);
+		abortSystem();
+	}
+
+	IntMapBucketListEntry* entry = kh_val(map, iter);
+	return entry->mData;
 }
 
-typedef struct {
-	void* mCaller;
-	mapCB mCB;
-} IntMapCaller;
-
-static void int_map_map_single_list_entry(void* tCaller, void* tData) {
-	IntMapCaller* caller = tCaller;
-	StringMapBucketListEntry* e = tData;
-
-	caller->mCB(caller->mCaller, e->mData);
-}
-
-static void int_map_map_single_bucket(void* tCaller, void* tData) {
-	StringMapBucket* e = tData;
-	list_map(&e->mEntries, int_map_map_single_list_entry, tCaller);
-}
 
 void int_map_map(IntMap* tMap, mapCB tCB, void* tCaller) {
-	IntMapCaller caller;
-	caller.mCaller = tCaller;
-	caller.mCB = tCB;
-	vector_map(&tMap->mBuckets, int_map_map_single_bucket, &caller);
-}
+	khash_t(integer)* map = tMap->mMap;
 
-typedef struct {
-	void* mCaller;
-	predicateCB mCB;
-	IntMap* mMap;
-} IntPredicateCaller;
-
-static int int_map_remove_predicate_single_list_entry(void* tCaller, void* tData) {
-	IntPredicateCaller* caller = tCaller;
-	StringMapBucketListEntry* e = tData;
-
-	int ret = caller->mCB(caller->mCaller, e->mData);
-	if (ret) {
-		string_map_remove_element(caller->mMap, e);
+	khiter_t iter;
+	for (iter = kh_begin(map); iter != kh_end(map); ++iter) {
+		if (kh_exist(map, iter)) {
+			IntMapBucketListEntry* e = kh_value(map, iter);
+			tCB(tCaller, e->mData);
+		}
 	}
-	return ret;
 }
-
-static void int_map_remove_predicate_single_bucket(void* tCaller, void* tData) {
-	StringMapBucket* e = tData;
-	list_remove_predicate(&e->mEntries, int_map_remove_predicate_single_list_entry, tCaller);
-}
-
 
 void int_map_remove_predicate(IntMap * tMap, predicateCB tCB, void * tCaller)
 {
-	IntPredicateCaller caller;
-	caller.mCaller = tCaller;
-	caller.mCB = tCB;
-	caller.mMap = tMap;
-	vector_map(&tMap->mBuckets, int_map_remove_predicate_single_bucket, &caller);
+	khash_t(integer)* map = tMap->mMap;
+
+	khiter_t iter;
+	for (iter = kh_begin(map); iter != kh_end(map); ++iter) {
+		if (kh_exist(map, iter)) {
+			IntMapBucketListEntry* e = kh_value(map, iter);
+			int shouldBeDeleted = tCB(tCaller, e->mData);
+			if (shouldBeDeleted) {
+				freeSingleIntMapEntry(e);
+				kh_del(integer, map, iter);
+			}
+		}
+	}
 }
 
 int int_map_contains(IntMap * tMap, int tKey)
 {
-	char str[100];
-	sprintf(str, "%d", tKey);
-	return string_map_contains(tMap, str);
+	khash_t(integer)* map = tMap->mMap;
+
+	khiter_t iter;
+	iter = kh_get(integer, map, tKey);
+	if (iter == kh_end(map)) {
+		return 0;
+	}
+
+	return 1;
 }
 
 int int_map_size(IntMap* tMap) {
-	return string_map_size(tMap);
+	return tMap->mSize;
 }
