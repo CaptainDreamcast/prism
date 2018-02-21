@@ -8,10 +8,10 @@
 #include "prism/memoryhandler.h"
 
 
-//#define kcalloc(N,Z) allocClearedMemory(N,Z)
-//#define kmalloc(Z) allocMemory(Z)
-//#define krealloc(P,Z) reallocMemory(P,Z)
-//#define kfree(P) freeMemory(P)
+#define kcalloc(N,Z) allocClearedMemory(N,Z)
+#define kmalloc(Z) allocMemory(Z)
+#define krealloc(P,Z) reallocMemory(P,Z)
+#define kfree(P) freeMemory(P)
 #include "prism/klib/khash.h"
 
 #include "prism/log.h"
