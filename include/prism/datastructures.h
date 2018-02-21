@@ -82,8 +82,9 @@ void vector_pop_back(Vector* tVector);
 
 typedef struct {
 	int mSize;
-	void* mMap;
+	Vector mBuckets;
 } StringMap;
+
 
 typedef void(*stringMapMapCB)(void* caller, char* key, void* data);
 
@@ -100,7 +101,10 @@ int string_map_contains(StringMap* tMap, char* tKey);
 int string_map_size(StringMap* tMap);
 
 
-typedef StringMap IntMap;
+typedef struct {
+	int mSize;
+	void* mMap;
+} IntMap;
 
 IntMap new_int_map();
 void delete_int_map(IntMap* tMap);
