@@ -213,6 +213,7 @@
     <ClInclude Include="..\..\include\prism\geometry.h" />
     <ClInclude Include="..\..\include\prism\input.h" />
     <ClInclude Include="..\..\include\prism\khash.h" />
+    <ClInclude Include="..\..\include\prism\klib\khash.h" />
     <ClInclude Include="..\..\include\prism\log.h" />
     <ClInclude Include="..\..\include\prism\logoscreen.h" />
     <ClInclude Include="..\..\include\prism\lz5.h" />

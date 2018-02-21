@@ -183,6 +183,9 @@
     <Filter Include="hdr\windows">
       <UniqueIdentifier>{e30bb85c-1f40-4dde-b9d5-d9eaf9a8d831}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hdr\klib">
+      <UniqueIdentifier>{fd7ea795-9a88-40f4-b8a0-efcde18bf1f3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -333,6 +336,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\prism\windows\romdisk_win.h">
       <Filter>hdr\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\klib\khash.h">
+      <Filter>hdr\klib</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -5,8 +5,6 @@
 #include <ctype.h>
 #include <assert.h>
 
-
-
 #include "prism/memoryhandler.h"
 #include "prism/log.h"
 #include "prism/system.h"
