@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 void turnStringLowercase(char* tString);
 
 typedef struct ListElement_internal {
@@ -85,7 +83,6 @@ typedef struct {
 	Vector mBuckets;
 } StringMap;
 
-
 typedef void(*stringMapMapCB)(void* caller, char* key, void* data);
 
 
@@ -101,10 +98,7 @@ int string_map_contains(StringMap* tMap, char* tKey);
 int string_map_size(StringMap* tMap);
 
 
-typedef struct {
-	int mSize;
-	void* mMap;
-} IntMap;
+typedef StringMap IntMap;
 
 IntMap new_int_map();
 void delete_int_map(IntMap* tMap);
