@@ -709,7 +709,6 @@ MugenSpriteFileSprite* loadSingleTextureFromPCXBuffer(Buffer tBuffer) {
 	MugenSpriteFile sprites = makeEmptySpriteFile();
 
 	MugenSpriteFileSprite* sprite = loadTextureFromPCXBuffer(&sprites, 1, tBuffer, makePosition(0, 0, 0));
-	
 	delete_int_map(&sprites.mGroups);
 	delete_vector(&sprites.mAllSprites);
 	vector_map(&sprites.mPalettes, unloadSinglePalette, NULL);
@@ -1113,6 +1112,7 @@ void unloadMugenSpriteFile(MugenSpriteFile* tFile) {
 
 	vector_map(&tFile->mPalettes, unloadSinglePalette, NULL);
 	delete_vector(&tFile->mPalettes);
+	delete_vector(&tFile->mAllSprites);
 	// TODO unload sprites;
 }
 

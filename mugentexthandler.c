@@ -223,6 +223,8 @@ typedef struct {
 	uint8_t mComment[40];
 } MugenFontHeader;
 
+static void unloadElecbyteFont(MugenFont* tFont); // TODO: remove
+
 static void addMugenFont1(int tKey, char* tPath) {
 	setMugenFontDirectory(tPath);
 
@@ -237,12 +239,18 @@ static void addMugenFont1(int tKey, char* tPath) {
 
 	MugenDefScript script = loadMugenDefScriptFromBuffer(textBuffer);
 
+	unloadMugenDefScript(script);
+	script = loadMugenDefScriptFromBuffer(textBuffer);
+
 	MugenFont* e = allocMemory(sizeof(MugenFont));
 	e->mSize = getMugenDefVectorIOrDefault(&script, "Def", "size", makeVector3DI(1, 1, 0));
 	e->mSpacing = getMugenDefVectorIOrDefault(&script, "Def", "spacing", makeVector3DI(0, 0, 0));
 	e->mOffset = getMugenDefVectorIOrDefault(&script, "Def", "offset", makeVector3DI(0, 0, 0));
 
 	e->mType = MUGEN_FONT_TYPE_ELECBYTE;
+	loadMugenElecbyteFont(&script, textureBuffer, e);
+
+	unloadElecbyteFont(e);
 	loadMugenElecbyteFont(&script, textureBuffer, e);
 
 	unloadMugenDefScript(script);
@@ -354,6 +362,7 @@ static void unloadBitmapFont(MugenFont* tFont) {
 static void unloadElecbyteFont(MugenFont* tFont) {
 	MugenElecbyteFont* elecbyteFont = tFont->mData;
 	unloadMugenSpriteFileSprite(elecbyteFont->mSprite);
+	freeMemory(elecbyteFont->mSprite);
 	delete_int_map(&elecbyteFont->mMap);
 	freeMemory(elecbyteFont);
 }

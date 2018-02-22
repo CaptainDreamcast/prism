@@ -97,10 +97,16 @@ static struct {
 	MemoryListStack mTextureMemoryStack;
 	TextureMemoryUsageList mTextureMemoryUsageList;
 
+	int mAllocatedMemory;
+
 	int mIsCompressionActive;
 
 	int mActive;
 } gMemoryHandler;
+
+int getAllocatedMemoryBlockAmount() {
+	return gMemoryHandler.mAllocatedMemory;
+}
 
 typedef void* (*MallocFunc)(size_t tSize);
 typedef void(*FreeFunc)(void* tData);
@@ -278,7 +284,7 @@ static void* addAllocatedMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, void* 
 
 static void* addMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, int tSize, MallocFunc tFunc) {
 	void* data =  tFunc(tSize);
-	
+	gMemoryHandler.mAllocatedMemory++;
 	return addAllocatedMemoryToMemoryHandlerMap(tMap, data);
 }
 
@@ -298,6 +304,7 @@ static int removeMemoryFromMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData,
 		return 0;
 	}
 
+	gMemoryHandler.mAllocatedMemory--;
 	tFunc(tData);	
 
 	return 1;
@@ -319,6 +326,7 @@ static void emptyMemoryHandlerMap(MemoryHandlerMap* tMap, FreeFunc tFunc) {
 	for (iter = kh_begin(tMap->mMap); iter != kh_end(tMap->mMap); ++iter) {
 		if (kh_exist(tMap->mMap, iter)) {
 			void* data = kh_value(tMap->mMap, iter);
+			gMemoryHandler.mAllocatedMemory--;
 			tFunc(data);
 		}
 	}

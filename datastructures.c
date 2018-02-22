@@ -387,9 +387,25 @@ StringMap new_string_map() {
 	return ret;
 }
 
-static void deleteStringMapBucket(void* tCaller, void* tData) {
-	(void) tCaller;
+static void string_map_remove_element(StringMap* tMap, StringMapBucketListEntry* e) {
+	if (e->mIsOwned) {
+		freeMemory(e->mData);
+	}
+
+	tMap->mSize--;
+}
+
+static int clearStringMapBucketEntry(void* tCaller, void* tData) {
+	StringMap* map = tCaller;
+	StringMapBucketListEntry* e = tData;
+	string_map_remove_element(map, tData);
+
+	return 1;
+}
+
+static void clearStringMapBucket(void* tCaller, void* tData) {
 	StringMapBucket* e = tData;
+	list_remove_predicate(&e->mEntries, clearStringMapBucketEntry, tCaller);
 	delete_list(&e->mEntries);
 }
 
@@ -399,7 +415,7 @@ void delete_string_map(StringMap* tMap) {
 }
 
 void string_map_empty(StringMap* tMap) {
-	vector_map(&tMap->mBuckets, deleteStringMapBucket, NULL);
+	vector_map(&tMap->mBuckets, clearStringMapBucket, tMap); // TODO: rewrite, right now only works because list_empty == list_delete
 	vector_empty(&tMap->mBuckets);
 }
 
@@ -434,14 +450,6 @@ void string_map_push_owned(StringMap* tMap, char* tKey, void* tData) {
 
 void string_map_push(StringMap* tMap, char* tKey, void* tData) {
 	string_map_push_internal(tMap, tKey, tData, 0);
-}
-
-static void string_map_remove_element(StringMap* tMap, StringMapBucketListEntry* e) {
-	if (e->mIsOwned) {
-		freeMemory(e->mData);
-	}
-
-	tMap->mSize--;
 }
 
 void string_map_remove(StringMap* tMap, char* tKey) {

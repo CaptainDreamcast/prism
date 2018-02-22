@@ -755,7 +755,10 @@ MugenDefScript loadMugenDefScript(char * tPath)
 	printf("%s\n", tPath);
 
 	Buffer b = fileToBuffer(tPath);
-	return loadMugenDefScriptFromBuffer(b);
+	MugenDefScript ret = loadMugenDefScriptFromBuffer(b);
+	freeBuffer(b);
+
+	return ret;
 }
 
 MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer) {
@@ -816,6 +819,7 @@ static void unloadMugenDefElement(void* tCaller, void* tData) {
 	}
 
 	freeMemory(e->mData);
+	freeMemory(e);
 }
 
 static void unloadMugenDefScriptGroup(MugenDefScriptGroup* tGroup) {
