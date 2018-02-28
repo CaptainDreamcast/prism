@@ -1,4 +1,4 @@
-#include "tari/math.h"
+#include "prism/math.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -60,4 +60,154 @@ double getLinearInterpolationFactor(double a, double b, double p) {
 
 double interpolateLinear(double a, double b, double t) {
 	return a + t * (b-a);
+}
+
+Matrix4D makeIdentityMatrix4D()
+{
+	Matrix4D ret;
+	ret.m[0][0] = 1;
+	ret.m[0][1] = 0;
+	ret.m[0][2] = 0;
+	ret.m[0][3] = 0;
+
+	ret.m[1][0] = 0;
+	ret.m[1][1] = 1;
+	ret.m[1][2] = 0;
+	ret.m[1][3] = 0;
+
+	ret.m[2][0] = 0;
+	ret.m[2][1] = 0;
+	ret.m[2][2] = 1;
+	ret.m[2][3] = 0;
+
+	ret.m[3][0] = 0;
+	ret.m[3][1] = 0;
+	ret.m[3][2] = 0;
+	ret.m[3][3] = 1;
+
+	return ret;
+}
+
+Matrix4D matMult4D(Matrix4D tA, Matrix4D tB)
+{
+	Matrix4D ret;
+	
+	int i, j, k;
+	for (j = 0; j < 4; j++) {
+		for (i = 0; i < 4; i++) {
+			ret.m[j][i] = 0;
+			for (k = 0; k < 4; k++) {
+				ret.m[j][i] += tA.m[k][i] * tB.m[j][k];
+			}
+		}
+	}
+	
+	return ret;
+}
+
+Matrix4D createScaleMatrix4D(Vector3D tScale)
+{
+	Matrix4D ret;
+	ret.m[0][0] = tScale.x;
+	ret.m[0][1] = 0;
+	ret.m[0][2] = 0;
+	ret.m[0][3] = 0;
+
+	ret.m[1][0] = 0;
+	ret.m[1][1] = tScale.y;
+	ret.m[1][2] = 0;
+	ret.m[1][3] = 0;
+
+	ret.m[2][0] = 0;
+	ret.m[2][1] = 0;
+	ret.m[2][2] = tScale.z;
+	ret.m[2][3] = 0;
+
+	ret.m[3][0] = 0;
+	ret.m[3][1] = 0;
+	ret.m[3][2] = 0;
+	ret.m[3][3] = 1;
+
+	return ret;
+}
+
+Matrix4D createTranslationMatrix4D(Vector3D tTranslation)
+{
+	Matrix4D ret;
+	ret.m[0][0] = 1;
+	ret.m[0][1] = 0;
+	ret.m[0][2] = 0;
+	ret.m[0][3] = 0;
+
+	ret.m[1][0] = 0;
+	ret.m[1][1] = 1;
+	ret.m[1][2] = 0;
+	ret.m[1][3] = 0;
+
+	ret.m[2][0] = 0;
+	ret.m[2][1] = 0;
+	ret.m[2][2] = 1;
+	ret.m[2][3] = 0;
+
+	ret.m[3][0] = tTranslation.x;
+	ret.m[3][1] = tTranslation.y;
+	ret.m[3][2] = tTranslation.z;
+	ret.m[3][3] = 1;
+
+	return ret;
+}
+
+Matrix4D createRotationZMatrix4D(double tAngle)
+{
+	Matrix4D ret;
+	ret.m[0][0] = cos(tAngle);
+	ret.m[0][1] = sin(tAngle);
+	ret.m[0][2] = 0;
+	ret.m[0][3] = 0;
+
+	ret.m[1][0] = -sin(tAngle);
+	ret.m[1][1] = cos(tAngle);
+	ret.m[1][2] = 0;
+	ret.m[1][3] = 0;
+
+	ret.m[2][0] = 0;
+	ret.m[2][1] = 0;
+	ret.m[2][2] = 1;
+	ret.m[2][3] = 0;
+
+	ret.m[3][0] = 0;
+	ret.m[3][1] = 0;
+	ret.m[3][2] = 0;
+	ret.m[3][3] = 1;
+
+	return ret;
+}
+
+Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, double tUp, double tBottom, double tNear, double tFar)
+{
+	(void)tNear;
+	(void)tFar;
+
+	Matrix4D ret;
+	ret.m[0][0] = 2 / (tRight - tLeft);
+	ret.m[0][1] = 0;
+	ret.m[0][2] = 0;
+	ret.m[0][3] = 0;
+
+	ret.m[1][0] = 0;
+	ret.m[1][1] = 2 / (tBottom - tUp);
+	ret.m[1][2] = 0;
+	ret.m[1][3] = 0;
+
+	ret.m[2][0] = 0;
+	ret.m[2][1] = 0;
+	ret.m[2][2] = -1;
+	ret.m[2][3] = 0;
+
+	ret.m[3][0] = -1;
+	ret.m[3][1] = 1;
+	ret.m[3][2] = 0;
+	ret.m[3][3] = 1;
+
+	return ret;
 }

@@ -1,14 +1,14 @@
-#include "tari/mugentexthandler.h"
+#include "prism/mugentexthandler.h"
 
 #include <assert.h>
 
-#include "tari/mugendefreader.h"
-#include "tari/mugenanimationhandler.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/drawing.h"
-#include "tari/texture.h"
-#include "tari/math.h"
+#include "prism/mugendefreader.h"
+#include "prism/mugenanimationhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/drawing.h"
+#include "prism/texture.h"
+#include "prism/math.h"
 
 typedef enum {
 	MUGEN_FONT_TYPE_BITMAP,
@@ -223,6 +223,8 @@ typedef struct {
 	uint8_t mComment[40];
 } MugenFontHeader;
 
+static void unloadElecbyteFont(MugenFont* tFont); // TODO: remove
+
 static void addMugenFont1(int tKey, char* tPath) {
 	setMugenFontDirectory(tPath);
 
@@ -237,12 +239,18 @@ static void addMugenFont1(int tKey, char* tPath) {
 
 	MugenDefScript script = loadMugenDefScriptFromBuffer(textBuffer);
 
+	unloadMugenDefScript(script);
+	script = loadMugenDefScriptFromBuffer(textBuffer);
+
 	MugenFont* e = allocMemory(sizeof(MugenFont));
 	e->mSize = getMugenDefVectorIOrDefault(&script, "Def", "size", makeVector3DI(1, 1, 0));
 	e->mSpacing = getMugenDefVectorIOrDefault(&script, "Def", "spacing", makeVector3DI(0, 0, 0));
 	e->mOffset = getMugenDefVectorIOrDefault(&script, "Def", "offset", makeVector3DI(0, 0, 0));
 
 	e->mType = MUGEN_FONT_TYPE_ELECBYTE;
+	loadMugenElecbyteFont(&script, textureBuffer, e);
+
+	unloadElecbyteFont(e);
 	loadMugenElecbyteFont(&script, textureBuffer, e);
 
 	unloadMugenDefScript(script);
@@ -354,6 +362,7 @@ static void unloadBitmapFont(MugenFont* tFont) {
 static void unloadElecbyteFont(MugenFont* tFont) {
 	MugenElecbyteFont* elecbyteFont = tFont->mData;
 	unloadMugenSpriteFileSprite(elecbyteFont->mSprite);
+	freeMemory(elecbyteFont->mSprite);
 	delete_int_map(&elecbyteFont->mMap);
 	freeMemory(elecbyteFont);
 }
@@ -414,6 +423,7 @@ static struct {
 } gHandler;
 
 static void loadMugenTextHandlerActor(void* tData) {
+	(void) tData;
 	gHandler.mHandledTexts = new_int_map();
 }
 
@@ -433,11 +443,13 @@ static void updateSingleTextBuildup(MugenText* e) {
 
 static void updateSingleText(void* tCaller, void* tData) {
 	(void)tCaller;
+	(void)tData;
 	MugenText* e = tData;
 	updateSingleTextBuildup(e);
 }
 
 static void updateMugenTextHandler(void* tData) {
+	(void)tData;
 	int_map_map(&gHandler.mHandledTexts, updateSingleText, NULL);
 }
 
@@ -576,7 +588,7 @@ static void drawSingleText(void* tCaller, void* tData) {
 }
 
 static void drawMugenTextHandler(void* tData) {
-
+	(void)tData;
 	int_map_map(&gHandler.mHandledTexts, drawSingleText, NULL);
 }
 
@@ -699,27 +711,35 @@ static double getMugenTextSizeX(MugenText* e) {
 		logError("Unimplemented font type.");
 		logErrorInteger(e->mFont->mType);
 		abortSystem();
+		return 0;
 	}
+}
+
+static double getMugenTextAlignmentOffsetX(MugenText* e, MugenTextAlignment tAlignment) {
+	double sizeX = getMugenTextSizeX(e);
+
+	double ret = 0;
+	if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_CENTER) {
+		ret += sizeX / 2;
+	}
+	else if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_RIGHT) {
+		ret += sizeX;
+	}
+
+	if (tAlignment == MUGEN_TEXT_ALIGNMENT_CENTER) {
+		ret -= sizeX / 2;
+	}
+	else if (tAlignment == MUGEN_TEXT_ALIGNMENT_RIGHT) {
+		ret -= sizeX;
+	}
+
+	return ret;
 }
 
 void setMugenTextAlignment(int tID, MugenTextAlignment tAlignment)
 {
 	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
-
-	double sizeX = getMugenTextSizeX(e);
-
-	if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_CENTER) {
-		e->mPosition.x += sizeX / 2;
-	} else if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_RIGHT) {
-		e->mPosition.x += sizeX;
-	}
-
-	if (tAlignment == MUGEN_TEXT_ALIGNMENT_CENTER) {
-		e->mPosition.x -= sizeX / 2;
-	}
-	else if (tAlignment == MUGEN_TEXT_ALIGNMENT_RIGHT) {
-		e->mPosition.x -= sizeX;
-	}
+	e->mPosition.x += getMugenTextAlignmentOffsetX(e, tAlignment);
 	e->mAlignment = tAlignment;
 }
 
@@ -787,6 +807,16 @@ void changeMugenText(int tID, char * tText)
 	strcpy(e->mText, tText);
 	strcpy(e->mDisplayText, tText);
 	setMugenTextAlignment(tID, alignment);
+}
+
+Position getMugenTextPosition(int tID) {
+	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
+	
+	MugenTextAlignment alignment = e->mAlignment;
+	setMugenTextAlignment(tID, MUGEN_TEXT_ALIGNMENT_LEFT);
+	Position ret = e->mPosition;
+	setMugenTextAlignment(tID, alignment);
+	return ret;
 }
 
 Position * getMugenTextPositionReference(int tID)

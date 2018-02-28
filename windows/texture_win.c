@@ -1,8 +1,9 @@
-#include "tari/texture.h"
+#include "prism/texture.h"
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
 #include <SDL/SDL_image.h>
+#include <SDL/SDL_ttf.h>
 #elif defined _WIN32
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -10,39 +11,36 @@
 
 #include <string.h>
 
-#include "tari/file.h"
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
-#include "tari/math.h"
-#include "tari/compression.h"
+#include "prism/file.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
+#include "prism/math.h"
+#include "prism/compression.h"
 
 
 
-extern SDL_Renderer* gRenderer;
-
-static TextureData textureFromSurface(SDL_Surface* tSurface) {
-	
-	SDL_Texture* newTexture;
-	newTexture = SDL_CreateTextureFromSurface(gRenderer, tSurface);
-	if (newTexture == NULL)
-	{
-		logError("Unable to create texture");
-		logErrorString(SDL_GetError());
-		abortSystem();
-	}
-
+TextureData textureFromSurface(SDL_Surface* tSurface) {
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
+	returnData.mTextureSize.x = tSurface->w;
+	returnData.mTextureSize.y = tSurface->h;
+	returnData.mHasPalette = 0;
 	Texture texture = returnData.mTexture->mData;
-	texture->mTexture = newTexture;
 	
-	int access;
-	Uint32 format;
-	SDL_QueryTexture(newTexture, &format, &access, &returnData.mTextureSize.x, &returnData.mTextureSize.y);
-	
-	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, format, 0);
+	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
 	SDL_FreeSurface(tSurface);
+
+	GLint last_texture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glGenTextures(1, &texture->mTexture);
+	glBindTexture(GL_TEXTURE_2D, texture->mTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->mSurface->w, texture->mSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->mSurface->pixels);
+	glBindTexture(GL_TEXTURE_2D, last_texture);
 
 	return returnData;
 }
@@ -238,9 +236,64 @@ TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
 	return textureFromSurface(surface);
 }
 
+extern SDL_Color* getSDLColorPalette(int tIndex);
+
+TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight) {
+	uint32_t size = tWidth * tHeight * 4;
+	uint8_t* data = allocMemory(tWidth * tHeight * 4);
+	uint8_t* src = b.mData;
+
+	SDL_Color* colors = getSDLColorPalette(tPaletteID);
+	int32_t amount = size / 4;
+	int i;
+	for (i = 0; i < amount; i++) {
+		int pid = src[i];
+		data[i * 4 + 0] = colors[pid].a;
+		data[i * 4 + 1] = colors[pid].r;
+		data[i * 4 + 2] = colors[pid].g;
+		data[i * 4 + 3] = colors[pid].b;
+	}
+
+	Buffer newBuffer = makeBufferOwned(data, size);
+	TextureData ret = loadTextureFromARGB32Buffer(newBuffer, tWidth, tHeight);
+	freeBuffer(newBuffer);
+
+	return ret;
+
+	// TODO: fix
+	/*
+
+	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(b.mData, tWidth, tHeight, 8, tWidth, 0, 0, 0, 0);
+
+	TextureData returnData;
+	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
+	returnData.mTextureSize.x = surface->w;
+	returnData.mTextureSize.y = surface->h;
+	returnData.mHasPalette = 1;
+	returnData.mPaletteID = tPaletteID;
+	Texture texture = returnData.mTexture->mData;
+
+	texture->mSurface = surface;
+
+	GLint last_texture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glGenTextures(1, &texture->mTexture);
+	glBindTexture(GL_TEXTURE_2D, texture->mTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, texture->mSurface->w, texture->mSurface->h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, texture->mSurface->pixels);
+
+	glBindTexture(GL_TEXTURE_2D, last_texture);
+
+	return returnData;
+	*/
+}
 
 TruetypeFont loadTruetypeFont(char * tName, double tSize)
 {
+
 	char path[1024];
 	if (isFile(tName)) {
 		getFullPath(path, tName);

@@ -1,12 +1,12 @@
-#include "tari/file.h"
+#include "prism/file.h"
 
 #include <stdio.h>
 
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
-#include "tari/datastructures.h"
-#include "tari/windows/romdisk_win.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
+#include "prism/datastructures.h"
+#include "prism/windows/romdisk_win.h"
 
 static struct {
 	char cwd[1024];

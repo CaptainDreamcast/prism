@@ -1,8 +1,8 @@
-#include "tari/memoryhandler.h"
+#include "prism/memoryhandler.h"
 
-#include "tari/math.h"
-#include "tari/system.h"
-#include "tari/log.h"
+#include "prism/math.h"
+#include "prism/system.h"
+#include "prism/log.h"
 
 static struct {
 
@@ -15,8 +15,8 @@ int getAvailableTextureMemory() {
 }
 
 void initMemoryHandlerHW() {
-	gData.mAvailableMemory = 3994752; 
-	// ca. 4519040 is the full available memory
+	gData.mAvailableMemory = 5294752; 
+	// ca. 4519040 is the full available memory for 480p
 	// KOS does not allocate memory perfectly though
 	// TODO: fix
 }

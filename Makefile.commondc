@@ -12,17 +12,17 @@ romdisk: clean build_images to_romdisk build_romdisk
 build_images: copy_debug make_filesystem copy_assets copy_logo copy_effects convert_assets actions_user
 
 copy_debug:
-	$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/debug/*.png)
-	find assets/debug -name '*.kmg' | xargs $(KOS_BASE)/addons/libtari/tools/bin/kompressor
-	$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/fonts/*.png)
-	find assets/fonts -name '*.kmg' | xargs $(KOS_BASE)/addons/libtari/tools/bin/kompressor
+	-$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/debug/*.png)
+	-find assets/debug -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
+	-$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/fonts/*.png)
+	-find assets/fonts -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
 	mkdir romdisk_boot
 	mkdir romdisk_boot/fonts
-	cp assets/fonts/* romdisk_boot/fonts
-	find romdisk_boot/fonts/ -name '*.png' | xargs rm -f
-	find romdisk_boot/fonts/ -name '*.kmg' | xargs rm -f
+	-cp assets/fonts/* romdisk_boot/fonts
+	-find romdisk_boot/fonts/ -name '*.png' | xargs rm -f
+	-find romdisk_boot/fonts/ -name '*.kmg' | xargs rm -f
 	mkdir romdisk_boot/debug
-	cp assets/debug/*.pkg romdisk_boot/debug
+	-cp assets/debug/*.pkg romdisk_boot/debug
 	
 make_filesystem:
 	mkdir filesystem
@@ -34,14 +34,14 @@ copy_assets:
 	cp -r assets/* filesystem/assets
 
 copy_logo:
-	cp -r $(KOS_BASE)/addons/libtari/assets/logo/LOGO_DC.png filesystem/logo/LOGO_DC.png
+	cp -r $(KOS_BASE)/addons/prism/assets/logo/LOGO_DC.png filesystem/logo/LOGO_DC.png
 
 copy_effects:
-	cp -r $(KOS_BASE)/addons/libtari/assets/effects/* filesystem/effects		
+	cp -r $(KOS_BASE)/addons/prism/assets/effects/* filesystem/effects		
 
 convert_assets:
 	find filesystem/ -name '*.png' | xargs $(KOS_BASE)/utils/kmgenc/kmgenc -a4 
-	find filesystem/ -name '*.kmg' | xargs $(KOS_BASE)/addons/libtari/tools/bin/kompressor
+	find filesystem/ -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
 	find filesystem/ -name '*.png' | xargs rm -f
 	find filesystem/ -name '*.kmg' | xargs rm -f
 	find filesystem/ -name '*.xcf' | xargs rm -f
@@ -67,13 +67,13 @@ clean_general:
 build_develop: $(OBJS) 
 	$(KOS_CC) $(KOS_CFLAGS) -DDEVELOP -I${KOS_BASE}/../extensions/include $(KOS_LDFLAGS) \
 	-o $(TARGET).elf $(KOS_START) \
-	$(OBJS) -lkmg $(OPTIONAL_LIBS) -ltari -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
+	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
 	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
 
 build_romdisk: $(OBJS) 
 	$(KOS_CC) $(KOS_CFLAGS) -DDEVELOP -I${KOS_BASE}/../extensions/include $(KOS_LDFLAGS) \
 	-o $(TARGET).elf $(KOS_START) \
-	$(OBJS) -lkmg $(OPTIONAL_LIBS) -ltari -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
+	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
 	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
 
 	

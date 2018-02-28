@@ -1,4 +1,4 @@
-#include "tari/system.h"
+#include "prism/system.h"
 
 #include <string.h>
 #include <assert.h>
@@ -6,21 +6,25 @@
 #include <stdlib.h>
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
+#define GL3_PROTOTYPES 1
+#include <GL/glew.h>
+#include <GL/glu.h>
+
 #include <SDL/SDL_image.h>
 #elif defined _WIN32
 
 
-#define GLEW_STATIC
 #define GL3_PROTOTYPES 1
 #include <GL/glew.h>
+#include <GL/glu.h>
 
 #include <SDL_image.h>
 #endif
 
-#include "tari/log.h"
-#include "tari/pvr.h"
-#include "tari/geometry.h"
-#include "tari/math.h"
+#include "prism/log.h"
+#include "prism/pvr.h"
+#include "prism/geometry.h"
+#include "prism/math.h"
 
 
 void abortSystem(){
@@ -29,7 +33,7 @@ void abortSystem(){
 }	
 
 static struct {
-
+	
 	int mIsLoaded;
 	
 	int mScreenSizeX;
@@ -79,7 +83,7 @@ static void setToProgramDirectory() {
 #endif
 }
 
-extern SDL_Renderer* gRenderer;
+extern void setDrawingScreenScale(double tScaleX, double tScaleY);
 
 static void setWindowSize() {
 	ScreenSize sz = getScreenSize();
@@ -89,18 +93,23 @@ static void setWindowSize() {
 	scaleX = fmin(scaleX, scaleY);
 	scaleY = fmin(scaleX, scaleY);
 
-	SDL_RenderSetScale(gRenderer, (float)scaleX, (float)scaleY);
+	setDrawingScreenScale(scaleX, scaleY);
 	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
 }
 
 static void initOpenGL() {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+	ScreenSize sz = getScreenSize();
+	float ratio = (float)sz.x / (float)sz.y;
+
+	gGLContext = SDL_GL_CreateContext(gSDLWindow);
 }
 
 static void initGlew() {
@@ -120,7 +129,7 @@ void initSystem() {
 	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 
 	initOpenGL();
-	gGLContext = SDL_GL_CreateContext(gSDLWindow);
+
 	initGlew();
 }
 
@@ -134,8 +143,6 @@ void shutdownSystem() {
 }
 
 static void resizeWindow(SDL_Event* e) {
-	if (gRenderer == NULL) return;
-
 	gData.mDisplayedWindowSizeX = e->window.data1;
 	gData.mDisplayedWindowSizeY = e->window.data2;
 

@@ -1,31 +1,31 @@
-#include "tari/wrapper.h"
+#include "prism/wrapper.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
-#include "tari/pvr.h"
-#include "tari/physics.h"
-#include "tari/file.h"
-#include "tari/drawing.h"
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
-#include "tari/sound.h"
+#include "prism/pvr.h"
+#include "prism/physics.h"
+#include "prism/file.h"
+#include "prism/drawing.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
+#include "prism/sound.h"
 
-#include "tari/timer.h"
-#include "tari/animation.h"
-#include "tari/input.h"
-#include "tari/physicshandler.h"
-#include "tari/stagehandler.h"
-#include "tari/collisionhandler.h"
-#include "tari/collisionanimation.h"
-#include "tari/soundeffect.h"
-#include "tari/system.h"
-#include "tari/texturepool.h"
-#include "tari/texthandler.h"
-#include "tari/screeneffect.h"
-#include "tari/actorhandler.h"
-#include "tari/tweening.h"
+#include "prism/timer.h"
+#include "prism/animation.h"
+#include "prism/input.h"
+#include "prism/physicshandler.h"
+#include "prism/stagehandler.h"
+#include "prism/collisionhandler.h"
+#include "prism/collisionanimation.h"
+#include "prism/soundeffect.h"
+#include "prism/system.h"
+#include "prism/texturepool.h"
+#include "prism/texthandler.h"
+#include "prism/screeneffect.h"
+#include "prism/actorhandler.h"
+#include "prism/tweening.h"
 
 static struct {
 	int mIsAborted;
@@ -41,7 +41,7 @@ static struct {
 	void* mBetweenScreensCaller;
 } gData;
 
-void initTariWrapperWithDefaultFlags() {
+void initPrismWrapperWithDefaultFlags() {
 	logg("Initiating system.");
 	initSystem();
 	logg("Initiating PowerVR.");
@@ -65,7 +65,7 @@ void initTariWrapperWithDefaultFlags() {
 
 	gData.mGlobalTimeDilatation = 1;
 }
-void shutdownTariWrapper() {
+void shutdownPrismWrapper() {
 	shutdownSound();
 	shutdownMemoryHandler();
 	shutdownSystem();

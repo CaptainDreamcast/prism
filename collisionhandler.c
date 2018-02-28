@@ -1,13 +1,13 @@
-#include "tari/collisionhandler.h"
+#include "prism/collisionhandler.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "tari/datastructures.h"
-#include "tari/memoryhandler.h"
-#include "tari/drawing.h"
-#include "tari/log.h"
-#include "tari/system.h"
+#include "prism/datastructures.h"
+#include "prism/memoryhandler.h"
+#include "prism/drawing.h"
+#include "prism/log.h"
+#include "prism/system.h"
 
 typedef struct {
 	int mListID;

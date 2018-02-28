@@ -12,8 +12,8 @@ KOS_CFLAGS += -W -Wall -DDREAMCAST -I ./include -lpng
 include $(KOS_BASE)/addons/Makefile.prefab
 
 create_addons_link:
-	rm -f ../include/tari
-	ln -s ../libtari/include/tari ../include/tari
+	rm -f ../include/prism
+	ln -s ../prism/include/prism ../include/prism
 
 clean:
 	rm -f *.o

@@ -1,6 +1,6 @@
-#include "tari/memoryhandler.h"
+#include "prism/memoryhandler.h"
 
-#include "tari/math.h"
+#include "prism/math.h"
 
 int getAvailableTextureMemory() {
 	return INF;

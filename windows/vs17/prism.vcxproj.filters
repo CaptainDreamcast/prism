@@ -1,0 +1,344 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\animation.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collision.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collisionanimation.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collisionhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\datastructures.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\framerate.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\geometry.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\optionhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\physics.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\physicshandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\quicklz.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\script.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\stagehandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\timer.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wrapper.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\drawing_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\file_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framerateselect_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\input_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\log_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pvr_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sound_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\soundeffect_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\texture_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\file.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\input.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\memoryhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\drawing.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\texture.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\math.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\animationtree.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\texturepool.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\storyboard.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\texthandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\screeneffect.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\memoryhandler_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\compression.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\romdisk_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\actorhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tweening.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\soundeffect.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\logoscreen.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logoscreen_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\screeneffect_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugendefreader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lz5.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenspritefilereader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenanimationreader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenanimationhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenscriptparser.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenassignment.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenassignmentevaluator.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugensoundfilereader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugentexthandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{70cd4700-f13f-4125-ba0c-0674d46ebdb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\windows">
+      <UniqueIdentifier>{ea6923dd-ddde-4088-bcc8-2470cce701b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hdr">
+      <UniqueIdentifier>{a7e6c9d5-aa12-456b-b493-9e6073159364}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hdr\windows">
+      <UniqueIdentifier>{e30bb85c-1f40-4dde-b9d5-d9eaf9a8d831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="hdr\klib">
+      <UniqueIdentifier>{fd7ea795-9a88-40f4-b8a0-efcde18bf1f3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Filter>src</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\prism\actorhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\animation.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\animationtree.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\collision.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\collisionanimation.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\collisionhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\compression.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\datastructures.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\drawing.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\file.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\framerate.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\framerateselectscreen.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\geometry.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\input.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\khash.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\log.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\logoscreen.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\lz5.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\math.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\memoryhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugenanimationhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugenanimationreader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugenassignment.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugenassignmentevaluator.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugendefreader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugenscriptparser.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugensoundfilereader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugenspritefilereader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugentexthandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\optionhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\physics.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\physicshandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\pvr.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\quicklz.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\screeneffect.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\script.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\sound.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\soundeffect.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\stagehandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\storyboard.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\system.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\texthandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\texture.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\texturepool.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\timer.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\tweening.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\wrapper.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\windows\romdisk_win.h">
+      <Filter>hdr\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\klib\khash.h">
+      <Filter>hdr\klib</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

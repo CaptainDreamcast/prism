@@ -1,21 +1,21 @@
-#include "tari/storyboard.h"
+#include "prism/storyboard.h"
 
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "tari/datastructures.h"
-#include "tari/memoryhandler.h"
-#include "tari/file.h"
-#include "tari/log.h"
-#include "tari/animation.h"
-#include "tari/system.h"
-#include "tari/physicshandler.h"
-#include "tari/soundeffect.h"
-#include "tari/timer.h"
-#include "tari/texthandler.h"
-#include "tari/sound.h"
-#include "tari/math.h"
-#include "tari/input.h"
+#include "prism/datastructures.h"
+#include "prism/memoryhandler.h"
+#include "prism/file.h"
+#include "prism/log.h"
+#include "prism/animation.h"
+#include "prism/system.h"
+#include "prism/physicshandler.h"
+#include "prism/soundeffect.h"
+#include "prism/timer.h"
+#include "prism/texthandler.h"
+#include "prism/sound.h"
+#include "prism/math.h"
+#include "prism/input.h"
 
 
 #pragma pack(push, 1)

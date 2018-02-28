@@ -1,6 +1,6 @@
 // blatantly "borrowed" from https://github.com/bmarquismarkail/SFFv2
 
-#include "tari/lz5.h"
+#include "prism/lz5.h"
 
 static void naivememcpy(uint8_t* dst, uint32_t *dstpos, uint32_t ofs, uint32_t len)
 {

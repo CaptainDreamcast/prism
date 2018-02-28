@@ -1,7 +1,7 @@
-#include "tari/timer.h"
+#include "prism/timer.h"
 
-#include "tari/memoryhandler.h"
-#include "tari/datastructures.h"
+#include "prism/memoryhandler.h"
+#include "prism/datastructures.h"
 
 typedef struct TimerElement_internal{
 	Duration mNow;

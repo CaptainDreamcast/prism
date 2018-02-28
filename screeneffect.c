@@ -1,13 +1,13 @@
-#include "tari/screeneffect.h"
+#include "prism/screeneffect.h"
 
-#include "tari/file.h"
-#include "tari/timer.h"
-#include "tari/memoryhandler.h"
-#include "tari/physicshandler.h"
-#include "tari/system.h"
-#include "tari/texture.h"
-#include "tari/system.h"
-#include "tari/log.h"
+#include "prism/file.h"
+#include "prism/timer.h"
+#include "prism/memoryhandler.h"
+#include "prism/physicshandler.h"
+#include "prism/system.h"
+#include "prism/texture.h"
+#include "prism/system.h"
+#include "prism/log.h"
 
 struct FadeInStruct;
 
@@ -51,12 +51,7 @@ static struct {
 } gData;
 
 void initScreenEffects() {
-	if (!canLoadTexture("$/rd/effects/white.pkg")) {
-		gData.mIsActive = 0;
-		return;
-	}
-
-	gData.mWhiteTexture = loadTexture("$/rd/effects/white.pkg");
+	gData.mWhiteTexture = createWhiteTexture();
 	gData.mFullLineSize = 10;
 	gData.mZ = 80;
 	gData.mScreenFillID = -1;

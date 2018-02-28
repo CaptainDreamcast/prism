@@ -1,12 +1,14 @@
-#include "tari/memoryhandler.h"
+#include "prism/memoryhandler.h"
 
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/quicklz.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/quicklz.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "prism/klib/khash.h"
 
 // TODO: update to newest KOS, so no more manual memory tracking required
 extern void initMemoryHandlerHW(); 
@@ -23,11 +25,12 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 #elif defined _WIN32 || defined __EMSCRIPTEN__
 
 #include <SDL.h>
-#include "tari/texture.h"
+#include <GL/glew.h>
+#include "prism/texture.h"
 
 void freeSDLTexture(void* tData) {
 	SDLTextureData* e = tData;
-	SDL_DestroyTexture(e->mTexture);
+	glDeleteTextures(1, &e->mTexture);
 	SDL_FreeSurface(e->mSurface);
 	free(tData);
 }
@@ -70,25 +73,12 @@ static void freeTextureFunc(void* tData) {
 	free(tMem);
 }
 
+KHASH_MAP_INIT_INT(Bucket, void*)
 
 #define MEMORY_STACK_MAX 10
 
-typedef struct MemoryListElement_internal {
-	void* mData;
-	struct MemoryListElement_internal* mPrev;
-	struct MemoryListElement_internal* mNext;
-} MemoryListElement;
-
-#define MEMORY_MAP_BUCKET_AMOUNT 1009
-
 typedef struct {
-	int mSize;
-	MemoryListElement* mFirst;
-} MemoryHandlerMapBucket;
-
-typedef struct {
-	int mSize;
-	MemoryHandlerMapBucket mBuckets[MEMORY_MAP_BUCKET_AMOUNT];
+	khash_t(Bucket)* mMap;
 } MemoryHandlerMap;
 
 typedef struct {
@@ -107,33 +97,23 @@ static struct {
 	MemoryListStack mTextureMemoryStack;
 	TextureMemoryUsageList mTextureMemoryUsageList;
 
+	int mAllocatedMemory;
+
 	int mIsCompressionActive;
 
 	int mActive;
 } gMemoryHandler;
 
+int getAllocatedMemoryBlockAmount() {
+	return gMemoryHandler.mAllocatedMemory;
+}
+
 typedef void* (*MallocFunc)(size_t tSize);
 typedef void(*FreeFunc)(void* tData);
 typedef void* (*ReallocFunc)(void* tPointer, size_t tSize);
 
-static void printMemoryHandlerMapBucket(MemoryHandlerMapBucket* tList) {
-	if(!tList->mSize) return;
-
-	int amount = tList->mSize;
-	MemoryListElement* cur = tList->mFirst;
-	while (amount--) {
-		logHex(cur->mData);
-
-		cur = cur->mNext;
-	}
-}
-
 static void printMemoryHandlerMap(MemoryHandlerMap* tMap) {
-	logInteger(tMap->mSize);
-	int i;
-	for(i = 0; i < MEMORY_MAP_BUCKET_AMOUNT; i++) {
-		printMemoryHandlerMapBucket(&tMap->mBuckets[i]);
-	}
+	// TODO
 }
 
 static void printMemoryListStack(MemoryListStack* tStack) {
@@ -291,151 +271,66 @@ static void makeSpaceInTextureMemory(size_t tSize) {
 	virtualizeTextureMemory(needed);
 }
 
-static void* addMemoryToMemoryHandlerMapBucket(MemoryHandlerMapBucket* tList, MemoryListElement* e) {
+static void* addAllocatedMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData) {
+	khiter_t iter;
+	int ret;
+	iter = kh_put(Bucket, tMap->mMap, (khint32_t)tData, &ret);
+	kh_val(tMap->mMap, iter) = tData;
 
-	if (tList->mFirst != NULL) tList->mFirst->mPrev = e;
-	e->mNext = tList->mFirst;
-	tList->mFirst = e;
 
-	tList->mSize++;
-
-	return e->mData;
+	return tData;
 }
 
-static int getBucketFromPointer(void* tPtr) { 
-	return (((unsigned int)tPtr) % MEMORY_MAP_BUCKET_AMOUNT);
-}
 
 static void* addMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, int tSize, MallocFunc tFunc) {
-	tMap->mSize++;
-
-	MemoryListElement* e = malloc(sizeof(MemoryListElement));
-
-	e->mPrev = NULL;
-	e->mData = tFunc(tSize);
-	
-	int whichBucket = getBucketFromPointer(e->mData);
-	return addMemoryToMemoryHandlerMapBucket(&tMap->mBuckets[whichBucket], e);
+	void* data =  tFunc(tSize);
+	gMemoryHandler.mAllocatedMemory++;
+	return addAllocatedMemoryToMemoryHandlerMap(tMap, data);
 }
 
-static void* addAllocatedMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData) {
-	MemoryListElement* e = malloc(sizeof(MemoryListElement));
-
-	e->mPrev = NULL;
-	e->mData = tData;
-
-	int whichBucket = getBucketFromPointer(e->mData);
-	return addMemoryToMemoryHandlerMapBucket(&tMap->mBuckets[whichBucket], e);
-}
-
-static void removeMemoryElementFromMemoryHandlerMapBucketWithoutFreeingMemoryHandler(MemoryHandlerMapBucket* tList, MemoryListElement* e) {
-	if (tList->mFirst == e) tList->mFirst = e->mNext;
-	if (e->mNext != NULL) e->mNext->mPrev = e->mPrev;
-	if (e->mPrev != NULL) e->mPrev->mNext = e->mNext;
-	free(e);
-
-	tList->mSize--;
-}
-
-static int removeMemoryFromMemoryHandlerMapBucketWithoutFreeingMemoryHandler(MemoryHandlerMapBucket* tList, void* tData) {
-
-	int amount = tList->mSize;
-	MemoryListElement* cur = tList->mFirst;
-	while (amount--) {
-		if (cur->mData == tData) {
-			removeMemoryElementFromMemoryHandlerMapBucketWithoutFreeingMemoryHandler(tList, cur);
-			return 1;
-		}
-
-		cur = cur->mNext;
+static int removeMemoryFromMemoryHandlerMapWithoutFreeingMemory(MemoryHandlerMap* tMap, void* tData) {
+	khiter_t iter;
+	iter = kh_get(Bucket, tMap->mMap, (khint32_t)tData);
+	if (iter == kh_end(tMap->mMap)) {
+		return 0;
 	}
+	kh_del(Bucket, tMap->mMap, iter);
 
-	return 0;
-}
-
-static void removeMemoryElementFromMemoryHandlerMapBucket(MemoryHandlerMapBucket* tList, MemoryListElement* e, FreeFunc tFunc) {
-	tFunc(e->mData);
-	removeMemoryElementFromMemoryHandlerMapBucketWithoutFreeingMemoryHandler(tList, e);
-}
-
-static int removeMemoryFromMemoryHandlerMapBucket(MemoryHandlerMapBucket* tList, void* tData, FreeFunc tFunc) {
-
-	int amount = tList->mSize;
-	MemoryListElement* cur = tList->mFirst;
-	while (amount--) {
-		if (cur->mData == tData) {
-			removeMemoryElementFromMemoryHandlerMapBucket(tList, cur, tFunc);
-			return 1;
-		}
-
-		cur = cur->mNext;
-	}
-
-	return 0;
+	return 1;
 }
 
 static int removeMemoryFromMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData, FreeFunc tFunc) {
-	tMap->mSize--;
-	int whichBucket = getBucketFromPointer(tData);
-	return removeMemoryFromMemoryHandlerMapBucket(&tMap->mBuckets[whichBucket], tData, tFunc);
-}
-
-static void* resizeMemoryElementOnMemoryHandlerMapBucket(MemoryListElement* e, int tSize, ReallocFunc tFunc) {
-	e->mData = tFunc(e->mData, tSize);
-	return e->mData;
-}
-
-
-static int resizeMemoryOnMemoryHandlerMapBucket(MemoryHandlerMapBucket* tList, void* tData, int tSize, ReallocFunc tFunc, void** tOutput) {
-	int amount = tList->mSize;
-	MemoryListElement* cur = tList->mFirst;
-	while (amount--) {
-		if (cur->mData == tData) {
-			*tOutput = resizeMemoryElementOnMemoryHandlerMapBucket(cur, tSize, tFunc);
-			return 1;
-		}
-
-		cur = cur->mNext;
+	if (!removeMemoryFromMemoryHandlerMapWithoutFreeingMemory(tMap, tData)) {
+		return 0;
 	}
 
-	return 0;
-}
+	gMemoryHandler.mAllocatedMemory--;
+	tFunc(tData);	
 
-static void moveMemoryInMap(MemoryHandlerMap* tMap, void* tDst, void* tSrc) {
-	int srcBucket = getBucketFromPointer(tSrc);
-
-	int ret = removeMemoryFromMemoryHandlerMapBucketWithoutFreeingMemoryHandler(&tMap->mBuckets[srcBucket], tDst);
-	assert(ret);
-	addAllocatedMemoryToMemoryHandlerMap(tMap, tDst);
+	return 1;
 }
 
 static int resizeMemoryOnMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData, int tSize, ReallocFunc tFunc, void** tOutput) {
-	int whichBucket = getBucketFromPointer(tData);
-	int ret = resizeMemoryOnMemoryHandlerMapBucket(&tMap->mBuckets[whichBucket], tData, tSize, tFunc, tOutput);
-
-	int newBucket = getBucketFromPointer(*tOutput);
-	if(ret && whichBucket != newBucket) {
-		moveMemoryInMap(tMap, *tOutput, tData);
+	if (!removeMemoryFromMemoryHandlerMapWithoutFreeingMemory(tMap, tData)) {
+		return 0;
 	}
 
-	return ret;
-}
+	*tOutput = tFunc(tData, tSize);
+	addAllocatedMemoryToMemoryHandlerMap(tMap, *tOutput);
 
-static void emptyMemoryHandlerMapBucket(MemoryHandlerMapBucket* tList, FreeFunc tFunc) {
-	int amount = tList->mSize;
-	MemoryListElement* cur = tList->mFirst;
-	while (amount--) {
-		MemoryListElement* next = cur->mNext;
-		removeMemoryElementFromMemoryHandlerMapBucket(tList, cur, tFunc);
-		cur = next;
-	}
+	return 1;
 }
 
 static void emptyMemoryHandlerMap(MemoryHandlerMap* tMap, FreeFunc tFunc) {
-	int i;
-	for(i = 0; i < MEMORY_MAP_BUCKET_AMOUNT; i++) {
-		emptyMemoryHandlerMapBucket(&tMap->mBuckets[i], tFunc);
+	khiter_t iter;
+	for (iter = kh_begin(tMap->mMap); iter != kh_end(tMap->mMap); ++iter) {
+		if (kh_exist(tMap->mMap, iter)) {
+			void* data = kh_value(tMap->mMap, iter);
+			gMemoryHandler.mAllocatedMemory--;
+			tFunc(data);
+		}
 	}
+	kh_destroy(Bucket, tMap->mMap);
 }
 
 static void* addMemoryToMemoryListStack(MemoryListStack* tStack, int tSize, MallocFunc tFunc) {
@@ -531,6 +426,18 @@ void* allocMemory(int tSize) {
 	return addMemoryToMemoryListStack(&gMemoryHandler.mMemoryStack, tSize, malloc);
 }
 
+void* allocClearedMemory(int tBlockAmount, int tBlockSize) {
+	uint32_t length = tBlockAmount*tBlockSize;
+
+	void* data = allocMemory(length);
+
+	if (data) {
+		memset(data, 0, length);
+	}
+
+	return data;
+}
+
 void freeMemory(void* tData) {
 	if (tData == NULL) return;
 
@@ -572,17 +479,8 @@ void referenceTextureMemory(TextureMemory tMem) {
 	moveTextureMemoryInUsageQueueToFront(tMem);
 }
 
-static void pushMemoryHandlerMapBucketInternal(MemoryHandlerMapBucket* tList) {
-	tList->mFirst = NULL;
-	tList->mSize = 0;
-}
-
 static void pushMemoryHandlerMapInternal(MemoryHandlerMap* tMap) {
-	tMap->mSize = 0;
-	int i;
-	for(i = 0; i < MEMORY_MAP_BUCKET_AMOUNT; i++) {
-		pushMemoryHandlerMapBucketInternal(&tMap->mBuckets[i]);
-	}
+	tMap->mMap = kh_init(Bucket);
 }
 
 static void pushMemoryStackInternal(MemoryListStack* tStack) {

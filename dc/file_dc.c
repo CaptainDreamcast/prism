@@ -1,11 +1,11 @@
-#include "tari/file.h"
+#include "prism/file.h"
 
 #include <dirent.h> 
 #include <kos.h>
 
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
 
 
 static struct {
@@ -94,8 +94,6 @@ int fileUnlink(char* tPath) {
 void* fileMemoryMap(FileHandler tHandler) {
 	return fs_mmap(tHandler);
 }
-
-
 
 void fixMountPath(char* tDst, char* tSrc) {
 	if(tSrc[0] != '/') {

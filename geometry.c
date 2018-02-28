@@ -1,10 +1,10 @@
-#include "tari/geometry.h"
+#include "prism/geometry.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include "tari/math.h"
-#include "tari/log.h"
+#include "prism/math.h"
+#include "prism/log.h"
 
 
 double dot3D(Vector3D p1, Vector3D p2) {

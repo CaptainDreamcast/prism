@@ -1,12 +1,12 @@
-#include "tari/windows/romdisk_win.h"
+#include "prism/windows/romdisk_win.h"
 
 #include <string.h>
 #include <errno.h>
 
-#include "tari/datastructures.h"
-#include "tari/system.h"
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
+#include "prism/datastructures.h"
+#include "prism/system.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
 
 
 static StringMap gRomdiskHandlers;
@@ -459,7 +459,7 @@ void unmountRomdiskWindows(char* tMountPath) {
 	string_map_remove(&gRomdiskMapping, tMountPath);
 }
 
-fup int isRomdiskPath(char * tPath)
+int isRomdiskPath(char * tPath)
 {
 	char mount[1024];
 	getPotentialMountFromPath(mount, tPath);

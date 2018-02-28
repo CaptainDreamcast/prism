@@ -1,9 +1,9 @@
-#include "tari/script.h"
+#include "prism/script.h"
 
 #include <string.h>
 
-#include "tari/log.h"
-#include "tari/system.h"
+#include "prism/log.h"
+#include "prism/system.h"
 
 
 Script loadScript(char* tPath) {

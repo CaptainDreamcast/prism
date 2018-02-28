@@ -1,9 +1,9 @@
-#include "tari/mugenanimationhandler.h"
+#include "prism/mugenanimationhandler.h"
 
-#include "tari/collisionhandler.h"
-#include "tari/math.h"
-#include <tari/log.h>
-#include <tari/system.h>
+#include "prism/collisionhandler.h"
+#include "prism/math.h"
+#include <prism/log.h>
+#include <prism/system.h>
 
 typedef int MugenDuration;
 
@@ -701,7 +701,6 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		
 		int minWidth = texturePos.topLeft.x;
 		int maxWidth = texturePos.bottomRight.x;
-		int sizeX = maxWidth - minWidth;
 
 		int leftX = max(minWidth, min(maxWidth, (int)(e->mConstraintRectangle.mTopLeft.x - p.x)));
 		int rightX = max(minWidth, min(maxWidth, (int)(e->mConstraintRectangle.mBottomRight.x - p.x)));
@@ -713,7 +712,6 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 
 		int minHeight = texturePos.topLeft.y;
 		int maxHeight = texturePos.bottomRight.y;
-		int sizeY = maxHeight - minHeight;
 
 		int upY = max(minHeight, min(maxHeight, (int)(e->mConstraintRectangle.mTopLeft.y - p.y)));
 		int downY = max(minHeight, min(maxHeight, (int)(e->mConstraintRectangle.mBottomRight.y - p.y)));

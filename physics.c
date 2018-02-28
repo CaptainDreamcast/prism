@@ -1,10 +1,10 @@
-#include "tari/physics.h"
+#include "prism/physics.h"
 
 #include <string.h>
 #include <math.h>
 
-#include "tari/log.h"
-#include "tari/framerate.h"
+#include "prism/log.h"
+#include "prism/framerate.h"
 
 static struct {
 	Velocity mMaxVelocity;

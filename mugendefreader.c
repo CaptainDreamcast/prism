@@ -1,13 +1,13 @@
-#include "tari/mugendefreader.h"
+#include "prism/mugendefreader.h"
 
 #include <assert.h>
 #include <ctype.h>
 
-#include "tari/file.h"
-#include "tari/memoryhandler.h"
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/math.h"
+#include "prism/file.h"
+#include "prism/memoryhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/math.h"
 
 typedef struct MugenDefToken_t {
 	char* mValue;
@@ -74,7 +74,11 @@ static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char
 	int depth = 1;
 
 	while ((depth > 0 || *p != end) && (uint32_t)p < ((uint32_t)b->mData)+b->mLength) {
-		assert(!increaseAndCheckIfOver(b, &p));
+		if (increaseAndCheckIfOver(b, &p)) {
+			logError("Token reached end in wrong place."); // TODO: proper message
+			logErrorString(p);
+			abortSystem();
+		}
 		depth += *p == start;
 		depth -= *p == end;
 	}
@@ -288,7 +292,10 @@ static int isVectorStatement(Buffer* b, BufferPointer p) {
 static int isLoopStartStatement(Buffer* b, BufferPointer p) {
 	char* text = getLineAsAllocatedString(b, p);
 	turnStringLowercase(text);
-	int ret = !strcmp("loopstart", text);
+	int ret = 0;
+	ret |= !strcmp("loopstart", text);
+	ret |= !strcmp("startloop", text); // TODO: check?
+
 	destroyMugenDefString(text);
 	return ret;
 }
@@ -306,7 +313,7 @@ static int isInterpolationStatement(Buffer* b, BufferPointer p) {
 	return ret;
 }
 
-static int isTextStatement(Buffer* b, BufferPointer p) {
+static int isTextStatement() {
 	char* text = gCurrentGroupToken->mValue;
 
 	int ret = 0;
@@ -325,7 +332,7 @@ static MugenDefToken* parseRecursively(Buffer* b, BufferPointer p) {
 
 	if (isComment(p)) return parseComment(b, p);
 	else if (isGroup(p)) return parseGroup(b, p);
-	else if (isTextStatement(b, p)) return parseTextStatement(b, p);
+	else if (isTextStatement()) return parseTextStatement(b, p);
 	else if(isAssignment(b, p, '=')) return parseAssignment(b, p, '=');
 	else if(isAssignment(b, p, ':')) return parseAssignment(b, p, ':');
 	else if (isVectorStatement(b, p)) return parseVectorStatement(b, p);
@@ -692,7 +699,7 @@ static int isInterpolationStatementToken(MugenDefToken* tToken) {
 	return 0;
 }
 
-static int isTextStatementToken(MugenDefToken* tToken) {
+static int isTextStatementToken() {
 
 	if (!strcmp(gScriptMaker.mGroup, "Infobox Text")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "ja.Infobox Text")) return 1;
@@ -707,7 +714,7 @@ static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken) {
 	if (tToken == NULL) return;
 
 	if (isGroupToken(tToken)) setGroup(tScript, tToken);
-	else if (isTextStatementToken(tToken)) {
+	else if (isTextStatementToken()) {
 		setTextStatement(tScript, &tToken);
 	}
 	else if(isAssignmentToken(tToken)){
@@ -747,7 +754,10 @@ MugenDefScript loadMugenDefScript(char * tPath)
 	debugString(tPath);
 
 	Buffer b = fileToBuffer(tPath);
-	return loadMugenDefScriptFromBuffer(b);
+	MugenDefScript ret = loadMugenDefScriptFromBuffer(b);
+	freeBuffer(b);
+
+	return ret;
 }
 
 MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer) {
@@ -808,6 +818,7 @@ static void unloadMugenDefElement(void* tCaller, void* tData) {
 	}
 
 	freeMemory(e->mData);
+	freeMemory(e);
 }
 
 static void unloadMugenDefScriptGroup(MugenDefScriptGroup* tGroup) {

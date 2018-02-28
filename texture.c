@@ -1,8 +1,8 @@
-#include "tari/texture.h"
+#include "prism/texture.h"
 
-#include "tari/file.h"
-#include "tari/log.h"
-#include "tari/system.h"
+#include "prism/file.h"
+#include "prism/log.h"
+#include "prism/system.h"
 
 #define FONT_CHARACTER_AMOUNT 91
 
@@ -99,4 +99,28 @@ TextureData createWhiteTexture() {
 
 	freeMemory(data);
 	return ret;
+}
+
+Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc) {
+	int dstSize = tSrc.mLength / 2;
+	char* dst = allocMemory(dstSize);
+	char* src = tSrc.mData;
+
+	int n = dstSize / 2;
+	int i;
+	for(i = 0; i < n; i++) {
+		int srcPos = 4*i;
+		int dstPos = 2*i;
+
+		uint8_t a = ((uint8_t)src[srcPos + 3]) >> 4;
+		uint8_t r = ((uint8_t)src[srcPos + 2]) >> 4;
+		uint8_t g = ((uint8_t)src[srcPos + 1]) >> 4;
+		uint8_t b = ((uint8_t)src[srcPos + 0]) >> 4;
+		
+		dst[dstPos + 0] = (g << 4) | b;
+		dst[dstPos + 1] = (a << 4) | r;
+	}
+
+
+	return makeBufferOwned(dst, dstSize);
 }

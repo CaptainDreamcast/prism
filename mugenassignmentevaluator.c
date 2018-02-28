@@ -1,12 +1,12 @@
-#include "tari/mugenassignmentevaluator.h"
+#include "prism/mugenassignmentevaluator.h"
 
 #include <assert.h>
 #include <string.h>
 
-#include "tari/log.h"
-#include "tari/system.h"
-#include "tari/math.h"
-#include "tari/memoryhandler.h"
+#include "prism/log.h"
+#include "prism/system.h"
+#include "prism/math.h"
+#include "prism/memoryhandler.h"
 
 typedef struct {
 	void(*mEvalFunc)(char* tOutput, void* tCaller);

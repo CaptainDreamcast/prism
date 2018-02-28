@@ -1,8 +1,8 @@
-#include "tari/screeneffect.h"
+#include "prism/screeneffect.h"
 
-#include "tari/drawing.h"
-#include "tari/system.h"
-#include "tari/log.h"
+#include "prism/drawing.h"
+#include "prism/system.h"
+#include "prism/log.h"
 
 static struct {
 	int mIsScreenColored;
@@ -15,9 +15,14 @@ void setScreenColor(Color tColor) {
 	double r, g, b;
 	getRGBFromColor(tColor, &r, &g, &b);
 
-	pvr_set_bg_color(r, g, b);
+	setScreenBackgroundColorRGB(r, g, b);
+
 	disableDrawing();
 	gData.mIsScreenColored = 1;
+}
+
+void setScreenBackgroundColorRGB(double tR, double tG, double tB) {
+	pvr_set_bg_color(tR, tG, tB);
 }
 
 void unsetScreenColor() {

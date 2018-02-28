@@ -1,4 +1,4 @@
-#include "tari/sound.h"
+#include "prism/sound.h"
 
 #include <assert.h>
 
@@ -9,12 +9,12 @@
 #include <SDL_mixer.h>
 #endif
 
-#include "tari/log.h"
-#include "tari/file.h"
-#include "tari/datastructures.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
-#include "tari/math.h"
+#include "prism/log.h"
+#include "prism/file.h"
+#include "prism/datastructures.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
+#include "prism/math.h"
 
 #define MICROPHONE_SAMPLE_AMOUNT 128
 

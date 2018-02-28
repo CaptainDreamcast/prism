@@ -1,9 +1,9 @@
-#include "tari/texturepool.h"
+#include "prism/texturepool.h"
 
-#include "tari/datastructures.h"
-#include "tari/log.h"
-#include "tari/memoryhandler.h"
-#include "tari/system.h"
+#include "prism/datastructures.h"
+#include "prism/log.h"
+#include "prism/memoryhandler.h"
+#include "prism/system.h"
 
 typedef struct {
 	TextureData mTexture;

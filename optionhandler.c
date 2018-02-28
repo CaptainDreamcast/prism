@@ -1,13 +1,13 @@
-#include "tari/optionhandler.h"
+#include "prism/optionhandler.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-#include "tari/datastructures.h"
-#include "tari/drawing.h"
-#include "tari/input.h"
-#include "tari/memoryhandler.h"
+#include "prism/datastructures.h"
+#include "prism/drawing.h"
+#include "prism/input.h"
+#include "prism/memoryhandler.h"
 
 static struct {
 	List mOptionList;
