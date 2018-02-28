@@ -51,12 +51,7 @@ static struct {
 } gData;
 
 void initScreenEffects() {
-	if (!canLoadTexture("$/rd/effects/white.pkg")) {
-		gData.mIsActive = 0;
-		return;
-	}
-
-	gData.mWhiteTexture = loadTexture("$/rd/effects/white.pkg");
+	gData.mWhiteTexture = createWhiteTexture();
 	gData.mFullLineSize = 10;
 	gData.mZ = 80;
 	gData.mScreenFillID = -1;
