@@ -169,7 +169,7 @@ static void initOpenGL() {
 	glActiveTexture(GL_TEXTURE0);
 
 	glViewport(0, 0, 640, 480);
-	glClearColor(1, 0, 0, 1);
+	glClearColor(0, 0, 0, 1);
 }
 
 void setDrawingScreenScale(double tScaleX, double tScaleY);
@@ -291,17 +291,6 @@ static Rectangle makeRectangleFromSDLRect(SDL_Rect tRect) {
 	ret.bottomRight.y = tRect.y + tRect.h;
 
 	return ret;
-}
-
-
-static SDL_Rect scaleSDLRect(SDL_Rect tRect, Vector3D tScale, Position tCenter) {
-	Rectangle rect = makeRectangleFromSDLRect(tRect);
-
-	rect = translateRectangle(rect, vecScale(tCenter, -1));
-	rect = scaleRectangle(rect, tScale);
-	rect = translateRectangle(rect, tCenter);
-
-	return makeSDLRectFromRectangle(rect);
 }
 
 static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double tV, Position tColor, double tAlpha) {

@@ -607,12 +607,12 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 	return ret;
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
+static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth, int tHeight, int tBytesPerLine, Vector3D tAxisOffset) {
 
-	Buffer argb32Buffer = loadARGB32BufferFromRawPNGBuffer(tRawPNGBuffer, tWidth, tHeight);
+	Buffer argb32Buffer = loadARGB32BufferFromRawPNGBuffer(tRawPNGBuffer, tBytesPerLine, tHeight);
 	freeBuffer(tRawPNGBuffer);
 
-	List subImageList = breakImageBufferUpIntoMultipleBuffers(argb32Buffer, tWidth, tHeight, 4);
+	List subImageList = breakImageBufferUpIntoMultipleBuffers(argb32Buffer, tBytesPerLine, tHeight, 4);
 	freeBuffer(argb32Buffer);
 
 	List textures = loadTextureFromImageARGB32List(subImageList);
@@ -621,8 +621,8 @@ static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer t
 	return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(Buffer tRawImageBuffer, Buffer tPaletteBuffer, int tIsUsingPaletteBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
-	List subImagelist = breakImageBufferUpIntoMultipleBuffers(tRawImageBuffer, tWidth, tHeight, 1);
+static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(Buffer tRawImageBuffer, Buffer tPaletteBuffer, int tIsUsingPaletteBuffer, int tWidth, int tHeight, int tBytesPerLine, Vector3D tAxisOffset) {
+	List subImagelist = breakImageBufferUpIntoMultipleBuffers(tRawImageBuffer, tBytesPerLine, tHeight, 1);
 	freeBuffer(tRawImageBuffer);
 
 	List textures;
@@ -637,12 +637,12 @@ static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBufferGe
 	return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(Buffer tRawImageBuffer, Buffer tPaletteBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
-	return makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(tRawImageBuffer, tPaletteBuffer, 1, tWidth, tHeight, tAxisOffset);
+static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(Buffer tRawImageBuffer, Buffer tPaletteBuffer, int tWidth, int tHeight, int tBytesPerLine, Vector3D tAxisOffset) {
+	return makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(tRawImageBuffer, tPaletteBuffer, 1, tWidth, tHeight, tBytesPerLine, tAxisOffset);
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawBuffer(Buffer tRawImageBuffer, int tWidth, int tHeight, Vector3D tAxisOffset) {
-	return makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(tRawImageBuffer, makeBuffer(NULL, 0), 0, tWidth, tHeight, tAxisOffset);
+static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawBuffer(Buffer tRawImageBuffer, int tWidth, int tHeight, int tBytesPerLine, Vector3D tAxisOffset) {
+	return makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(tRawImageBuffer, makeBuffer(NULL, 0), 0, tWidth, tHeight, tBytesPerLine, tAxisOffset);
 }
 
 static void insertPaletteIntoMugenSpriteFile(MugenSpriteFile* tSprites, Buffer* b) {
@@ -672,7 +672,6 @@ static MugenSpriteFileSprite* loadTextureFromPCXBuffer(MugenSpriteFile* tDst, in
 	assert(header.mBitsPerPixel == 8);
 	assert(header.mEncoding == 1);
 	assert(header.mPlaneAmount == 1);
-	w = header.mBytesPerLine; // TODO: check what's correct
 
 	int encodedSize;
 	if (mIsUsingOwnPalette) {
@@ -692,11 +691,11 @@ static MugenSpriteFileSprite* loadTextureFromPCXBuffer(MugenSpriteFile* tDst, in
 	assert(vector_size(&tDst->mPalettes));
 
 	if (gData.mIsUsingRealPalette && vector_size(&tDst->mPalettes) == 1) {
-		return makeMugenSpriteFileSpriteFromRawBuffer(rawImageBuffer, w, h, tAxisOffset);
+		return makeMugenSpriteFileSpriteFromRawBuffer(rawImageBuffer, w, h, header.mBytesPerLine, tAxisOffset);
 	}
 	else {
 		Buffer* paletteBuffer = vector_get_back(&tDst->mPalettes);
-		return makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawImageBuffer, *paletteBuffer, w, h, tAxisOffset);
+		return makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawImageBuffer, *paletteBuffer, w, h, header.mBytesPerLine, tAxisOffset);
 	}
 	
 }
@@ -987,7 +986,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 
 		Buffer* paletteBuffer = vector_get(&tDst->mPalettes, palette);
 
-		e = makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawBuffer, *paletteBuffer, sprite.mWidth, sprite.mHeight, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
+		e = makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawBuffer, *paletteBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
 		gData.mReader.mSeek(&gData.mReader, originalPosition);
 	}
 	else if (isRawPNG) {
@@ -997,7 +996,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 		gData.mReader.mRead(&gData.mReader, &textureWidth, 2);
 		gData.mReader.mRead(&gData.mReader, &textureHeight, 2);
 		Buffer pngBuffer = gData.mReader.mReadBufferReadOnly(&gData.mReader, sprite.mDataLength);
-		e = makeMugenSpriteFileSpriteFromRawPNGBuffer(pngBuffer, sprite.mWidth, sprite.mHeight, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
+		e = makeMugenSpriteFileSpriteFromRawPNGBuffer(pngBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
 		gData.mReader.mSeek(&gData.mReader, originalPosition);
 	}
 	else {

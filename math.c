@@ -137,21 +137,21 @@ Matrix4D createTranslationMatrix4D(Vector3D tTranslation)
 	ret.m[0][0] = 1;
 	ret.m[0][1] = 0;
 	ret.m[0][2] = 0;
-	ret.m[0][3] = tTranslation.x;
+	ret.m[0][3] = 0;
 
 	ret.m[1][0] = 0;
 	ret.m[1][1] = 1;
 	ret.m[1][2] = 0;
-	ret.m[1][3] = tTranslation.y;
+	ret.m[1][3] = 0;
 
 	ret.m[2][0] = 0;
 	ret.m[2][1] = 0;
 	ret.m[2][2] = 1;
-	ret.m[2][3] = tTranslation.z;
+	ret.m[2][3] = 0;
 
-	ret.m[3][0] = 0;
-	ret.m[3][1] = 0;
-	ret.m[3][2] = 0;
+	ret.m[3][0] = tTranslation.x;
+	ret.m[3][1] = tTranslation.y;
+	ret.m[3][2] = tTranslation.z;
 	ret.m[3][3] = 1;
 
 	return ret;

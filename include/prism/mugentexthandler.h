@@ -34,6 +34,7 @@ int isMugenTextBuiltUp(int tID);
 
 void changeMugenText(int tID, char* tText);
 
+Position getMugenTextPosition(int tID);
 Position* getMugenTextPositionReference(int tID);
 
 MugenTextAlignment getMugenTextAlignmentFromMugenAlignmentIndex(int tIndex);

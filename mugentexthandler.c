@@ -715,24 +715,31 @@ static double getMugenTextSizeX(MugenText* e) {
 	}
 }
 
-void setMugenTextAlignment(int tID, MugenTextAlignment tAlignment)
-{
-	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
-
+static double getMugenTextAlignmentOffsetX(MugenText* e, MugenTextAlignment tAlignment) {
 	double sizeX = getMugenTextSizeX(e);
 
+	double ret = 0;
 	if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_CENTER) {
-		e->mPosition.x += sizeX / 2;
-	} else if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_RIGHT) {
-		e->mPosition.x += sizeX;
+		ret += sizeX / 2;
+	}
+	else if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_RIGHT) {
+		ret += sizeX;
 	}
 
 	if (tAlignment == MUGEN_TEXT_ALIGNMENT_CENTER) {
-		e->mPosition.x -= sizeX / 2;
+		ret -= sizeX / 2;
 	}
 	else if (tAlignment == MUGEN_TEXT_ALIGNMENT_RIGHT) {
-		e->mPosition.x -= sizeX;
+		ret -= sizeX;
 	}
+
+	return ret;
+}
+
+void setMugenTextAlignment(int tID, MugenTextAlignment tAlignment)
+{
+	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
+	e->mPosition.x += getMugenTextAlignmentOffsetX(e, tAlignment);
 	e->mAlignment = tAlignment;
 }
 
@@ -800,6 +807,16 @@ void changeMugenText(int tID, char * tText)
 	strcpy(e->mText, tText);
 	strcpy(e->mDisplayText, tText);
 	setMugenTextAlignment(tID, alignment);
+}
+
+Position getMugenTextPosition(int tID) {
+	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
+	
+	MugenTextAlignment alignment = e->mAlignment;
+	setMugenTextAlignment(tID, MUGEN_TEXT_ALIGNMENT_LEFT);
+	Position ret = e->mPosition;
+	setMugenTextAlignment(tID, alignment);
+	return ret;
 }
 
 Position * getMugenTextPositionReference(int tID)
