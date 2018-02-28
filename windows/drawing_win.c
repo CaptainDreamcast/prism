@@ -623,7 +623,7 @@ void setDrawingTransparency(double tAlpha){
 }
 
 void setDrawingRotationZ(double tAngle, Position tPosition){
-	gData.mAngle.z = tAngle;
+	gData.mAngle.z = (2*M_PI-tAngle); // TODO: move to drawing
 	gData.mRotationEffectCenter = tPosition;
 }
 
@@ -651,6 +651,7 @@ typedef struct {
 
 } RotationZEffect;
 
+// TODO: check or remove, cause no game uses this stuff
 void pushDrawingTranslation(Vector3D tTranslation) {
 	tTranslation = vecRotateZ(tTranslation, 2*M_PI-gData.mAngle.z);
 	gData.mTranslation = vecAdd(gData.mTranslation, tTranslation);
