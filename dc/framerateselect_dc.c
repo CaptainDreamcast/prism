@@ -1,12 +1,12 @@
-#include "tari/framerateselectscreen.h"
+#include "prism/framerateselectscreen.h"
 
 #include <kos.h>
 
-#include "tari/framerate.h"
-#include "tari/drawing.h"
-#include "tari/physics.h"
-#include "tari/input.h"
-#include "tari/system.h"
+#include "prism/framerate.h"
+#include "prism/drawing.h"
+#include "prism/physics.h"
+#include "prism/input.h"
+#include "prism/system.h"
 
 typedef struct {
   char ArrayToBePrinted[17];
@@ -52,7 +52,7 @@ static int hasToSetFramerate() {
   else {
     if (flashrom_get_region() == FLASHROM_REGION_EUROPE) {
 
-      return 1;
+      setFramerateSixty(); // TODO: reinsert properly without dependency to fonts
 
     }
     else {
