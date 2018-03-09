@@ -428,6 +428,12 @@ void setMugenAnimationConstraintRectangle(int tID, GeoRectangle tConstraintRecta
 	e->mHasConstraintRectangle = 1;
 }
 
+Position getMugenAnimationPosition(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mOffset;
+}
+
 double getMugenAnimationColorRed(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);

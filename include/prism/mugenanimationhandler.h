@@ -36,6 +36,7 @@ void setMugenAnimationBlendType(int tID, BlendType tBlendType);
 void setMugenAnimationSprites(int tID, MugenSpriteFile* tSprites);
 void setMugenAnimationConstraintRectangle(int tID, GeoRectangle tConstraintRectangle);
 
+Position getMugenAnimationPosition(int tID);
 double getMugenAnimationColorRed(int tID);
 double getMugenAnimationColorGreen(int tID);
 double getMugenAnimationColorBlue(int tID);
