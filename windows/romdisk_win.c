@@ -389,14 +389,8 @@ void initRomdisks() {
 	gInitted = 1;
 }
 
-/* Mount a romdisk image; must have called fs_romdisk_init() earlier.
-Also note that we do _not_ take ownership of the image data if
-own_buffer is 0, so if you alloc'd that buffer, you must
-also free it after the unmount. If own_buffer is non-zero, then
-we free the buffer when it is unmounted. */
-void mountRomdiskWindows(char* tFilePath, char* tMountPath) {
-
-
+void mountRomdiskWindowsFromBuffer(Buffer b, char * tMountPath)
+{
 	int isAlreadyMounted = string_map_contains(&gRomdiskMapping, tMountPath);
 	if (isAlreadyMounted) {
 		logError("Unable to mount. Already mounted.");
@@ -404,8 +398,8 @@ void mountRomdiskWindows(char* tFilePath, char* tMountPath) {
 		abortSystem();
 	}
 
-	
-	char* img = fileToBuffer(tFilePath).mData;
+
+	char* img = b.mData;
 
 	const romdisk_hdr_t * hdr;
 	rd_image_t      * mnt;
@@ -414,7 +408,6 @@ void mountRomdiskWindows(char* tFilePath, char* tMountPath) {
 	/* Are we initted? */
 	if (!gInitted) {
 		logError("Trying to mount romdisk before init");
-		logErrorString(tFilePath);
 		logErrorString(tMountPath);
 		abortSystem();
 	}
@@ -441,6 +434,16 @@ void mountRomdiskWindows(char* tFilePath, char* tMountPath) {
 	// mutex_lock(&fh_mutex);
 	string_map_push_owned(&gRomdiskMapping, tMountPath, mnt);
 	// mutex_unlock(&fh_mutex);
+}
+
+/* Mount a romdisk image; must have called fs_romdisk_init() earlier.
+Also note that we do _not_ take ownership of the image data if
+own_buffer is 0, so if you alloc'd that buffer, you must
+also free it after the unmount. If own_buffer is non-zero, then
+we free the buffer when it is unmounted. */
+void mountRomdiskWindows(char* tFilePath, char* tMountPath) {
+	Buffer b = fileToBuffer(tFilePath);
+	mountRomdiskWindowsFromBuffer(b, tMountPath);
 }
 
 

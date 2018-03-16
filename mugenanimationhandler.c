@@ -206,7 +206,7 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 		if (e->mHasAnimationFinishedCallback) {
 			e->mAnimationFinishedCB(e->mAnimationFinishedCaller);
 		}
-		
+
 		if (e->mIsLooping) {
 			e->mStep = e->mAnimation->mLoopStart;
 			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep); // TODO: test
@@ -350,6 +350,11 @@ void setMugenAnimationInvisible(int tID)
 	e->mIsInvisible = 1;
 }
 
+void setMugenAnimationVisibility(int tID, int tIsVisible) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mIsInvisible = !tIsVisible;
+}
+
 void setMugenAnimationDrawScale(int tID, Vector3D tScale)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
@@ -369,12 +374,6 @@ void setMugenAnimationDrawAngle(int tID, double tAngle)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	e->mBaseDrawAngle = tAngle;
-}
-
-void addMugenAnimationDrawAngle(int tID, double tAngle)
-{
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
-	e->mBaseDrawAngle += tAngle;
 }
 
 void setMugenAnimationBaseDrawScale(int tID, double tScale)
@@ -432,6 +431,17 @@ Position getMugenAnimationPosition(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	return e->mOffset;
+}
+
+int getMugenAnimationVisibility(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return !e->mIsInvisible;
+}
+
+double getMugenAnimationDrawAngle(int tID) 
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mBaseDrawAngle;
 }
 
 double getMugenAnimationColorRed(int tID)
@@ -629,10 +639,10 @@ static void updateMugenAnimationHandler(void* tData) {
 	int_map_remove_predicate(&gData.mAnimations, updateSingleMugenAnimationCB, NULL);
 }
 
-void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData) 
+void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData)
 {
 	setMugenAnimationPassiveCollisionActive(tID, tCollisionList, tFunc, tCaller, tCollisionData);
-	setMugenAnimationAttackCollisionActive(tID, tCollisionList, NULL, NULL, NULL);	
+	setMugenAnimationAttackCollisionActive(tID, tCollisionList, NULL, NULL, NULL);
 }
 
 void setMugenAnimationPassiveCollisionActive(int tID, int tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
@@ -704,7 +714,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	}
 
 	if (e->mHasConstraintRectangle) {
-		
+
 		int minWidth = texturePos.topLeft.x;
 		int maxWidth = texturePos.bottomRight.x;
 
@@ -725,7 +735,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 
 		p.y += upY - texturePos.topLeft.y;
 		texturePos.topLeft.y = upY;
-		texturePos.bottomRight.y = downY;	
+		texturePos.bottomRight.y = downY;
 	}
 
 	int isFacingRight = e->mIsFacingRight;
@@ -755,7 +765,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 	setDrawingTransparency(e->mAlpha);
-	
+
 	scaleDrawing3D(caller->mScale, caller->mScalePosition);
 	setDrawingRotationZ(e->mBaseDrawAngle, caller->mScalePosition);
 	drawSprite(sprite->mTexture, p, texturePos);

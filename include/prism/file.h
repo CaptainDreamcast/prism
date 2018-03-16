@@ -63,6 +63,7 @@ void setWorkingDirectory(char* path);
 const char* getFileSystem();
 const char* getWorkingDirectory();
 
+void mountRomdiskFromBuffer(Buffer b, char* tMountPath);
 void mountRomdisk(char* tFilePath, char* tMountPath);
 void unmountRomdisk(char* tMountPath);
 

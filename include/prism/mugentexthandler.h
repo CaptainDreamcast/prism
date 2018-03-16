@@ -17,6 +17,9 @@ void loadMugenSystemFonts();
 void loadMugenFightFonts();
 void unloadMugenFonts();
 
+int getMugenFontSizeY(int tKey);
+int getMugenFontSpacingY(int tKey);
+
 extern ActorBlueprint MugenTextHandler;
 
 int addMugenText(char* tText, Position tPosition, int tFont);

@@ -3,6 +3,7 @@
 #define MAXIMUM_CONTROLLER_AMOUNT 2
 
 #include "geometry.h"
+#include "animation.h"
 
 void updateInput();
 void resetInputForAllControllers();
@@ -88,3 +89,13 @@ int isUsingController();
 
 double getFishingRodIntensity();
 double getFishingRodIntensitySingle(int i);
+
+void addControllerRumbleBasic(Duration tDuration);
+void addControllerRumble(Duration tDuration, int tFrequency, double tAmplitude);
+void turnControllerRumbleOn(int tFrequency, double tAmplitude);
+void turnControllerRumbleOff();
+
+void addControllerRumbleBasicSingle(int i, Duration tDuration);
+void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude);
+void turnControllerRumbleOnSingle(int i, int tFrequency, double tAmplitude);
+void turnControllerRumbleOffSingle(int i);

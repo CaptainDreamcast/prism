@@ -1,12 +1,23 @@
 #include "prism/input.h"
 
+#include <stdint.h>
+
 #include <SDL.h>
 
 #include "prism/log.h"
+#include "prism/math.h"
+#include "prism/clipboardhandler.h"
 
 typedef struct {
 	int mIsUsingController;
 	SDL_GameController* mController;
+	SDL_Haptic* mHaptic;
+
+	int mIsRumbling;
+	SDL_HapticEffect mHapticEffect;
+	int mHapticEffectID;
+	Duration mRumbleNow;
+	Duration mRumbleDuration;
 } Controller;
 
 static struct {
@@ -49,12 +60,15 @@ static void loadController(int i) {
 	if (gData.mControllers[i].mIsUsingController) return;
 
 	gData.mControllers[i].mController = SDL_GameControllerOpen(i);
+	gData.mControllers[i].mHaptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(gData.mControllers[i].mController));
+	gData.mControllers[i].mIsRumbling = 0;
 	gData.mControllers[i].mIsUsingController = 1;
 }
 
 static void unloadController(int i) {
 	if (!gData.mControllers[i].mIsUsingController) return;
-
+	turnControllerRumbleOffSingle(i);
+	if(gData.mControllers[i].mHaptic) SDL_HapticClose(gData.mControllers[i].mHaptic);
 	SDL_GameControllerClose(gData.mControllers[i].mController);
 	gData.mControllers[i].mController = NULL;
 	gData.mControllers[i].mIsUsingController = 0;
@@ -69,17 +83,27 @@ static void updateSingleControllerInput(int i) {
 	loadController(i);
 }
 
-static void updateControllerInput() {
+static void updateSingleControllerRumble(int i) {
+	if (!isUsingControllerSingle(i)) return;
+	if (!gData.mControllers[i].mIsRumbling) return;
+
+	if (handleDurationAndCheckIfOver(&gData.mControllers[i].mRumbleNow, gData.mControllers[i].mRumbleDuration)) {
+		turnControllerRumbleOffSingle(i);
+	}
+}
+
+static void updateControllers() {
 	int i;
 	for (i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
 		updateSingleControllerInput(i);
+		updateSingleControllerRumble(i);
 	}
 }
 
 void updateInput() {
 
 	gData.mCurrentKeyStates = SDL_GetKeyboardState(NULL);
-	updateControllerInput();
+	updateControllers();
 }
 
 
@@ -261,4 +285,45 @@ void releaseMouseCursorFromWindow() {
 
 int isUsingControllerSingle(int i) {
 	return gData.mControllers[i].mIsUsingController;
+}
+
+void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude) {
+	if (!isUsingControllerSingle(i)) return;
+	if (!gData.mControllers[i].mHaptic) return;
+
+	turnControllerRumbleOffSingle(i);
+
+	SDL_HapticEffect* effect = &gData.mControllers[i].mHapticEffect;
+	memset(effect, 0, sizeof(SDL_HapticEffect));
+
+	// TODO: fix
+	if ((SDL_HapticQuery(gData.mControllers[i].mHaptic) & SDL_HAPTIC_SINE)) {
+		effect->type = SDL_HAPTIC_SINE;
+	}
+	else {
+		effect->type = SDL_HAPTIC_LEFTRIGHT;
+	}	
+	effect->periodic.direction.type = SDL_HAPTIC_POLAR; 
+	effect->periodic.direction.dir[0] = 18000; 
+	effect->periodic.period = tFrequency; 
+	
+	effect->periodic.magnitude = (int16_t)(INT16_MAX * fclamp(tAmplitude, 0, 1)); 
+	effect->periodic.length = 5000;
+	effect->periodic.attack_length = 1000;
+	effect->periodic.fade_length = 1000;
+
+	gData.mControllers[i].mHapticEffectID = SDL_HapticNewEffect(gData.mControllers[i].mHaptic, effect);
+
+	SDL_HapticRunEffect(gData.mControllers[i].mHaptic, gData.mControllers[i].mHapticEffectID, 1);
+
+	gData.mControllers[i].mRumbleNow = 0;
+	gData.mControllers[i].mRumbleDuration = tDuration;
+	gData.mControllers[i].mIsRumbling = 1;
+}
+
+void turnControllerRumbleOffSingle(int i) {
+	if (!gData.mControllers[i].mIsRumbling) return;
+
+	SDL_HapticDestroyEffect(gData.mControllers[i].mHaptic, gData.mControllers[i].mHapticEffectID);
+	gData.mControllers[i].mIsRumbling = 0;
 }

@@ -22,7 +22,7 @@
 
 #endif
 
-#define fclamp(x, y, z) (fmin(fmax(x, y), z))
+#define fclamp(val, mini, maxi) (fmin(fmax(val, mini), maxi))
 #define INF 1000000000
 
 typedef struct {

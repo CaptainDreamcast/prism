@@ -26,6 +26,9 @@
 #include "prism/screeneffect.h"
 #include "prism/actorhandler.h"
 #include "prism/tweening.h"
+#include "prism/mugendefreader.h"
+#include "prism/mugentexthandler.h"
+#include "prism/clipboardhandler.h"
 
 static struct {
 	int mIsAborted;
@@ -36,12 +39,16 @@ static struct {
 	double mUpdateTimeCounter;
 	double mGlobalTimeDilatation;
 
+	int mIsUsingBasicTextHandler;
+	int mIsUsingMugenTextHandler;
+	int mIsUsingClipboard;
+
 	int mHasBetweenScreensCB;
 	void(*mBetweenScreensCB)(void*);
 	void* mBetweenScreensCaller;
 } gData;
 
-void initPrismWrapperWithDefaultFlags() {
+static void initBasicSystems() {
 	logg("Initiating system.");
 	initSystem();
 	logg("Initiating PowerVR.");
@@ -58,13 +65,46 @@ void initPrismWrapperWithDefaultFlags() {
 	initSound();
 	logg("Initiating sound effects.");
 	initSoundEffects();
-	logg("Initiating font.");
-	setFont("$/rd/fonts/dolmexica.hdr", "$/rd/fonts/dolmexica.pkg");
 	logg("Initiating screen effects.");
 	initScreenEffects();
 
 	gData.mGlobalTimeDilatation = 1;
 }
+
+void initPrismWrapperWithDefaultFlags() {
+	initBasicSystems();
+	logg("Initiating font.");
+	setFont("$/rd/fonts/dolmexica.hdr", "$/rd/fonts/dolmexica.pkg");
+	
+	gData.mIsUsingBasicTextHandler = 1;
+}
+
+void initPrismWrapperWithConfigFile(char* tPath) {
+	initBasicSystems();
+
+	MugenDefScript configFile = loadMugenDefScript(tPath);
+	gData.mIsUsingMugenTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "mugentexthandler", 0);
+	if (gData.mIsUsingMugenTextHandler) {
+		logg("Setting up M-Texthandler for game");
+		loadMugenTextHandler();
+	}
+
+	gData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "texthandler", 0);
+	gData.mIsUsingClipboard = getMugenDefIntegerOrDefault(&configFile, "Modules", "clipboard", 0);
+
+	if (gData.mIsUsingClipboard) {
+		logg("Setting up Clipboard for game");
+		char* fontName = getAllocatedMugenDefStringVariable(&configFile, "Clipboard", "font");
+		addMugenFont(-1, fontName);
+		freeMemory(fontName);
+		initClipboardForGame();
+	}
+
+	unloadMugenDefScript(configFile);
+}
+
+
+
 void shutdownPrismWrapper() {
 	shutdownSound();
 	shutdownMemoryHandler();
@@ -112,8 +152,7 @@ static void loadScreen(Screen* tScreen) {
 	setupAnimationHandler();
 	logg("Setting up Tweeninghandling");
 	setupTweening();
-	logg("Setting up Texthandling");
-	setupTextHandler();
+
 	logg("Setting up Physicshandling");
 	setupPhysicsHandler();
 	logg("Setting up Stagehandling");
@@ -126,6 +165,22 @@ static void loadScreen(Screen* tScreen) {
 	setupSoundEffectHandler();
 	logg("Setting up Actorhandling");
 	setupActorHandler();
+
+	if (gData.mIsUsingBasicTextHandler) {
+		logg("Setting up Texthandling");
+		instantiateActor(TextHandler);
+	}
+
+	if (gData.mIsUsingMugenTextHandler) {
+		logg("Setting up M-Texthandler");
+		instantiateActor(MugenTextHandler);
+	}
+
+	if (gData.mIsUsingClipboard) {
+		logg("Setting up Clipboard");
+		instantiateActor(ClipboardHandler);
+	}
+
 	logg("Setting up input flanks");
 	resetInputForAllControllers();
 	enableDrawing();	
@@ -166,8 +221,6 @@ static void unloadScreen(Screen* tScreen) {
 	shutdownStageHandler();
 	logg("Shutting down Physicshandling");
 	shutdownPhysicsHandler();
-	logg("Shutting down Texthandling");
-	shutdownTextHandler();
 	logg("Shutting down Tweeninghandling");
 	shutdownTweening();
 	logg("Shutting down Animationhandling");
@@ -192,7 +245,6 @@ static void updateScreen() {
 	updatePhysicsHandler();
 	updateTweening();
 	updateAnimationHandler();
-	updateTextHandler();
 	updateStageHandler();
 	updateCollisionAnimationHandler();
 	updateCollisionHandler();
@@ -208,7 +260,6 @@ static void drawScreen() {
 	waitForScreen();
 	startDrawing();
 	drawHandledAnimations();
-	drawHandledTexts();
 	drawHandledCollisions();
 	drawActorHandler();
 

@@ -31,3 +31,8 @@ void setScreenSize(int tX, int tY);
 ScreenSize getScreenSize();
 void setScreenFramerate(int tFramerate);
 void setVGA();
+int isOnDreamcast();
+int isOnWindows();
+int isOnWeb();
+
+

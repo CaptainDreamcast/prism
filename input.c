@@ -1,6 +1,7 @@
 #include "prism/input.h"
 
 #include "prism/log.h"
+#include "prism/math.h"
 
 typedef struct {
 	int mAFlank;
@@ -258,4 +259,30 @@ double getFishingRodIntensity() {
 
 double getFishingRodIntensitySingle(int i) {
 	return getSingleRNormalized(i);
+}
+
+void addControllerRumbleBasic(Duration tDuration)
+{
+	addControllerRumbleBasicSingle(getMainController(), tDuration);
+}
+
+void addControllerRumble(Duration tDuration, int tFrequency, double tAmplitude) {
+addControllerRumbleSingle(getMainController(), tDuration, tFrequency, tAmplitude);
+}
+
+void turnControllerRumbleOn(int tFrequency, double tAmplitude) {
+	turnControllerRumbleOnSingle(getMainController(), tFrequency, tAmplitude);
+}
+
+void turnControllerRumbleOff() {
+	turnControllerRumbleOffSingle(getMainController());
+}
+
+void addControllerRumbleBasicSingle(int i, Duration tDuration)
+{
+	addControllerRumbleSingle(i, tDuration, 10, 1);
+}
+
+void turnControllerRumbleOnSingle(int i, int tFrequency, double tAmplitude) {
+	addControllerRumbleSingle(i, INF, tFrequency, tAmplitude);
 }

@@ -31,7 +31,6 @@ rename %target_dir%\windows\Template.vcxproj %1.vcxproj
 rename %target_dir%\windows\Template.vcxproj.filters %1.vcxproj.filters
 rename %target_dir%\windows\Template.vcxproj.user %1.vcxproj.user
 
-md %target_dir%\assets
 md %target_dir%\concept
 
 :over

@@ -192,3 +192,30 @@ int isHandledTextBuiltUp(int tID)
 void removeHandledText(int tID) {
 	list_remove(&gData.mTexts, tID);
 }
+
+static void setupTextHandlerCB(void* tData) {
+	(void)tData;
+	setupTextHandler();
+}
+
+static void updateTextHandlerCB(void* tData) {
+	(void)tData;
+	updateTextHandler();
+}
+
+static void drawTextHandlerCB(void* tData) {
+	(void)tData;
+	drawHandledTexts();
+}
+
+static void shutdownTextHandlerCB(void* tData) {
+	(void)tData;
+	shutdownTextHandler();
+}
+
+ActorBlueprint TextHandler = {
+	.mLoad = setupTextHandlerCB,
+	.mUpdate = updateTextHandlerCB,
+	.mDraw = drawTextHandlerCB,
+	.mUnload = shutdownTextHandlerCB,
+};

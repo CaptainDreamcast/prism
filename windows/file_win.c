@@ -11,15 +11,28 @@
 static struct {
 	char cwd[1024];
 	char mFileSystem[1024];
+	int mIsUsingRomdisk;
 } gData;
 
 
+extern char romdisk_buffer[];
+extern int romdisk_buffer_length;
+
 void initFileSystem(){
 	sprintf(gData.cwd, "/");
-	gData.mFileSystem[0] = '\0';
+	sprintf(gData.mFileSystem, ".");
 	debugString(gData.cwd);
 
 	initRomdisks();
+
+	if (romdisk_buffer_length) {
+		mountRomdiskFromBuffer(makeBuffer(romdisk_buffer, romdisk_buffer_length), "ASSETS");
+		strcpy(gData.mFileSystem, "/ASSETS");
+	}
+	else if (isFile("assets.pak")) {
+		mountRomdisk("assets.pak", "ASSETS");
+		strcpy(gData.mFileSystem, "/ASSETS");
+	}	
 }
 
 static void expandPath(char* tDest, char* tPath) {
@@ -39,9 +52,7 @@ static void expandPath(char* tDest, char* tPath) {
 }
 
 void setFileSystem(char* path){
-	char expandedPath[1024];
-	expandPath(expandedPath, path);
-	strcpy(gData.mFileSystem, expandedPath);
+	(void)path;
 }
 
 const char* getFileSystem() {
@@ -90,10 +101,10 @@ void getFullPath(char* tDest, char* tPath) {
 	if (tPath[0] == '/') {
 		char expandedPath[1024];
 		expandPath(expandedPath, tPath);
-		sprintf(tDest, ".%s", expandedPath);
+		sprintf(tDest, "%s%s", gData.mFileSystem, expandedPath);
 	}
 
-	else sprintf(tDest, ".%s%s", gData.cwd, tPath);
+	else sprintf(tDest, "%s%s%s", gData.mFileSystem, gData.cwd, tPath);
 }
 
 FileHandler fileOpen(char* tPath, int tFlags){
@@ -173,6 +184,11 @@ void* fileMemoryMap(FileHandler tHandler) {
 	return NULL;
 }
 
+
+void mountRomdiskFromBuffer(Buffer b, char * tMountPath)
+{
+	mountRomdiskWindowsFromBuffer(b, tMountPath);
+}
 
 void mountRomdisk(char* tFilePath, char* tMountPath) {
 	

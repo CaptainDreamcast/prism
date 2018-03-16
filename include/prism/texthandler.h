@@ -2,6 +2,7 @@
 
 #include "animation.h"
 #include "soundeffect.h"
+#include "actorhandler.h"
 
 void setupTextHandler();
 void shutdownTextHandler();
@@ -20,3 +21,4 @@ int isHandledTextBuiltUp(int tID);
 
 void removeHandledText(int tID);
 
+extern ActorBlueprint TextHandler;

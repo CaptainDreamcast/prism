@@ -231,3 +231,22 @@ void setVGA() {
 void returnToMenu() {
 	exit(0);
 }
+
+int isOnDreamcast()
+{
+	return 0;
+}
+
+int isOnWindows()
+{
+#ifdef __EMSCRIPTEN__
+	return 0;
+#else
+	return 1;
+#endif
+}
+
+int isOnWeb()
+{
+	return !isOnWindows();
+}

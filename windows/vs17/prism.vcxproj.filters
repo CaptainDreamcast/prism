@@ -169,6 +169,9 @@
     <ClCompile Include="..\..\mugentexthandler.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\clipboardhandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -339,6 +342,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\prism\klib\khash.h">
       <Filter>hdr\klib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\clipboardhandler.h">
+      <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

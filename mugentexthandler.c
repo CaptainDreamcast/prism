@@ -295,11 +295,23 @@ static void addMugenFont2(int tKey, char* tPath) {
 void addMugenFont(int tKey, char* tPath) {
 	char path[1024];
 
-	if (strchr(tPath, '/')) {
-		sprintf(path, "assets/%s", tPath); 
+	// TODO: fix when assets is dropped from Dolmexica
+	if (isOnWindows() && !strcmp(".", getFileSystem())) {
+		if (strchr(tPath, '/')) {
+			sprintf(path, "assets/%s", tPath);
+		}
+		else {
+			sprintf(path, "assets/font/%s", tPath);
+		}
 	}
 	else {
-		sprintf(path, "assets/font/%s", tPath);
+		if (strchr(tPath, '/')) {
+			sprintf(path, "%s", tPath);
+		}
+		else {
+			sprintf(path, "font/%s", tPath);
+		}
+	
 	}
 	char* ending = getFileExtension(path);
 
@@ -318,6 +330,11 @@ void addMugenFont(int tKey, char* tPath) {
 }
 
 static void loadMugenFonts(MugenDefScript* tScript) {
+
+	if (!isOnDreamcast()) {
+		addMugenFont(-1, "font/f-4x6.fnt");
+	}
+	
 	int i;
 	for (i = 0; i < 100; i++) {
 		char name[100];
@@ -397,6 +414,18 @@ static int unloadSingleFont(void* tCaller, void* tData) {
 void unloadMugenFonts()
 {
 	int_map_remove_predicate(&gData.mFonts, unloadSingleFont, NULL);
+}
+
+int getMugenFontSizeY(int tKey)
+{
+	MugenFont* font = int_map_get(&gData.mFonts, tKey);
+	return font->mSize.y;
+}
+
+int getMugenFontSpacingY(int tKey)
+{
+	MugenFont* font = int_map_get(&gData.mFonts, tKey);
+	return font->mSpacing.y;
 }
 
 

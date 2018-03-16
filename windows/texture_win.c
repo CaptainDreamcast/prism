@@ -47,8 +47,10 @@ TextureData textureFromSurface(SDL_Surface* tSurface) {
 
 static TextureData loadTexturePNG(char* tFileDir) {
 	
-
-	SDL_Surface* loadedSurface = IMG_Load(tFileDir);
+	Buffer b = fileToBuffer(tFileDir);
+	SDL_RWops* memStream = SDL_RWFromMem(b.mData, b.mLength);
+	SDL_Surface* loadedSurface = IMG_Load_RW(memStream, 1);
+	freeBuffer(b);
 	if (loadedSurface == NULL)
 	{
 		logError("Unable to load file:");

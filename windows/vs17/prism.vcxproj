@@ -140,6 +140,7 @@
     <ClCompile Include="..\..\actorhandler.c" />
     <ClCompile Include="..\..\animation.c" />
     <ClCompile Include="..\..\animationtree.c" />
+    <ClCompile Include="..\..\clipboardhandler.c" />
     <ClCompile Include="..\..\collision.c" />
     <ClCompile Include="..\..\collisionanimation.c" />
     <ClCompile Include="..\..\collisionhandler.c" />
@@ -201,6 +202,7 @@
     <ClInclude Include="..\..\include\prism\actorhandler.h" />
     <ClInclude Include="..\..\include\prism\animation.h" />
     <ClInclude Include="..\..\include\prism\animationtree.h" />
+    <ClInclude Include="..\..\include\prism\clipboardhandler.h" />
     <ClInclude Include="..\..\include\prism\collision.h" />
     <ClInclude Include="..\..\include\prism\collisionanimation.h" />
     <ClInclude Include="..\..\include\prism\collisionhandler.h" />
