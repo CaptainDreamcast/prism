@@ -28,20 +28,29 @@
 #include "prism/tweening.h"
 #include "prism/mugendefreader.h"
 #include "prism/mugentexthandler.h"
+#include "prism/mugenanimationhandler.h"
 #include "prism/clipboardhandler.h"
+#include "prism/blitzentity.h"
+#include "prism/blitzmugenanimation.h"
+#include "prism/blitzmugensound.h"
+#include "prism/blitzphysics.h"
+#include "prism/blitzcamerahandler.h"
+#include "prism/blitztimelineanimation.h"
 
 static struct {
 	int mIsAborted;
 	Screen* mNext;
 	Screen* mScreen;
+	Screen* mTitleScreen;
 	int mIsPaused;
 
 	double mUpdateTimeCounter;
 	double mGlobalTimeDilatation;
 
 	int mIsUsingBasicTextHandler;
-	int mIsUsingMugenTextHandler;
+	int mIsUsingMugen;
 	int mIsUsingClipboard;
+	int mIsUsingBlitzModule;
 
 	int mHasBetweenScreensCB;
 	void(*mBetweenScreensCB)(void*);
@@ -83,15 +92,13 @@ void initPrismWrapperWithConfigFile(char* tPath) {
 	initBasicSystems();
 
 	MugenDefScript configFile = loadMugenDefScript(tPath);
-	gData.mIsUsingMugenTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "mugentexthandler", 0);
-	if (gData.mIsUsingMugenTextHandler) {
-		logg("Setting up M-Texthandler for game");
+	gData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "texthandler", 0);
+	gData.mIsUsingMugen = getMugenDefIntegerOrDefault(&configFile, "Modules", "mugen", 0);
+	if (gData.mIsUsingMugen) {
+		logg("Setting up Mugen Module for game");
 		loadMugenTextHandler();
 	}
-
-	gData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "texthandler", 0);
 	gData.mIsUsingClipboard = getMugenDefIntegerOrDefault(&configFile, "Modules", "clipboard", 0);
-
 	if (gData.mIsUsingClipboard) {
 		logg("Setting up Clipboard for game");
 		char* fontName = getAllocatedMugenDefStringVariable(&configFile, "Clipboard", "font");
@@ -99,6 +106,7 @@ void initPrismWrapperWithConfigFile(char* tPath) {
 		freeMemory(fontName);
 		initClipboardForGame();
 	}
+	gData.mIsUsingBlitzModule = getMugenDefIntegerOrDefault(&configFile, "Modules", "blitz", 0);
 
 	unloadMugenDefScript(configFile);
 }
@@ -152,7 +160,6 @@ static void loadScreen(Screen* tScreen) {
 	setupAnimationHandler();
 	logg("Setting up Tweeninghandling");
 	setupTweening();
-
 	logg("Setting up Physicshandling");
 	setupPhysicsHandler();
 	logg("Setting up Stagehandling");
@@ -171,14 +178,24 @@ static void loadScreen(Screen* tScreen) {
 		instantiateActor(TextHandler);
 	}
 
-	if (gData.mIsUsingMugenTextHandler) {
-		logg("Setting up M-Texthandler");
+	if (gData.mIsUsingMugen) {
+		logg("Setting up Mugen Module");
+		instantiateActor(MugenAnimationHandler);
 		instantiateActor(MugenTextHandler);
 	}
 
 	if (gData.mIsUsingClipboard) {
 		logg("Setting up Clipboard");
 		instantiateActor(ClipboardHandler);
+	}
+	if (gData.mIsUsingBlitzModule) {
+		logg("Setting up Blitz Module");
+		instantiateActor(BlitzCameraHandler);
+		instantiateActor(BlitzEntityHandler);
+		instantiateActor(BlitzMugenAnimationHandler);
+		instantiateActor(BlitzMugenSoundHandler);
+		instantiateActor(BlitzPhysicsHandler);
+		instantiateActor(BlitzTimelineAnimationHandler);
 	}
 
 	logg("Setting up input flanks");
@@ -239,6 +256,18 @@ static void unloadScreen(Screen* tScreen) {
 	logTextureMemoryState();
 }
 
+static void updateScreenAbort() {
+	if (hasPressedAbortFlank()) {
+		if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) {
+			abortScreenHandling();
+		}
+		else {
+			setNewScreen(gData.mTitleScreen);
+		}
+	}
+
+}
+
 static void updateScreen() {
 	updateSystem();
 	updateInput();
@@ -254,6 +283,8 @@ static void updateScreen() {
 	if (gData.mScreen->mUpdate) {
 		gData.mScreen->mUpdate();
 	}
+
+	updateScreenAbort();
 }
 
 static void drawScreen() {
@@ -347,4 +378,9 @@ void setWrapperBetweenScreensCB(void(*tCB)(void *), void* tCaller)
 	gData.mBetweenScreensCB = tCB;
 	gData.mBetweenScreensCaller = tCaller;
 	gData.mHasBetweenScreensCB = 1;
+}
+
+void setWrapperTitleScreen(Screen * tTitleScreen)
+{
+	gData.mTitleScreen = tTitleScreen;
 }

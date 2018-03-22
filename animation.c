@@ -34,6 +34,23 @@ int isDurationOver(Duration tNow, Duration tDuration) {
 	return 0;
 }
 
+int handleTickDurationAndCheckIfOver(Tick * tNow, Tick tDuration)
+{
+	if (gData.mIsPaused) return 0;
+	(*tNow)++;
+	
+	return isTickDurationOver(*tNow, tDuration);
+}
+
+int isTickDurationOver(Tick tNow, Tick tDuration)
+{
+	if (tNow >= tDuration) {
+		return 1;
+	}
+
+	return 0;
+}
+
 AnimationResult animateWithoutLoop(Animation* tAnimation) {
 	AnimationResult ret = ANIMATION_CONTINUING;
 	if (handleDurationAndCheckIfOver(&tAnimation->mNow, tAnimation->mDuration)) {

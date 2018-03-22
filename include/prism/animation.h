@@ -7,6 +7,7 @@
 typedef double Duration;
 typedef uint32_t Frame;
 typedef void (*AnimationPlayerCB)(void* caller);
+typedef uint32_t Tick;
 
 typedef enum {
 	ANIMATION_OVER,
@@ -22,6 +23,9 @@ typedef struct {
 
 int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration);
 int isDurationOver(Duration tNow, Duration tDuration);
+int handleTickDurationAndCheckIfOver(Tick* tNow, Tick tDuration);
+int isTickDurationOver(Tick tNow, Tick tDuration);
+
 AnimationResult animateWithoutLoop(Animation* tAnimation);
 void animate(Animation* tAnimation);
 void resetAnimation(Animation* tAnimation);

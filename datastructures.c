@@ -419,7 +419,7 @@ void string_map_empty(StringMap* tMap) {
 	vector_empty(&tMap->mBuckets);
 }
 
-static int getBucketIDFromString(char* tKey) {
+static int getBucketIDFromString(uint8_t* tKey) {
 	int l = strlen(tKey);
 	int i;
 	int base = 1;

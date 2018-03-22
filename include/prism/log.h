@@ -10,6 +10,8 @@
 #define logDouble(x) {logBase(); printf("Value of %s: %f\n", #x, (double)x);}
 #define logHex(x) {logBase(); printf("Value of %s: %X\n", #x, (unsigned int)x);}
 #define logPointer(x) {logBase(); printf("Value of %s: %p\n", #x, (char*)x);}
+#define logFormat(x, ...) {logBase(); logFormatFunc(x,  __VA_ARGS__); }
+void logFormatFunc(char* tFormatString, ...);
 
 #define logError(x) logg(x)
 #define logErrorInteger(x) logInteger(x)
@@ -17,10 +19,12 @@
 #define logErrorDouble(x) logDouble(x)
 #define logErrorHex(x) logHex(x)
 #define logErrorPointer(x) logPointer(x)
+#define logErrorFormat(x, ...) logFormat(x,  __VA_ARGS__)
 
 #define logWarning(x) logg(x)
 #define logWarningInteger(x) logInteger(x)
 #define logWarningString(x) logString(x)
+#define logWarningFormat(x, ...) logFormat(x,  __VA_ARGS__)
 
 #ifdef DEBUG
 #define debugLog(x) logg(x)
@@ -44,3 +48,4 @@ void logMemoryState();
 #define logTextureMemoryState() {}
 #define logMemoryState() {}
 #endif
+

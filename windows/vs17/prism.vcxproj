@@ -140,6 +140,13 @@
     <ClCompile Include="..\..\actorhandler.c" />
     <ClCompile Include="..\..\animation.c" />
     <ClCompile Include="..\..\animationtree.c" />
+    <ClCompile Include="..\..\blitzcamerahandler.c" />
+    <ClCompile Include="..\..\blitzentity.c" />
+    <ClCompile Include="..\..\blitzmugenanimation.c" />
+    <ClCompile Include="..\..\blitzmugensound.c" />
+    <ClCompile Include="..\..\blitzphysics.c" />
+    <ClCompile Include="..\..\blitztimelineanimation.c" />
+    <ClCompile Include="..\..\blitztimelineanimationreader.c" />
     <ClCompile Include="..\..\clipboardhandler.c" />
     <ClCompile Include="..\..\collision.c" />
     <ClCompile Include="..\..\collisionanimation.c" />
@@ -151,6 +158,7 @@
     <ClCompile Include="..\..\framerate.c" />
     <ClCompile Include="..\..\geometry.c" />
     <ClCompile Include="..\..\input.c" />
+    <ClCompile Include="..\..\log.c" />
     <ClCompile Include="..\..\logoscreen.c" />
     <ClCompile Include="..\..\lz5.c" />
     <ClCompile Include="..\..\math.c" />
@@ -202,6 +210,14 @@
     <ClInclude Include="..\..\include\prism\actorhandler.h" />
     <ClInclude Include="..\..\include\prism\animation.h" />
     <ClInclude Include="..\..\include\prism\animationtree.h" />
+    <ClInclude Include="..\..\include\prism\blitzmugenanimation.h" />
+    <ClInclude Include="..\..\include\prism\blitzcamerahandler.h" />
+    <ClInclude Include="..\..\include\prism\blitzcomponent.h" />
+    <ClInclude Include="..\..\include\prism\blitzentity.h" />
+    <ClInclude Include="..\..\include\prism\blitzmugensound.h" />
+    <ClInclude Include="..\..\include\prism\blitzphysics.h" />
+    <ClInclude Include="..\..\include\prism\blitztimelineanimation.h" />
+    <ClInclude Include="..\..\include\prism\blitztimelineanimationreader.h" />
     <ClInclude Include="..\..\include\prism\clipboardhandler.h" />
     <ClInclude Include="..\..\include\prism\collision.h" />
     <ClInclude Include="..\..\include\prism\collisionanimation.h" />

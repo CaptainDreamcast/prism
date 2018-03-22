@@ -26,3 +26,5 @@ void setNewScreen(Screen* tScreen);
 
 void setWrapperTimeDilatation(double tDilatation);
 void setWrapperBetweenScreensCB(void(*tCB)(void*), void* tCaller);
+
+void setWrapperTitleScreen(Screen* tTitleScreen);

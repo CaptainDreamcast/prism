@@ -9,5 +9,8 @@ actorhandler.o tweening.o logoscreen.o \
 mugendefreader.o mugenanimationreader.o mugenanimationhandler.o \
 mugenscriptparser.o lz5.o mugenspritefilereader.o \
 mugenassignment.o mugenassignmentevaluator.o mugentexthandler.o \
-mugensoundfilereader.o clipboardhandler.o \
+mugensoundfilereader.o clipboardhandler.o log.o \
+blitzentity.o blitzcamerahandler.o blitzmugenanimationhandler.o \
+blitzphysics.o blitzmugensound.o blitztimelineanimationreader.o \
+blitztimelineanimation.o \
 quicklz.o

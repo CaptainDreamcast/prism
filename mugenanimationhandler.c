@@ -72,6 +72,9 @@ typedef struct {
 	int mHasBasePositionReference;
 	Position* mBasePositionReference;
 
+	int mHasScaleReference;
+	Vector3D* mScaleReference;
+
 	int mHasBlendType;
 	BlendType mBlendType;
 
@@ -280,6 +283,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 	e->mBaseDrawAngle = 0;
 
 	e->mHasBasePositionReference = 0;
+	e->mHasScaleReference = 0;
 	e->mHasBlendType = 0;
 	e->mHasConstraintRectangle = 0;
 
@@ -305,6 +309,11 @@ int getMugenAnimationAnimationNumber(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	return e->mAnimation->mID;
+}
+
+int getMugenAnimationAnimationStep(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mStep;
 }
 
 int getMugenAnimationRemainingAnimationTime(int tID)
@@ -389,6 +398,13 @@ void setMugenAnimationBasePosition(int tID, Position * tBasePosition)
 	e->mBasePositionReference = tBasePosition;
 }
 
+void setMugenAnimationScaleReference(int tID, Vector3D * tScale)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mHasScaleReference = 1;
+	e->mScaleReference = tScale;
+}
+
 void setMugenAnimationColor(int tID, double tR, double tG, double tB) {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	e->mR = tR;
@@ -431,6 +447,11 @@ Position getMugenAnimationPosition(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	return e->mOffset;
+}
+
+int getMugenAnimationIsFacingRight(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mIsFacingRight;
 }
 
 int getMugenAnimationVisibility(int tID) {
@@ -825,7 +846,7 @@ static void drawMugenAnimationHandler(void* tData) {
 }
 
 
-static ActorBlueprint MugenAnimationHandler = {
+ActorBlueprint MugenAnimationHandler = {
 	.mLoad = loadMugenAnimationHandler,
 	.mUpdate = updateMugenAnimationHandler,
 	.mDraw = drawMugenAnimationHandler,

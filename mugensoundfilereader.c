@@ -5,6 +5,8 @@
 #include <prism/file.h>
 #include <prism/memoryhandler.h>
 #include <prism/soundeffect.h>
+#include <prism/log.h>
+#include <prism/system.h>
 
 typedef struct {
 	uint32_t mNextFileOffset;
@@ -93,4 +95,23 @@ void playMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 	MugenSoundSample* sample = int_map_get(&group->mSamples, tSample);
 
 	playSoundEffect(sample->mSoundEffectID);
+}
+
+int tryPlayMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
+{
+	if (!hasMugenSound(tSounds, tGroup, tSample)) {
+		logWarningFormat("Unable to find sound %d %d.", tGroup, tSample);
+		return 0;
+	}
+
+	playMugenSound(tSounds, tGroup, tSample);
+	return 1;
+}
+
+int hasMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
+{
+	if(!int_map_contains(&tSounds->mGroups, tGroup)) return 0;
+	MugenSoundGroup* group = int_map_get(&tSounds->mGroups, tGroup);
+
+	return int_map_contains(&group->mSamples, tSample);
 }

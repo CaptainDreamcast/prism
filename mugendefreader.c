@@ -250,8 +250,8 @@ static MugenDefToken* parseTextStatement(Buffer* b, BufferPointer p) {
 static MugenDefToken* gCurrentGroupToken;
 
 static MugenDefToken* parseGroup(Buffer* b, BufferPointer p) {
-	debugLog("Parse group.")
-	
+	debugLog("Parse group.");
+
 	BufferPointer end = findEndOfToken(b, p, '[', ']');
 
 	char* val = makeMugenDefStringFromEndPoint(p, end);

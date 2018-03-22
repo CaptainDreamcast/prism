@@ -172,6 +172,30 @@
     <ClCompile Include="..\..\clipboardhandler.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\blitzentity.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\log.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzcamerahandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzmugenanimation.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzphysics.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzmugensound.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitztimelineanimationreader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitztimelineanimation.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -344,6 +368,30 @@
       <Filter>hdr\klib</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\prism\clipboardhandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzcamerahandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzentity.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzcomponent.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzphysics.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzmugenanimation.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzmugensound.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitztimelineanimationreader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitztimelineanimation.h">
       <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>

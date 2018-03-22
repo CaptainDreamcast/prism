@@ -378,9 +378,8 @@ static void loadSingleAnimationElementStatement(void* tCaller, void* tData) {
 		handleInterpolation(element, caller->mAnimations, caller->mGroupID);
 	}
 	else {
-		logError("Unrecognized type.");
-		logErrorString(element->mName);
-		abortSystem();
+		logWarning("Unrecognized type.");
+		logWarningString(element->mName);
 	}
 }
 
