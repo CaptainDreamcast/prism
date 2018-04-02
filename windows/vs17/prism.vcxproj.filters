@@ -196,6 +196,15 @@
     <ClCompile Include="..\..\blitztimelineanimation.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\blitzcollision.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzparticles.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wrappercomponenthandler.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -392,6 +401,15 @@
       <Filter>hdr</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\prism\blitztimelineanimation.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzcollision.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzparticles.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\wrappercomponenthandler.h">
       <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>

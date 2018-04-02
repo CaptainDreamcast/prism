@@ -29,6 +29,8 @@ typedef struct {
 	Position* mBasePosition;
 } Collider;
 
+void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVel1, Collider tCollider1, Collider tCollider2);
+void resolveCollisionRectRectMovableStatic(Position* tPos1, Velocity tVel1, Position* tPos2, CollisionRect tRect1, CollisionRect tRect2);
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect);
 int checkCollision(CollisionRect tRect1, CollisionRect tRect2);
 int checkCollisionCirc(CollisionCirc tCirc1, CollisionCirc tCirc2);
@@ -52,4 +54,9 @@ Collider makeColliderFromRect(CollisionRect tRect);
 Collider makeColliderFromCirc(CollisionCirc tCirc);
 void setColliderBasePosition(Collider* tCollider, Position* tBasePosition);
 void destroyCollider(Collider* tCollider);
+
+double getColliderUp(Collider tCollider);
+double getColliderDown(Collider tCollider);
+double getColliderRight(Collider tCollider);
+double getColliderLeft(Collider tCollider);
 

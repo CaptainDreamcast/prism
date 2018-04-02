@@ -331,10 +331,11 @@ static MugenSpriteFileSprite* makeMugenSpriteFileSprite(List tTextures, TextureS
 	return e;
 }
 
-static MugenSpriteFileSprite* makeLinkedMugenSpriteFileSprite(int tIsLinkedTo) {
+static MugenSpriteFileSprite* makeLinkedMugenSpriteFileSprite(int tIsLinkedTo, Vector3D tAxisOffset) {
 	MugenSpriteFileSprite* e = allocMemory(sizeof(MugenSpriteFileSprite));
 	e->mIsLinked = 1;
 	e->mIsLinkedTo = tIsLinkedTo;
+	e->mAxisOffset = tAxisOffset;
 	return e;
 }
 
@@ -746,7 +747,7 @@ static void loadSingleSFFFileAndInsertIntoSpriteFile(SFFSubFileHeader subHeader,
 		freeBuffer(pcxBuffer);
 	}
 	else {
-		texture = makeLinkedMugenSpriteFileSprite(subHeader.mIndexOfPreciousSpriteCopy);
+		texture = makeLinkedMugenSpriteFileSprite(subHeader.mIndexOfPreciousSpriteCopy, makePosition(subHeader.mImageAxisXCoordinate, subHeader.mImageAxisYCoordinate, 0));
 	}
 
 	insertTextureIntoSpriteFile(tDst, texture, subHeader.mGroup, subHeader.mImage);
@@ -948,7 +949,7 @@ static Buffer readRawSprite2(SFFSprite2* tSprite, SFFHeader2* tHeader) {
 }
 
 static void insertLinkedTextureIntoSpriteFile2(MugenSpriteFile* tDst, SFFSprite2* tSprite) {
-	MugenSpriteFileSprite* e = makeLinkedMugenSpriteFileSprite(tSprite->mIndex);
+	MugenSpriteFileSprite* e = makeLinkedMugenSpriteFileSprite(tSprite->mIndex, makePosition(tSprite->mAxisX, tSprite->mAxisY, 0));
 	insertTextureIntoSpriteFile(tDst, e, tSprite->mGroupNo, tSprite->mItemNo);
 }
 
@@ -1011,7 +1012,6 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 
 static void loadSprites2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tPreferredPalette) {
 	int i = 0;
-
 	gData.mReader.mSeek(&gData.mReader, tHeader->mSpriteOffset);
 	for (i = 0; i < (int)tHeader->mSpriteTotal; i++) {
 		loadSingleSprite2(tHeader, tDst, tPreferredPalette);
@@ -1139,11 +1139,16 @@ MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile
 
 	if (!int_map_contains(&g->mSprites, tSprite)) return NULL;
 
-	MugenSpriteFileSprite* e = int_map_get(&g->mSprites, tSprite);
-	while (e->mIsLinked) {
-		e = vector_get(&tFile->mAllSprites, e->mIsLinkedTo);
+	MugenSpriteFileSprite* original = int_map_get(&g->mSprites, tSprite);
+	if (original->mIsLinked) {
+		MugenSpriteFileSprite* e = original;
+		while (e->mIsLinked) {
+			e = vector_get(&tFile->mAllSprites, e->mIsLinkedTo);
+		}
+		original->mOriginalTextureSize = e->mOriginalTextureSize;
+		original->mTextures = e->mTextures;
 	}
-	return e;
+	return original;
 }
 
 

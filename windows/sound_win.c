@@ -18,6 +18,7 @@
 
 #define MICROPHONE_SAMPLE_AMOUNT 128
 
+#include "prism/soundeffect.h"
 
 typedef struct {
 	int mIsMicrophoneActive;
@@ -81,9 +82,13 @@ static void loadTrack(int tTrack) {
 
 	char path[1024];
 	char fullPath[1024];
-	sprintf(path, "tracks/%d.ogg", tTrack);
+	sprintf(path, "tracks/%d.wav", tTrack);
 	getFullPath(fullPath, path);
-	gData.mTrackChunk = Mix_LoadWAV(fullPath);
+
+	Buffer b = fileToBuffer(fullPath);
+	SDL_RWops* rwOps = SDL_RWFromConstMem(b.mData, b.mLength);
+	gData.mTrackChunk = Mix_LoadWAV_RW(rwOps, 0);
+	freeBuffer(b);
 	gData.mHasLoadedTrack = 1;
 }
 
@@ -96,7 +101,7 @@ static void unloadTrack() {
 
 static void playTrackGeneral(int tTrack, int tLoopAmount) {
 #ifdef __EMSCRIPTEN__
-	return;
+	//return;
 #endif
 
 	if (gData.mIsPlayingTrack) stopTrack();

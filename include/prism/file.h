@@ -56,6 +56,7 @@ void appendTerminationSymbolToBuffer(Buffer* tBuffer);
 void fileToMemory(void* tDst, int tSize, char* tPath);
 BufferPointer getBufferPointer(Buffer tBuffer);
 void readFromBufferPointer(void* tDst, BufferPointer* tPointer, uint32_t tSize);
+int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer);
 
 void initFileSystem();
 void setFileSystem(char* path);

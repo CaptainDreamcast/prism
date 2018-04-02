@@ -141,9 +141,11 @@
     <ClCompile Include="..\..\animation.c" />
     <ClCompile Include="..\..\animationtree.c" />
     <ClCompile Include="..\..\blitzcamerahandler.c" />
+    <ClCompile Include="..\..\blitzcollision.c" />
     <ClCompile Include="..\..\blitzentity.c" />
     <ClCompile Include="..\..\blitzmugenanimation.c" />
     <ClCompile Include="..\..\blitzmugensound.c" />
+    <ClCompile Include="..\..\blitzparticles.c" />
     <ClCompile Include="..\..\blitzphysics.c" />
     <ClCompile Include="..\..\blitztimelineanimation.c" />
     <ClCompile Include="..\..\blitztimelineanimationreader.c" />
@@ -187,6 +189,7 @@
     <ClCompile Include="..\..\timer.c" />
     <ClCompile Include="..\..\tweening.c" />
     <ClCompile Include="..\..\wrapper.c" />
+    <ClCompile Include="..\..\wrappercomponenthandler.c" />
     <ClCompile Include="..\drawing_win.c" />
     <ClCompile Include="..\file_win.c" />
     <ClCompile Include="..\framerateselect_win.c" />
@@ -210,11 +213,13 @@
     <ClInclude Include="..\..\include\prism\actorhandler.h" />
     <ClInclude Include="..\..\include\prism\animation.h" />
     <ClInclude Include="..\..\include\prism\animationtree.h" />
+    <ClInclude Include="..\..\include\prism\blitzcollision.h" />
     <ClInclude Include="..\..\include\prism\blitzmugenanimation.h" />
     <ClInclude Include="..\..\include\prism\blitzcamerahandler.h" />
     <ClInclude Include="..\..\include\prism\blitzcomponent.h" />
     <ClInclude Include="..\..\include\prism\blitzentity.h" />
     <ClInclude Include="..\..\include\prism\blitzmugensound.h" />
+    <ClInclude Include="..\..\include\prism\blitzparticles.h" />
     <ClInclude Include="..\..\include\prism\blitzphysics.h" />
     <ClInclude Include="..\..\include\prism\blitztimelineanimation.h" />
     <ClInclude Include="..\..\include\prism\blitztimelineanimationreader.h" />
@@ -265,6 +270,7 @@
     <ClInclude Include="..\..\include\prism\tweening.h" />
     <ClInclude Include="..\..\include\prism\windows\romdisk_win.h" />
     <ClInclude Include="..\..\include\prism\wrapper.h" />
+    <ClInclude Include="..\..\include\prism\wrappercomponenthandler.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

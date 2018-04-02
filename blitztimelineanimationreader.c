@@ -28,6 +28,7 @@ static BlitzTimelineAnimation* loadBlitzTimelineAnimationHeaderFromGroup(MugenDe
 	char mGroupTextString[100];
 	sscanf(tGroup->mName, "%s %d", mGroupTextString, &e->mID);
 	e->mDuration = getMugenDefIntegerOrDefaultAsGroup(tGroup, "duration", 0);
+	e->mIsLooping = getMugenDefIntegerOrDefaultAsGroup(tGroup, "loop", 0);
 	e->BlitzTimelineAnimationSteps = new_vector();
 	return e;
 }
@@ -62,7 +63,7 @@ static void addStaticAnimationStep(BlitzTimelineAnimation* tAnimation, int tTime
 static void fixInterpolationAnimationStep(BlitzTimelineAnimation* tAnimation, BlitzTimelineAnimationStep* tPreviousStep, int tTime, MugenDefScriptGroupElement* tElement) {
 	tPreviousStep->mType = BLITZ_TIMELINE_ANIMATION_STEP_TYPE_INTERPOLATION;
 	tPreviousStep->mDuration = tTime - tPreviousStep->mTime;
-	tAnimation->mDuration = max(tAnimation->mDuration, tPreviousStep->mDuration);
+	tAnimation->mDuration = max(tAnimation->mDuration, tPreviousStep->mTime + tPreviousStep->mDuration);
 
 	char* value = getAllocatedMugenDefStringVariableAsElement(tElement);
 	strcpy(tPreviousStep->mEndValue, value);
@@ -116,6 +117,27 @@ static void handleSingleInterpolationGroupElement(BlitzTimelineAnimation* tAnima
 	}
 	else if (isNamedElement(tElement, "posy")) {
 		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_POSITION_Y, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "scale")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_SCALE, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "scalex")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_SCALE_X, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "scaley")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_SCALE_Y, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "angle")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_ANGLE, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "mugentransparency")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_TRANSPARENCY, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "mugenanimation")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_ANIMATION, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "mugenfacedirection")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_FACE_DIRECTION, tAnimation, tTime, tElement, tStepType);
 	}
 	else {
 		logWarningFormat("Unrecognized interpolation group element: %s", tElement->mName);

@@ -36,6 +36,9 @@
 #include "prism/blitzphysics.h"
 #include "prism/blitzcamerahandler.h"
 #include "prism/blitztimelineanimation.h"
+#include "prism/blitzcollision.h"
+#include "prism/blitzparticles.h"
+#include "prism/wrappercomponenthandler.h"
 
 static struct {
 	int mIsAborted;
@@ -55,6 +58,8 @@ static struct {
 	int mHasBetweenScreensCB;
 	void(*mBetweenScreensCB)(void*);
 	void* mBetweenScreensCaller;
+
+	int mIsNotPausingTracksBetweenScreens;
 } gData;
 
 static void initBasicSystems() {
@@ -152,6 +157,8 @@ static void loadScreen(Screen* tScreen) {
 	logg("Pushing memory stacks");
 	pushMemoryStack();
 	pushTextureMemoryStack();
+	logg("Setting up wrapper component handler");
+	setupWrapperComponentHandler();
 	logg("Setting up Timer");
 	setupTimer();
 	logg("Setting up Texture pool");
@@ -173,29 +180,33 @@ static void loadScreen(Screen* tScreen) {
 	logg("Setting up Actorhandling");
 	setupActorHandler();
 
+	
+
 	if (gData.mIsUsingBasicTextHandler) {
 		logg("Setting up Texthandling");
-		instantiateActor(TextHandler);
+		addWrapperComponent(TextHandler);
 	}
 
 	if (gData.mIsUsingMugen) {
 		logg("Setting up Mugen Module");
-		instantiateActor(MugenAnimationHandler);
-		instantiateActor(MugenTextHandler);
+		addWrapperComponent(MugenAnimationHandler);
+		addWrapperComponent(MugenTextHandler);
 	}
 
 	if (gData.mIsUsingClipboard) {
 		logg("Setting up Clipboard");
-		instantiateActor(ClipboardHandler);
+		addWrapperComponent(ClipboardHandler);
 	}
 	if (gData.mIsUsingBlitzModule) {
 		logg("Setting up Blitz Module");
-		instantiateActor(BlitzCameraHandler);
-		instantiateActor(BlitzEntityHandler);
-		instantiateActor(BlitzMugenAnimationHandler);
-		instantiateActor(BlitzMugenSoundHandler);
-		instantiateActor(BlitzPhysicsHandler);
-		instantiateActor(BlitzTimelineAnimationHandler);
+		addWrapperComponent(BlitzCameraHandler);
+		addWrapperComponent(BlitzParticleHandler);
+		addWrapperComponent(BlitzEntityHandler);
+		addWrapperComponent(BlitzMugenAnimationHandler);
+		addWrapperComponent(BlitzMugenSoundHandler);
+		addWrapperComponent(BlitzCollisionHandler);
+		addWrapperComponent(BlitzPhysicsHandler);
+		addWrapperComponent(BlitzTimelineAnimationHandler);
 	}
 
 	logg("Setting up input flanks");
@@ -224,7 +235,9 @@ static void unloadScreen(Screen* tScreen) {
 		tScreen->mUnload();
 	}
 
-	stopTrack();
+	if (!gData.mIsNotPausingTracksBetweenScreens) {
+		stopTrack();
+	}
 
 	logg("Shutting down Actorhandling");
 	shutdownActorHandler();
@@ -246,6 +259,8 @@ static void unloadScreen(Screen* tScreen) {
 	shutdownTexturePool();
 	logg("Shutting down Timer");
 	shutdownTimer();
+	logg("Shutting down Wrapper component handler");
+	shutdownWrapperComponentHandler();
 	logg("Popping Memory Stacks");
 	popTextureMemoryStack();
 	popMemoryStack();
@@ -278,6 +293,7 @@ static void updateScreen() {
 	updateCollisionAnimationHandler();
 	updateCollisionHandler();
 	updateTimer();
+	updateWrapperComponentHandler();
 	updateActorHandler();
 
 	if (gData.mScreen->mUpdate) {
@@ -292,6 +308,7 @@ static void drawScreen() {
 	startDrawing();
 	drawHandledAnimations();
 	drawHandledCollisions();
+	drawWrapperComponentHandler();
 	drawActorHandler();
 
 	if (gData.mScreen->mDraw) {
@@ -378,6 +395,11 @@ void setWrapperBetweenScreensCB(void(*tCB)(void *), void* tCaller)
 	gData.mBetweenScreensCB = tCB;
 	gData.mBetweenScreensCaller = tCaller;
 	gData.mHasBetweenScreensCB = 1;
+}
+
+void setWrapperIsPausingTracksBetweenScreens(int tIsPausingTracks)
+{
+	gData.mIsNotPausingTracksBetweenScreens = !tIsPausingTracks;
 }
 
 void setWrapperTitleScreen(Screen * tTitleScreen)

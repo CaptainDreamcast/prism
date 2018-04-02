@@ -24,6 +24,7 @@ int getMugenAnimationAnimationNumber(int tID);
 int getMugenAnimationAnimationStep(int tID);
 int getMugenAnimationRemainingAnimationTime(int tID);
 void setMugenAnimationFaceDirection(int tID, int tIsFacingRight);
+void setMugenAnimationVerticalFaceDirection(int tID, int tIsFacingDown);
 void setMugenAnimationRectangleWidth(int tID, int tWidth);
 void setMugenAnimationRectangleHeight(int tID, int tHeight);
 void setMugenAnimationCameraPositionReference(int tID, Position* tCameraPosition);
@@ -44,6 +45,7 @@ void setMugenAnimationConstraintRectangle(int tID, GeoRectangle tConstraintRecta
 
 Position getMugenAnimationPosition(int tID);
 int getMugenAnimationIsFacingRight(int tID);
+int getMugenAnimationIsFacingDown(int tID);
 int getMugenAnimationVisibility(int tID);
 double getMugenAnimationDrawAngle(int tID);
 double getMugenAnimationColorRed(int tID);

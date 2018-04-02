@@ -5,6 +5,8 @@
 #include "prism/blitzcamerahandler.h"
 #include "prism/log.h"
 #include "prism/system.h"
+#include "prism/blitzmugenanimation.h"
+
 
 typedef struct {
 	int mAnimationNumber;
@@ -37,11 +39,40 @@ static void interpolateFloatAnimationStep(BlitzTimelineAnimationStep* tStep, dou
 	tFunc(tEntityID, trueVal);
 }
 
+static void interpolateIntegerAnimationStep(BlitzTimelineAnimationStep* tStep, double t, int tEntityID, void(*tFunc)(int, int)) {
+	int val1 = atoi(tStep->mStartValue);
+	int val2 = atoi(tStep->mEndValue);
+
+	int trueVal = (int)(val1 + t*(val2 - val1));
+	tFunc(tEntityID, trueVal);
+}
+
 static void updateSingleActiveAnimationStepTarget(BlitzTimelineAnimationStep* tStep, double t, int tEntityID) {
 	if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_POSITION_X) {
 		interpolateFloatAnimationStep(tStep, t, tEntityID, setBlitzEntityPositionX);
 	} else 	if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_POSITION_Y) {
 		interpolateFloatAnimationStep(tStep, t, tEntityID, setBlitzEntityPositionY);
+	}
+	else if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_SCALE) {
+		interpolateFloatAnimationStep(tStep, t, tEntityID, setBlitzEntityScale2D);
+	}
+	else if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_SCALE_X) {
+		interpolateFloatAnimationStep(tStep, t, tEntityID, setBlitzEntityScaleX);
+	}
+	else if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_SCALE_Y) {
+		interpolateFloatAnimationStep(tStep, t, tEntityID, setBlitzEntityScaleY);
+	}
+	else if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_ANGLE) {
+		interpolateFloatAnimationStep(tStep, t, tEntityID, setBlitzEntityRotationZ);
+	}
+	else if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_TRANSPARENCY) {
+		interpolateFloatAnimationStep(tStep, t, tEntityID, setBlitzMugenAnimationTransparency);
+	}
+	else if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_ANIMATION) {
+		interpolateIntegerAnimationStep(tStep, t, tEntityID, changeBlitzMugenAnimation);
+	}
+	else if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_FACE_DIRECTION) {
+		interpolateIntegerAnimationStep(tStep, t, tEntityID, setBlitzMugenAnimationFaceDirection);
 	}
 	else {
 		logWarningFormat("Unimplemented target type: %d", tStep->mTargetType);
@@ -61,12 +92,12 @@ static void updateSingleActiveAnimationStep(void* tCaller, void* tData) {
 	if (activeAnimation->mTime < step->mTime) return;
 	Tick endTime = step->mTime + step->mDuration;
 	if (activeAnimation->mTime > endTime) return;
-
+	
 	Tick timeOffset = activeAnimation->mTime - step->mTime;
 	double t;
-	if (step->mDuration == 0) t = 0;
-	else t = timeOffset / (double)step->mDuration;
-
+	if (step->mDuration <= 1) t = 1;
+	else t = timeOffset / (double)(step->mDuration - 1);
+	
 	updateSingleActiveAnimationStepTarget(step, t, caller->mEntry->mEntityID);
 }
 
@@ -74,15 +105,21 @@ static int updateSingleActiveAnimation(void* tCaller, void* tData) {
 	BlitzTimelineAnimationEntry* entry = tCaller;
 	ActiveAnimation* e = tData;
 	BlitzTimelineAnimation* animation = getBlitzTimelineAnimation(entry->mAnimations, e->mAnimationNumber);
-
-	if (handleTickDurationAndCheckIfOver(&e->mTime, animation->mDuration)) {
-		return 1;
-	}
-
+	
 	BlitzTimelineActiveAnimationStepUpdateCaller caller;
 	caller.mActiveAnimation = e;
 	caller.mEntry = entry;
 	vector_map(&animation->BlitzTimelineAnimationSteps, updateSingleActiveAnimationStep, &caller);
+
+	if (handleTickDurationAndCheckIfOver(&e->mTime, animation->mDuration)) {
+		if (animation->mIsLooping) {
+			e->mTime = 0;
+		}
+		else {
+			return 1;
+		}
+		
+	}
 
 	return 0;
 }

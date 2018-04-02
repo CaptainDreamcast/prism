@@ -3,7 +3,7 @@
 	
 build_develop: $(OBJS) 
 	emcc $(OBJS) -O3 \
-	-s TOTAL_MEMORY=100663296 -s NO_EXIT_RUNTIME=1 \
+	-s TOTAL_MEMORY=201326592 -s NO_EXIT_RUNTIME=1 \
 	-s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 \
 	-s SDL2_IMAGE_FORMATS="[""png""]" \
 	-L$(PRISM_PATH)/bin -lprism \

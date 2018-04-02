@@ -9,6 +9,8 @@
 typedef struct {
 	int mID;
 	Position mPosition;
+	Vector3D mScale;
+	double mAngle;
 
 	Vector mComponents; // contains owned BlitzComponent copy
 
@@ -63,6 +65,8 @@ int addBlitzEntity(Position tPos)
 {
 	BlitzEntity* e = allocMemory(sizeof(BlitzEntity));
 	e->mPosition = tPos;
+	e->mScale = makePosition(1, 1, 1);
+	e->mAngle = 0;
 	e->mComponents = new_vector();
 	e->mIsMarkedForDeletion = 0;
 	e->mID = int_map_push_back_owned(&gData.mEntities, e);
@@ -133,6 +137,50 @@ void setBlitzEntityPositionY(int tID, double tY)
 	e->mPosition.y = tY;
 }
 
+void setBlitzEntityScale2D(int tID, double tScale)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		setBlitzCameraHandlerScale2D(tScale);
+		return;
+	}
+
+	BlitzEntity* e = getBlitzEntity(tID);
+	e->mScale = makePosition(tScale, tScale, 1);
+}
+
+void setBlitzEntityScaleX(int tID, double tScaleX)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		setBlitzCameraHandlerScaleX(tScaleX);
+		return;
+	}
+
+	BlitzEntity* e = getBlitzEntity(tID);
+	e->mScale.x = tScaleX;
+}
+
+void setBlitzEntityScaleY(int tID, double tScaleY)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		setBlitzCameraHandlerScaleY(tScaleY);
+		return;
+	}
+
+	BlitzEntity* e = getBlitzEntity(tID);
+	e->mScale.x = tScaleY;
+}
+
+void setBlitzEntityRotationZ(int tID, double tAngle)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		setBlitzCameraHandlerRotationZ(tAngle);
+		return;
+	}
+
+	BlitzEntity* e = getBlitzEntity(tID);
+	e->mAngle = tAngle;
+}
+
 Position getBlitzEntityPosition(int tID)
 {
 	if (tID == getBlitzCameraHandlerEntityID()) {
@@ -151,4 +199,23 @@ Position * getBlitzEntityPositionReference(int tID)
 
 	BlitzEntity* e = getBlitzEntity(tID);
 	return &e->mPosition;
+}
+
+Vector3D * getBlitzEntityScaleReference(int tID)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		return getBlitzCameraHandlerScaleReference();
+	}
+
+	BlitzEntity* e = getBlitzEntity(tID);
+	return &e->mScale;
+}
+
+double * getBlitzEntityRotationZReference(int tID)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		return getBlitzCameraHandlerRotationZReference();
+	}
+	BlitzEntity* e = getBlitzEntity(tID);
+	return &e->mAngle;
 }

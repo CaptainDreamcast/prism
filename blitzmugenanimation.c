@@ -53,8 +53,12 @@ void addBlitzMugenAnimationComponentGeneral(int tEntityID, MugenSpriteFile * tSp
 	e->mAnimationID = addMugenAnimation(tStartAnimation, tSprites, makePosition(0, 0, 0));
 	e->mIsStatic = tIsStatic;
 	setMugenAnimationBasePosition(e->mAnimationID, getBlitzEntityPositionReference(tEntityID));
+	setMugenAnimationScaleReference(e->mAnimationID, getBlitzEntityScaleReference(tEntityID));
+	setMugenAnimationAngleReference(e->mAnimationID, getBlitzEntityRotationZReference(tEntityID));
 	if (isBlitzCameraHandlerEnabled()) {
 		setMugenAnimationCameraPositionReference(e->mAnimationID, getBlitzCameraHandlerPositionReference());
+		setMugenAnimationCameraScaleReference(e->mAnimationID, getBlitzCameraHandlerScaleReference());
+		setMugenAnimationCameraAngleReference(e->mAnimationID, getBlitzCameraHandlerRotationZReference());
 	}
 
 	registerBlitzComponent(tEntityID, BlitzMugenAnimationComponent);
@@ -81,4 +85,37 @@ int getBlitzMugenAnimationID(int tEntityID)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 	return e->mAnimationID;
+}
+
+void changeBlitzMugenAnimation(int tEntityID, int tAnimationNumber)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	changeMugenAnimation(e->mAnimationID, getMugenAnimation(e->mAnimations, tAnimationNumber));
+}
+
+void changeBlitzMugenAnimationWithStartStep(int tEntityID, int tAnimationNumber, int tStep) {
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	changeMugenAnimationWithStartStep(e->mAnimationID, getMugenAnimation(e->mAnimations, tAnimationNumber), tStep);
+}
+
+void changeBlitzMugenAnimationIfDifferent(int tEntityID, int tAnimationNumber) {
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	if (getMugenAnimationAnimationNumber(e->mAnimationID) == tAnimationNumber) return;
+
+	changeMugenAnimation(e->mAnimationID, getMugenAnimation(e->mAnimations, tAnimationNumber));
+}
+
+int getBlitzMugenAnimationAnimationNumber(int tEntityID) {
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	return getMugenAnimationAnimationNumber(e->mAnimationID);
+}
+
+void setBlitzMugenAnimationTransparency(int tEntityID, double tTransparency) {
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationTransparency(e->mAnimationID, tTransparency);
+}
+
+void setBlitzMugenAnimationFaceDirection(int tEntityID, int tIsFacingRight) {
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationFaceDirection(e->mAnimationID, tIsFacingRight);
 }

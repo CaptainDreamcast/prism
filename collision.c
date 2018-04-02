@@ -5,7 +5,63 @@
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
 #include "prism/system.h"
+#include "prism/math.h"
 
+Vector3D getColliderColliderMovableStaticDelta(Velocity tVel1, Collider tCollider1, Collider tCollider2) {
+	if (isEmptyVelocity(tVel1)) return makePosition(INF, INF, 0);
+
+	Position tempPos = *tCollider1.mBasePosition;
+	Collider temp = tCollider1;
+	temp.mBasePosition = &tempPos;
+	Position delta = makePosition(0, 0, 0);
+	while (checkCollisionCollider(temp, tCollider2)) {
+		delta = vecSub(delta, tVel1);
+		tempPos = vecSub(tempPos, tVel1);
+	}
+	return delta;
+}
+
+void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVel1, Collider tCollider1, Collider tCollider2) {
+	if (isEmptyVelocity(tVel1)) return;
+	double scale = 0.01;
+	tVel1 = vecScale(normalizeVelocity(tVel1), scale);
+	
+	Position deltas[8];
+	deltas[0] = getColliderColliderMovableStaticDelta(tVel1, tCollider1, tCollider2);
+	deltas[1] = getColliderColliderMovableStaticDelta(vecScale(tVel1, -1), tCollider1, tCollider2);
+	deltas[2] = getColliderColliderMovableStaticDelta(makePosition(-tVel1.x, tVel1.y, 0), tCollider1, tCollider2);
+	deltas[3] = getColliderColliderMovableStaticDelta(makePosition(tVel1.x, -tVel1.y, 0), tCollider1, tCollider2);
+	deltas[4] = getColliderColliderMovableStaticDelta(makePosition(scale, 0, 0), tCollider1, tCollider2);
+	deltas[5] = getColliderColliderMovableStaticDelta(makePosition(-scale, 0, 0), tCollider1, tCollider2);
+	deltas[6] = getColliderColliderMovableStaticDelta(makePosition(0, scale, 0), tCollider1, tCollider2);
+	deltas[7] = getColliderColliderMovableStaticDelta(makePosition(0, -scale, 0), tCollider1, tCollider2);
+
+	int i;
+	int smallestIndex = 0;
+	for (i = 1; i < 8; i++) {
+		if (vecLength(deltas[i]) < vecLength(deltas[smallestIndex])) {
+			smallestIndex = i;
+		}
+	}
+	
+	*tPos1 = vecAdd(*tPos1, deltas[smallestIndex]);
+}
+
+
+void resolveCollisionRectRectMovableStatic(Position* tPos1, Velocity tVel1, Position* tPos2, CollisionRect tRect1, CollisionRect tRect2) {
+	if (isEmptyVelocity(tVel1)) tVel1.y = -0.2;
+	else tVel1 = normalizeVelocity(tVel1);
+
+	Position delta = makePosition(0, 0, 0);
+	CollisionRect temp1 = tRect1;
+	while (checkCollision(temp1, tRect2)) {
+		delta = vecSub(delta, tVel1);
+		temp1.mTopLeft = vecSub(temp1.mTopLeft, tVel1);
+		temp1.mBottomRight = vecSub(temp1.mBottomRight, tVel1);
+	}
+
+	*tPos1 = vecAdd(*tPos1, delta);
+}
 
 // TODO: use something better; this will likely cause vibrations
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect) {
@@ -223,5 +279,85 @@ void setColliderBasePosition(Collider* tCollider, Position* tBasePosition) {
 
 void destroyCollider(Collider* tCollider) {
 	freeMemory(tCollider->mData);
+}
+
+double getColliderUp(Collider tCollider)
+{
+	Position pos = *tCollider.mBasePosition;
+	if (tCollider.mType == COLLISION_RECT) {
+		CollisionRect* rect = tCollider.mData;
+		pos = vecAdd(pos, rect->mTopLeft);
+	}
+	else if (tCollider.mType == COLLISION_CIRC) {
+		CollisionCirc* circ = tCollider.mData;
+		pos = vecAdd(pos, circ->mCenter);
+		pos.y -= circ->mRadius;
+	}
+	else {
+		logErrorFormat("Unrecognized type: %d.", tCollider.mType);
+		abortSystem();
+	}
+
+	return pos.y;
+}
+
+double getColliderDown(Collider tCollider)
+{
+	Position pos = *tCollider.mBasePosition;
+	if (tCollider.mType == COLLISION_RECT) {
+		CollisionRect* rect = tCollider.mData;
+		pos = vecAdd(pos, rect->mBottomRight);
+	}
+	else if (tCollider.mType == COLLISION_CIRC) {
+		CollisionCirc* circ = tCollider.mData;
+		pos = vecAdd(pos, circ->mCenter);
+		pos.y += circ->mRadius;
+	}
+	else {
+		logErrorFormat("Unrecognized type: %d.", tCollider.mType);
+		abortSystem();
+	}
+
+	return pos.y;
+}
+
+double getColliderRight(Collider tCollider)
+{
+	Position pos = *tCollider.mBasePosition;
+	if (tCollider.mType == COLLISION_RECT) {
+		CollisionRect* rect = tCollider.mData;
+		pos = vecAdd(pos, rect->mBottomRight);
+	}
+	else if (tCollider.mType == COLLISION_CIRC) {
+		CollisionCirc* circ = tCollider.mData;
+		pos = vecAdd(pos, circ->mCenter);
+		pos.x += circ->mRadius;
+	}
+	else {
+		logErrorFormat("Unrecognized type: %d.", tCollider.mType);
+		abortSystem();
+	}
+
+	return pos.x;
+}
+
+double getColliderLeft(Collider tCollider)
+{
+	Position pos = *tCollider.mBasePosition;
+	if (tCollider.mType == COLLISION_RECT) {
+		CollisionRect* rect = tCollider.mData;
+		pos = vecAdd(pos, rect->mTopLeft);
+	}
+	else if (tCollider.mType == COLLISION_CIRC) {
+		CollisionCirc* circ = tCollider.mData;
+		pos = vecAdd(pos, circ->mCenter);
+		pos.x -= circ->mRadius;
+	}
+	else {
+		logErrorFormat("Unrecognized type: %d.", tCollider.mType);
+		abortSystem();
+	}
+
+	return pos.x;
 }
 

@@ -152,6 +152,13 @@ int addCollisionRectangleToCollisionHandler(int tListID, Position* tBasePosition
 	return id;
 }
 
+int addCollisionCircleToCollisionHandler(int tListID, Position* tBasePosition, CollisionCirc tCirc, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
+	Collider collider = makeColliderFromCirc(tCirc);
+	int id = addColliderToCollisionHandler(tListID, tBasePosition, collider, tCB, tCaller, tCollisionData);
+	setColliderOwned(tListID, id);
+	return id;
+}
+
 int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
 	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
 	
@@ -208,6 +215,56 @@ void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCo
 void setCollisionHandlerOwningColliders() {
 	gData.mIsOwningColliders = 1;
 }
+
+static CollisionListElement* getCollisionListElement(int tListID, int tElementID) {
+	if (!int_map_contains(&gData.mCollisionLists, tListID)) {
+		logErrorFormat("Collision handler does not contain list with id %d.", tListID);
+		abortSystem();
+	}
+	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
+
+	if (!int_map_contains(&list->mCollisionElements, tElementID)) {
+		logErrorFormat("Collision handler list %d does not contain element with id %d.", tListID, tElementID);
+		abortSystem();
+	}
+	return int_map_get(&list->mCollisionElements, tElementID);
+}
+
+void resolveHandledCollisionMovableStatic(int tListID1, int tElementID1, int tListID2, int tElementID2, Position* tPos1, Velocity tVel1)
+{
+	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
+	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);	
+	resolveCollisionColliderColliderMovableStatic(tPos1, tVel1, e1->mCollider, e2->mCollider);
+}
+
+int isHandledCollisionAboveOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2)
+{
+	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
+	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
+	return getColliderDown(e1->mCollider) <= getColliderUp(e2->mCollider);
+}
+
+int isHandledCollisionBelowOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2)
+{
+	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
+	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
+	return getColliderUp(e1->mCollider) >= getColliderDown(e2->mCollider);
+}
+
+int isHandledCollisionLeftOfOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2)
+{
+	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
+	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
+	return getColliderRight(e1->mCollider) <= getColliderLeft(e2->mCollider);
+}
+
+int isHandledCollisionRightOfOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2)
+{
+	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
+	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
+	return getColliderLeft(e1->mCollider) >= getColliderRight(e2->mCollider);
+}
+
 
 #define DEBUG_Z 99
 
@@ -297,7 +354,8 @@ void activateCollisionHandlerDebugMode() {
 	gData.mDebug.mIsActive = 1;
 	gData.mDebug.mScreenPositionReference = NULL;	
 
-	gData.mDebug.mCollisionRectTexture = loadTexturePKG("$/rd/debug/collision_rect.pkg");
-	gData.mDebug.mCollisionCircTexture = loadTexturePKG("$/rd/debug/collision_circ.pkg");
+	
+	gData.mDebug.mCollisionRectTexture = createWhiteTexture();
+	gData.mDebug.mCollisionCircTexture = createWhiteTexture(); // TODO: fix
 
 }

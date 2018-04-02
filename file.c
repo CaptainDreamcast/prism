@@ -199,3 +199,14 @@ void readFromBufferPointer(void * tDst, BufferPointer* tPointer, uint32_t tSize)
 	(*tPointer) += tSize;
 }
 
+int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer) {
+	int value;
+	int size;
+	int items = sscanf(*tPointer, "%d%n", &value, &size);
+	if (items != 1) {
+		logWarning("Unable to read integer value from stream.");
+		value = 0;
+	}
+	(*tPointer) += size;
+	return value;
+}
