@@ -130,6 +130,9 @@ static void handleSingleInterpolationGroupElement(BlitzTimelineAnimation* tAnima
 	else if (isNamedElement(tElement, "angle")) {
 		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_ANGLE, tAnimation, tTime, tElement, tStepType);
 	}
+	else if (isNamedElement(tElement, "cb")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_CALLBACK, tAnimation, tTime, tElement, tStepType);
+	}
 	else if (isNamedElement(tElement, "mugentransparency")) {
 		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_TRANSPARENCY, tAnimation, tTime, tElement, tStepType);
 	}

@@ -13,11 +13,13 @@ void setBlitzCameraHandlerPositionX(double tX);
 void setBlitzCameraHandlerPositionY(double tY);
 
 Vector3D* getBlitzCameraHandlerScaleReference();
+Vector3D getBlitzCameraHandlerScale();
 void setBlitzCameraHandlerScale2D(double tScale);
 void setBlitzCameraHandlerScaleX(double tScaleX);
 void setBlitzCameraHandlerScaleY(double tScaleY);
 
 double* getBlitzCameraHandlerRotationZReference();
+double getBlitzCameraHandlerRotationZ();
 void setBlitzCameraHandlerRotationZ(double tAngle);
 
 int getBlitzCameraHandlerEntityID();

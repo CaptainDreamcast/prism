@@ -213,6 +213,7 @@
     <ClInclude Include="..\..\include\prism\actorhandler.h" />
     <ClInclude Include="..\..\include\prism\animation.h" />
     <ClInclude Include="..\..\include\prism\animationtree.h" />
+    <ClInclude Include="..\..\include\prism\blitz.h" />
     <ClInclude Include="..\..\include\prism\blitzcollision.h" />
     <ClInclude Include="..\..\include\prism\blitzmugenanimation.h" />
     <ClInclude Include="..\..\include\prism\blitzcamerahandler.h" />

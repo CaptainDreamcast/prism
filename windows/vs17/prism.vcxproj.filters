@@ -412,5 +412,8 @@
     <ClInclude Include="..\..\include\prism\wrappercomponenthandler.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitz.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

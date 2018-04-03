@@ -6,4 +6,6 @@
 extern ActorBlueprint BlitzTimelineAnimationHandler;
 
 void addBlitzTimelineComponent(int tEntityID, BlitzTimelineAnimations* tAnimations);
-void playBlitzTimelineAnimation(int tEntityID, int tAnimation);
+int playBlitzTimelineAnimation(int tEntityID, int tAnimation);
+void stopBlitzTimelineAnimation(int tEntityID, int tAnimationID);
+void setBlitzTimelineAnimationCB(int tEntityID, int tAnimationID, void * tCB, void * tCaller);

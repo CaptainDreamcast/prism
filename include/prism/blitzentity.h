@@ -20,6 +20,9 @@ void setBlitzEntityScaleY(int tID, double tScaleY);
 void setBlitzEntityRotationZ(int tID, double tAngle);
 
 Position getBlitzEntityPosition(int tID);
+Vector3D getBlitzEntityScale(int tID);
+double getBlitzEntityRotationZ(int tID);
+
 Position* getBlitzEntityPositionReference(int tID);
 Vector3D* getBlitzEntityScaleReference(int tID);
 double* getBlitzEntityRotationZReference(int tID);

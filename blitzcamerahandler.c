@@ -67,6 +67,11 @@ Vector3D * getBlitzCameraHandlerScaleReference()
 	return &gData.mScale;
 }
 
+Vector3D getBlitzCameraHandlerScale()
+{
+	return gData.mScale;
+}
+
 void setBlitzCameraHandlerScale2D(double tScale)
 {
 	gData.mScale = makePosition(tScale, tScale, 1);
@@ -85,6 +90,11 @@ void setBlitzCameraHandlerScaleY(double tScaleY)
 double * getBlitzCameraHandlerRotationZReference()
 {
 	return &gData.mAngle;
+}
+
+double getBlitzCameraHandlerRotationZ()
+{
+	return gData.mAngle;
 }
 
 void setBlitzCameraHandlerRotationZ(double tAngle)

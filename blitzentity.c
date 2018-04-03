@@ -191,6 +191,25 @@ Position getBlitzEntityPosition(int tID)
 	return e->mPosition;
 }
 
+Vector3D getBlitzEntityScale(int tID)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		return getBlitzCameraHandlerScale();
+	}
+
+	BlitzEntity* e = getBlitzEntity(tID);
+	return e->mScale;
+}
+
+double getBlitzEntityRotationZ(int tID)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		return getBlitzCameraHandlerRotationZ();
+	}
+	BlitzEntity* e = getBlitzEntity(tID);
+	return e->mAngle;
+}
+
 Position * getBlitzEntityPositionReference(int tID)
 {
 	if (tID == getBlitzCameraHandlerEntityID()) {
