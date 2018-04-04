@@ -339,11 +339,8 @@ static MugenDefToken* parseRecursively(Buffer* b, BufferPointer p) {
 	else if (isLoopStartStatement(b, p)) return parseLoopStartStatement(b, p);
 	else if (isInterpolationStatement(b, p)) return parseInterpolationStatement(b, p);
 	else {
-		logError("Unable to parse token.");
-		p[100] = '\0';
-		logErrorString(p);
-		abortSystem();
-		return NULL;
+		logWarningFormat("Unable to parse token:\n%.100s\n", (char*)p);
+		return parseComment(b, p);
 	}
 }
 

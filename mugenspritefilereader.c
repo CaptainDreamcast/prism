@@ -820,6 +820,7 @@ static MugenSpriteFile loadMugenSpriteFile1(int tHasPaletteFile, char* tOptional
 	gData.mReader.mSeek(&gData.mReader, header.mFirstFileOffset);
 	while (!gData.mReader.mIsOver(&gData.mReader)) {
 		loadSingleSFFFile(&ret);
+		if(gData.mIsOnlyLoadingPortraits && vector_size(&ret.mAllSprites) == 2) break;
 	}
 
 	return ret;
@@ -1015,6 +1016,7 @@ static void loadSprites2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tPrefer
 	gData.mReader.mSeek(&gData.mReader, tHeader->mSpriteOffset);
 	for (i = 0; i < (int)tHeader->mSpriteTotal; i++) {
 		loadSingleSprite2(tHeader, tDst, tPreferredPalette);
+		if(gData.mIsOnlyLoadingPortraits && vector_size(&tDst->mAllSprites) == 2) break;
 	}
 }
 
