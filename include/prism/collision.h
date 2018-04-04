@@ -30,7 +30,6 @@ typedef struct {
 } Collider;
 
 void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVel1, Collider tCollider1, Collider tCollider2);
-void resolveCollisionRectRectMovableStatic(Position* tPos1, Velocity tVel1, Position* tPos2, CollisionRect tRect1, CollisionRect tRect2);
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect);
 int checkCollision(CollisionRect tRect1, CollisionRect tRect2);
 int checkCollisionCirc(CollisionCirc tCirc1, CollisionCirc tCirc2);

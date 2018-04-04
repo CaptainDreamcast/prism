@@ -1,4 +1,4 @@
-#include "tari/sound.h"
+#include "prism/sound.h"
 
 #include <kos.h>
 #include <dc/sound/sound.h>

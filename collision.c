@@ -47,22 +47,6 @@ void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVe
 	*tPos1 = vecAdd(*tPos1, deltas[smallestIndex]);
 }
 
-
-void resolveCollisionRectRectMovableStatic(Position* tPos1, Velocity tVel1, Position* tPos2, CollisionRect tRect1, CollisionRect tRect2) {
-	if (isEmptyVelocity(tVel1)) tVel1.y = -0.2;
-	else tVel1 = normalizeVelocity(tVel1);
-
-	Position delta = makePosition(0, 0, 0);
-	CollisionRect temp1 = tRect1;
-	while (checkCollision(temp1, tRect2)) {
-		delta = vecSub(delta, tVel1);
-		temp1.mTopLeft = vecSub(temp1.mTopLeft, tVel1);
-		temp1.mBottomRight = vecSub(temp1.mBottomRight, tVel1);
-	}
-
-	*tPos1 = vecAdd(*tPos1, delta);
-}
-
 // TODO: use something better; this will likely cause vibrations
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect) {
   Velocity vel = tObject->mVelocity;

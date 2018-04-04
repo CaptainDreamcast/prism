@@ -25,6 +25,7 @@ static struct {
 
 
 static void loadParticleHandler(void* tData) {
+	(void)tData;
 	gData.mWhiteTexture = createWhiteTexture();
 	gData.mParticles = new_int_map();
 }

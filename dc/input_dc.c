@@ -1,9 +1,9 @@
-#include "tari/input.h"
+#include "prism/input.h"
 
 #include <kos.h>
 
-#include "tari/log.h"
-#include "tari/screeneffect.h"
+#include "prism/log.h"
+#include "prism/screeneffect.h"
 
 typedef struct {
 	maple_device_t* mCont;
@@ -194,4 +194,19 @@ void releaseMouseCursorFromWindow() {}
 int isUsingControllerSingle(int i) {
 	(void)i;
 	return 1;
+}
+
+
+void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude) {
+	(void)i;
+	(void)tDuration;
+	(void)tFrequency;
+	(void)tAmplitude;
+	// TODO
+}
+
+
+void turnControllerRumbleOffSingle(int i) {
+	(void)i;
+	// TODO
 }

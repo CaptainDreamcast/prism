@@ -2,7 +2,7 @@ TARGET = 1ST_READ
 
 OBJS += romdisk.o 
 OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -DDREAMCAST -Wall
-KOS_CFLAGS+= $(OPTFLAGS) 
+KOS_CFLAGS+= $(OPTFLAGS)
 KOS_ROMDISK_DIR = romdisk_boot
 
 complete: clean build_images build_develop
@@ -67,13 +67,13 @@ clean_general:
 build_develop: $(OBJS) 
 	$(KOS_CC) $(KOS_CFLAGS) -DDEVELOP -I${KOS_BASE}/../extensions/include $(KOS_LDFLAGS) \
 	-o $(TARGET).elf $(KOS_START) \
-	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
+	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lzstd -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
 	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
 
 build_romdisk: $(OBJS) 
 	$(KOS_CC) $(KOS_CFLAGS) -DDEVELOP -I${KOS_BASE}/../extensions/include $(KOS_LDFLAGS) \
 	-o $(TARGET).elf $(KOS_START) \
-	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
+	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lzstd -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
 	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
 
 	

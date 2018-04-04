@@ -39,6 +39,7 @@ static void setClipboardLineTexts() {
 }
 
 static void loadClipboardHandler(void* tData) {
+	(void)tData;
 	initClipboardLines();
 	setClipboardLineTexts();
 }
@@ -69,7 +70,7 @@ void addClipboardLine(char* tLine) {
 
 static void getArgumentTextAndAdvanceParams(char* tArgumentText, char** tParams) {
 	if (*tParams == NULL) {
-		sprintf(tArgumentText, "");
+		tArgumentText[0] = '\0';
 		return;
 	}
 

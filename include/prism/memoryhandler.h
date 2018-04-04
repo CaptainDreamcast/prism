@@ -23,6 +23,7 @@ typedef SDLTextureData* Texture;
 struct TextureMemory_internal {
 	void* mData;
 	size_t mSize;
+	size_t mCompressedSize;
 
 	int mIsVirtual;
 	int mIsCompressed;

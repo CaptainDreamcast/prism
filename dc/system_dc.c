@@ -1,9 +1,9 @@
-#include "tari/system.h"
+#include "prism/system.h"
 
 #include <kos.h>
 
-#include "tari/log.h"
-#include "tari/pvr.h"
+#include "prism/log.h"
+#include "prism/pvr.h"
 
 void abortSystem(){
 	arch_exit();
@@ -112,3 +112,14 @@ void setGameName(char* tName) {
 	(void) tName;
 }
 
+int isOnDreamcast() {
+	return 1;
+}
+
+int isOnWindows() {
+	return 0;
+}
+
+int isOnWeb() {
+	return 0;
+}

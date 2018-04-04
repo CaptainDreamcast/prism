@@ -2,8 +2,8 @@
 
 #include "prism/log.h"
 #include "prism/system.h"
-#include "prism/quicklz.h"
 
+#include <zstd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -112,22 +112,9 @@ typedef void* (*MallocFunc)(size_t tSize);
 typedef void(*FreeFunc)(void* tData);
 typedef void* (*ReallocFunc)(void* tPointer, size_t tSize);
 
-static void printMemoryHandlerMap(MemoryHandlerMap* tMap) {
-	// TODO
-}
-
-static void printMemoryListStack(MemoryListStack* tStack) {
-	logInteger(tStack->mHead);
-	int current;
-	for (current = tStack->mHead; current >= 0; current--) {
-		logInteger(current);
-		logPointer(&tStack->mMaps[current]);
-		printMemoryHandlerMap(&tStack->mMaps[current]);
-	}
-}
-
 void debugPrintMemoryStack() {
-	printMemoryListStack(&gMemoryHandler.mMemoryStack);
+	logError("Unimplemented.");
+	abortSystem();
 }
 
 static void addToUsageQueueFront(TextureMemory tMem) {
@@ -176,30 +163,28 @@ static void compressMemory(TextureMemory tMem, void** tBuffer, int tSrcSize) {
 		return;
 	}
 
-	qlz_state_compress state_compress;
-	
 	char* src = *tBuffer;
-	char* dst = malloc(tSrcSize + COMPRESSION_BUFFER);
-	int dstLength = qlz_compress(src, dst, tSrcSize, &state_compress);
+	int dstBufferSize = tSrcSize + COMPRESSION_BUFFER;
+	char* dst = malloc(dstBufferSize);
+	int dstLength = ZSTD_compress(dst, dstBufferSize, src, tSrcSize, 1);
 	dst = realloc(dst, dstLength);
 
 	free(src);
 	*tBuffer = dst;
 	tMem->mIsCompressed = 1;
+	tMem->mCompressedSize = dstLength;
 }
 
 static void decompressMemory(TextureMemory tMem, void** tBuffer) {
 	if (!tMem->mIsCompressed) {
 		return;
 	}
-
-	qlz_state_decompress state_decompress;
 	
 	char* src = *tBuffer;
-	size_t uncompressedLength = qlz_size_decompressed(src);
+	size_t uncompressedLength = ZSTD_getFrameContentSize(src, tMem->mCompressedSize);
 
 	char* dst = malloc(uncompressedLength);
-	int dstLength = qlz_decompress(src, dst, &state_decompress);
+	int dstLength = ZSTD_decompress(dst, uncompressedLength, src, tMem->mCompressedSize);
 	dst = realloc(dst, dstLength);
 
 	free(src);

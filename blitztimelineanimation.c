@@ -208,6 +208,9 @@ int playBlitzTimelineAnimation(int tEntityID, int tAnimation) {
 
 void stopBlitzTimelineAnimation(int tEntityID, int tAnimationID)
 {
+	(void)tEntityID;
+	(void)tAnimationID;
+	// TODO
 }
 
 void setBlitzTimelineAnimationCB(int tEntityID, int tAnimationID, void * tCB, void * tCaller)

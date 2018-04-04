@@ -1,4 +1,4 @@
-#include "tari/pvr.h"
+#include "prism/pvr.h"
 
 #include <kos.h>
 

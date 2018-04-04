@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifndef DREAMCAST
 #define fabs(x) ((x < 0) ? -x : x)
 // TODO: fix these math include problems
+#endif
 
 double randfrom(double tMin, double tMax) {
 	double range = (tMax - tMin); 

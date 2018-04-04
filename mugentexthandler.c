@@ -306,10 +306,10 @@ void addMugenFont(int tKey, char* tPath) {
 	}
 	else {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "%s", tPath);
+			sprintf(path, "assets/%s", tPath);
 		}
 		else {
-			sprintf(path, "font/%s", tPath);
+			sprintf(path, "assets/font/%s", tPath);
 		}
 	
 	}
