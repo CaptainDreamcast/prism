@@ -181,7 +181,7 @@ static void decompressMemory(TextureMemory tMem, void** tBuffer) {
 	}
 	
 	char* src = *tBuffer;
-	size_t uncompressedLength = ZSTD_getFrameContentSize(src, tMem->mCompressedSize);
+	size_t uncompressedLength = (size_t)ZSTD_getFrameContentSize(src, tMem->mCompressedSize);
 
 	char* dst = malloc(uncompressedLength);
 	int dstLength = ZSTD_decompress(dst, uncompressedLength, src, tMem->mCompressedSize);
@@ -384,9 +384,7 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 	logErrorHex(tData);
 	abortSystem();
 
-#ifdef DREAMCAST
-	return NULL; // TODO: fix unreachable code (Windows) / no return (DC) conflict
-#endif
+	return NULL; 
 }
 
 static void popMemoryStackInternal(MemoryListStack* tStack, FreeFunc tFunc) {

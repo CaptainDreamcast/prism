@@ -840,7 +840,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		texturePos.bottomRight.y = originalTexturePos.topLeft.y;
 	}
 
-	p = vecAdd(p, step->mDelta); // TODO: check if must be inverted
+	p = vecAdd2D(p, step->mDelta); // TODO: check if must be inverted
 
 	if (e->mHasCameraPositionReference) {
 		p = vecSub(p, *e->mCameraPositionReference);
@@ -879,8 +879,9 @@ static void drawSingleMugenAnimation(void* tCaller, void* tData) {
 	if (e->mIsInvisible) {
 		return;
 	}
-
-	if (!e->mHasSprite) return;
+	if (!e->mHasSprite) {
+		return;
+	}
 
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 
@@ -935,7 +936,6 @@ static void drawSingleMugenAnimation(void* tCaller, void* tData) {
 	caller.mAngle = angle;
 	caller.mCameraCenter = cameraCenter;
 	
-
 	list_map(&e->mSprite->mTextures, drawSingleMugenAnimationSpriteCB, &caller);
 }
 

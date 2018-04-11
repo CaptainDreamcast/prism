@@ -444,6 +444,8 @@ typedef struct {
 	double mTextBoxWidth;
 	Duration mBuildupDurationPerLetter;
 	Duration mBuildupNow;
+
+	int mIsVisible;
 } MugenText;
 
 static struct {
@@ -600,6 +602,8 @@ static void drawSingleText(void* tCaller, void* tData) {
 	(void)tCaller;
 
 	MugenText* e = tData;
+	if (!e->mIsVisible) return;
+
 	if (e->mFont->mType == MUGEN_FONT_TYPE_BITMAP) {
 		drawSingleBitmapText(e);
 	}
@@ -648,6 +652,8 @@ int addMugenText(char * tText, Position tPosition, int tFont)
 
 	e->mBuildupDurationPerLetter = INF;
 	e->mBuildupNow = 0;
+
+	e->mIsVisible = 1;
 
 	return int_map_push_back_owned(&gHandler.mHandledTexts, e);
 }
@@ -828,6 +834,12 @@ int isMugenTextBuiltUp(int tID)
 	return !strcmp(e->mText, e->mDisplayText);
 }
 
+void setMugenTextVisibility(int tID, int tIsVisible)
+{
+	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
+	e->mIsVisible = tIsVisible;
+}
+
 void changeMugenText(int tID, char * tText)
 {
 	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
@@ -865,6 +877,12 @@ Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 {
 	if (tIndex == 0) {
 		return COLOR_WHITE;
+	}
+	else if (tIndex == 1) {
+		return COLOR_RED;
+	}
+	else if (tIndex == 2) {
+		return COLOR_GREEN;
 	}
 	else if (tIndex == 4) {
 		return COLOR_CYAN;

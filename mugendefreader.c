@@ -68,7 +68,7 @@ static MugenDefToken* parseComment(Buffer* b, BufferPointer p) {
 	else return NULL;
 }
 
-static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char end) {
+static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char end, int tDoesCheckNesting) {
 	assert(*p == start);
 
 	int depth = 1;
@@ -79,7 +79,7 @@ static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char
 			logErrorString(p);
 			abortSystem();
 		}
-		depth += *p == start;
+		if(tDoesCheckNesting) depth += *p == start;
 		depth -= *p == end;
 	}
 
@@ -251,8 +251,7 @@ static MugenDefToken* gCurrentGroupToken;
 
 static MugenDefToken* parseGroup(Buffer* b, BufferPointer p) {
 	debugLog("Parse group.");
-
-	BufferPointer end = findEndOfToken(b, p, '[', ']');
+	BufferPointer end = findEndOfToken(b, p, '[', ']', 0);
 
 	char* val = makeMugenDefStringFromEndPoint(p, end);
 	MugenDefToken* groupToken = makeMugenDefToken(val);
@@ -314,6 +313,7 @@ static int isInterpolationStatement(Buffer* b, BufferPointer p) {
 }
 
 static int isTextStatement() {
+	if (!gCurrentGroupToken) return 0;
 	char* text = gCurrentGroupToken->mValue;
 
 	int ret = 0;
@@ -459,9 +459,8 @@ static void setStringElement(MugenDefScriptGroupElement* element, MugenDefToken*
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT;
 	
 	MugenDefScriptStringElement* e = allocMemory(sizeof(MugenDefScriptStringElement));
-	e->mString = allocMemory(strlen(t->mValue + 1) + 10);
-	strcpy(e->mString, t->mValue + 1);
-	e->mString[strlen(e->mString) - 1] = '\0';
+	e->mString = allocMemory(strlen(t->mValue) + 10);
+	strcpy(e->mString, t->mValue);
 	element->mData = e;
 
 	debugString(e->mString);
@@ -759,7 +758,8 @@ MugenDefScript loadMugenDefScript(char * tPath)
 
 MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer) {
 	BufferPointer p = getBufferPointer(tBuffer);
-
+	
+	gCurrentGroupToken = NULL;
 	debugLog("Parse file to tokens.");
 	MugenDefToken* root = parseRecursively(&tBuffer, p);
 
@@ -879,6 +879,8 @@ int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
 	return 1;
 }
 
+
+
 static void turnMugenDefVectorToString(char* tDst, MugenDefScriptVectorElement* tVectorElement) {
 	int i = 0;
 	char* pos = tDst;
@@ -889,12 +891,27 @@ static void turnMugenDefVectorToString(char* tDst, MugenDefScriptVectorElement* 
 	}
 }
 
-char * getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
+static void checkStringElementForQuotesAndReturnRaw(char* tRet, MugenDefScriptStringElement* tStringElement) {
+	int length = strlen(tStringElement->mString);
+	if (length && tStringElement->mString[0] == '"' && tStringElement->mString[length - 1] == '"') {
+		strcpy(tRet, tStringElement->mString + 1);
+		int newLength = strlen(tRet);
+		if (newLength) tRet[newLength - 1] = '\0';
+	}
+	else {
+		strcpy(tRet, tStringElement->mString);
+	}
+}
+
+
+char * getAllocatedMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
 {
 	char* ret = allocMemory(1024);
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
 		MugenDefScriptStringElement* stringElement = tElement->mData;
-		strcpy(ret, stringElement->mString);
+		if (tDoesReturnStringsRaw) strcpy(ret, stringElement->mString);
+		else checkStringElementForQuotesAndReturnRaw(ret, stringElement);
+
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
 		MugenDefScriptNumberElement* numberElement = tElement->mData;
@@ -914,6 +931,16 @@ char * getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement * 
 		abortSystem();
 	}
 	return ret;
+}
+
+char * getAllocatedMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement * tElement)
+{
+	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 1);
+}
+
+char * getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
+{
+	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 0);
 }
 
 int isMugenDefVariable(MugenDefScript * tScript, char * tGroupName, char * tVariableName)

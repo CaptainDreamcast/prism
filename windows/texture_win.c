@@ -180,6 +180,9 @@ TextureData loadTexture(char* tFileDir) {
 		logError("Unable to identify texture file type.");
 		logErrorString(fileExt);
 		abortSystem();
+		TextureData ret;
+		ret.mHasPalette = 0;
+		return ret;
 	}
 }
 
@@ -250,10 +253,10 @@ TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWid
 	int i;
 	for (i = 0; i < amount; i++) {
 		int pid = src[i];
-		data[i * 4 + 0] = colors[pid].a;
-		data[i * 4 + 1] = colors[pid].r;
-		data[i * 4 + 2] = colors[pid].g;
-		data[i * 4 + 3] = colors[pid].b;
+		data[i * 4 + 0] = colors[pid].r;
+		data[i * 4 + 1] = colors[pid].g;
+		data[i * 4 + 2] = colors[pid].b;
+		data[i * 4 + 3] = colors[pid].a;
 	}
 
 	Buffer newBuffer = makeBufferOwned(data, size);

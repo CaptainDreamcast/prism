@@ -6,14 +6,16 @@
 
 typedef struct {
 	ActorBlueprint mBP;
-	
+	ListIterator mListEntry;
+
+	int mID;
 	void* mData;
 	int mIsOwned;
-
 } Actor;
 
 static struct {
 	IntMap mActors;
+	List mSequentialActorList;
 	int mIsInitialized;
 } gData;
 
@@ -25,6 +27,7 @@ void setupActorHandler()
 	}
 
 	gData.mActors = new_int_map();
+	gData.mSequentialActorList = new_list();
 	gData.mIsInitialized = 1;
 }
 
@@ -34,6 +37,8 @@ static void unloadActor(Actor* e) {
 	if (e->mIsOwned) {
 		freeMemory(e->mData);
 	}
+
+	int_map_remove(&gData.mActors, e->mID);
 }
 
 static int removeActorCB(void* tCaller, void* tData) {
@@ -45,8 +50,9 @@ static int removeActorCB(void* tCaller, void* tData) {
 
 void shutdownActorHandler()
 {
-	int_map_remove_predicate(&gData.mActors, removeActorCB, NULL);
+	list_remove_predicate(&gData.mSequentialActorList, removeActorCB, NULL);
 	delete_int_map(&gData.mActors);
+	delete_list(&gData.mSequentialActorList);
 	gData.mIsInitialized = 0;
 }
 
@@ -66,7 +72,7 @@ static int updateSingleActor(void* tCaller, void* tData) {
 
 void updateActorHandler()
 {
-	int_map_remove_predicate(&gData.mActors, updateSingleActor, NULL);
+	list_remove_predicate(&gData.mSequentialActorList, updateSingleActor, NULL);
 }
 
 static void drawSingleActor(void* tCaller, void* tData) {
@@ -78,7 +84,7 @@ static void drawSingleActor(void* tCaller, void* tData) {
 
 void drawActorHandler()
 {
-	int_map_map(&gData.mActors, drawSingleActor, NULL);
+	list_map(&gData.mSequentialActorList, drawSingleActor, NULL);
 }
 
 int instantiateActor(ActorBlueprint tBP)
@@ -95,7 +101,11 @@ int instantiateActorWithData(ActorBlueprint tBP, void * tData, int tIsOwned)
 	
 	if (e->mBP.mLoad) e->mBP.mLoad(e->mData);
 
-	return int_map_push_back_owned(&gData.mActors, e);
+	list_push_back_owned(&gData.mSequentialActorList, e);
+	e->mListEntry = list_iterator_end(&gData.mSequentialActorList);
+
+	e->mID = int_map_push_back(&gData.mActors, e);
+	return e->mID;
 }
 
 void performOnActor(int tID, ActorInteractionFunction tFunc, void * tCaller)
@@ -108,7 +118,7 @@ void removeActor(int tID)
 {
 	Actor* e = int_map_get(&gData.mActors, tID);
 	unloadActor(e);
-	int_map_remove(&gData.mActors, tID);
+	list_iterator_remove(&gData.mSequentialActorList, e->mListEntry);
 }
 
 void * getActorData(int tID)

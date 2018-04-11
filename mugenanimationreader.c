@@ -389,8 +389,11 @@ static int isAnimationGroup(MugenDefScriptGroup* tGroup) {
 	int items = sscanf(tGroup->mName, "%s %s %s", text1, text2, val);
 
 	if (items != 3) return 0;
-	if (strcmp("Begin", text1)) return 0;
-	if (strcmp("Action", text2)) return 0;
+
+	turnStringLowercase(text1);
+	turnStringLowercase(text2);
+	if (strcmp("begin", text1)) return 0;
+	if (strcmp("action", text2)) return 0;
 
 	return 1;
 }
@@ -424,26 +427,32 @@ static void loadAnimationFileFromDefScript(MugenAnimations* tAnimations, MugenDe
 
 }
 
-MugenAnimations loadMugenAnimationFile(char * tPath)
-{
+static MugenAnimations createEmptyMugenAnimationFile() {
 	MugenAnimations ret;
 	ret.mAnimations = new_int_map();
+	int_map_push_owned(&ret.mAnimations, -1, createOneFrameMugenAnimationForSprite(-1, -1));
+	return ret;
+}
+
+MugenAnimations loadMugenAnimationFile(char * tPath)
+{
+	MugenAnimations ret = createEmptyMugenAnimationFile();
 
 	MugenDefScript defScript = loadMugenDefScript(tPath);
 
 	loadAnimationFileFromDefScript(&ret, &defScript);
 
 	unloadMugenDefScript(defScript);
-
+	
 	return ret;
 }
 
 MugenAnimation* getMugenAnimation(MugenAnimations * tAnimations, int i)
 {
 	if (!int_map_contains(&tAnimations->mAnimations, i)) {
-		logWarning("Could not load animation. Defaulting to 0.");
+		logWarning("Could not load animation. Defaulting to empty.");
 		logWarningInteger(i);
-		return int_map_get(&tAnimations->mAnimations, 0);
+		return int_map_get(&tAnimations->mAnimations, -1);
 	}
 
 	return int_map_get(&tAnimations->mAnimations, i);

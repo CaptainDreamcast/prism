@@ -41,6 +41,7 @@ int list_size(List* tList);
 List new_list();
 void delete_list(List* tList);
 ListIterator list_iterator_begin(List* tList);
+ListIterator list_iterator_end(List* tList);
 void* list_iterator_get(ListIterator tIterator);
 void list_iterator_increase(ListIterator* tIterator);
 void list_iterator_remove(List* tList, ListIterator tIterator);

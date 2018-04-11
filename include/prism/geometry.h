@@ -54,6 +54,10 @@ GeoRectangle makeGeoRectangle(double x, double y, double w, double h);
 Vector3DI vecAddI(Vector3DI v1, Vector3DI v2);
 int vecEqualsI(Vector3DI v1, Vector3DI v2);
 
+double vecLength2D(Vector3D v);
+Vector3D vecAdd2D(Vector3D v1, Vector3D v2);
+Vector3D vecSub2D(Vector3D v1, Vector3D v2);
+
 double getAngleFromDirection(Vector3D tDirection);
 Vector3D getDirectionFromAngleZ(double tAngle);
 double degreesToRadians(double tDegrees);

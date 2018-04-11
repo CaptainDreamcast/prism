@@ -750,7 +750,6 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer 
 
 	int amount = 256;
 	int i;
-
 	palette[0].a = palette[0].r = palette[0].g = palette[0].b = 0;
 	for (i = 1; i < amount; i++) {
 		palette[i].a = 0xFF;

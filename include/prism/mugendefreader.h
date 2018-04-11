@@ -64,6 +64,7 @@ char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, char* tGroupNa
 int isMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 char* getAllocatedMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
+char* getAllocatedMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement* tElement);
 char* getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
 
 int isMugenDefVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);

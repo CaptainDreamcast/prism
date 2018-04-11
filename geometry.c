@@ -151,6 +151,25 @@ int vecEqualsI(Vector3DI v1, Vector3DI v2) {
 	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
 }
 
+double vecLength2D(Vector3D v)
+{
+	return vecLength(makePosition(v.x, v.y, 0));
+}
+
+Vector3D vecAdd2D(Vector3D v1, Vector3D v2)
+{
+	v1.x += v2.x;
+	v1.y += v2.y;
+	return v1;
+}
+
+Vector3D vecSub2D(Vector3D v1, Vector3D v2)
+{
+	v1.x -= v2.x;
+	v1.y -= v2.y;
+	return v1;
+}
+
 double getAngleFromDirection(Vector3D tDirection) {
 	return -fatan2(tDirection.y, tDirection.x) + M_PI;
 }

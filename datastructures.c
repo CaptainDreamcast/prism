@@ -209,6 +209,11 @@ ListIterator list_iterator_begin(List* tList) {
 	return tList->mFirst;
 }
 
+ListIterator list_iterator_end(List * tList)
+{
+	return tList->mLast;
+}
+
 void* list_iterator_get(ListIterator tIterator) {
 	return tIterator->mData;
 }
