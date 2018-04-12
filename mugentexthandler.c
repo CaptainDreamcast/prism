@@ -631,6 +631,23 @@ ActorBlueprint MugenTextHandler = {
 	.mDraw = drawMugenTextHandler,
 };
 
+void drawMugenText(char* tText, Position tPosition, int tFont) {
+	MugenText textData;
+	strcpy(textData.mText, tText);
+	strcpy(textData.mDisplayText, tText);
+	textData.mPosition = tPosition;
+	textData.mFont = int_map_get(&gData.mFonts, tFont);
+	textData.mR = textData.mG = textData.mB = 1;
+	textData.mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
+	textData.mRectangle = makeGeoRectangle(-INF / 2, -INF / 2, INF, INF);
+	textData.mTextBoxWidth = INF;
+
+	textData.mBuildupDurationPerLetter = INF;
+	textData.mBuildupNow = 0;
+
+	textData.mIsVisible = 1;
+	drawSingleText(NULL, &textData);
+}
 
 int addMugenText(char * tText, Position tPosition, int tFont)
 {

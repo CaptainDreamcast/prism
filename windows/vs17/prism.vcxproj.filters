@@ -205,6 +205,12 @@
     <ClCompile Include="..\..\wrappercomponenthandler.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\thread_win.c">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\loadingscreen.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -413,6 +419,12 @@
       <Filter>hdr</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\prism\blitz.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\thread.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\loadingscreen.h">
       <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>

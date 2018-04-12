@@ -22,6 +22,7 @@ int getMugenFontSpacingY(int tKey);
 
 extern ActorBlueprint MugenTextHandler;
 
+void drawMugenText(char* tText, Position tPosition, int tFont);
 int addMugenText(char* tText, Position tPosition, int tFont);
 void removeMugenText(int tID);
 void setMugenTextFont(int tID, int tFont);

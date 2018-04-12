@@ -39,6 +39,8 @@
 #include "prism/blitzcollision.h"
 #include "prism/blitzparticles.h"
 #include "prism/wrappercomponenthandler.h"
+#include "prism/thread.h"
+#include "prism/loadingscreen.h"
 
 static struct {
 	int mIsAborted;
@@ -81,6 +83,8 @@ static void initBasicSystems() {
 	initSoundEffects();
 	logg("Initiating screen effects.");
 	initScreenEffects();
+	logg("Initiating threading.");
+	initThreading();
 
 	gData.mGlobalTimeDilatation = 1;
 }
@@ -119,6 +123,7 @@ void initPrismWrapperWithConfigFile(char* tPath) {
 
 
 void shutdownPrismWrapper() {
+	shutdownThreading();
 	shutdownSound();
 	shutdownMemoryHandler();
 	shutdownSystem();
@@ -213,10 +218,14 @@ static void loadScreen(Screen* tScreen) {
 	resetInputForAllControllers();
 	enableDrawing();	
 
+	logg("Start loading screen");
+	startLoadingScreen();
 	if (tScreen->mLoad) {
 		logg("Loading user screen data");
 		tScreen->mLoad();
 	}
+	logg("End loading screen");
+	endLoadingScreen();
 }
 
 static void callBetweenScreensCB() {
