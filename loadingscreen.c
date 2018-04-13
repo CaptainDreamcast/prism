@@ -33,6 +33,7 @@ static void loadScreenLoop() {
 
 void startLoadingScreen(int* tHasFinishedLoadingReference)
 {
+	setScreenBackgroundColorRGB(0, 0, 0);
 	gData.mTicks = 0;
 	while(!(*tHasFinishedLoadingReference)) {
 		loadScreenLoop();
