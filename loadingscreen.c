@@ -4,43 +4,39 @@
 #include "prism/drawing.h"
 #include "prism/mugentexthandler.h"
 #include "prism/system.h"
+#include "prism/screeneffect.h"
 
 static struct {
-	int mThreadID;
-	int mIsActive;
-	Semaphore mRunning;
+	int mTicks;
 } gData;
+
+static void drawLoadingText() {
+	char text[100];
+	strcpy(text, "Loading");
+	int pos = strlen(text);
+	int i;
+	for(i = 0; i < gData.mTicks; i++) text[pos++] = '.';
+	text[pos] = '\0';
+	drawMugenText(text, makePosition(20, 20, 10), 1);
+
+	gData.mTicks = (gData.mTicks+1) % 10;
+}
 
 static void loadScreenLoop() {
 
 	waitForScreen();
 	startDrawing();
-	drawMugenText("Loading...", makePosition(20, 20, 10), 1);
+	drawLoadingText();
 	stopDrawing();
 }
 
-static void loadScreenThread(void* tCaller) {
-	(void)tCaller;
-	
-	while (gData.mIsActive) {
+
+void startLoadingScreen(int* tHasFinishedLoadingReference)
+{
+	gData.mTicks = 0;
+	while(!(*tHasFinishedLoadingReference)) {
 		loadScreenLoop();
 	}
-
-	releaseSemaphore(gData.mRunning);
 }
 
-void startLoadingScreen()
-{
-	if (!isOnDreamcast()) return; // TODO
-	gData.mIsActive = 1;
-	gData.mRunning = createSemaphore(0);
-	gData.mThreadID = startThread(loadScreenThread, NULL);
-}
 
-void endLoadingScreen()
-{
-	if (!isOnDreamcast()) return; // TODO
-
-	gData.mIsActive = 0;
-	lockSemaphore(gData.mRunning);
-}

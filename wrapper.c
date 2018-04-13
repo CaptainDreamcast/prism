@@ -48,6 +48,7 @@ static struct {
 	Screen* mScreen;
 	Screen* mTitleScreen;
 	int mIsPaused;
+	int mHasFinishedLoading;
 
 	double mUpdateTimeCounter;
 	double mGlobalTimeDilatation;
@@ -152,7 +153,16 @@ int isWrapperPaused()
 	return gData.mIsPaused;
 }
 
+static void loadingThreadFunction(void* tCaller) {
+	Screen* tScreen = tCaller;
 
+	if (tScreen->mLoad) {
+		logg("Loading user screen data");
+		tScreen->mLoad();
+	}
+
+	gData.mHasFinishedLoading = 1;
+}
 
 static void loadScreen(Screen* tScreen) {
 	gData.mScreen = tScreen;
@@ -162,6 +172,9 @@ static void loadScreen(Screen* tScreen) {
 	logg("Pushing memory stacks");
 	pushMemoryStack();
 	pushTextureMemoryStack();
+
+
+
 	logg("Setting up wrapper component handler");
 	setupWrapperComponentHandler();
 	logg("Setting up Timer");
@@ -216,16 +229,20 @@ static void loadScreen(Screen* tScreen) {
 
 	logg("Setting up input flanks");
 	resetInputForAllControllers();
-	enableDrawing();	
 
-	logg("Start loading screen");
-	startLoadingScreen();
-	if (tScreen->mLoad) {
-		logg("Loading user screen data");
-		tScreen->mLoad();
+	gData.mHasFinishedLoading = 0;
+	// TODO
+	if(isOnDreamcast()) {	
+		startThread(loadingThreadFunction, tScreen);
+		enableDrawing();	
+		logg("Start loading screen");
+		startLoadingScreen(&gData.mHasFinishedLoading);
+		logg("End loading screen");
+	} else {
+		loadingThreadFunction(tScreen);
 	}
-	logg("End loading screen");
-	endLoadingScreen();
+
+	
 }
 
 static void callBetweenScreensCB() {

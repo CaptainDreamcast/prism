@@ -1,4 +1,4 @@
 #pragma once
 
-void startLoadingScreen();
-void endLoadingScreen();
+void startLoadingScreen(int* tHasFinishedLoadingReference);
+

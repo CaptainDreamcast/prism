@@ -576,6 +576,7 @@ static void drawSingleElecbyteText(MugenText* e) {
 	MugenElecbyteFont* elecbyteFont = font->mData;
 	int textLength = strlen(e->mText);
 
+	//printf("draw %s\n", e->mText);
 	int i;
 	Position p = vecAdd(e->mPosition, makePosition(font->mOffset.x, font->mOffset.y, 0));
 	for (i = 0; i < textLength; i++) {
