@@ -355,22 +355,20 @@ static SubImageBuffer* getSingleAllocatedBufferFromSource(Buffer b, int x, int y
 	char* dst = allocMemory(dstSize*tBytesPerPixel);
 	char* src = b.mData;
 
-	int i, j, k;
+	int j;
 	for (j = 0; j < dy; j++) {
-		for (i = 0; i < dx; i++) {
-			assert(get2DBufferIndex(i, j, dx) < (uint32_t)dstSize);
-			if (x + i >= tWidth || y + j >= tHeight) {
-				for (k = 0; k < tBytesPerPixel; k++) {
-					dst[get2DBufferIndex(i, j, dx)*tBytesPerPixel + k] = 0;
-				}
-			}
-			else {
-				assert(get2DBufferIndex(x + i, y + j, tWidth)*tBytesPerPixel < (uint32_t)b.mLength);
-				for (k = 0; k < tBytesPerPixel; k++) {
-					dst[get2DBufferIndex(i, j, dx)*tBytesPerPixel + k] = src[get2DBufferIndex(x + i, y + j, tWidth)*tBytesPerPixel + k];
-				}
-			}
-		}
+		int startIndexDst = get2DBufferIndex(0, j, dx)*tBytesPerPixel;
+		int startIndexSrc = get2DBufferIndex(x, y + j, tWidth)*tBytesPerPixel;
+
+		int rowSrcSize, rowBufferSize;
+		if (y + j >= tHeight) rowSrcSize = 0;
+		else rowSrcSize = min(dx, tWidth - x);
+		rowBufferSize = (dx - rowSrcSize);
+		rowSrcSize *= tBytesPerPixel;
+		rowBufferSize *= tBytesPerPixel;
+
+		memcpy(dst + startIndexDst, src + startIndexSrc, rowSrcSize);
+		memset(dst + startIndexDst + rowSrcSize, 0, rowBufferSize);
 	}
 
 	SubImageBuffer* ret = allocMemory(sizeof(SubImageBuffer));
