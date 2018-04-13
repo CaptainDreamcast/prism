@@ -15,6 +15,28 @@ typedef struct MugenDefToken_t {
 
 } MugenDefToken;
 
+static struct {
+	MugenDefToken* mRoot;
+	MugenDefToken* mCurrent;
+	int mIsOver;
+} gTokenReader;
+
+static void setTokenReaderOver() {
+	gTokenReader.mIsOver = 1;
+}
+
+static void addTokenToTokenReader(MugenDefToken* tToken) {
+	if (!gTokenReader.mRoot) gTokenReader.mRoot = tToken;
+
+	if (!gTokenReader.mCurrent) {
+		gTokenReader.mCurrent = tToken;
+	}
+	else {
+		gTokenReader.mCurrent->mNext = tToken;
+		gTokenReader.mCurrent = tToken;
+	}
+}
+
 static MugenDefToken* makeMugenDefToken(char* tValue) {
 	MugenDefToken* e = allocMemory(sizeof(MugenDefToken));
 	e->mValue = allocMemory(strlen(tValue) + 10);
@@ -46,8 +68,6 @@ static int isLinebreak(BufferPointer p) {
 	return *p == '\n' || *p == 0xD || *p == 0xA;
 }
 
-static MugenDefToken* parseRecursively(Buffer* b, BufferPointer p);
-
 static int increasePointerToNextLine(Buffer* b, BufferPointer* p) {
 	while (!isLinebreak(*p)) {
 		if (increaseAndCheckIfOver(b, p)) return 1;
@@ -60,12 +80,11 @@ static int increasePointerToNextLine(Buffer* b, BufferPointer* p) {
 	return 0;
 }
 
-static MugenDefToken* parseComment(Buffer* b, BufferPointer p) {
+static void parseComment(Buffer* b, BufferPointer* p) {
 	
-	if (!increasePointerToNextLine(b, &p)) {
-		return parseRecursively(b, p);
+	if (increasePointerToNextLine(b, p)) {
+		setTokenReaderOver();
 	}
-	else return NULL;
 }
 
 static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char end, int tDoesCheckNesting) {
@@ -139,14 +158,13 @@ static BufferPointer removeCommentFromToken(BufferPointer s, BufferPointer e) {
 	return e;
 }
 
-static MugenDefToken* parseAssignment(Buffer* b, BufferPointer p, char tAssignmentToken) {
+static void parseAssignment(Buffer* b, BufferPointer* p, char tAssignmentToken) {
 	debugLog("Parse assignment token.");
 
-	BufferPointer equal = getNextDefCharPosition(b, p, tAssignmentToken);
+	BufferPointer equal = getNextDefCharPosition(b, *p, tAssignmentToken);
 	MugenDefToken* equalToken = makeMugenDefToken("=");
 
-
-	BufferPointer start = p;
+	BufferPointer start = *p;
 	BufferPointer end = equal - 1;
 	moveBufferPointerForward(b, &start);
 	moveBufferPointerBack(b, &end);
@@ -172,12 +190,13 @@ static MugenDefToken* parseAssignment(Buffer* b, BufferPointer p, char tAssignme
 	debugString(variableToken->mValue);
 	debugString(valueToken->mValue);
 
-	equalToken->mNext = variableToken;
-	variableToken->mNext = valueToken;
-	if (!increasePointerToNextLine(b, &p)) {
-		valueToken->mNext = parseRecursively(b, p);
+	addTokenToTokenReader(equalToken);
+	addTokenToTokenReader(variableToken);
+	addTokenToTokenReader(valueToken);
+
+	if (increasePointerToNextLine(b, p)) {
+		setTokenReaderOver();
 	}
-	return equalToken;
 }
 
 
@@ -195,76 +214,74 @@ char* getLineAsAllocatedString(Buffer* b, BufferPointer p) {
 	return text;
 }
 
-static MugenDefToken* parseVectorStatement(Buffer* b, BufferPointer p) {
+static void parseVectorStatement(Buffer* b, BufferPointer* p) {
 
 	MugenDefToken* isVectorToken = makeMugenDefToken("vector_statement");
 
-	char* text = getLineAsAllocatedString(b, p);
+	char* text = getLineAsAllocatedString(b, *p);
 	MugenDefToken* valueToken = makeMugenDefToken(text);
 	destroyMugenDefString(text);
-	isVectorToken->mNext = valueToken;
-	
-	if (!increasePointerToNextLine(b, &p)) {
-		valueToken->mNext = parseRecursively(b, p);
-	}
 
-	return isVectorToken;
+	addTokenToTokenReader(isVectorToken);
+	addTokenToTokenReader(valueToken);
+
+	if (increasePointerToNextLine(b, p)) {
+		setTokenReaderOver();
+	}
 }
 
-static MugenDefToken* parseLoopStartStatement(Buffer* b, BufferPointer p) {
+static void parseLoopStartStatement(Buffer* b, BufferPointer* p) {
 
 	MugenDefToken* loopStartToken = makeMugenDefToken("Loopstart");
+	addTokenToTokenReader(loopStartToken);
 
-	if (!increasePointerToNextLine(b, &p)) {
-		loopStartToken->mNext = parseRecursively(b, p);
+	if (increasePointerToNextLine(b, p)) {
+		setTokenReaderOver();
 	}
-
-	return loopStartToken;
 }
 
-static MugenDefToken* parseInterpolationStatement(Buffer* b, BufferPointer p) {
+static void parseInterpolationStatement(Buffer* b, BufferPointer* p) {
 
-	char* text = getLineAsAllocatedString(b, p);
+	char* text = getLineAsAllocatedString(b, *p);
 	MugenDefToken* interpolationToken = makeMugenDefToken(text);
 	destroyMugenDefString(text);
 
-	if (!increasePointerToNextLine(b, &p)) {
-		interpolationToken->mNext = parseRecursively(b, p);
-	}
+	addTokenToTokenReader(interpolationToken);
 
-	return interpolationToken;
+	if (increasePointerToNextLine(b, p)) {
+		setTokenReaderOver();
+	}
 }
 
-static MugenDefToken* parseTextStatement(Buffer* b, BufferPointer p) {
-	char* text = getLineAsAllocatedString(b, p);
+static void parseTextStatement(Buffer* b, BufferPointer* p) {
+	char* text = getLineAsAllocatedString(b, *p);
 	MugenDefToken* textToken = makeMugenDefToken(text);
 	destroyMugenDefString(text);
+	addTokenToTokenReader(textToken);
 
-	if (!increasePointerToNextLine(b, &p)) {
-		textToken->mNext = parseRecursively(b, p);
+	if (increasePointerToNextLine(b, p)) {
+		setTokenReaderOver();
 	}
-
-	return textToken;
 }
 
 static MugenDefToken* gCurrentGroupToken;
 
-static MugenDefToken* parseGroup(Buffer* b, BufferPointer p) {
+static void parseGroup(Buffer* b, BufferPointer* p) {
 	debugLog("Parse group.");
-	BufferPointer end = findEndOfToken(b, p, '[', ']', 0);
+	BufferPointer end = findEndOfToken(b, *p, '[', ']', 0);
 
-	char* val = makeMugenDefStringFromEndPoint(p, end);
+	char* val = makeMugenDefStringFromEndPoint(*p, end);
 	MugenDefToken* groupToken = makeMugenDefToken(val);
 	destroyMugenDefString(val);
 
 	gCurrentGroupToken = groupToken;
+	addTokenToTokenReader(groupToken);
 
 	debugString(groupToken->mValue);
 
-	if (!increasePointerToNextLine(b, &p)) {
-		groupToken->mNext = parseRecursively(b, p);
+	if (increasePointerToNextLine(b, p)) {
+		setTokenReaderOver();
 	}
-	return groupToken;
 }
 
 static int isGroup(BufferPointer p) {
@@ -325,23 +342,44 @@ static int isTextStatement() {
 	return ret;
 }
 
-static MugenDefToken* parseRecursively(Buffer* b, BufferPointer p) {
-	while (isEmpty(p) || isLinebreak(p)) {
-		if (increaseAndCheckIfOver(b, &p)) return NULL;
+static void parseSingleToken(Buffer* b, BufferPointer* p) {
+	while (isEmpty(*p) || isLinebreak(*p)) {
+		if (increaseAndCheckIfOver(b, p)) {
+			setTokenReaderOver();
+			return;
+		}
 	}
 
-	if (isComment(p)) return parseComment(b, p);
-	else if (isGroup(p)) return parseGroup(b, p);
-	else if (isTextStatement()) return parseTextStatement(b, p);
-	else if(isAssignment(b, p, '=')) return parseAssignment(b, p, '=');
-	else if(isAssignment(b, p, ':')) return parseAssignment(b, p, ':');
-	else if (isVectorStatement(b, p)) return parseVectorStatement(b, p);
-	else if (isLoopStartStatement(b, p)) return parseLoopStartStatement(b, p);
-	else if (isInterpolationStatement(b, p)) return parseInterpolationStatement(b, p);
+	if (isComment(*p)) parseComment(b, p);
+	else if (isGroup(*p)) parseGroup(b, p);
+	else if (isTextStatement()) parseTextStatement(b, p);
+	else if(isAssignment(b, *p, '=')) parseAssignment(b, p, '=');
+	else if(isAssignment(b, *p, ':')) parseAssignment(b, p, ':');
+	else if (isVectorStatement(b, *p)) parseVectorStatement(b, p);
+	else if (isLoopStartStatement(b, *p)) parseLoopStartStatement(b, p);
+	else if (isInterpolationStatement(b, *p)) parseInterpolationStatement(b, p);
 	else {
-		logWarningFormat("Unable to parse token:\n%.100s\n", (char*)p);
-		return parseComment(b, p);
+		logWarningFormat("Unable to parse token:\n%.100s\n", (char*)(*p));
+		parseComment(b, p);
+		return;
 	}
+}
+
+static void resetTokenReader() {
+	gTokenReader.mRoot = NULL;
+	gTokenReader.mCurrent = NULL;
+	gTokenReader.mIsOver = 0;
+}
+
+static MugenDefToken* parseTokens(Buffer* b) {
+	BufferPointer p = getBufferPointer(*b);
+
+	resetTokenReader();
+	while (!gTokenReader.mIsOver) {
+		parseSingleToken(b, &p);
+	}
+
+	return gTokenReader.mRoot;
 }
 
 static MugenDefScript makeEmptyMugenDefScript() {
@@ -757,11 +795,9 @@ MugenDefScript loadMugenDefScript(char * tPath)
 }
 
 MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer) {
-	BufferPointer p = getBufferPointer(tBuffer);
-	
 	gCurrentGroupToken = NULL;
 	debugLog("Parse file to tokens.");
-	MugenDefToken* root = parseRecursively(&tBuffer, p);
+	MugenDefToken* root = parseTokens(&tBuffer);
 
 	debugLog("Parse tokens to script.");
 	MugenDefScript d = makeEmptyMugenDefScript();
