@@ -18,6 +18,7 @@ typedef struct MugenDefToken_t {
 static struct {
 	MugenDefToken* mRoot;
 	MugenDefToken* mCurrent;
+	MugenDefToken* mCurrentGroupToken;
 	int mIsOver;
 } gTokenReader;
 
@@ -264,8 +265,6 @@ static void parseTextStatement(Buffer* b, BufferPointer* p) {
 	}
 }
 
-static MugenDefToken* gCurrentGroupToken;
-
 static void parseGroup(Buffer* b, BufferPointer* p) {
 	debugLog("Parse group.");
 	BufferPointer end = findEndOfToken(b, *p, '[', ']', 0);
@@ -274,7 +273,7 @@ static void parseGroup(Buffer* b, BufferPointer* p) {
 	MugenDefToken* groupToken = makeMugenDefToken(val);
 	destroyMugenDefString(val);
 
-	gCurrentGroupToken = groupToken;
+	gTokenReader.mCurrentGroupToken = groupToken;
 	addTokenToTokenReader(groupToken);
 
 	debugString(groupToken->mValue);
@@ -330,8 +329,8 @@ static int isInterpolationStatement(Buffer* b, BufferPointer p) {
 }
 
 static int isTextStatement() {
-	if (!gCurrentGroupToken) return 0;
-	char* text = gCurrentGroupToken->mValue;
+	if (!gTokenReader.mCurrentGroupToken) return 0;
+	char* text = gTokenReader.mCurrentGroupToken->mValue;
 
 	int ret = 0;
 	ret |= !strcmp("[Infobox Text]", text);
@@ -368,6 +367,7 @@ static void parseSingleToken(Buffer* b, BufferPointer* p) {
 static void resetTokenReader() {
 	gTokenReader.mRoot = NULL;
 	gTokenReader.mCurrent = NULL;
+	gTokenReader.mCurrentGroupToken = NULL;
 	gTokenReader.mIsOver = 0;
 }
 
@@ -795,7 +795,6 @@ MugenDefScript loadMugenDefScript(char * tPath)
 }
 
 MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer) {
-	gCurrentGroupToken = NULL;
 	debugLog("Parse file to tokens.");
 	MugenDefToken* root = parseTokens(&tBuffer);
 
