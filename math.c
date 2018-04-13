@@ -187,9 +187,6 @@ Matrix4D createRotationZMatrix4D(double tAngle)
 
 Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, double tUp, double tBottom, double tNear, double tFar)
 {
-	(void)tNear;
-	(void)tFar;
-
 	Matrix4D ret;
 	ret.m[0][0] = 2 / (tRight - tLeft);
 	ret.m[0][1] = 0;
@@ -197,18 +194,18 @@ Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, doubl
 	ret.m[0][3] = 0;
 
 	ret.m[1][0] = 0;
-	ret.m[1][1] = 2 / (tBottom - tUp);
+	ret.m[1][1] = 2 / (tUp - tBottom);
 	ret.m[1][2] = 0;
 	ret.m[1][3] = 0;
 
 	ret.m[2][0] = 0;
 	ret.m[2][1] = 0;
-	ret.m[2][2] = -1;
+	ret.m[2][2] = -2 / (tFar - tNear);
 	ret.m[2][3] = 0;
 
-	ret.m[3][0] = -1;
-	ret.m[3][1] = 1;
-	ret.m[3][2] = 0;
+	ret.m[3][0] = -((tRight + tLeft) / (tRight - tLeft));
+	ret.m[3][1] = -((tUp + tBottom) / (tUp - tBottom));
+	ret.m[3][2] = -((tFar + tNear) / (tFar - tNear));
 	ret.m[3][3] = 1;
 
 	return ret;

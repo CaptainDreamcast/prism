@@ -296,7 +296,6 @@ static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double
 }
 
 static void drawOpenGLTexture(GLuint tTextureID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
-
 	Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
 	float matrix[4][4] =
@@ -616,7 +615,10 @@ void setDrawingParametersToIdentity() {
 	setDrawingTransparency(1.0);
 	setDrawingBlendType(BLEND_TYPE_NORMAL);
 
-	gData.mTransformationMatrix = createOrthographicProjectionMatrix4D(0, 640, 480, 0, 0, 1);
+	ScreenSize sz = getScreenSize();
+	Vector3D realScreenSize = makePosition(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
+	gData.mTransformationMatrix = createOrthographicProjectionMatrix4D(0, realScreenSize.x, 0, realScreenSize.y, 0, 100);
+	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(makePosition(0, realScreenSize.y - gOpenGLData.mScreenScale.y*sz.y, 0)));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createScaleMatrix4D(makePosition(gOpenGLData.mScreenScale.x, gOpenGLData.mScreenScale.y, 1)));
 }
 
@@ -725,6 +727,10 @@ void enableDrawing() {
 void setDrawingScreenScale(double tScaleX, double tScaleY) {
 
 	gOpenGLData.mScreenScale = makePosition(tScaleX, tScaleY, 1);
+
+	ScreenSize sz = getScreenSize();
+	Vector3D realScreenSize = makePosition(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
+	glViewport(0, 0, realScreenSize.x, realScreenSize.y);
 }
 
 void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
