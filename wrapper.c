@@ -229,12 +229,12 @@ static void loadScreen(Screen* tScreen) {
 
 	logg("Setting up input flanks");
 	resetInputForAllControllers();
+	enableDrawing();
 
 	gData.mHasFinishedLoading = 0;
 	// TODO
 	if(isOnDreamcast()) {	
 		startThread(loadingThreadFunction, tScreen);
-		enableDrawing();	
 		logg("Start loading screen");
 		startLoadingScreen(&gData.mHasFinishedLoading);
 		logg("End loading screen");
