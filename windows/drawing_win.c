@@ -730,7 +730,7 @@ void setDrawingScreenScale(double tScaleX, double tScaleY) {
 
 	ScreenSize sz = getScreenSize();
 	Vector3D realScreenSize = makePosition(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
-	glViewport(0, 0, realScreenSize.x, realScreenSize.y);
+	glViewport(0, 0, (GLsizei)realScreenSize.x, (GLsizei)realScreenSize.y);
 }
 
 void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
