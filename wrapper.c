@@ -232,8 +232,8 @@ static void loadScreen(Screen* tScreen) {
 	enableDrawing();
 
 	gData.mHasFinishedLoading = 0;
-	// TODO
-	if(isOnDreamcast()) {	
+	int hasLoadingScreen = 0;// TODO
+	if(hasLoadingScreen) {	
 		startThread(loadingThreadFunction, tScreen);
 		logg("Start loading screen");
 		startLoadingScreen(&gData.mHasFinishedLoading);

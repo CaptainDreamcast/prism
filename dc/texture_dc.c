@@ -122,6 +122,21 @@ static Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
     return makeBufferOwned(vtex, tBuffer.mLength);
 }
 
+TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight) {
+	Buffer twiddledBuffer = twiddleTextureBuffer16(b, tWidth, tHeight);	
+
+	TextureData returnData;
+	returnData.mHasPalette = 0;
+	returnData.mTextureSize.x = tWidth;
+	returnData.mTextureSize.y = tHeight;
+
+ 	returnData.mTexture = allocTextureMemory(twiddledBuffer.mLength);
+  	sq_cpy(returnData.mTexture->mData, twiddledBuffer.mData, twiddledBuffer.mLength);
+
+	freeBuffer(twiddledBuffer);
+	return returnData;
+}
+
 TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 	Buffer argb16Buffer = turnARGB32BufferIntoARGB16Buffer(b);
 	Buffer twiddledBuffer = twiddleTextureBuffer16(argb16Buffer, tWidth, tHeight);	
