@@ -27,6 +27,7 @@ typedef void* TruetypeFont;
 
 TextureData loadTexturePKG(char tFileDir[]);
 TextureData loadTexture(char tFileDir[]);
+TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight);
 TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight);
 TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight);
 TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight);

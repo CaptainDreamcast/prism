@@ -156,8 +156,36 @@ static uint32_t get2DBufferIndex(uint32_t i, uint32_t j, uint32_t w) {
 	return j * w + i;
 }
 
-static TextureData loadTextureFromPalettedImageData1bpp(Buffer tPCXImageBuffer, Buffer tPaletteBuffer, int w, int h) {
-	uint8_t* output = allocMemory(w*h*4);
+static TextureData loadTextureFromPalettedImageData1bppTo16ARGB(Buffer tPCXImageBuffer, Buffer tPaletteBuffer, int w, int h) {
+	uint8_t* output = allocMemory(w*h * 2);
+	uint8_t* img = (uint8_t*)tPCXImageBuffer.mData;
+	uint8_t* pal = (uint8_t*)tPaletteBuffer.mData;
+
+	int i, j;
+	for (j = 0; j < h; j++) {
+		for (i = 0; i < w; i++) {
+			uint8_t pid = img[get2DBufferIndex(i, j, w)];
+			uint8_t a = ((uint8_t)(pid == 0 ? 0 : 0xFF)) >> 4;
+			uint8_t r = ((uint8_t)pal[pid * 3 + 0]) >> 4;
+			uint8_t g = ((uint8_t)pal[pid * 3 + 1]) >> 4;
+			uint8_t b = ((uint8_t)pal[pid * 3 + 2]) >> 4;
+
+			output[get2DBufferIndex(i, j, w) * 2 + 0] = (g << 4) | b;
+			output[get2DBufferIndex(i, j, w) * 2 + 1] = (a << 4) | r;
+		}
+	}
+
+	Buffer b = makeBufferOwned(output, w*h * 2);
+
+	TextureData ret = loadTextureFromARGB16Buffer(b, w, h);
+
+	freeBuffer(b);
+
+	return ret;
+}
+
+static TextureData loadTextureFromPalettedImageData1bppTo32ARGB(Buffer tPCXImageBuffer, Buffer tPaletteBuffer, int w, int h) {
+	uint8_t* output = allocMemory(w*h * 4);
 	uint8_t* img = (uint8_t*)tPCXImageBuffer.mData;
 	uint8_t* pal = (uint8_t*)tPaletteBuffer.mData;
 
@@ -172,13 +200,22 @@ static TextureData loadTextureFromPalettedImageData1bpp(Buffer tPCXImageBuffer, 
 		}
 	}
 
-	Buffer b = makeBufferOwned(output, w*h*4);
+	Buffer b = makeBufferOwned(output, w*h * 4);
 
 	TextureData ret = loadTextureFromARGB32Buffer(b, w, h);
 
 	freeBuffer(b);
 
 	return ret;
+}
+
+static TextureData loadTextureFromPalettedImageData1bpp(Buffer tPCXImageBuffer, Buffer tPaletteBuffer, int w, int h) {
+	if (isOnDreamcast()) {
+		loadTextureFromPalettedImageData1bppTo16ARGB(tPCXImageBuffer, tPaletteBuffer, w, h);
+	}
+	else {
+		loadTextureFromPalettedImageData1bppTo32ARGB(tPCXImageBuffer, tPaletteBuffer, w, h);
+	}
 }
 
 typedef struct {
