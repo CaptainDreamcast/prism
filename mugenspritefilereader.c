@@ -146,6 +146,7 @@ typedef struct MugenSpriteFileReader_internal {
 
 static struct {
 	int mIsOnlyLoadingPortraits;
+	int mHasPaletteFile;
 	int mIsUsingRealPalette;
 	int mPaletteID;
 	MugenSpriteFileReader mReader;
@@ -739,7 +740,8 @@ static void loadSingleSFFFileAndInsertIntoSpriteFile(SFFSubFileHeader subHeader,
 
 	if (subHeader.mSubfileLength) {
 		Buffer pcxBuffer = gData.mReader.mReadBufferReadOnly(&gData.mReader, subHeader.mSubfileLength);
-		int isUsingOwnPalette = !subHeader.mHasSamePaletteAsPreviousImage;
+		int isFirstImageWithActiveActFile = gData.mHasPaletteFile && subHeader.mGroup == 0 && subHeader.mImage == 0; 
+		int isUsingOwnPalette = !subHeader.mHasSamePaletteAsPreviousImage && !isFirstImageWithActiveActFile;
 		gPreviousGroup = subHeader.mGroup;
 		texture = loadTextureFromPCXBuffer(tDst, isUsingOwnPalette, pcxBuffer, makePosition(subHeader.mImageAxisXCoordinate, subHeader.mImageAxisYCoordinate, 0));
 		freeBuffer(pcxBuffer);
@@ -749,6 +751,16 @@ static void loadSingleSFFFileAndInsertIntoSpriteFile(SFFSubFileHeader subHeader,
 	}
 
 	insertTextureIntoSpriteFile(tDst, texture, subHeader.mGroup, subHeader.mImage);
+}
+
+static void removeAllPalettesExceptFirst(MugenSpriteFile* tDst) {
+	assert(vector_size(&tDst->mPalettes) >= 1);
+
+	while (vector_size(&tDst->mPalettes) > 1) {
+		Buffer* b = vector_get_back(&tDst->mPalettes);
+		freeBuffer(*b);
+		vector_pop_back(&tDst->mPalettes);
+	}
 }
 
 static void loadSingleSFFFile(MugenSpriteFile* tDst) {
@@ -762,6 +774,10 @@ static void loadSingleSFFFile(MugenSpriteFile* tDst) {
 	debugInteger(subHeader.mGroup);
 	debugInteger(subHeader.mImage);
 	debugString(subHeader.mComments);
+
+	if (gData.mHasPaletteFile && subHeader.mGroup == 0 && subHeader.mImage == 0) {
+		removeAllPalettesExceptFirst(tDst);
+	}
 
 	if (!gData.mIsOnlyLoadingPortraits || subHeader.mGroup == 9000) { // TODO: non-hardcoded
 		loadSingleSFFFileAndInsertIntoSpriteFile(subHeader, tDst);
@@ -793,7 +809,16 @@ static void loadMugenSpriteFilePaletteFile(MugenSpriteFile* ret, char* tPath) {
 
 	Buffer* b = allocMemory(sizeof(Buffer));
 	*b = fileToBuffer(tPath);
-	
+	Buffer src = fileToBuffer(tPath);
+
+	int i;
+	for (i = 0; i < 256; i++) {
+		int j = 255 - i;
+		((uint8_t*)b->mData)[j * 3 + 0] = ((uint8_t*)src.mData)[i * 3 + 0];
+		((uint8_t*)b->mData)[j * 3 + 1] = ((uint8_t*)src.mData)[i * 3 + 1];
+		((uint8_t*)b->mData)[j * 3 + 2] = ((uint8_t*)src.mData)[i * 3 + 2];
+	}
+
 	insertPaletteIntoMugenSpriteFile(ret, b);
 }
 
@@ -1053,7 +1078,8 @@ static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tPreferredPa
 {
 	debugLog("Loading sprite file.");
 	debugString(tPath);
-
+	
+	gData.mHasPaletteFile = tHasPaletteFile;
 	checkMugenSpriteFileReader();
 
 	MugenSpriteFile ret;

@@ -50,6 +50,8 @@ DWORD WINAPI threadFunction(LPVOID lpParam) {
 	lockSemaphore(gData.mThreadMapAccessSemaphore);
 	int_map_remove(&gData.mThreads, e->mID);
 	releaseSemaphore(gData.mThreadMapAccessSemaphore);
+
+	return 0;
 }
 
 int startThread(void(tFunc)(void *), void* tCaller)
