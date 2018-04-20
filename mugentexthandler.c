@@ -495,36 +495,70 @@ static void drawSingleBitmapSubSprite(void* tCaller, void* tData) {
 	MugenSpriteFileSubSprite* subSprite = tData;
 
 	double factor = 0.5; // TODO: 640p
-	Position p = vecAdd(caller->mBasePosition, vecScale(makePosition(subSprite->mOffset.x, subSprite->mOffset.y, subSprite->mOffset.z), factor));
+	Position p = vecAdd2D(caller->mBasePosition, vecScale(makePosition(subSprite->mOffset.x, subSprite->mOffset.y, subSprite->mOffset.z), factor));
 	scaleDrawing(factor, p);
 	drawSprite(subSprite->mTexture, p, makeRectangleFromTexture(subSprite->mTexture));
 	setDrawingParametersToIdentity();
 }
 
+static int hasBitmapTextToLinebreak(char* tText, int tCurrent, Position p, MugenFont* tFont, MugenSpriteFileGroup* tSpriteGroup, double tRightX, double tFactor) {
+
+	if (tText[0] == ' ') return 0;
+	if (tText[0] == '\n') return 1;
+
+	char word[1024];
+	int positionsRead;
+	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
+
+	int i;
+	for (i = tCurrent; i < tCurrent+positionsRead; i++) {
+		if (int_map_contains(&tSpriteGroup->mSprites, (int)tText[i])) {
+			MugenSpriteFileSprite* sprite = int_map_get(&tSpriteGroup->mSprites, (int)tText[i]);
+			
+			p = vecAdd2D(p, vecScale(makePosition(sprite->mOriginalTextureSize.x, 0, 0), tFactor));
+			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+		}
+		else {
+			p = vecAdd2D(p, vecScale(makePosition(tFont->mSize.x, 0, 0), tFactor));
+			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+		}
+	}
+
+	return (p.x > tRightX);
+}
+
 static void drawSingleBitmapText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenBitmapFont* bitmapFont = font->mData;
-	int textLength = strlen(e->mText);
+	int textLength = strlen(e->mDisplayText);
 	double factor = 0.5; // TODO: 640p
 
 	MugenSpriteFileGroup* spriteGroup = int_map_get(&bitmapFont->mSprites.mGroups, 0);
 
 	int i;
-	Position p = vecAdd(e->mPosition, vecScale(makePosition(font->mOffset.x, font->mOffset.y, 0), factor));
+	Position p = vecAdd2D(e->mPosition, vecScale(makePosition(font->mOffset.x, font->mOffset.y, 0), factor));
+	Position start = p;
+	double rightX = p.x + e->mTextBoxWidth;
 	for (i = 0; i < textLength; i++) {
 
-		if (int_map_contains(&spriteGroup->mSprites, (int)e->mText[i])) {
+		if (int_map_contains(&spriteGroup->mSprites, (int)e->mDisplayText[i])) {
 			BitmapDrawCaller caller;
-			caller.mSprite = int_map_get(&spriteGroup->mSprites, (int)e->mText[i]);
+			caller.mSprite = int_map_get(&spriteGroup->mSprites, (int)e->mDisplayText[i]);
 			caller.mBasePosition = p;
 			list_map(&caller.mSprite->mTextures, drawSingleBitmapSubSprite, &caller);
 
-			p = vecAdd(p, vecScale(makePosition(caller.mSprite->mOriginalTextureSize.x, 0, 0), factor));
-			p = vecAdd(p, vecScale(makePosition(font->mSpacing.x, 0, 0), factor));
+			p = vecAdd2D(p, vecScale(makePosition(caller.mSprite->mOriginalTextureSize.x, 0, 0), factor));
+			p = vecAdd2D(p, vecScale(makePosition(font->mSpacing.x, 0, 0), factor));
 		}
 		else {
-			p = vecAdd(p, vecScale(makePosition(font->mSize.x, 0, 0), factor));
-			p = vecAdd(p, vecScale(makePosition(font->mSpacing.x, 0, 0), factor));
+			p = vecAdd2D(p, vecScale(makePosition(font->mSize.x, 0, 0), factor));
+			p = vecAdd2D(p, vecScale(makePosition(font->mSpacing.x, 0, 0), factor));
+		}
+
+		if (hasBitmapTextToLinebreak(e->mText, i, p, font, spriteGroup, rightX, factor)) {
+			p.x = start.x;
+			p = vecAdd2D(p, vecScale(makePosition(0, font->mSize.y, 0), factor));
+			p = vecAdd2D(p, vecScale(makePosition(0, font->mSpacing.y, 0), factor));
 		}
 	}
 }
@@ -571,30 +605,63 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 	caller->mBasePosition.x += rightX - leftX + 1;
 }
 
+static int hasElecbyteTextToLinebreak(char* tText, int tCurrent, Position p, MugenFont* tFont, MugenElecbyteFont* tElecbyteFont, double tRightX, double tFactor) {
+
+	if (tText[0] == ' ') return 0;
+	if (tText[0] == '\n') return 1;
+
+	char word[1024];
+	int positionsRead;
+	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
+
+	int i;
+	for (i = tCurrent; i < tCurrent + positionsRead; i++) {
+		if (int_map_contains(&tElecbyteFont->mMap, (int)tText[i])) {
+			MugenElecbyteFontMapEntry* mapEntry = int_map_get(&tElecbyteFont->mMap, (int)tText[i]);
+			p = vecAdd2D(p, makePosition(mapEntry->mWidth, 0, 0));
+			p = vecAdd2D(p, makePosition(tFont->mSpacing.x, 0, 0));
+		}
+		else {
+			p = vecAdd2D(p, vecScale(makePosition(tFont->mSize.x, 0, 0), tFactor));
+			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+		}
+	}
+
+	return (p.x > tRightX);
+}
+
 static void drawSingleElecbyteText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenElecbyteFont* elecbyteFont = font->mData;
-	int textLength = strlen(e->mText);
+	int textLength = strlen(e->mDisplayText);
+	double factor = 1; // TODO
 
 	//printf("draw %s\n", e->mText);
 	int i;
-	Position p = vecAdd(e->mPosition, makePosition(font->mOffset.x, font->mOffset.y, 0));
+	Position p = vecAdd2D(e->mPosition, makePosition(font->mOffset.x, font->mOffset.y, 0));
+	Position start = p;
+	double rightX = p.x + e->mTextBoxWidth;
 	for (i = 0; i < textLength; i++) {
 
-		if (int_map_contains(&elecbyteFont->mMap, (int)e->mText[i])) {
+		if (int_map_contains(&elecbyteFont->mMap, (int)e->mDisplayText[i])) {
 			ElecbyteDrawCaller caller;
-			caller.mMapEntry = int_map_get(&elecbyteFont->mMap, (int)e->mText[i]);
+			caller.mMapEntry = int_map_get(&elecbyteFont->mMap, (int)e->mDisplayText[i]);
 			caller.mBasePosition = p;
 			caller.mText = e;
 			caller.mFont = font;
 			list_map(&elecbyteFont->mSprite->mTextures, drawSingleElecbyteSubSprite, &caller);
 
-			p = vecAdd(p, makePosition(caller.mMapEntry->mWidth, 0, 0));
-			p = vecAdd(p, makePosition(font->mSpacing.x, 0, 0));
+			p = vecAdd2D(p, makePosition(caller.mMapEntry->mWidth, 0, 0));
+			p = vecAdd2D(p, makePosition(font->mSpacing.x, 0, 0));
 		}
 		else {
-			p = vecAdd(p, makePosition(font->mSize.x, 0, 0));
-			p = vecAdd(p, makePosition(font->mSpacing.x, 0, 0));
+			p = vecAdd2D(p, makePosition(font->mSize.x, 0, 0));
+			p = vecAdd2D(p, makePosition(font->mSpacing.x, 0, 0));
+		}
+		if (hasElecbyteTextToLinebreak(e->mText, i, p, font, elecbyteFont, rightX, factor)) {
+			p.x = start.x;
+			p = vecAdd2D(p, vecScale(makePosition(0, font->mSize.y, 0), factor));
+			p = vecAdd2D(p, vecScale(makePosition(0, font->mSpacing.y, 0), factor));
 		}
 	}
 }
@@ -685,7 +752,7 @@ void setMugenTextFont(int tID, int tFont)
 {
 	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
 
-	e->mPosition = vecAdd(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
+	e->mPosition = vecAdd2D(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
 	if (int_map_contains(&gData.mFonts, tFont)) {
 		e->mFont = int_map_get(&gData.mFonts, tFont);
 	}
