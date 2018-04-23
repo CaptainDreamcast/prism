@@ -16,3 +16,5 @@ int getBlitzMugenAnimationAnimationNumber(int tEntityID);
 
 void setBlitzMugenAnimationTransparency(int tEntityID, double tTransparency);
 void setBlitzMugenAnimationFaceDirection(int tEntityID, int tIsFacingRight);
+void setBlitzMugenAnimationPositionX(int tEntityID, double tX);
+void setBlitzMugenAnimationPositionY(int tEntityID, double tX);

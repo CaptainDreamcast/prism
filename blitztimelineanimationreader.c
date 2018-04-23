@@ -133,6 +133,12 @@ static void handleSingleInterpolationGroupElement(BlitzTimelineAnimation* tAnima
 	else if (isNamedElement(tElement, "cb")) {
 		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_CALLBACK, tAnimation, tTime, tElement, tStepType);
 	}
+	else if (isNamedElement(tElement, "velx")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_VELOCITY_X, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "vely")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_VELOCITY_Y, tAnimation, tTime, tElement, tStepType);
+	}
 	else if (isNamedElement(tElement, "mugentransparency")) {
 		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_TRANSPARENCY, tAnimation, tTime, tElement, tStepType);
 	}
@@ -141,6 +147,12 @@ static void handleSingleInterpolationGroupElement(BlitzTimelineAnimation* tAnima
 	}
 	else if (isNamedElement(tElement, "mugenfacedirection")) {
 		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_FACE_DIRECTION, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "mugenposx")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_POSITION_X, tAnimation, tTime, tElement, tStepType);
+	}
+	else if (isNamedElement(tElement, "mugenposy")) {
+		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_POSITION_Y, tAnimation, tTime, tElement, tStepType);
 	}
 	else {
 		logWarningFormat("Unrecognized interpolation group element: %s", tElement->mName);

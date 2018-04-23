@@ -5,6 +5,14 @@
 #include "math.h"
 #include "wrapper.h"
 #include "geometry.h"
+#include "collisionhandler.h"
+#include "input.h"
+#include "timer.h"
+#include "screeneffect.h"
+#include "tweening.h"
+
+#include "mugendefreader.h"
+#include "mugentexthandler.h"
 
 #include "blitzcamerahandler.h"
 #include "blitzcollision.h"

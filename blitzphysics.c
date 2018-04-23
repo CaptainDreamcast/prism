@@ -111,6 +111,17 @@ Velocity getBlitzPhysicsVelocity(int tEntityID)
 	return e->mVelocity;
 }
 
+Velocity * getBlitzPhysicsVelocityReference(int tEntityID)
+{
+	if (!int_map_contains(&gData.mEntries, tEntityID)) {
+		logWarningFormat("Entity %d has no physics component. Returning NULL.", tEntityID);
+		return NULL;
+	}
+	
+	PhysicsEntry* e = int_map_get(&gData.mEntries, tEntityID);
+	return &e->mVelocity;
+}
+
 void setBlitzPhysicsVelocity(int tEntityID, Velocity tVelocity)
 {
 	PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);

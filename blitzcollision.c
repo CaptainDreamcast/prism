@@ -45,6 +45,7 @@ typedef struct {
 	int mIsRightCollided;
 
 	IntMap mCollisionObjects; // contains BlitzCollisionObjects
+	int mIsEmpty;
 } CollisionEntry;
 
 static struct {
@@ -182,6 +183,11 @@ void addBlitzCollisionComponent(int tEntityID)
 	int_map_push_owned(&gData.mEntries, tEntityID, e);
 }
 
+void removeBlitzCollisionComponent(int tEntityID)
+{
+	unregisterEntity(tEntityID);
+}
+
 static int addEmptyCollisionObject(CollisionEntry* tEntry, int tList, int tOwnsCollisionHandlerObject) {
 	BlitzCollisionObject* e = allocMemory(sizeof(BlitzCollisionObject));
 	e->mEntityID = tEntry->mEntityID;
@@ -294,6 +300,28 @@ int hasBlitzCollidedRight(int tEntityID)
 	return e->mIsRightCollided;
 }
 
+
+
+static int removeSingleCollisionObject(void* tCaller, void* tData) {
+	(void)tCaller;
+	BlitzCollisionObject* e = tData;
+	if (e->mOwnsCollisionHandlerObject) {
+		removeFromCollisionHandler(e->mCollisionListID, e->mCollisionHandlerID);
+	}
+	delete_list(&e->mCollisionCallbacks);
+
+	return 1;
+}
+
 static void unregisterEntity(int tEntityID) {
+	CollisionEntry* e = int_map_get(&gData.mEntries, tEntityID);
+	int_map_remove_predicate(&e->mCollisionObjects, removeSingleCollisionObject, NULL);
+	delete_int_map(&e->mCollisionObjects);
 	int_map_remove(&gData.mEntries, tEntityID);
+}
+
+void removeAllBlitzCollisions(int tEntityID)
+{
+	CollisionEntry* e = int_map_get(&gData.mEntries, tEntityID);
+	int_map_remove_predicate(&e->mCollisionObjects, removeSingleCollisionObject, NULL);
 }

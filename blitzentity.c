@@ -6,12 +6,16 @@
 #include "prism/system.h"
 #include "prism/blitzcamerahandler.h"
 
-typedef struct {
+typedef struct BlitzEntity_t{
 	int mID;
 	Position mPosition;
 	Vector3D mScale;
 	double mAngle;
 
+	int mHasParent;
+
+	struct BlitzEntity_t* mParent;
+	Position mPreviousParentPosition;
 	Vector mComponents; // contains owned BlitzComponent copy
 
 	int mIsMarkedForDeletion;
@@ -38,14 +42,26 @@ static void unloadBlitzEntity(BlitzEntity* e)
 	vector_map(&e->mComponents, unregisterSingleEntityComponent, e);
 }
 
+static void updateEntityParentReferencePosition(BlitzEntity* e) {
+	if (!e->mHasParent) return;
+
+	Position parentPos = e->mParent->mPosition;
+	Position delta = vecSub(parentPos, e->mPreviousParentPosition);
+	e->mPosition = vecAdd(e->mPosition, delta);
+
+	e->mPreviousParentPosition = parentPos;
+}
 
 static int updateSingleEntity(void* tCaller, void* tData) {
 	(void)tCaller;
 	BlitzEntity* e = tData;
+
 	if (e->mIsMarkedForDeletion) {
 		unloadBlitzEntity(e);
 		return 1;
 	}
+
+	updateEntityParentReferencePosition(e);
 
 	return 0;
 }
@@ -69,6 +85,7 @@ int addBlitzEntity(Position tPos)
 	e->mAngle = 0;
 	e->mComponents = new_vector();
 	e->mIsMarkedForDeletion = 0;
+	e->mHasParent = 0;
 	e->mID = int_map_push_back_owned(&gData.mEntities, e);
 	return e->mID;
 }
@@ -112,7 +129,8 @@ void setBlitzEntityPosition(int tID, Position tPos)
 	}
 	
 	BlitzEntity* e = getBlitzEntity(tID);
-	e->mPosition = tPos;
+	if (e->mHasParent) e->mPosition = vecAdd(tPos, e->mParent->mPosition);
+	else e->mPosition = tPos;
 }
 
 void setBlitzEntityPositionX(int tID, double tX)
@@ -123,7 +141,8 @@ void setBlitzEntityPositionX(int tID, double tX)
 	}
 
 	BlitzEntity* e = getBlitzEntity(tID);
-	e->mPosition.x = tX;
+	if (e->mHasParent) e->mPosition.x = tX + e->mParent->mPosition.x;
+	else e->mPosition.x = tX;
 }
 
 void setBlitzEntityPositionY(int tID, double tY)
@@ -134,7 +153,8 @@ void setBlitzEntityPositionY(int tID, double tY)
 	}
 
 	BlitzEntity* e = getBlitzEntity(tID);
-	e->mPosition.y = tY;
+	if (e->mHasParent) e->mPosition.y = tY + e->mParent->mPosition.y;
+	else e->mPosition.y = tY;
 }
 
 void setBlitzEntityScale2D(int tID, double tScale)
@@ -181,6 +201,22 @@ void setBlitzEntityRotationZ(int tID, double tAngle)
 	e->mAngle = tAngle;
 }
 
+void setBlitzEntityParent(int tID, int tParentID)
+{
+	if (tID == getBlitzCameraHandlerEntityID() || tParentID == getBlitzCameraHandlerEntityID()) {
+		logWarning("Trying to use camera in parenting system. Unimplemented. Ignoring.");
+		return;
+	}
+
+	BlitzEntity* e = getBlitzEntity(tID);
+	BlitzEntity* parent = getBlitzEntity(tParentID);
+
+	e->mParent = parent;
+	e->mPreviousParentPosition = parent->mPosition;
+	e->mHasParent = 1;
+
+}
+
 Position getBlitzEntityPosition(int tID)
 {
 	if (tID == getBlitzCameraHandlerEntityID()) {
@@ -189,6 +225,16 @@ Position getBlitzEntityPosition(int tID)
 
 	BlitzEntity* e = getBlitzEntity(tID);
 	return e->mPosition;
+}
+
+double getBlitzEntityPositionX(int tID)
+{
+	return getBlitzEntityPosition(tID).x;
+}
+
+double getBlitzEntityPositionY(int tID)
+{
+	return getBlitzEntityPosition(tID).y;
 }
 
 Vector3D getBlitzEntityScale(int tID)

@@ -86,7 +86,7 @@ MugenSounds loadMugenSoundFile(char * tPath)
 	return ret;
 }
 
-void playMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
+int playMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 {
 	assert(int_map_contains(&tSounds->mGroups, tGroup));
 	MugenSoundGroup* group = int_map_get(&tSounds->mGroups, tGroup);
@@ -94,7 +94,7 @@ void playMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 	assert(int_map_contains(&group->mSamples, tSample));
 	MugenSoundSample* sample = int_map_get(&group->mSamples, tSample);
 
-	playSoundEffect(sample->mSoundEffectID);
+	return playSoundEffect(sample->mSoundEffectID);
 }
 
 int tryPlayMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
