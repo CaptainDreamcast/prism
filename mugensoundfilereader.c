@@ -86,6 +86,12 @@ MugenSounds loadMugenSoundFile(char * tPath)
 	return ret;
 }
 
+MugenSounds createEmptyMugenSoundFile() {
+	MugenSounds ret;
+	ret.mGroups = new_int_map();
+	return ret;
+}
+
 int playMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 {
 	assert(int_map_contains(&tSounds->mGroups, tGroup));

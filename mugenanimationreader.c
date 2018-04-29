@@ -460,7 +460,7 @@ MugenAnimation* getMugenAnimation(MugenAnimations * tAnimations, int i)
 
 MugenAnimation * createOneFrameMugenAnimationForSprite(int tSpriteGroup, int tSpriteItem)
 {
-	MugenAnimation* e = makeEmptyMugenAnimation(0);
+	MugenAnimation* e = makeEmptyMugenAnimation(-1);
 	MugenAnimationStep* step = allocMemory(sizeof(MugenAnimationStep));
 
 	step->mPassiveHitboxes = new_list();

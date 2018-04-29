@@ -240,6 +240,9 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	e->mSprite = getMugenSpriteFileTextureReference(e->mSprites, step->mGroupNumber, step->mSpriteNumber);
 	e->mHasSprite = e->mSprite != NULL;
+	if (!e->mHasSprite) {
+		printf("no\n");
+	}
 
 	updateHitboxes(e);
 
