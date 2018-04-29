@@ -7,6 +7,7 @@
 
 int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites, Position tPosition);
 void removeMugenAnimation(int tID);
+int isRegisteredMugenAnimation(int tID);
 
 void setMugenAnimationBaseDrawScale(int tID, double tScale);
 void setMugenAnimationBasePosition(int tID, Position* tPosition);

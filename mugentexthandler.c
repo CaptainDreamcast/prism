@@ -314,8 +314,6 @@ void addMugenFont(int tKey, char* tPath) {
 	
 	}
 	
-	sprintf(path, tPath); // TODO: remove again
-
 	char* ending = getFileExtension(path);
 
 	if (!strcmp("def", ending)) {

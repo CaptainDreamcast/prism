@@ -325,6 +325,10 @@ void removeMugenAnimation(int tID)
 	int_map_remove(&gData.mAnimations, tID);
 }
 
+int isRegisteredMugenAnimation(int tID) {
+	return int_map_contains(&gData.mAnimations, tID);
+}
+
 int getMugenAnimationAnimationNumber(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
