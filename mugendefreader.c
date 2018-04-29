@@ -745,40 +745,39 @@ static int isTextStatementToken() {
 
 
 static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken) {
-	if (tToken == NULL) return;
+	while(tToken) {
+		MugenDefToken* startToken = tToken;
+  
+		if (isGroupToken(tToken)) setGroup(tScript, tToken);
+		else if (isTextStatementToken()) {
+			setTextStatement(tScript, &tToken);
+		}
+		else if(isAssignmentToken(tToken)){
+			setAssignment(tScript, &tToken);
+		}
+		else if (isVectorStatementToken(tToken)) {
+			setVectorStatement(tScript, &tToken);
+		}
+		else if (isLoopStartStatementToken(tToken)) {
+			setLoopStartStatement(tScript, &tToken);
+		}
+		else if (isInterpolationStatementToken(tToken)) {
+			setInterpolationStatement(tScript, &tToken);
+		}
+		else {
+			logError("Unable to read token.");
+			logErrorString(tToken->mValue);
+			abortSystem();
+		}
 
-	if (isGroupToken(tToken)) setGroup(tScript, tToken);
-	else if (isTextStatementToken()) {
-		setTextStatement(tScript, &tToken);
-	}
-	else if(isAssignmentToken(tToken)){
-		setAssignment(tScript, &tToken);
-	}
-	else if (isVectorStatementToken(tToken)) {
-		setVectorStatement(tScript, &tToken);
-	}
-	else if (isLoopStartStatementToken(tToken)) {
-		setLoopStartStatement(tScript, &tToken);
-	}
-	else if (isInterpolationStatementToken(tToken)) {
-		setInterpolationStatement(tScript, &tToken);
-	}
-	else {
-		logError("Unable to read token.");
-		logErrorString(tToken->mValue);
-		abortSystem();
-	}
-
-	tokensToDefScript(tScript, tToken->mNext);
-}
-
-static void deleteTokens(MugenDefToken* t) {
-	MugenDefToken* cur = t;
-	while (cur != NULL) {
-		MugenDefToken* next = cur->mNext;
-		freeMemory(cur->mValue);
-		freeMemory(cur);
-		cur = next;
+		MugenDefToken* finalToken = tToken->mNext;
+		tToken = startToken; 
+		while(tToken != finalToken) {
+			MugenDefToken* next = tToken->mNext;
+			freeMemory(tToken->mValue);
+			freeMemory(tToken);
+			tToken = next;
+		}
 	}
 }
 
@@ -786,22 +785,20 @@ MugenDefScript loadMugenDefScript(char * tPath)
 {
 	debugLog("Start loading script.");
 	debugString(tPath);
-
+	printf("load %s\n", tPath);
 	Buffer b = fileToBuffer(tPath);
 	MugenDefScript ret = loadMugenDefScriptFromBuffer(b);
 	freeBuffer(b);
+	printf("loaded\n");
 
 	return ret;
 }
 
 MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer) {
-	debugLog("Parse file to tokens.");
 	MugenDefToken* root = parseTokens(&tBuffer);
 
-	debugLog("Parse tokens to script.");
 	MugenDefScript d = makeEmptyMugenDefScript();
 	tokensToDefScript(&d, root);
-	deleteTokens(root);
 
 	return d;
 }

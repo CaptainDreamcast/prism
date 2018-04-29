@@ -46,10 +46,11 @@ static void loadSingleMugenSoundSubfile(MugenSounds* tSounds, BufferPointer* p, 
 
 	char* waveFileData = allocMemory(subHeader.mSubfileLength);
 	readFromBufferPointer(waveFileData, p, subHeader.mSubfileLength);
-	Buffer waveFileBuffer = makeBuffer(waveFileData, subHeader.mSubfileLength);
+	Buffer waveFileBuffer = makeBufferOwned(waveFileData, subHeader.mSubfileLength);
 
 	MugenSoundSample* e = allocMemory(sizeof(MugenSoundSample));
 	e->mSoundEffectID = loadSoundEffectFromBuffer(waveFileBuffer);
+	freeBuffer(waveFileBuffer);
 
 	int_map_push_owned(&group->mSamples, subHeader.mSampleNumber, e);
 
@@ -78,7 +79,6 @@ static MugenSounds loadMugenSoundFileFromBuffer(Buffer b) {
 
 MugenSounds loadMugenSoundFile(char * tPath)
 {
-
 	Buffer b = fileToBuffer(tPath);
 	MugenSounds ret = loadMugenSoundFileFromBuffer(b);
 	freeBuffer(b);
