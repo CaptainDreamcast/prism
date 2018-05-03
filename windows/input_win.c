@@ -142,6 +142,7 @@ int hasPressedLeftSingle(int i) {
 	if (gData.mControllers[i].mIsUsingController) {
 		double axis = getSingleLeftStickNormalizedX(i);
 		state |= (axis < -0.5);
+		state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
 	}
 	return state;
 }
@@ -152,6 +153,7 @@ int hasPressedRightSingle(int i) {
 	if (gData.mControllers[i].mIsUsingController) {
 		double axis = getSingleLeftStickNormalizedX(i);
 		state |= (axis > 0.5);
+		state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
 	}
 	return state;
 }
@@ -162,6 +164,7 @@ int hasPressedUpSingle(int i) {
 	if (gData.mControllers[i].mIsUsingController) {
 		double axis = getSingleLeftStickNormalizedY(i);
 		state |= (axis < -0.5);
+		state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_UP);
 	}
 	return state;
 }
@@ -172,6 +175,7 @@ int hasPressedDownSingle(int i) {
 	if (gData.mControllers[i].mIsUsingController) {
 		double axis = getSingleLeftStickNormalizedY(i);
 		state |= (axis > 0.5);
+		state |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
 	}
 	return state;
 }
