@@ -378,7 +378,7 @@ static Screen* showScreen() {
 
 	// TODO: make Emscripten less hacky
 #ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop(performScreenIteration, 0, 1);
+	emscripten_set_main_loop(performScreenIteration, 60, 1);
 #endif
 
 	while(!gData.mIsAborted && gData.mNext == NULL) {
