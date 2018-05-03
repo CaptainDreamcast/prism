@@ -517,6 +517,12 @@ int getMugenAnimationVisibility(int tID) {
 	return !e->mIsInvisible;
 }
 
+Vector3D getMugenAnimationDrawScale(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mBaseDrawScale;
+}
+
 double getMugenAnimationDrawAngle(int tID) 
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);

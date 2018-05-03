@@ -588,8 +588,9 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 	int leftX = max(minWidth, min(maxWidth, caller->mMapEntry->mStartX - subSprite->mOffset.x));
 	int rightX = max(minWidth, min(maxWidth, (caller->mMapEntry->mStartX + caller->mMapEntry->mWidth - 1) - subSprite->mOffset.x));
 
-	if (leftX == rightX) return;
-
+	if (caller->mMapEntry->mWidth > 1 && leftX == rightX) return;
+	if (caller->mMapEntry->mWidth == 1 && (caller->mMapEntry->mStartX < subSprite->mOffset.x || caller->mMapEntry->mStartX >= subSprite->mOffset.x + subSprite->mTexture.mTextureSize.x)) return;
+	
 	Position p = caller->mBasePosition;
 
 	int minHeight = 0;

@@ -18,6 +18,8 @@ typedef struct {
 
 typedef SDLTextureData* Texture;
 
+#define malloc_stats()  {}
+
 #endif
 
 struct TextureMemory_internal {

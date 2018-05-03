@@ -336,6 +336,7 @@ static int isTextStatement() {
 	ret |= !strcmp("[Infobox Text]", text);
 	ret |= !strcmp("[ja.Infobox Text]", text);
 	ret |= !strcmp("[ExtraStages]", text); // TODO: check
+	ret |= !strcmp("[Stories]", text); // TODO: check
 	ret |= !strcmp("[Map]", text); // TODO: check
 
 	return ret;
@@ -738,6 +739,7 @@ static int isTextStatementToken() {
 	if (!strcmp(gScriptMaker.mGroup, "Infobox Text")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "ja.Infobox Text")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "ExtraStages")) return 1;
+	if (!strcmp(gScriptMaker.mGroup, "Stories")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "Map")) return 1; // TODO: check
 
 	return 0;

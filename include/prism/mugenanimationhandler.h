@@ -48,6 +48,8 @@ Position getMugenAnimationPosition(int tID);
 int getMugenAnimationIsFacingRight(int tID);
 int getMugenAnimationIsFacingDown(int tID);
 int getMugenAnimationVisibility(int tID);
+Vector3D getMugenAnimationDrawScale(int tID);
+
 double getMugenAnimationDrawAngle(int tID);
 double getMugenAnimationColorRed(int tID);
 double getMugenAnimationColorGreen(int tID);
