@@ -69,8 +69,8 @@ typedef struct {
 	uint16_t mWidth;
 	uint16_t mHeight;
 	
-	uint16_t mAxisX;
-	uint16_t mAxisY;
+	int16_t mAxisX;
+	int16_t mAxisY;
 
 	uint16_t mIndex;
 
