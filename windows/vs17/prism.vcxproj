@@ -175,6 +175,7 @@
     <ClCompile Include="..\..\lz5.c" />
     <ClCompile Include="..\..\math.c" />
     <ClCompile Include="..\..\memoryhandler.c" />
+    <ClCompile Include="..\..\memorypool.c" />
     <ClCompile Include="..\..\mugenanimationhandler.c" />
     <ClCompile Include="..\..\mugenanimationreader.c" />
     <ClCompile Include="..\..\mugenassignment.c" />
@@ -255,6 +256,7 @@
     <ClInclude Include="..\..\include\prism\lz5.h" />
     <ClInclude Include="..\..\include\prism\math.h" />
     <ClInclude Include="..\..\include\prism\memoryhandler.h" />
+    <ClInclude Include="..\..\include\prism\memorypool.h" />
     <ClInclude Include="..\..\include\prism\mugenanimationhandler.h" />
     <ClInclude Include="..\..\include\prism\mugenanimationreader.h" />
     <ClInclude Include="..\..\include\prism\mugenassignment.h" />
