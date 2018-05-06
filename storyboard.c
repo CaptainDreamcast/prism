@@ -243,7 +243,7 @@ static void loadStoryboardTextures(Storyboard* e, StoryBoardHeaderStruct* tHeade
 }
 
 
-static int parseDolmexicaColor(int tDolmexicaColor) {
+static uint8_t parseDolmexicaColor(int tDolmexicaColor) {
 	(void)tDolmexicaColor;
 	return COLOR_WHITE; // TODO
 }

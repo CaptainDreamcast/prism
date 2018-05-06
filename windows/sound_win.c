@@ -172,7 +172,7 @@ static void microphoneCB(void *userdata, Uint8 *stream, int len) {
 
 static void startMicrophone(void* tData)
 {
-
+	(void)tData;
 	SDL_AudioSpec want, have;
 
 	SDL_zero(want);
@@ -201,6 +201,7 @@ static void startMicrophone(void* tData)
 
 static void stopMicrophone(void* tData)
 {
+	(void)tData;
 	SDL_CloseAudioDevice(gData.mMicrophone.mMicrophone);
 
 	gData.mMicrophone.mIsMicrophoneActive = 0;

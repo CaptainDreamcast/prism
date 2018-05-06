@@ -106,9 +106,6 @@ static void initOpenGL() {
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
-	ScreenSize sz = getScreenSize();
-	float ratio = (float)sz.x / (float)sz.y;
-
 	gGLContext = SDL_GL_CreateContext(gSDLWindow);
 }
 

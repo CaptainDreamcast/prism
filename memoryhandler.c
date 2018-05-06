@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "prism/klib/khash.h"
+#include "prism/memorypool.h"
 
 // TODO: update to newest KOS, so no more manual memory tracking required
 extern void initMemoryHandlerHW(); 
@@ -78,7 +79,8 @@ KHASH_MAP_INIT_INT(Bucket, void*)
 #define MEMORY_STACK_MAX 10
 
 typedef struct {
-	khash_t(Bucket)* mMap;
+	//khash_t(Bucket)* mMap;
+	void* mData;
 } MemoryHandlerMap;
 
 typedef struct {
@@ -87,9 +89,26 @@ typedef struct {
 	TextureMemory mLast;
 } TextureMemoryUsageList;
 
+typedef void* (*MallocFunc)(size_t tSize);
+typedef void(*FreeFunc)(void* tData);
+typedef void* (*ReallocFunc)(void* tPointer, size_t tSize);
+
+typedef struct AllocationStrategy_internal {
+	void(*mInitMemoryHandlerMap)(struct AllocationStrategy_internal* tStrategy, MemoryHandlerMap* tMap);
+	void*(*mAddMemoryToMemoryHandlerMap)(struct AllocationStrategy_internal* tStrategy, MemoryHandlerMap* tMap, int tSize);
+	int(*mRemoveMemoryFromMemoryHandlerMap)(struct AllocationStrategy_internal* tStrategy, MemoryHandlerMap* tMap, void* tData);
+	int(*mResizeMemoryOnMemoryHandlerMap)(struct AllocationStrategy_internal* tStrategy, MemoryHandlerMap* tMap, void* tData, int tSize, void** tOutput);
+	void(*mEmptyMemoryHandlerMap)(struct AllocationStrategy_internal* tStrategy, MemoryHandlerMap* tMap);
+
+	MallocFunc mMalloc;
+	FreeFunc mFreeFunc;
+	ReallocFunc mReallocFunc;
+} AllocationStrategy;
+
 typedef struct {
 	int mHead;
 	MemoryHandlerMap mMaps[MEMORY_STACK_MAX];
+	AllocationStrategy mStrategy;
 } MemoryListStack;
 
 static struct {
@@ -104,13 +123,157 @@ static struct {
 	int mActive;
 } gMemoryHandler;
 
+
+
+
+
+
+static void initHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
+	(void)tStrategy;
+	tMap->mData = (void*)kh_init(Bucket);
+}
+
+static void* addAllocatedMemoryToMemoryHandlerMapHashMapStrategy(MemoryHandlerMap* tMap, void* tData) {
+	khash_t(Bucket)* map = tMap->mData;
+	khiter_t iter;
+	int ret;
+	iter = kh_put(Bucket, map, (khint32_t)tData, &ret);
+	kh_val(map, iter) = tData;
+
+	return tData;
+}
+
+static void* addMemoryToMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, int tSize) {
+	void* data = tStrategy->mMalloc(tSize);
+	gMemoryHandler.mAllocatedMemory++;
+
+	return addAllocatedMemoryToMemoryHandlerMapHashMapStrategy(tMap, data);
+}
+
+static int removeMemoryFromMemoryHandlerMapWithoutFreeingMemoryHashMapStrategy(MemoryHandlerMap* tMap, void* tData) {
+	khash_t(Bucket)* map = tMap->mData;
+
+	khiter_t iter;
+	iter = kh_get(Bucket, map, (khint32_t)tData);
+	if (iter == kh_end(map)) {
+		return 0;
+	}
+	kh_del(Bucket, map, iter);
+
+	return 1;
+}
+
+static int removeMemoryFromMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, void* tData) {
+	if (!removeMemoryFromMemoryHandlerMapWithoutFreeingMemoryHashMapStrategy(tMap, tData)) {
+		return 0;
+	}
+
+	gMemoryHandler.mAllocatedMemory--;
+	tStrategy->mFreeFunc(tData);
+
+	return 1;
+}
+
+
+static int resizeMemoryOnMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, void* tData, int tSize, void** tOutput) {
+	if (!removeMemoryFromMemoryHandlerMapWithoutFreeingMemoryHashMapStrategy(tMap, tData)) {
+		return 0;
+	}
+
+	*tOutput = tStrategy->mReallocFunc(tData, tSize);
+	addAllocatedMemoryToMemoryHandlerMapHashMapStrategy(tMap, *tOutput);
+
+	return 1;
+}
+
+static void emptyMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
+	khash_t(Bucket)* map = tMap->mData;
+	khiter_t iter;
+	for (iter = kh_begin(map); iter != kh_end(map); ++iter) {
+		if (kh_exist(map, iter)) {
+			void* data = kh_value(map, iter);
+			gMemoryHandler.mAllocatedMemory--;
+			tStrategy->mFreeFunc(data);
+		}
+	}
+	kh_destroy(Bucket, map);
+}
+
+static AllocationStrategy HashMapStrategyMainMemory = {
+	.mInitMemoryHandlerMap = initHashMapStrategy,
+	.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapHashMapStrategy,
+	.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapHashMapStrategy,
+	.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapHashMapStrategy,
+	.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapHashMapStrategy,
+
+	.mMalloc = malloc,
+	.mFreeFunc = free,
+	.mReallocFunc = realloc,
+};
+
+static AllocationStrategy HashMapStrategyTextureMemory = {
+	.mInitMemoryHandlerMap = initHashMapStrategy,
+	.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapHashMapStrategy,
+	.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapHashMapStrategy,
+	.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapHashMapStrategy,
+	.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapHashMapStrategy,
+
+	.mMalloc = allocTextureFunc,
+	.mFreeFunc = freeTextureFunc,
+	.mReallocFunc = NULL,
+};
+
+static void initPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
+	(void)tStrategy;
+	tMap->mData = createMemoryPool(32 * 1000 * 1000);
+}
+
+static void* addMemoryToMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, int tSize) {
+	(void)tStrategy;
+	return allocPoolMemory(tMap->mData, tSize);
+}
+
+static int removeMemoryFromMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, void* tData) {
+	(void)tStrategy;
+	if (!isMemoryInPool(tMap->mData, tData)) return 0;
+
+	freePoolMemory(tMap->mData, tData);
+	return 1;
+}
+
+
+static int resizeMemoryOnMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, void* tData, int tSize, void** tOutput) {
+	(void)tStrategy;
+
+	if (!isMemoryInPool(tMap->mData, tData)) return 0;
+
+	*tOutput = reallocPoolMemory(tMap->mData, tData, tSize);
+	return 1;
+}
+
+static void emptyMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
+	(void)tStrategy;
+	destroyMemoryPool(tMap->mData);
+}
+
+static AllocationStrategy PoolStrategyMainMemory = {
+	.mInitMemoryHandlerMap = initPoolStrategy,
+	.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapPoolStrategy,
+	.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapPoolStrategy,
+	.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapPoolStrategy,
+	.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapPoolStrategy,
+
+	.mMalloc = malloc,
+	.mFreeFunc = free,
+	.mReallocFunc = realloc,
+};
+
+
 int getAllocatedMemoryBlockAmount() {
 	return gMemoryHandler.mAllocatedMemory;
 }
 
-typedef void* (*MallocFunc)(size_t tSize);
-typedef void(*FreeFunc)(void* tData);
-typedef void* (*ReallocFunc)(void* tPointer, size_t tSize);
+
 
 void debugPrintMemoryStack() {
 	logError("Unimplemented.");
@@ -256,71 +419,9 @@ static void makeSpaceInTextureMemory(size_t tSize) {
 	virtualizeTextureMemory(needed);
 }
 
-static void* addAllocatedMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData) {
-	khiter_t iter;
-	int ret;
-	iter = kh_put(Bucket, tMap->mMap, (khint32_t)tData, &ret);
-	kh_val(tMap->mMap, iter) = tData;
-
-
-	return tData;
-}
-
-
-static void* addMemoryToMemoryHandlerMap(MemoryHandlerMap* tMap, int tSize, MallocFunc tFunc) {
-	void* data =  tFunc(tSize);
-	gMemoryHandler.mAllocatedMemory++;
-	return addAllocatedMemoryToMemoryHandlerMap(tMap, data);
-}
-
-static int removeMemoryFromMemoryHandlerMapWithoutFreeingMemory(MemoryHandlerMap* tMap, void* tData) {
-	khiter_t iter;
-	iter = kh_get(Bucket, tMap->mMap, (khint32_t)tData);
-	if (iter == kh_end(tMap->mMap)) {
-		return 0;
-	}
-	kh_del(Bucket, tMap->mMap, iter);
-
-	return 1;
-}
-
-static int removeMemoryFromMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData, FreeFunc tFunc) {
-	if (!removeMemoryFromMemoryHandlerMapWithoutFreeingMemory(tMap, tData)) {
-		return 0;
-	}
-
-	gMemoryHandler.mAllocatedMemory--;
-	tFunc(tData);	
-
-	return 1;
-}
-
-static int resizeMemoryOnMemoryHandlerMap(MemoryHandlerMap* tMap, void* tData, int tSize, ReallocFunc tFunc, void** tOutput) {
-	if (!removeMemoryFromMemoryHandlerMapWithoutFreeingMemory(tMap, tData)) {
-		return 0;
-	}
-
-	*tOutput = tFunc(tData, tSize);
-	addAllocatedMemoryToMemoryHandlerMap(tMap, *tOutput);
-
-	return 1;
-}
-
-static void emptyMemoryHandlerMap(MemoryHandlerMap* tMap, FreeFunc tFunc) {
-	khiter_t iter;
-	for (iter = kh_begin(tMap->mMap); iter != kh_end(tMap->mMap); ++iter) {
-		if (kh_exist(tMap->mMap, iter)) {
-			void* data = kh_value(tMap->mMap, iter);
-			gMemoryHandler.mAllocatedMemory--;
-			tFunc(data);
-		}
-	}
-	kh_destroy(Bucket, tMap->mMap);
-}
-
-static void* addMemoryToMemoryListStack(MemoryListStack* tStack, int tSize, MallocFunc tFunc) {
+static void* addMemoryToMemoryListStack(MemoryListStack* tStack, int tSize) {
 	if (!gMemoryHandler.mActive) {
-		return tFunc(tSize);
+		return tStack->mStrategy.mMalloc(tSize);
 	}
 
 	if (tStack->mHead < 0) {
@@ -335,11 +436,11 @@ static void* addMemoryToMemoryListStack(MemoryListStack* tStack, int tSize, Mall
 		abortSystem();
 	}
 
-	return addMemoryToMemoryHandlerMap(&tStack->mMaps[tStack->mHead], tSize, tFunc);
+	return tStack->mStrategy.mAddMemoryToMemoryHandlerMap(&tStack->mStrategy, &tStack->mMaps[tStack->mHead], tSize);
 }
-static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData, FreeFunc tFunc) {
+static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData) {
 	if (!gMemoryHandler.mActive) {
-		tFunc(tData);
+		tStack->mStrategy.mFreeFunc(tData);
 		return;
 	}
 
@@ -351,7 +452,8 @@ static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData
 
 	int tempHead;
 	for (tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
-		if (removeMemoryFromMemoryHandlerMap(&tStack->mMaps[tempHead], tData, tFunc)) {
+		int hasBeenRemoved = tStack->mStrategy.mRemoveMemoryFromMemoryHandlerMap(&tStack->mStrategy, &tStack->mMaps[tempHead], tData);
+		if (hasBeenRemoved) {
 			return;
 		}
 	}
@@ -361,9 +463,9 @@ static void removeMemoryFromMemoryListStack(MemoryListStack* tStack, void* tData
 	abortSystem();
 }
 
-static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData, int tSize, ReallocFunc tFunc) {
+static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData, int tSize) {
 	if (!gMemoryHandler.mActive) {
-		return tFunc(tData, tSize);
+		return tStack->mStrategy.mReallocFunc(tData, tSize);
 	}
 
 	if (tStack->mHead < 0) {
@@ -375,7 +477,8 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 	void* output = NULL;
 	int tempHead;
 	for (tempHead = tStack->mHead; tempHead >= 0; tempHead--) {
-		if (resizeMemoryOnMemoryHandlerMap(&tStack->mMaps[tempHead], tData, tSize, tFunc, &output)) {
+		int hasBeenResized = tStack->mStrategy.mResizeMemoryOnMemoryHandlerMap(&tStack->mStrategy, &tStack->mMaps[tempHead], tData, tSize, &output);
+		if (hasBeenResized) {
 			return output;
 		}
 	}
@@ -387,26 +490,25 @@ static void* resizeMemoryOnMemoryListStack(MemoryListStack* tStack, void* tData,
 	return NULL; 
 }
 
-static void popMemoryStackInternal(MemoryListStack* tStack, FreeFunc tFunc) {
+static void popMemoryStackInternal(MemoryListStack* tStack) {
 	if (tStack->mHead < 0) {
 		logError("No stack layer left to pop.");
 		abortSystem();
 	}
 
-	emptyMemoryHandlerMap(&tStack->mMaps[tStack->mHead], tFunc);
+	tStack->mStrategy.mEmptyMemoryHandlerMap(&tStack->mStrategy, &tStack->mMaps[tStack->mHead]);
 	tStack->mHead--;
 }
 
-static void emptyMemoryListStack(MemoryListStack* tStack, FreeFunc tFunc) {
+static void emptyMemoryListStack(MemoryListStack* tStack) {
 	while (tStack->mHead >= 0) {
-		popMemoryStackInternal(tStack, tFunc);
+		popMemoryStackInternal(tStack);
 	}
 }
 
 void* allocMemory(int tSize) {
 	if (!tSize) return NULL;
-
-	return addMemoryToMemoryListStack(&gMemoryHandler.mMemoryStack, tSize, malloc);
+	return addMemoryToMemoryListStack(&gMemoryHandler.mMemoryStack, tSize);
 }
 
 void* allocClearedMemory(int tBlockAmount, int tBlockSize) {
@@ -424,7 +526,7 @@ void* allocClearedMemory(int tBlockAmount, int tBlockSize) {
 void freeMemory(void* tData) {
 	if (tData == NULL) return;
 
-	removeMemoryFromMemoryListStack(&gMemoryHandler.mMemoryStack, tData, free);
+	removeMemoryFromMemoryListStack(&gMemoryHandler.mMemoryStack, tData);
 }
 
 void* reallocMemory(void* tData, int tSize) {
@@ -434,7 +536,7 @@ void* reallocMemory(void* tData, int tSize) {
 	}
 	if (tData == NULL) return allocMemory(tSize);
 
-	return resizeMemoryOnMemoryListStack(&gMemoryHandler.mMemoryStack, tData, tSize, realloc);
+	return resizeMemoryOnMemoryListStack(&gMemoryHandler.mMemoryStack, tData, tSize);
 }
 
 TextureMemory allocTextureMemory(int tSize) {
@@ -442,13 +544,13 @@ TextureMemory allocTextureMemory(int tSize) {
 		return NULL;
 	}
 	
-	return addMemoryToMemoryListStack(&gMemoryHandler.mTextureMemoryStack, tSize, allocTextureFunc);
+	return addMemoryToMemoryListStack(&gMemoryHandler.mTextureMemoryStack, tSize);
 }
 
 void freeTextureMemory(TextureMemory tMem) {
 	if (tMem == NULL) return;
 
-	removeMemoryFromMemoryListStack(&gMemoryHandler.mTextureMemoryStack, tMem, freeTextureFunc);
+	removeMemoryFromMemoryListStack(&gMemoryHandler.mTextureMemoryStack, tMem);
 }
 
 void referenceTextureMemory(TextureMemory tMem) {
@@ -462,10 +564,6 @@ void referenceTextureMemory(TextureMemory tMem) {
 	moveTextureMemoryInUsageQueueToFront(tMem);
 }
 
-static void pushMemoryHandlerMapInternal(MemoryHandlerMap* tMap) {
-	tMap->mMap = kh_init(Bucket);
-}
-
 static void pushMemoryStackInternal(MemoryListStack* tStack) {
 	if (tStack->mHead == MEMORY_STACK_MAX - 1) {
 		logError("Unable to push stack layer; limit reached");
@@ -473,7 +571,7 @@ static void pushMemoryStackInternal(MemoryListStack* tStack) {
 	}
 
 	tStack->mHead++;
-	pushMemoryHandlerMapInternal(&tStack->mMaps[tStack->mHead]);
+	tStack->mStrategy.mInitMemoryHandlerMap(&tStack->mStrategy, &tStack->mMaps[tStack->mHead]);
 }
 
 void pushMemoryStack() {
@@ -481,20 +579,25 @@ void pushMemoryStack() {
 
 }
 void popMemoryStack() {
-	popMemoryStackInternal(&gMemoryHandler.mMemoryStack, free);
+	popMemoryStackInternal(&gMemoryHandler.mMemoryStack);
 }
 
 void pushTextureMemoryStack() {
 	pushMemoryStackInternal(&gMemoryHandler.mTextureMemoryStack);
 }
 void popTextureMemoryStack() {
-	popMemoryStackInternal(&gMemoryHandler.mTextureMemoryStack, freeTextureFunc);
+	popMemoryStackInternal(&gMemoryHandler.mTextureMemoryStack);
 }
 
 static void initTextureMemoryUsageList() {
 	gMemoryHandler.mTextureMemoryUsageList.mFirst = NULL;
 	gMemoryHandler.mTextureMemoryUsageList.mLast = NULL;
 	gMemoryHandler.mTextureMemoryUsageList.mSize = 0;
+}
+
+static void initMemoryListStack(MemoryListStack* tStack, AllocationStrategy tStrategy) {
+	tStack->mHead = -1;
+	tStack->mStrategy = tStrategy;
 }
 
 void initMemoryHandler() {
@@ -506,7 +609,8 @@ void initMemoryHandler() {
 	gMemoryHandler.mActive = 1;
 	gMemoryHandler.mIsCompressionActive = 0;
 	gMemoryHandler.mMemoryStack.mHead = -1;
-	gMemoryHandler.mTextureMemoryStack.mHead = -1;
+	initMemoryListStack(&gMemoryHandler.mMemoryStack, PoolStrategyMainMemory);
+	initMemoryListStack(&gMemoryHandler.mTextureMemoryStack, HashMapStrategyTextureMemory);
 	initTextureMemoryUsageList();
 	pushMemoryStack();
 	pushTextureMemoryStack();
@@ -515,8 +619,8 @@ void initMemoryHandler() {
 
 void shutdownMemoryHandler() {
 	gMemoryHandler.mActive = 0;
-	emptyMemoryListStack(&gMemoryHandler.mMemoryStack, free);
-	emptyMemoryListStack(&gMemoryHandler.mTextureMemoryStack, freeTextureFunc);
+	emptyMemoryListStack(&gMemoryHandler.mMemoryStack);
+	emptyMemoryListStack(&gMemoryHandler.mTextureMemoryStack);
 }
 
 

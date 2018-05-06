@@ -16,7 +16,7 @@ void turnStringLowercase(char* tString) {
 	char* pos = tString;
 	int i;
 	for (i = 0; i < n; i++) {
-		*pos = tolower((int)(*pos));
+		*pos = (char)tolower((int)(*pos));
 		pos++;
 	}
 }

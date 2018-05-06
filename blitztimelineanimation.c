@@ -247,7 +247,7 @@ void stopBlitzTimelineAnimation(int tEntityID, int tAnimationID)
 	// TODO
 }
 
-void setBlitzTimelineAnimationCB(int tEntityID, int tAnimationID, int tCBID, void * tCB, void * tCaller)
+void setBlitzTimelineAnimationCB(int tEntityID, int tAnimationID, int tCBID, void (*tCB)(void*), void * tCaller)
 {
 	ActiveAnimation* e = getBlitzTimelineActiveAnimation(tEntityID, tAnimationID);
 	if (!int_map_contains(&e->mCBMap, tCBID)) {

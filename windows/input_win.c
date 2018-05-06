@@ -309,7 +309,7 @@ void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double
 	}	
 	effect->periodic.direction.type = SDL_HAPTIC_POLAR; 
 	effect->periodic.direction.dir[0] = 18000; 
-	effect->periodic.period = tFrequency; 
+	effect->periodic.period = (uint16_t)tFrequency; 
 	
 	effect->periodic.magnitude = (int16_t)(INT16_MAX * fclamp(tAmplitude, 0, 1)); 
 	effect->periodic.length = 5000;

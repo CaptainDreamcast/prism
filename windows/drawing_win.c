@@ -298,13 +298,12 @@ static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double
 static void drawOpenGLTexture(GLuint tTextureID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
 	Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
-	float matrix[4][4] =
-	{
-		{ (float)finalMatrix->m[0][0], (float)finalMatrix->m[0][1], (float)finalMatrix->m[0][2], (float)finalMatrix->m[0][3] },
-		{ (float)finalMatrix->m[1][0], (float)finalMatrix->m[1][1], (float)finalMatrix->m[1][2], (float)finalMatrix->m[1][3] },
-		{ (float)finalMatrix->m[2][0], (float)finalMatrix->m[2][1], (float)finalMatrix->m[2][2], (float)finalMatrix->m[2][3] },
-		{ (float)finalMatrix->m[3][0], (float)finalMatrix->m[3][1], (float)finalMatrix->m[3][2], (float)finalMatrix->m[3][3] },
-	};
+	float matrix[4][4];
+	for (int y = 0; y < 4; y++) {
+		for (int x = 0; x < 4; x++) {
+			matrix[y][x] = (float)finalMatrix->m[y][x];
+		}
+	}
 
 	glUniformMatrix4fv(gOpenGLData.mAttribLocationProjMtx, 1, GL_FALSE, &matrix[0][0]);
 
@@ -425,7 +424,6 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 	for (i = 0; i < l;) {
 		char text[1024];
 
-		double size = 0;
 		int start = i;
 		int previousWordStart = 0;
 		int j;
