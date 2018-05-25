@@ -38,6 +38,9 @@ static void setGlobalAnimationState() {
 static void unsetGlobalAnimationState() {
 	if (!gMugenAnimationState.mIsLoaded) return;
 
+	delete_list(&gMugenAnimationState.mDefaultHitboxes1);
+	delete_list(&gMugenAnimationState.mDefaultHitboxes2);
+	
 	gMugenAnimationState.mIsLoaded = 0;
 }
 
@@ -50,9 +53,15 @@ static void setSingleAnimationState() {
 	gMugenAnimationState.mIsLoopStart = 0;
 	gMugenAnimationState.mHasOwnHitbox1 = 0;
 	gMugenAnimationState.mHasOwnHitbox2 = 0;
+
+	gMugenAnimationState.mOwnHitbox1 = new_list();
+	gMugenAnimationState.mOwnHitbox2 = new_list();
 }
 
 static void unsetSingleAnimationState() {
+	delete_list(&gMugenAnimationState.mOwnHitbox1);
+	delete_list(&gMugenAnimationState.mOwnHitbox2);
+
 	gMugenAnimationState.mHasOwnHitbox1 = 0;
 	gMugenAnimationState.mHasOwnHitbox2 = 0;
 }
@@ -137,23 +146,41 @@ static void handleNewAnimationStepBlendFlags(MugenAnimationStep* e, char* blendF
 	}
 }
 
+static void copySingleHitboxToNewList(void* tCaller, void* tData) {
+	List* dst = tCaller;
+	CollisionRect* e = tData;
+
+	CollisionRect* newRect = allocMemory(sizeof(CollisionRect));
+	*newRect = *e;
+
+	list_push_back_owned(dst, newRect);
+}
+
+static List copyHitboxList(List tSource) {
+	List ret = new_list();
+	list_map(&tSource, copySingleHitboxToNewList, &ret);
+	return ret;
+}
+
 static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, MugenDefScriptGroupElement* tElement) {
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
 	MugenDefScriptVectorElement* vectorElement = tElement->mData;
 	
 	MugenAnimationStep* e = allocMemory(sizeof(MugenAnimationStep));
+	
 	if (gMugenAnimationState.mHasOwnHitbox1) {
-		e->mAttackHitboxes = gMugenAnimationState.mOwnHitbox1;
+		e->mAttackHitboxes = copyHitboxList(gMugenAnimationState.mOwnHitbox1);
 	}
 	else {
-		e->mAttackHitboxes = gMugenAnimationState.mDefaultHitboxes1;
+		e->mAttackHitboxes = copyHitboxList(gMugenAnimationState.mDefaultHitboxes1);
 	}
 
 	if (gMugenAnimationState.mHasOwnHitbox2) {
-		e->mPassiveHitboxes = gMugenAnimationState.mOwnHitbox2;
+		e->mPassiveHitboxes = copyHitboxList(gMugenAnimationState.mOwnHitbox2);
 	}
 	else {
-		e->mPassiveHitboxes = gMugenAnimationState.mDefaultHitboxes2;
+		e->mPassiveHitboxes = copyHitboxList(gMugenAnimationState.mDefaultHitboxes2);
+
 	}
 
 	assert(vectorElement->mVector.mSize >= 2);
@@ -231,13 +258,6 @@ static void handleCollisionHitboxAssignment(List* tHitboxes, MugenDefScriptGroup
 	list_push_back_owned(tHitboxes, e);
 }
 
-static void handleOwnHitboxExistence(List* tHitboxes, int* tHasHitbox) {
-	if (!(*tHasHitbox)) {
-		*tHitboxes = new_list();
-		*tHasHitbox = 1;
-	}
-}
-
 static void handleHitboxAssignment(MugenDefScriptGroupElement* tElement) {
 	char name[100];
 	strcpy(name, tElement->mName);
@@ -251,7 +271,7 @@ static void handleHitboxAssignment(MugenDefScriptGroupElement* tElement) {
 			handleCollisionHitboxAssignment(&gMugenAnimationState.mDefaultHitboxes1, tElement);
 		}
 		else {
-			handleOwnHitboxExistence(&gMugenAnimationState.mOwnHitbox1, &gMugenAnimationState.mHasOwnHitbox1);
+			gMugenAnimationState.mHasOwnHitbox1 = 1;
 			handleCollisionHitboxAssignment(&gMugenAnimationState.mOwnHitbox1, tElement);
 		}
 	}
@@ -260,7 +280,7 @@ static void handleHitboxAssignment(MugenDefScriptGroupElement* tElement) {
 			handleCollisionHitboxAssignment(&gMugenAnimationState.mDefaultHitboxes2, tElement);
 		}
 		else {
-			handleOwnHitboxExistence(&gMugenAnimationState.mOwnHitbox2, &gMugenAnimationState.mHasOwnHitbox2);
+			gMugenAnimationState.mHasOwnHitbox2 = 1;
 			handleCollisionHitboxAssignment(&gMugenAnimationState.mOwnHitbox2, tElement);
 		}
 	}
@@ -445,6 +465,27 @@ MugenAnimations loadMugenAnimationFile(char * tPath)
 	unloadMugenDefScript(defScript);
 	
 	return ret;
+}
+
+static void unloadSingleMugenAnimationStep(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenAnimationStep* e = tData;
+	delete_list(&e->mPassiveHitboxes);
+	delete_list(&e->mAttackHitboxes);
+}
+
+static int unloadSingleMugenAnimation(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenAnimation* e = tData;
+	vector_map(&e->mSteps, unloadSingleMugenAnimationStep, NULL);
+	delete_vector(&e->mSteps);
+	return 1;
+}
+
+void unloadMugenAnimationFile(MugenAnimations * tAnimations)
+{
+	int_map_remove_predicate(&tAnimations->mAnimations, unloadSingleMugenAnimation, NULL);
+	delete_int_map(&tAnimations->mAnimations);
 }
 
 MugenAnimation* getMugenAnimation(MugenAnimations * tAnimations, int i)

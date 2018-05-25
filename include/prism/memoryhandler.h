@@ -58,3 +58,4 @@ void setMemoryHandlerCompressionInactive();
 void debugPrintMemoryStack();
 int getAvailableTextureMemory();
 
+int getAllocatedMemoryBlockAmount();

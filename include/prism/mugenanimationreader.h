@@ -45,6 +45,7 @@ typedef struct {
 } MugenAnimations;
 
 MugenAnimations loadMugenAnimationFile(char* tPath);
+void unloadMugenAnimationFile(MugenAnimations* tAnimations);
 
 int hasMugenAnimation(MugenAnimations* tAnimations, int i);
 MugenAnimation* getMugenAnimation(MugenAnimations* tAnimations, int i);

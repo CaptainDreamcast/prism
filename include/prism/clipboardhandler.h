@@ -2,7 +2,6 @@
 
 #include "actorhandler.h"
 
-
 extern ActorBlueprint ClipboardHandler;
 
 void initClipboardForGame();
@@ -12,3 +11,5 @@ void addClipboardLineFormatString(char* tFormatString, char* tParameterString); 
 void clipf(char* tFormatString, ...);
 
 void clearClipboard();
+void setClipboardInvisible();
+void setClipboardVisible();

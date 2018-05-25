@@ -459,6 +459,11 @@ static void loadMugenTextHandlerActor(void* tData) {
 	gHandler.mHandledTexts = new_int_map();
 }
 
+static void unloadMugenTextHandlerActor(void* tData) {
+	(void)tData;
+	delete_int_map(&gHandler.mHandledTexts);
+}
+
 static void updateSingleTextBuildup(MugenText* e) {
 	if (handleDurationAndCheckIfOver(&e->mBuildupNow, e->mBuildupDurationPerLetter)) {
 		if (!strcmp(e->mText, e->mDisplayText)) {
@@ -697,6 +702,7 @@ static void drawMugenTextHandler(void* tData) {
 
 ActorBlueprint MugenTextHandler = {
 	.mLoad = loadMugenTextHandlerActor,
+	.mUnload = unloadMugenTextHandlerActor,
 	.mUpdate = updateMugenTextHandler,
 	.mDraw = drawMugenTextHandler,
 };

@@ -111,6 +111,21 @@ static void loadMugenAnimationHandler(void* tData) {
 	gData.mIsPaused = 0;
 }
 
+static void unloadMugenAnimation(MugenAnimationHandlerElement* e);
+
+static int unloadSingleMugenAnimationCB(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenAnimationHandlerElement* e = tData;
+	unloadMugenAnimation(e);
+	return 1;
+}
+
+static void unloadMugenAnimationHandler(void* tData) {
+	(void)tData;
+	int_map_remove_predicate(&gData.mAnimations, unloadSingleMugenAnimationCB, NULL);
+	delete_int_map(&gData.mAnimations);
+}
+
 static MugenAnimationStep* getCurrentAnimationStep(MugenAnimationHandlerElement* e) {
 	return vector_get(&e->mAnimation->mSteps, min(e->mStep, vector_size(&e->mAnimation->mSteps) - 1));
 }
@@ -240,9 +255,6 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	e->mSprite = getMugenSpriteFileTextureReference(e->mSprites, step->mGroupNumber, step->mSpriteNumber);
 	e->mHasSprite = e->mSprite != NULL;
-	if (!e->mHasSprite) {
-		printf("no\n");
-	}
 
 	updateHitboxes(e);
 
@@ -960,6 +972,7 @@ static void drawMugenAnimationHandler(void* tData) {
 
 ActorBlueprint MugenAnimationHandler = {
 	.mLoad = loadMugenAnimationHandler,
+	.mUnload = unloadMugenAnimationHandler,
 	.mUpdate = updateMugenAnimationHandler,
 	.mDraw = drawMugenAnimationHandler,
 };

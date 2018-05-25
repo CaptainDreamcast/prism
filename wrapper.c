@@ -173,7 +173,7 @@ static void loadScreen(Screen* tScreen) {
 	pushMemoryStack();
 	pushTextureMemoryStack();
 
-
+	logFormat("Blocks allocated pre-screen: %d.", getAllocatedMemoryBlockAmount());
 
 	logg("Setting up wrapper component handler");
 	setupWrapperComponentHandler();
@@ -287,6 +287,9 @@ static void unloadScreen(Screen* tScreen) {
 	shutdownTimer();
 	logg("Shutting down Wrapper component handler");
 	shutdownWrapperComponentHandler();
+
+	logFormat("Blocks allocated post-screen: %d.", getAllocatedMemoryBlockAmount());
+
 	logg("Popping Memory Stacks");
 	popTextureMemoryStack();
 	popMemoryStack();

@@ -76,13 +76,13 @@ static void cleanSingleCollisionList(void* tCaller, void* tData) {
 	(void) tCaller;
 	CollisionListData* data = tData;
 	int_map_map(&data->mCollisionElements, cleanSingleCollisionListElement, NULL);
-	int_map_empty(&data->mCollisionElements);
+	delete_int_map(&data->mCollisionElements);
 }
 
 void shutdownCollisionHandler() {
 	int_map_map(&gData.mCollisionLists, cleanSingleCollisionList, NULL);
-	int_map_empty(&gData.mCollisionLists);
-	int_map_empty(&gData.mCollisionListPairs);
+	delete_int_map(&gData.mCollisionLists);
+	delete_int_map(&gData.mCollisionListPairs);
 }
 
 static void checkCollisionElements(void* tCaller, void* tData) {

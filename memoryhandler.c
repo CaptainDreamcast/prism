@@ -609,7 +609,7 @@ void initMemoryHandler() {
 	gMemoryHandler.mActive = 1;
 	gMemoryHandler.mIsCompressionActive = 0;
 	gMemoryHandler.mMemoryStack.mHead = -1;
-	initMemoryListStack(&gMemoryHandler.mMemoryStack, PoolStrategyMainMemory);
+	initMemoryListStack(&gMemoryHandler.mMemoryStack, HashMapStrategyMainMemory);
 	initMemoryListStack(&gMemoryHandler.mTextureMemoryStack, HashMapStrategyTextureMemory);
 	initTextureMemoryUsageList();
 	pushMemoryStack();

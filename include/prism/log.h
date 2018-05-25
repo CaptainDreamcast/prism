@@ -21,10 +21,17 @@ void logFormatFunc(char* tFormatString, ...);
 #define logErrorPointer(x) logPointer(x)
 #define logErrorFormat(x, ...) logFormat(x,  __VA_ARGS__)
 
+#ifdef LOGGER_WARNINGS_DISABLED
+#define logWarning(x) {}
+#define logWarningInteger(x) {}
+#define logWarningString(x) {}
+#define logWarningFormat(x, ...) {}
+#else 
 #define logWarning(x) logg(x)
 #define logWarningInteger(x) logInteger(x)
 #define logWarningString(x) logString(x)
 #define logWarningFormat(x, ...) logFormat(x,  __VA_ARGS__)
+#endif
 
 #ifdef DEBUG
 #define debugLog(x) logg(x)

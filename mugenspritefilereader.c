@@ -856,6 +856,7 @@ static void loadMugenSpriteFilePaletteFile(MugenSpriteFile* ret, char* tPath) {
 		((uint8_t*)b->mData)[j * 3 + 2] = ((uint8_t*)src.mData)[i * 3 + 2];
 	}
 
+	freeBuffer(src);
 	insertPaletteIntoMugenSpriteFile(ret, b);
 }
 
@@ -1168,14 +1169,29 @@ static void unloadSinglePalette(void* tCaller, void* tData) {
 	freeBuffer(*b);
 }
 
+static int unloadSingleSpriteFileGroupSpriteCB(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenSpriteFileSprite* e = tData;
+	unloadMugenSpriteFileSprite(e);
+	return 1;
+}
+
+static int unloadSingleSpriteFileGroup(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenSpriteFileGroup* e = tData;
+	int_map_remove_predicate(&e->mSprites, unloadSingleSpriteFileGroupSpriteCB, NULL);
+	delete_int_map(&e->mSprites);
+
+	return 1;
+}
+
 void unloadMugenSpriteFile(MugenSpriteFile* tFile) {
-	logError("Unloading unimplemented");
-	abortSystem();
+	int_map_remove_predicate(&tFile->mGroups, unloadSingleSpriteFileGroup, NULL);
+	delete_int_map(&tFile->mGroups);
 
 	vector_map(&tFile->mPalettes, unloadSinglePalette, NULL);
 	delete_vector(&tFile->mPalettes);
 	delete_vector(&tFile->mAllSprites);
-	// TODO unload sprites;
 }
 
 static int unloadSingleMugenSpriteFileSubSprite(void* tCaller, void* tData) {

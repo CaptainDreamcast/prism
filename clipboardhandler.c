@@ -5,6 +5,7 @@
 #include "prism/mugentexthandler.h"
 #include "prism/log.h"
 #include "prism/system.h"
+#include "prism/geometry.h"
 
 #define CLIPBOARD_LINE_AMOUNT 10
 
@@ -13,11 +14,14 @@ static struct {
 	char mLines[CLIPBOARD_LINE_AMOUNT][1024];
 
 	int mTextIDs[CLIPBOARD_LINE_AMOUNT];
+
+	int mIsVisible;
 } gData;
 
 void initClipboardForGame() {
 	memset(gData.mLines, 0, sizeof gData.mLines);
 	gData.mLineAmount = 0;
+	gData.mIsVisible = 0;
 }
 
 static void initClipboardLines() {
@@ -34,7 +38,12 @@ static void initClipboardLines() {
 static void setClipboardLineTexts() {
 	int i;
 	for (i = 0; i < gData.mLineAmount; i++) {
-		changeMugenText(gData.mTextIDs[i], gData.mLines[i]);
+		if (gData.mIsVisible) {
+			changeMugenText(gData.mTextIDs[i], gData.mLines[i]);
+		}
+		else {
+			changeMugenText(gData.mTextIDs[i], "");
+		}
 	}
 }
 
@@ -229,4 +238,16 @@ void clearClipboard()
 	setClipboardLineTexts();
 
 	gData.mLineAmount = 0;
+}
+
+void setClipboardInvisible()
+{
+	gData.mIsVisible = 0;
+	setClipboardLineTexts();
+}
+
+void setClipboardVisible()
+{
+	gData.mIsVisible = 1;
+	setClipboardLineTexts();
 }

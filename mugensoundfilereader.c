@@ -86,6 +86,29 @@ MugenSounds loadMugenSoundFile(char * tPath)
 	return ret;
 }
 
+static int unloadMugenSoundFileSample(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenSoundSample* e = tData;
+	unloadSoundEffect(e->mSoundEffectID);
+	return 1;
+}
+
+static int unloadMugenSoundFileGroup(void* tCaller, void* tData) {
+	(void)tCaller;
+	MugenSoundGroup* e = tData;
+	
+	int_map_remove_predicate(&e->mSamples, unloadMugenSoundFileSample, NULL);
+	delete_int_map(&e->mSamples);
+
+	return 1;
+}
+
+void unloadMugenSoundFile(MugenSounds * tSounds)
+{
+	int_map_remove_predicate(&tSounds->mGroups, unloadMugenSoundFileGroup, NULL);
+	delete_int_map(&tSounds->mGroups);
+}
+
 MugenSounds createEmptyMugenSoundFile() {
 	MugenSounds ret;
 	ret.mGroups = new_int_map();

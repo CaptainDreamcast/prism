@@ -523,5 +523,6 @@ int isHandledAnimation(int tID) {
 
 void shutdownAnimationHandler(){
 	emptyAnimationHandler();
+	delete_int_map(&gAnimationHandler.mList);
 	gAnimationHandler.mIsLoaded = 0;
 }
