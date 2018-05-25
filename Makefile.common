@@ -10,7 +10,7 @@ mugendefreader.o mugenanimationreader.o mugenanimationhandler.o \
 mugenscriptparser.o lz5.o mugenspritefilereader.o \
 mugenassignment.o mugenassignmentevaluator.o mugentexthandler.o \
 mugensoundfilereader.o clipboardhandler.o log.o \
-wrappercomponenthandler.o \
+wrappercomponenthandler.o memorypool.o \
 blitzentity.o blitzcamerahandler.o blitzmugenanimation.o \
 blitzphysics.o blitzmugensound.o blitztimelineanimationreader.o \
 blitztimelineanimation.o blitzcollision.o blitzparticles.o \
