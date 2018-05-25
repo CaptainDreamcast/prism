@@ -18,6 +18,7 @@ void shutdownSoundEffectHandler() {
 }
 
 int loadSoundEffect(char* tPath) {
+	return -1;
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);
 	return snd_sfx_load(fullPath);
@@ -35,14 +36,17 @@ int loadSoundEffectFromBuffer(Buffer tBuffer) {
 }
 
 void unloadSoundEffect(int tID) {
+	return;
 	snd_sfx_unload(tID);
 }
 
 int playSoundEffect(int tID) {
+	return -1;
 	return snd_sfx_play(tID, getVolume(), getPanningValue());
 }
 
 void stopSoundEffect(int tSFX) {
+	return;
 	snd_sfx_stop(tSFX);
 }
 

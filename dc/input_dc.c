@@ -22,6 +22,8 @@ static struct {
 	LightGun mLightGuns[MAXIMUM_CONTROLLER_AMOUNT];
 } gData;
 
+void initInput() {}
+
 static void updateSingleLightGun(int i) {
 	gData.mLightGuns[i].mIsActive = 1;
 
@@ -209,4 +211,10 @@ void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double
 void turnControllerRumbleOffSingle(int i) {
 	(void)i;
 	// TODO
+}
+
+int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
+	(void)tKey;
+	// TODO
+	return 0;
 }
