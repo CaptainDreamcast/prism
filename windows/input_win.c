@@ -21,7 +21,9 @@ typedef struct {
 } Controller;
 
 static struct {
-	const Uint8* mCurrentKeyStates;
+	const Uint8* mKeyStatePointer;
+	Uint8* mCurrentKeyStates;
+	Uint8* mPreviousKeyStates;
 	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
 } gData;
 
@@ -55,6 +57,12 @@ static int const gKeys[2][20] = {
 		SDL_SCANCODE_ESCAPE,
 	},
 };
+
+void initInput() {
+	gData.mPreviousKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
+	gData.mCurrentKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
+	gData.mKeyStatePointer = SDL_GetKeyboardState(NULL);
+}
 
 static void loadController(int i) {
 	if (gData.mControllers[i].mIsUsingController) return;
@@ -101,8 +109,8 @@ static void updateControllers() {
 }
 
 void updateInput() {
-
-	gData.mCurrentKeyStates = SDL_GetKeyboardState(NULL);
+	memcpy(gData.mPreviousKeyStates, gData.mCurrentKeyStates, SDL_NUM_SCANCODES);
+	memcpy(gData.mCurrentKeyStates, gData.mKeyStatePointer, SDL_NUM_SCANCODES);
 	updateControllers();
 }
 
@@ -330,4 +338,20 @@ void turnControllerRumbleOffSingle(int i) {
 
 	SDL_HapticDestroyEffect(gData.mControllers[i].mHaptic, gData.mControllers[i].mHapticEffectID);
 	gData.mControllers[i].mIsRumbling = 0;
+}
+
+
+static int const gKeyboardKeyMapping[] =
+{
+	SDL_SCANCODE_F2,
+	SDL_SCANCODE_F3,
+	SDL_SCANCODE_F4,
+	SDL_SCANCODE_F5,
+	SDL_NUM_SCANCODES,
+}; // TODO: rest of keys
+
+int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
+	int id = gKeyboardKeyMapping[tKey];
+	int ret = !gData.mPreviousKeyStates[id] && gData.mCurrentKeyStates[id];
+	return !gData.mPreviousKeyStates[id] && gData.mCurrentKeyStates[id];
 }

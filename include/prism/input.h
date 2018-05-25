@@ -5,6 +5,7 @@
 #include "geometry.h"
 #include "animation.h"
 
+void initInput();
 void updateInput();
 void resetInputForAllControllers();
 
@@ -99,3 +100,15 @@ void addControllerRumbleBasicSingle(int i, Duration tDuration);
 void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude);
 void turnControllerRumbleOnSingle(int i, int tFrequency, double tAmplitude);
 void turnControllerRumbleOffSingle(int i);
+
+
+typedef enum {
+	KEYBOARD_F2_PRISM,
+	KEYBOARD_F3_PRISM,
+	KEYBOARD_F4_PRISM,
+	KEYBOARD_F5_PRISM,
+	KEYBOARD_F6_PRISM,
+	KEYBOARD_AMOUNT_PRISM,
+} KeyboardKeyPrism;
+
+int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey);

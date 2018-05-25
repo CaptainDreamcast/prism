@@ -51,6 +51,7 @@ void popTextureMemoryStack();
 
 void initMemoryHandler();
 void shutdownMemoryHandler();
+void setMemoryHandlingInactive();
 
 void setMemoryHandlerCompressionActive();
 void setMemoryHandlerCompressionInactive();

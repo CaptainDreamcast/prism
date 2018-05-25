@@ -409,7 +409,6 @@ static void virtualizeTextureMemory(size_t tSize) {
 }
 
 static void makeSpaceInTextureMemory(size_t tSize) {
-	if (!gMemoryHandler.mActive) return;
 	int available = getAvailableTextureMemory();
 
 	if ((int)tSize <= available) return;
@@ -554,7 +553,6 @@ void freeTextureMemory(TextureMemory tMem) {
 }
 
 void referenceTextureMemory(TextureMemory tMem) {
-	if (!gMemoryHandler.mActive) return;
 	if (tMem == NULL) return;
 
 	if (tMem->mIsVirtual) {
@@ -618,9 +616,16 @@ void initMemoryHandler() {
 }
 
 void shutdownMemoryHandler() {
+	if (!gMemoryHandler.mActive) return; // TODO: free properly
+
 	gMemoryHandler.mActive = 0;
 	emptyMemoryListStack(&gMemoryHandler.mMemoryStack);
 	emptyMemoryListStack(&gMemoryHandler.mTextureMemoryStack);
+}
+
+void setMemoryHandlingInactive()
+{
+	gMemoryHandler.mActive = 0;
 }
 
 

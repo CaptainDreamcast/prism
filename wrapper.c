@@ -68,31 +68,33 @@ static struct {
 static void initBasicSystems() {
 	logg("Initiating system.");
 	initSystem();
-	logg("Initiating PowerVR.");
+	debugLog("Initiating PowerVR.");
 	initiatePVR();
-	logg("Initiating memory handler.");
+	debugLog("Initiating memory handler.");
 	initMemoryHandler();
-	logg("Initiating physics.");
+	debugLog("Initiating physics.");
 	initPhysics();
-	logg("Initiating file system.");
+	debugLog("Initiating file system.");
 	initFileSystem();
-	logg("Initiating drawing.");
+	debugLog("Initiating drawing.");
 	initDrawing();
-	logg("Initiating sound.");
+	debugLog("Initiating sound.");
 	initSound();
-	logg("Initiating sound effects.");
+	debugLog("Initiating sound effects.");
 	initSoundEffects();
-	logg("Initiating screen effects.");
+	debugLog("Initiating screen effects.");
 	initScreenEffects();
-	logg("Initiating threading.");
+	debugLog("Initiating threading.");
 	initThreading();
+	debugLog("Initiating input.");
+	initInput();
 
 	gData.mGlobalTimeDilatation = 1;
 }
 
 void initPrismWrapperWithDefaultFlags() {
 	initBasicSystems();
-	logg("Initiating font.");
+	debugLog("Initiating font.");
 	setFont("$/rd/fonts/dolmexica.hdr", "$/rd/fonts/dolmexica.pkg");
 	
 	gData.mIsUsingBasicTextHandler = 1;
@@ -105,12 +107,12 @@ void initPrismWrapperWithConfigFile(char* tPath) {
 	gData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "texthandler", 0);
 	gData.mIsUsingMugen = getMugenDefIntegerOrDefault(&configFile, "Modules", "mugen", 0);
 	if (gData.mIsUsingMugen) {
-		logg("Setting up Mugen Module for game");
+		debugLog("Setting up Mugen Module for game");
 		loadMugenTextHandler();
 	}
 	gData.mIsUsingClipboard = getMugenDefIntegerOrDefault(&configFile, "Modules", "clipboard", 0);
 	if (gData.mIsUsingClipboard) {
-		logg("Setting up Clipboard for game");
+		debugLog("Setting up Clipboard for game");
 		char* fontName = getAllocatedMugenDefStringVariable(&configFile, "Clipboard", "font");
 		addMugenFont(-1, fontName);
 		freeMemory(fontName);
@@ -157,7 +159,7 @@ static void loadingThreadFunction(void* tCaller) {
 	Screen* tScreen = tCaller;
 
 	if (tScreen->mLoad) {
-		logg("Loading user screen data");
+		debugLog("Loading user screen data");
 		tScreen->mLoad();
 	}
 
@@ -169,54 +171,54 @@ static void loadScreen(Screen* tScreen) {
 	gData.mNext = NULL;
 
 	logg("Loading handled screen");
-	logg("Pushing memory stacks");
+	debugLog("Pushing memory stacks");
 	pushMemoryStack();
 	pushTextureMemoryStack();
 
 	logFormat("Blocks allocated pre-screen: %d.", getAllocatedMemoryBlockAmount());
 
-	logg("Setting up wrapper component handler");
+	debugLog("Setting up wrapper component handler");
 	setupWrapperComponentHandler();
-	logg("Setting up Timer");
+	debugLog("Setting up Timer");
 	setupTimer();
-	logg("Setting up Texture pool");
+	debugLog("Setting up Texture pool");
 	setupTexturePool();
-	logg("Setting up Animationhandling");
+	debugLog("Setting up Animationhandling");
 	setupAnimationHandler();
-	logg("Setting up Tweeninghandling");
+	debugLog("Setting up Tweeninghandling");
 	setupTweening();
-	logg("Setting up Physicshandling");
+	debugLog("Setting up Physicshandling");
 	setupPhysicsHandler();
-	logg("Setting up Stagehandling");
+	debugLog("Setting up Stagehandling");
 	setupStageHandler();
-	logg("Setting up Collisionhandling");
+	debugLog("Setting up Collisionhandling");
 	setupCollisionHandler();
-	logg("Setting up Collisionanimationhandling");
+	debugLog("Setting up Collisionanimationhandling");
 	setupCollisionAnimationHandler();
-	logg("Setting up Soundeffecthandling");
+	debugLog("Setting up Soundeffecthandling");
 	setupSoundEffectHandler();
-	logg("Setting up Actorhandling");
+	debugLog("Setting up Actorhandling");
 	setupActorHandler();
 
 	
 
 	if (gData.mIsUsingBasicTextHandler) {
-		logg("Setting up Texthandling");
+		debugLog("Setting up Texthandling");
 		addWrapperComponent(TextHandler);
 	}
 
 	if (gData.mIsUsingMugen) {
-		logg("Setting up Mugen Module");
+		debugLog("Setting up Mugen Module");
 		addWrapperComponent(MugenAnimationHandler);
 		addWrapperComponent(MugenTextHandler);
 	}
 
 	if (gData.mIsUsingClipboard) {
-		logg("Setting up Clipboard");
+		debugLog("Setting up Clipboard");
 		addWrapperComponent(ClipboardHandler);
 	}
 	if (gData.mIsUsingBlitzModule) {
-		logg("Setting up Blitz Module");
+		debugLog("Setting up Blitz Module");
 		addWrapperComponent(BlitzCameraHandler);
 		addWrapperComponent(BlitzParticleHandler);
 		addWrapperComponent(BlitzEntityHandler);
@@ -227,7 +229,7 @@ static void loadScreen(Screen* tScreen) {
 		addWrapperComponent(BlitzTimelineAnimationHandler);
 	}
 
-	logg("Setting up input flanks");
+	debugLog("Setting up input flanks");
 	resetInputForAllControllers();
 	enableDrawing();
 
@@ -235,9 +237,9 @@ static void loadScreen(Screen* tScreen) {
 	int hasLoadingScreen = 0;// TODO
 	if(hasLoadingScreen) {	
 		startThread(loadingThreadFunction, tScreen);
-		logg("Start loading screen");
+		debugLog("Start loading screen");
 		startLoadingScreen(&gData.mHasFinishedLoading);
-		logg("End loading screen");
+		debugLog("End loading screen");
 	} else {
 		loadingThreadFunction(tScreen);
 	}
@@ -248,7 +250,7 @@ static void loadScreen(Screen* tScreen) {
 static void callBetweenScreensCB() {
 	if (!gData.mHasBetweenScreensCB) return;
 
-	logg("Calling user CB");
+	debugLog("Calling user CB");
 	gData.mBetweenScreensCB(gData.mBetweenScreensCaller);
 	gData.mHasBetweenScreensCB = 0;
 }
@@ -257,7 +259,7 @@ static void unloadScreen(Screen* tScreen) {
 	logg("Unloading handled screen");
 	
 	if (tScreen->mUnload) {
-		logg("Unloading user screen data");
+		debugLog("Unloading user screen data");
 		tScreen->mUnload();
 	}
 
@@ -265,32 +267,32 @@ static void unloadScreen(Screen* tScreen) {
 		stopTrack();
 	}
 
-	logg("Shutting down Actorhandling");
+	debugLog("Shutting down Actorhandling");
 	shutdownActorHandler();
-	logg("Shutting down Soundeffecthandling");
+	debugLog("Shutting down Soundeffecthandling");
 	shutdownSoundEffectHandler();
-	logg("Shutting down Collisionanimationhandling");
+	debugLog("Shutting down Collisionanimationhandling");
 	shutdownCollisionAnimationHandler();
-	logg("Shutting down Collisionhandling");
+	debugLog("Shutting down Collisionhandling");
 	shutdownCollisionHandler();
-	logg("Shutting down Stagehandling");
+	debugLog("Shutting down Stagehandling");
 	shutdownStageHandler();
-	logg("Shutting down Physicshandling");
+	debugLog("Shutting down Physicshandling");
 	shutdownPhysicsHandler();
-	logg("Shutting down Tweeninghandling");
+	debugLog("Shutting down Tweeninghandling");
 	shutdownTweening();
-	logg("Shutting down Animationhandling");
+	debugLog("Shutting down Animationhandling");
 	shutdownAnimationHandler();
-	logg("Shutting down Texture pool");
+	debugLog("Shutting down Texture pool");
 	shutdownTexturePool();
-	logg("Shutting down Timer");
+	debugLog("Shutting down Timer");
 	shutdownTimer();
-	logg("Shutting down Wrapper component handler");
+	debugLog("Shutting down Wrapper component handler");
 	shutdownWrapperComponentHandler();
 
 	logFormat("Blocks allocated post-screen: %d.", getAllocatedMemoryBlockAmount());
 
-	logg("Popping Memory Stacks");
+	debugLog("Popping Memory Stacks");
 	popTextureMemoryStack();
 	popMemoryStack();
 
