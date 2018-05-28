@@ -81,7 +81,7 @@ void vector_pop_back(Vector* tVector);
 
 typedef struct {
 	int mSize;
-	Vector mBuckets;
+	void* mBuckets;
 } StringMap;
 
 typedef void(*stringMapMapCB)(void* caller, char* key, void* data);

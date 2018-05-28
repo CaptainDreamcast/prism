@@ -379,13 +379,12 @@ typedef struct {
 
 StringMap new_string_map() {
 	StringMap ret;
-	ret.mBuckets = new_vector();
+	ret.mBuckets = allocMemory(sizeof(StringMapBucket) * MAP_MODULO);
 
 	int i;
 	for (i = 0; i < MAP_MODULO; i++) {
-		StringMapBucket* newBucket = allocMemory(sizeof(StringMapBucket));
+		StringMapBucket* newBucket = &((StringMapBucket*)ret.mBuckets)[i];
 		newBucket->mEntries = new_list();
-		vector_push_back_owned(&ret.mBuckets, newBucket);
 	}
 
 	ret.mSize = 0;
@@ -407,20 +406,22 @@ static int clearStringMapBucketEntry(void* tCaller, void* tData) {
 	return 1;
 }
 
-static void clearStringMapBucket(void* tCaller, void* tData) {
-	StringMapBucket* e = tData;
-	list_remove_predicate(&e->mEntries, clearStringMapBucketEntry, tCaller);
+static void clearStringMapBucket(StringMap* tMap, StringMapBucket* e) {
+	list_remove_predicate(&e->mEntries, clearStringMapBucketEntry, tMap);
 	delete_list(&e->mEntries);
 }
 
 void delete_string_map(StringMap* tMap) {
 	string_map_empty(tMap);
-	delete_vector(&tMap->mBuckets);
+	freeMemory(tMap->mBuckets);
 }
 
 void string_map_empty(StringMap* tMap) {
-	vector_map(&tMap->mBuckets, clearStringMapBucket, tMap); // TODO: rewrite, right now only works because list_empty == list_delete
-	vector_empty(&tMap->mBuckets);
+	int i;
+	for (i = 0; i < MAP_MODULO; i++) {
+		StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[i];
+		clearStringMapBucket(tMap, bucket);
+	}
 }
 
 static int getBucketIDFromString(uint8_t* tKey) {
@@ -437,7 +438,7 @@ static int getBucketIDFromString(uint8_t* tKey) {
 
 static void string_map_push_internal(StringMap* tMap, char* tKey, void* tData, int tIsOwned) {
 	int offset = getBucketIDFromString((uint8_t*)tKey);
-	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 
 	StringMapBucketListEntry* newEntry = allocMemory(sizeof(StringMapBucketListEntry));
 	strcpy(newEntry->mKey, tKey);
@@ -458,7 +459,7 @@ void string_map_push(StringMap* tMap, char* tKey, void* tData) {
 
 void string_map_remove(StringMap* tMap, char* tKey) {
 	int offset = getBucketIDFromString((uint8_t*)tKey);
-	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 
 	if (!list_size(&bucket->mEntries)) {
 		logError("Unable to find key in map.");
@@ -487,7 +488,7 @@ void string_map_remove(StringMap* tMap, char* tKey) {
 
 void* string_map_get(StringMap* tMap, char* tKey) {
 	int offset = getBucketIDFromString((uint8_t*)tKey);
-	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 
 	if (!list_size(&bucket->mEntries)) {
 		logError("Unable to find key in map.");
@@ -526,22 +527,24 @@ static void string_map_map_single_list_entry(void* tCaller, void* tData) {
 	caller->mCB(caller->mCaller, e->mKey, e->mData);
 }
 
-static void string_map_map_single_bucket(void* tCaller, void* tData) {
-	StringMapBucket* e = tData;
+static void string_map_map_single_bucket(StringMapCaller* tCaller, StringMapBucket* e) {
 	list_map(&e->mEntries, string_map_map_single_list_entry, tCaller);
-
 }
 
 void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller) {
 	StringMapCaller caller;
 	caller.mCaller = tCaller;
 	caller.mCB = tCB;
-	vector_map(&tMap->mBuckets, string_map_map_single_bucket, &caller);
+	int i;
+	for (i = 0; i < MAP_MODULO; i++) {
+		StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[i];
+		string_map_map_single_bucket(&caller, bucket);
+	}
 }
 
 int string_map_contains(StringMap* tMap, char* tKey) {
 	int offset = getBucketIDFromString((uint8_t*)tKey);
-	StringMapBucket* bucket = vector_get(&tMap->mBuckets, offset);
+	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 
 	if (!list_size(&bucket->mEntries)) return 0;
 
@@ -637,8 +640,7 @@ static void int_map_map_single_list_entry(void* tCaller, void* tData) {
 	caller->mCB(caller->mCaller, e->mData);
 }
 
-static void int_map_map_single_bucket(void* tCaller, void* tData) {
-	StringMapBucket* e = tData;
+static void int_map_map_single_bucket(IntMapCaller* tCaller, StringMapBucket* e) {
 	list_map(&e->mEntries, int_map_map_single_list_entry, tCaller);
 }
 
@@ -646,7 +648,11 @@ void int_map_map(IntMap* tMap, mapCB tCB, void* tCaller) {
 	IntMapCaller caller;
 	caller.mCaller = tCaller;
 	caller.mCB = tCB;
-	vector_map(&tMap->mBuckets, int_map_map_single_bucket, &caller);
+	int i;
+	for (i = 0; i < MAP_MODULO; i++) {
+		StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[i];
+		int_map_map_single_bucket(&caller, bucket);
+	}
 }
 
 typedef struct {
@@ -666,8 +672,7 @@ static int int_map_remove_predicate_single_list_entry(void* tCaller, void* tData
 	return ret;
 }
 
-static void int_map_remove_predicate_single_bucket(void* tCaller, void* tData) {
-	StringMapBucket* e = tData;
+static void int_map_remove_predicate_single_bucket(IntPredicateCaller* tCaller, StringMapBucket* e) {
 	list_remove_predicate(&e->mEntries, int_map_remove_predicate_single_list_entry, tCaller);
 }
 
@@ -678,7 +683,11 @@ void int_map_remove_predicate(IntMap * tMap, predicateCB tCB, void * tCaller)
 	caller.mCaller = tCaller;
 	caller.mCB = tCB;
 	caller.mMap = tMap;
-	vector_map(&tMap->mBuckets, int_map_remove_predicate_single_bucket, &caller);
+	int i;
+	for (i = 0; i < MAP_MODULO; i++) {
+		StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[i];
+		int_map_remove_predicate_single_bucket(&caller, bucket);
+	}
 }
 
 int int_map_contains(IntMap * tMap, int tKey)
