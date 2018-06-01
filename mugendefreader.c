@@ -1337,6 +1337,17 @@ void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, char* tGroup, cha
 	}
 }
 
+static char* createAllocatedString(char* tString) {
+	char* ret = allocMemory(strlen(tString) + 1);
+	strcpy(ret, tString);
+	return ret;
+}
+
+char* getAllocatedMugenDefStringOrDefault(MugenDefScript* tScript, char* tGroupName, char* tVariableName, char* tDefault) {
+	if (isMugenDefStringVariable(tScript, tGroupName, tVariableName)) return getAllocatedMugenDefStringVariable(tScript, tGroupName, tVariableName);
+	else return createAllocatedString(tDefault);
+}
+
 double getMugenDefFloatOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, double tDefault) {
 	if (isMugenDefFloatVariable(s, tGroup, tVariable)) {
 		return getMugenDefFloatVariable(s, tGroup, tVariable);
