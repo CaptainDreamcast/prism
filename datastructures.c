@@ -377,6 +377,8 @@ typedef struct {
 	List mEntries;
 } StringMapBucket;
 
+int gDebugStringMapAmount;
+
 StringMap new_string_map() {
 	StringMap ret;
 	ret.mBuckets = allocMemory(sizeof(StringMapBucket) * MAP_MODULO);
@@ -387,6 +389,7 @@ StringMap new_string_map() {
 		newBucket->mEntries = new_list();
 	}
 
+	gDebugStringMapAmount++;
 	ret.mSize = 0;
 	return ret;
 }
@@ -414,6 +417,7 @@ static void clearStringMapBucket(StringMap* tMap, StringMapBucket* e) {
 void delete_string_map(StringMap* tMap) {
 	string_map_empty(tMap);
 	freeMemory(tMap->mBuckets);
+	gDebugStringMapAmount--;
 }
 
 void string_map_empty(StringMap* tMap) {

@@ -214,6 +214,9 @@
     <ClCompile Include="..\..\memorypool.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\memorystack.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -431,6 +434,9 @@
       <Filter>hdr</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\prism\memorypool.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\memorystack.h">
       <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>
