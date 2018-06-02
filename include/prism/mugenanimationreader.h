@@ -4,6 +4,7 @@
 #include "animation.h"
 
 #include "mugenspritefilereader.h"
+#include "memorystack.h"
 
 typedef enum {
 	FACE_DIRECTION_LEFT,
@@ -45,6 +46,7 @@ typedef struct {
 } MugenAnimations;
 
 MugenAnimations loadMugenAnimationFile(char* tPath);
+MugenAnimations loadMugenAnimationFileWithMemoryStack(char* tPath, MemoryStack* tMemoryStack);
 void unloadMugenAnimationFile(MugenAnimations* tAnimations);
 
 int hasMugenAnimation(MugenAnimations* tAnimations, int i);
