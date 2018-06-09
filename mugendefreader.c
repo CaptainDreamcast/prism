@@ -1368,6 +1368,11 @@ char* getAllocatedMugenDefStringOrDefault(MugenDefScript* tScript, char* tGroupN
 	else return createAllocatedString(tDefault);
 }
 
+char* getAllocatedMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, char* tDefault) {
+	if (isMugenDefStringVariableAsGroup(tGroup, tVariable)) return getAllocatedMugenDefStringVariableAsGroup(tGroup, tVariable);
+	else return createAllocatedString(tDefault);
+}
+
 double getMugenDefFloatOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, double tDefault) {
 	if (isMugenDefFloatVariable(s, tGroup, tVariable)) {
 		return getMugenDefFloatVariable(s, tGroup, tVariable);

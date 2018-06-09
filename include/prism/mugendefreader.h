@@ -110,6 +110,7 @@ GeoRectangle getMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement
 
 void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, char* tGroup, char* tVariable, char* tDefault);
 char* getAllocatedMugenDefStringOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, char* tDefault);
+char* getAllocatedMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, char* tDefault);
 
 double getMugenDefFloatOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, double tDefault);
 double getMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, double tDefault);
