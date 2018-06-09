@@ -287,21 +287,25 @@ static int isGroup(BufferPointer p) {
 	return *p == '[';
 }
 
-static int searchForChar(Buffer* b, BufferPointer p, char tChar) {
+static char* searchForChar(Buffer* b, BufferPointer p, char tChar) {
 	while (p < (char*)b->mData + b->mLength && !isLinebreak(p) && !isComment(p)) {
-		if (*p == tChar) return 1;
+		if (*p == tChar) return p;
 		p++;
 	}
 
-	return 0;
+	return NULL;
 }
 
 static int isAssignment(Buffer* b, BufferPointer p, char tAssignmentChar) {
-	return searchForChar(b, p, tAssignmentChar);
+	char* assignmentPos = searchForChar(b, p, tAssignmentChar);
+	if (!assignmentPos) return 0;
+
+	char* commaPos = searchForChar(b, p, ',');
+	return !commaPos || (assignmentPos < commaPos);
 }
 
 static int isVectorStatement(Buffer* b, BufferPointer p) {
-	return searchForChar(b, p, ',');
+	return (int)searchForChar(b, p, ',');
 }
 
 static int isLoopStartStatement(Buffer* b, BufferPointer p) {
@@ -342,6 +346,16 @@ static int isTextStatement() {
 	return ret;
 }
 
+static int isSpecialStatement(Buffer* b, BufferPointer p) {
+	char* text = getLineAsAllocatedString(b, p);
+	turnStringLowercase(text);
+	int ret = 0;
+	ret |= !strcmp("randomselect", text);
+
+	destroyMugenDefString(text);
+	return ret;
+}
+
 static void parseSingleToken(Buffer* b, BufferPointer* p) {
 	while (isEmpty(*p) || isLinebreak(*p)) {
 		if (increaseAndCheckIfOver(b, p)) {
@@ -358,6 +372,7 @@ static void parseSingleToken(Buffer* b, BufferPointer* p) {
 	else if (isVectorStatement(b, *p)) parseVectorStatement(b, p);
 	else if (isLoopStartStatement(b, *p)) parseLoopStartStatement(b, p);
 	else if (isInterpolationStatement(b, *p)) parseInterpolationStatement(b, p);
+	else if (isSpecialStatement(b, *p)) parseTextStatement(b, p);
 	else {
 		logWarningFormat("Unable to parse token:\n%.100s\n", (char*)(*p));
 		parseComment(b, p);
@@ -554,8 +569,12 @@ static void setVectorElement(MugenDefScriptGroupElement* element, MugenDefToken*
 		if (tempComma != NULL) *tempComma = '\0';
 		comma = strchr(comma + 1, ',');
 
-		e->mVector.mElement[i] = allocMemory(strlen(temp) + 10);
-		strcpy(e->mVector.mElement[i], temp);
+		int offset = 0;
+		while (temp[offset] == ' ') offset++;
+		char* start = temp + offset;
+
+		e->mVector.mElement[i] = allocMemory(strlen(start) + 3);
+		strcpy(e->mVector.mElement[i], start);
 
 		i++;
 	}
@@ -766,10 +785,11 @@ static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken) {
 		else if (isInterpolationStatementToken(tToken)) {
 			setInterpolationStatement(tScript, &tToken);
 		}
+		else if (isInterpolationStatementToken(tToken)) {
+			setInterpolationStatement(tScript, &tToken);
+		}
 		else {
-			logError("Unable to read token.");
-			logErrorString(tToken->mValue);
-			abortSystem();
+			setTextStatement(tScript, &tToken);
 		}
 
 		MugenDefToken* finalToken = tToken->mNext;

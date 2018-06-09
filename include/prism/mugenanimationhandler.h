@@ -71,6 +71,8 @@ void changeMugenAnimationWithStartStep(int tID, MugenAnimation* tNewAnimation, i
 int isStartingMugenAnimationElementWithID(int tID, int tStepID);
 int getTimeFromMugenAnimationElement(int tID, int tStep);
 int getMugenAnimationElementFromTimeOffset(int tID, int tTime);
+int isMugenAnimationTimeOffsetInAnimation(int tID, int tTime);
+int getMugenAnimationTimeWhenStepStarts(int tID, int tStep);
 
 void advanceMugenAnimationOneTick(int tID);
 

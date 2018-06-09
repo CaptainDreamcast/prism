@@ -681,6 +681,19 @@ int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
 	return ret + 1;
 }
 
+int isMugenAnimationTimeOffsetInAnimation(int tID, int tTime) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+
+	MugenDuration sum = getTimeWhenStepStarts(e, vector_size(&e->mAnimation->mSteps));
+	return tTime < sum;
+}
+
+int getMugenAnimationTimeWhenStepStarts(int tID, int tStep) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	tStep = min(tStep, vector_size(&e->mAnimation->mSteps));
+	return getTimeWhenStepStarts(e, tStep);
+}
+
 static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	if (e->mIsPaused) return 0;
 
