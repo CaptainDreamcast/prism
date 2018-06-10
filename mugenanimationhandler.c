@@ -355,6 +355,11 @@ int getMugenAnimationAnimationStep(int tID) {
 	return e->mStep;
 }
 
+int getMugenAnimationAnimationStepAmount(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return vector_size(&e->mAnimation->mSteps);
+}
+
 int getMugenAnimationRemainingAnimationTime(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
@@ -363,6 +368,22 @@ int getMugenAnimationRemainingAnimationTime(int tID)
 	remainingTime = max(0, remainingTime); // TODO: fix when reading out
 
 	return remainingTime;
+}
+
+int getMugenAnimationTime(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mOverallTime;
+}
+
+int getMugenAnimationDuration(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	return e->mAnimation->mTotalDuration;
+}
+
+Vector3DI getMugenAnimationSprite(int tID) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationStep* step = getCurrentAnimationStep(e);
+	return makeVector3DI(step->mGroupNumber, step->mSpriteNumber, 0);
 }
 
 void setMugenAnimationFaceDirection(int tID, int tIsFacingRight)

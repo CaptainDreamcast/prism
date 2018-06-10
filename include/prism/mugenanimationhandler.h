@@ -23,7 +23,11 @@ void setMugenAnimationCallback(int tID, void(*tFunc)(void*), void* tCaller);
 
 int getMugenAnimationAnimationNumber(int tID);
 int getMugenAnimationAnimationStep(int tID);
+int getMugenAnimationAnimationStepAmount(int tID);
 int getMugenAnimationRemainingAnimationTime(int tID);
+int getMugenAnimationTime(int tID);
+int getMugenAnimationDuration(int tID);
+Vector3DI getMugenAnimationSprite(int tID);
 void setMugenAnimationFaceDirection(int tID, int tIsFacingRight);
 void setMugenAnimationVerticalFaceDirection(int tID, int tIsFacingDown);
 void setMugenAnimationRectangleWidth(int tID, int tWidth);

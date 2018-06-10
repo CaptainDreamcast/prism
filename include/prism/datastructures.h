@@ -47,6 +47,7 @@ void list_iterator_increase(ListIterator* tIterator);
 void list_iterator_remove(List* tList, ListIterator tIterator);
 int list_has_next(ListIterator tIterator);
 void * list_front(List * tList);
+int list_contains(List* tList, void* tData);
 
 typedef struct {
 

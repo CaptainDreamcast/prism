@@ -1,6 +1,7 @@
 #include "prism/input.h"
 
 #include <stdint.h>
+#include <stdarg.h>
 
 #include <SDL.h>
 
@@ -343,15 +344,46 @@ void turnControllerRumbleOffSingle(int i) {
 
 static int const gKeyboardKeyMapping[] =
 {
+	SDL_SCANCODE_C,
+	SDL_SCANCODE_D,
+	SDL_SCANCODE_I,
+	SDL_SCANCODE_L,
+	SDL_SCANCODE_S,
+	SDL_SCANCODE_V,
+	SDL_SCANCODE_SPACE,
+	SDL_SCANCODE_F1,
 	SDL_SCANCODE_F2,
 	SDL_SCANCODE_F3,
 	SDL_SCANCODE_F4,
 	SDL_SCANCODE_F5,
+	SDL_SCANCODE_F6,
+	SDL_SCANCODE_PAUSE,
+	SDL_SCANCODE_LCTRL,
+	SDL_SCANCODE_LSHIFT,
 	SDL_NUM_SCANCODES,
 }; // TODO: rest of keys
 
 int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
 	int id = gKeyboardKeyMapping[tKey];
-	int ret = !gData.mPreviousKeyStates[id] && gData.mCurrentKeyStates[id];
 	return !gData.mPreviousKeyStates[id] && gData.mCurrentKeyStates[id];
+}
+
+int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
+	if (!tKeyAmount) return 0;
+
+	int i;
+	va_list vl;
+	va_start(vl, tKeyAmount);
+
+	int previousKeyPressed = 1, currentKeyPressed = 1;
+	for (i = 0; i < tKeyAmount; i++)
+	{
+		KeyboardKeyPrism singleKey = va_arg(vl, KeyboardKeyPrism);
+		int id = gKeyboardKeyMapping[singleKey];
+		previousKeyPressed = previousKeyPressed && gData.mPreviousKeyStates[id];
+		currentKeyPressed = currentKeyPressed && gData.mCurrentKeyStates[id];
+	}
+	va_end(vl);
+
+	return !previousKeyPressed && currentKeyPressed;
 }

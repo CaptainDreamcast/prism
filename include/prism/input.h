@@ -2,6 +2,8 @@
 
 #define MAXIMUM_CONTROLLER_AMOUNT 2
 
+#include <stdio.h>
+
 #include "geometry.h"
 #include "animation.h"
 
@@ -103,12 +105,24 @@ void turnControllerRumbleOffSingle(int i);
 
 
 typedef enum {
+	KEYBOARD_C_PRISM,
+	KEYBOARD_D_PRISM,
+	KEYBOARD_I_PRISM,
+	KEYBOARD_L_PRISM,
+	KEYBOARD_S_PRISM,
+	KEYBOARD_V_PRISM,
+	KEYBOARD_SPACE_PRISM,
+	KEYBOARD_F1_PRISM,
 	KEYBOARD_F2_PRISM,
 	KEYBOARD_F3_PRISM,
 	KEYBOARD_F4_PRISM,
 	KEYBOARD_F5_PRISM,
 	KEYBOARD_F6_PRISM,
+	KEYBOARD_PAUSE_PRISM,
+	KEYBOARD_CTRL_LEFT_PRISM,
+	KEYBOARD_SHIFT_LEFT_PRISM,
 	KEYBOARD_AMOUNT_PRISM,
 } KeyboardKeyPrism;
 
 int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey);
+int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...);

@@ -239,7 +239,23 @@ void * list_front(List * tList)
 	return list_get_by_ordered_index(tList, 0);
 }
 
+typedef struct {
+	void* mData;
+	int mFound;
+} ListContainsCaller;
 
+static void compareSingleListElement(void* tCaller, void* tData) {
+	ListContainsCaller* caller = tCaller;
+	caller->mFound |= caller->mData == tData;
+}
+
+int list_contains(List* tList, void* tData) {
+	ListContainsCaller caller;
+	caller.mData = tData;
+	caller.mFound = 0;
+	list_map(tList, compareSingleListElement, &caller);
+	return caller.mFound;
+}
 
 Vector new_vector() {
 	Vector ret;
