@@ -8,6 +8,7 @@
 #include "prism/texture.h"
 #include "prism/system.h"
 #include "prism/log.h"
+#include "prism/math.h"
 
 struct FadeInStruct;
 

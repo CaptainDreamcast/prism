@@ -218,3 +218,9 @@ int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
 	// TODO
 	return 0;
 }
+
+int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
+	(void)tKeyAmount;
+	// TODO
+	return 0;
+}

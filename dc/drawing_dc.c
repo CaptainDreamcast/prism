@@ -24,6 +24,9 @@ static struct {
 
 	BlendType mBlendType;
 	int mIsDisabled;
+
+	uint64_t mPreviousFrameTime;
+	uint64_t mCurrentFrameTime;
 } gData;
 
 static void applyDrawingMatrix(pvr_vertex_t* tVert) {
@@ -48,6 +51,9 @@ void initDrawing(){
 	setDrawingParametersToIdentity();
 	gData.mMatrixStack = new_vector();
 	gData.mIsDisabled = 0;
+
+	gData.mPreviousFrameTime = timer_ms_gettime64() - (1000 / 60);
+	gData.mCurrentFrameTime = timer_ms_gettime64();
 }
 
 #define PVR_BLEND_ZERO          0   /**< \brief None of this color */
@@ -213,6 +219,9 @@ void waitForScreen() {
   debugLog("Wait for screen");
   pvr_wait_ready();
   debugLog("Wait for screen done");
+
+  gData.mPreviousFrameTime = gData.mCurrentFrameTime;
+  gData.mCurrentFrameTime = timer_ms_gettime64();
 }
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
@@ -435,4 +444,9 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer 
 		uint32_t value = packPaletteEntry(a, r, g, b);
 		pvr_set_pal_entry(start + i, value);
 	}
+}
+
+double getRealFramerate() {
+	uint64_t delta = gData.mCurrentFrameTime - gData.mPreviousFrameTime;
+	return 1000.0 / delta;
 }

@@ -9,6 +9,14 @@ complete: clean build_images build_develop
 
 romdisk: clean build_images to_romdisk build_romdisk
 
+assets: clean_filesystem build_images
+
+rd_assets: clean_filesystem build_images to_romdisk
+
+code: build_develop
+
+rd_code: build_romdisk
+
 build_images: copy_debug make_filesystem copy_assets copy_logo copy_effects convert_assets actions_user
 
 copy_debug:
@@ -48,21 +56,20 @@ convert_assets:
 	find filesystem/ -name '*.wav' | xargs rm -f
 	#find assets/ -name '*.wav' | xargs -I {} sox {} -b 16 filesystem/{}
 	
-	mkdir romdisk_boot/effects
-	cp -r filesystem/effects romdisk_boot
-	
 to_romdisk:
 	cp -r filesystem/* romdisk_boot
 	
-clean: clean_user clean_general
+clean: clean_user clean_filesystem clean_general
 	
+clean_filesystem:
+	-rm -r -f filesystem
+	-rm -r -f romdisk_boot
+	-rm -f romdisk.img
+
 clean_general:
 	-rm -f $(TARGET).elf $(OBJS)
 	-rm -f $(TARGET).BIN
 	-rm -f assets/debug/*.pkg
-	-rm -r -f romdisk_boot
-	-rm -r -f filesystem
-	-rm -f romdisk.img
 
 build_develop: $(OBJS) 
 	$(KOS_CC) $(KOS_CFLAGS) -DDEVELOP -I${KOS_BASE}/../extensions/include $(KOS_LDFLAGS) \

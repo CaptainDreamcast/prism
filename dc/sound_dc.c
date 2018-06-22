@@ -54,6 +54,11 @@ void resumeTrack() {
 	cdrom_cdda_resume();
 }
 
+void streamMusicFile(char* tPath) {
+	(void)tPath;
+	// TODO
+}
+
 static ActorBlueprint MicrophoneHandler; // TODO: implement microphone
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint()
