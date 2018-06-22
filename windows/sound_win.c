@@ -77,19 +77,23 @@ double getPanningValue() {
 	return (gData.mPanning / 128.0) - 1.0;
 }
 
-static void loadTrack(int tTrack) {
-	assert(!gData.mHasLoadedTrack);
-
-	char path[1024];
+static void playMusicPath(char* tPath) {
 	char fullPath[1024];
-	sprintf(path, "tracks/%d.wav", tTrack);
-	getFullPath(fullPath, path);
+	getFullPath(fullPath, tPath);
 
 	Buffer b = fileToBuffer(fullPath);
 	SDL_RWops* rwOps = SDL_RWFromConstMem(b.mData, b.mLength);
 	gData.mTrackChunk = Mix_LoadWAV_RW(rwOps, 0);
 	freeBuffer(b);
 	gData.mHasLoadedTrack = 1;
+}
+
+static void loadTrack(int tTrack) {
+	assert(!gData.mHasLoadedTrack);
+
+	char path[1024];
+	sprintf(path, "tracks/%d.wav", tTrack);
+	playMusicPath(path);
 }
 
 static void unloadTrack() {
@@ -143,6 +147,11 @@ void resumeTrack()
 void playTrackOnce(int tTrack)
 {
 	playTrackGeneral(tTrack, 0);
+}
+
+void streamMusicFile(char * tPath)
+{
+	playMusicPath(tPath);
 }
 
 

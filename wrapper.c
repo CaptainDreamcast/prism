@@ -42,6 +42,11 @@
 #include "prism/thread.h"
 #include "prism/loadingscreen.h"
 
+typedef struct {
+	int mIsPaused;
+
+} WrapperDebug;
+
 static struct {
 	int mIsAborted;
 	Screen* mNext;
@@ -63,6 +68,8 @@ static struct {
 	void* mBetweenScreensCaller;
 
 	int mIsNotPausingTracksBetweenScreens;
+
+	WrapperDebug mDebug;
 } gData;
 
 static void initBasicSystems() {
@@ -302,6 +309,18 @@ static void unloadScreen(Screen* tScreen) {
 	logTextureMemoryState();
 }
 
+static void updateScreenDebug() {
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_PAUSE_PRISM)) {
+		gData.mDebug.mIsPaused = gData.mDebug.mIsPaused ? 0 : 2;
+	}
+
+	if (gData.mDebug.mIsPaused == 1) gData.mDebug.mIsPaused++;
+	if (gData.mDebug.mIsPaused && hasPressedKeyboardKeyFlank(KEYBOARD_SCROLLLOCK_PRISM)) {
+		gData.mDebug.mIsPaused = 1;
+	}
+
+}
+
 static void updateScreenAbort() {
 	if (hasPressedAbortFlank()) {
 		if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) {
@@ -314,9 +333,7 @@ static void updateScreenAbort() {
 
 }
 
-static void updateScreen() {
-	updateSystem();
-	updateInput();
+static void updatePausableScreen() {
 	updatePhysicsHandler();
 	updateTweening();
 	updateAnimationHandler();
@@ -330,7 +347,17 @@ static void updateScreen() {
 	if (gData.mScreen->mUpdate) {
 		gData.mScreen->mUpdate();
 	}
+}
 
+static void updateScreen() {
+	updateSystem();
+	updateInput();
+
+	if (gData.mDebug.mIsPaused < 2) {
+		updatePausableScreen();
+	}
+
+	updateScreenDebug();
 	updateScreenAbort();
 }
 

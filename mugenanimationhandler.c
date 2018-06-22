@@ -98,6 +98,8 @@ typedef struct {
 	double mG;
 	double mB;
 	double mAlpha;
+
+	int mIsCollisionDebugActive;
 } MugenAnimationHandlerElement;
 
 static struct {
@@ -324,6 +326,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 
 	e->mIsPaused = 0;
 	e->mIsLooping = 1;
+	e->mIsCollisionDebugActive = 0;
 
 	e->mR = e->mG = e->mB = e->mAlpha = 1;
 
@@ -745,6 +748,11 @@ void advanceMugenAnimationOneTick(int tID)
 	}
 }
 
+void setMugenAnimationCollisionDebug(int tID, int tIsActive) {
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	e->mIsCollisionDebugActive = tIsActive;
+}
+
 void pauseMugenAnimation(int tID)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
@@ -931,9 +939,55 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	setDrawingParametersToIdentity();
 }
 
+typedef struct {
+	MugenAnimationHandlerElement* e;
+	Position mPosition;
+
+} DebugCollisionHitboxDrawCaller;
+
+static void drawSingleAnimationSingleDebugCollisionHitbox(void* tCaller, void* tData) {
+	DebugCollisionHitboxDrawCaller* caller = tCaller;
+	MugenAnimationHandlerHitboxElement* element = tData;
+
+	Position cameraOffset;
+	if (caller->e->mHasCameraPositionReference) {
+		cameraOffset = *caller->e->mCameraPositionReference;
+	}
+	else {
+		cameraOffset = makePosition(0, 0, 0);
+	}
+
+	Vector3D color;
+	if (element->mList == caller->e->mPassiveCollisionList) {
+		color = makePosition(0, 0, 1);
+	}
+	else {
+		color = makePosition(1, 0, 0);
+	}
+
+	double alpha = 0.3;
+
+
+	drawColliderSolid(element->mCollider, caller->e->mPlayerPositionReference, cameraOffset, color, alpha);
+}
+
+static void drawSingleAnimationDebugCollisionHitboxes(MugenAnimationHandlerElement* e) {
+
+
+
+
+	DebugCollisionHitboxDrawCaller caller;
+	caller.e = e;
+	list_map(&e->mActiveHitboxes, drawSingleAnimationSingleDebugCollisionHitbox, &caller);
+}
+
 static void drawSingleMugenAnimation(void* tCaller, void* tData) {
 	(void)tCaller;
 	MugenAnimationHandlerElement* e = tData;
+
+	if (e->mIsCollisionDebugActive) {
+		drawSingleAnimationDebugCollisionHitboxes(e);
+	}
 
 	if (e->mIsInvisible) {
 		return;

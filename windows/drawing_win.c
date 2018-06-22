@@ -59,8 +59,6 @@ typedef struct {
 
 	Matrix4D mTransformationMatrix;
 
-	int mFrameStartTime;
-
 	Vector mEffectStack;
 
 	int mIsDisabled;
@@ -111,6 +109,11 @@ static struct {
 
 	Vector3D mScreenScale;
 } gOpenGLData;
+
+static struct {
+	int mFrameStartTime;
+	double mRealFramerate;
+} gBookkeepingData;
 
 static Vector gDrawVector;
 static DrawingData gData;
@@ -191,7 +194,7 @@ void initDrawing() {
 	TTF_Init();
 
 	gDrawVector = new_vector();
-	gData.mFrameStartTime = 0;
+	gBookkeepingData.mFrameStartTime = 0;
 
 	gData.mEffectStack = new_vector();
 
@@ -491,17 +494,9 @@ void stopDrawing() {
 }
 
 void waitForScreen() {
-	double frameMS = (1.0 / 60) * 1000;
-	int frameEndTime = (int)(gData.mFrameStartTime + ceil(frameMS));
-	int waitTime = frameEndTime - SDL_GetTicks();
-
-	if (waitTime > 0) {
-#ifndef __EMSCRIPTEN__
-		SDL_Delay(waitTime);
-#endif
-	}
-
-	gData.mFrameStartTime = SDL_GetTicks();
+	int now = SDL_GetTicks();
+	gBookkeepingData.mRealFramerate = 1000.0 / (now - gBookkeepingData.mFrameStartTime);
+	gBookkeepingData.mFrameStartTime = now;
 }
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
@@ -765,4 +760,7 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer 
 
 SDL_Color* getSDLColorPalette(int tIndex) {
 	return gData.mPalettes[tIndex];
+}
+double getRealFramerate() {
+	return gBookkeepingData.mRealFramerate;
 }

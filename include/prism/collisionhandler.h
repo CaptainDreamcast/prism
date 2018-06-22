@@ -23,6 +23,7 @@ int isHandledCollisionBelowOtherCollision(int tListID1, int tElementID1, int tLi
 int isHandledCollisionLeftOfOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2);
 int isHandledCollisionRightOfOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2);
 
+void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPositionOffset, Vector3D tColor, double tAlpha);
 void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition);
 void drawHandledCollisions();
 void activateCollisionHandlerDebugMode();

@@ -88,3 +88,4 @@ void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTa
 void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer);
 void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer tBuffer);
 
+double getRealFramerate();

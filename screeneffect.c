@@ -214,8 +214,8 @@ void setFadeColorRGB(double r, double g, double b) {
 void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
 	if (!gData.mIsActive) return;
 
-	double dx = (tRect.mBottomRight.x - tRect.mTopLeft.x) + 1;
-	double dy = (tRect.mBottomRight.y - tRect.mTopLeft.y) + 1;
+	double dx = (tRect.mBottomRight.x - tRect.mTopLeft.x);
+	double dy = (tRect.mBottomRight.y - tRect.mTopLeft.y);
 	dx /= gData.mWhiteTexture.mTextureSize.x;
 	dy /= gData.mWhiteTexture.mTextureSize.y;
 
@@ -223,6 +223,19 @@ void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
 	setDrawingBaseColor(tColor);
 	drawSprite(gData.mWhiteTexture, tRect.mTopLeft, makeRectangleFromTexture(gData.mWhiteTexture));
 	setDrawingParametersToIdentity();
+}
+
+void drawColoredHorizontalLine(Position tA, Position tB, Color tColor)
+{
+	if (tA.y != tB.y) return;
+
+	double x = min(tA.x, tB.x);
+	double w = fabs(tB.x - tA.x);
+	drawColoredRectangle(makeGeoRectangle3D(x, tA.y, tA.z, w, 1), tColor);
+}
+
+void drawColoredPoint(Position tPoint, Color tColor) {
+	drawColoredRectangle(makeGeoRectangle3D(tPoint.x, tPoint.y, tPoint.z, 1, 1), tColor);
 }
 
 void setScreenBlack() {
@@ -256,4 +269,9 @@ void setScreenWhite() {
 
 void unsetScreenWhite() {
 	unsetScreenColor();
+}
+
+TextureData getEmptyWhiteTexture()
+{
+	return gData.mWhiteTexture;
 }

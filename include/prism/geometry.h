@@ -50,6 +50,7 @@ Position getDirection(Position tFrom, Position tTo);
 double getDistance2D(Position tFrom, Position tTo);
 Line makeLine(Vector3D tStart, Vector3D tEnd);
 GeoRectangle makeGeoRectangle(double x, double y, double w, double h);
+GeoRectangle makeGeoRectangle3D(double x, double y, double z, double w, double h);
 
 Vector3DI vecAddI(Vector3DI v1, Vector3DI v2);
 int vecEqualsI(Vector3DI v1, Vector3DI v2);

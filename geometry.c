@@ -140,6 +140,17 @@ GeoRectangle makeGeoRectangle(double x, double y, double w, double h)
 	return ret;
 }
 
+GeoRectangle makeGeoRectangle3D(double x, double y, double z, double w, double h) {
+	GeoRectangle ret;
+	ret.mTopLeft.x = x;
+	ret.mTopLeft.y = y;
+	ret.mTopLeft.z = z;
+	ret.mBottomRight.x = x + w;
+	ret.mBottomRight.y = y + h;
+	ret.mBottomRight.z = z;
+	return ret;
+}
+
 Vector3DI vecAddI(Vector3DI v1, Vector3DI v2) {
 	v1.x += v2.x;
 	v1.y += v2.y;

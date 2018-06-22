@@ -80,6 +80,8 @@ int getMugenAnimationTimeWhenStepStarts(int tID, int tStep);
 
 void advanceMugenAnimationOneTick(int tID);
 
+void setMugenAnimationCollisionDebug(int tID, int tIsActive);
+
 void pauseMugenAnimation(int tID);
 void unpauseMugenAnimation(int tID);
 

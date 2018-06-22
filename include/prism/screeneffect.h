@@ -1,6 +1,7 @@
 #pragma once
 
 #include "animation.h"
+#include "texture.h"
 
 typedef void(*ScreenEffectFinishedCB)(void* tCaller);
 
@@ -13,6 +14,8 @@ void setFadeColor(Color tColor);
 void setFadeColorRGB(double r, double g, double b);
 
 void drawColoredRectangle(GeoRectangle tRect, Color tColor);
+void drawColoredHorizontalLine(Position tA, Position tB, Color tColor);
+void drawColoredPoint(Position tPoint, Color tColor);
 
 void setScreenColor(Color tColor);
 void setScreenBackgroundColorRGB(double tR, double tG, double tB);
@@ -22,3 +25,5 @@ void unsetScreenBlack();
 
 void setScreenWhite();
 void unsetScreenWhite();
+
+TextureData getEmptyWhiteTexture();

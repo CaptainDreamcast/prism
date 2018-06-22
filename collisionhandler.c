@@ -8,6 +8,8 @@
 #include "prism/drawing.h"
 #include "prism/log.h"
 #include "prism/system.h"
+#include "prism/screeneffect.h"
+#include "prism/geometry.h"
 
 typedef struct {
 	int mListID;
@@ -39,10 +41,6 @@ typedef struct {
 	int mIsActive;
 	
 	Position* mScreenPositionReference;
-
-	TextureData mCollisionRectTexture;
-	TextureData mCollisionCircTexture;
-
 } CollisionHandlerDebugData;
 
 static struct {
@@ -268,49 +266,71 @@ int isHandledCollisionRightOfOtherCollision(int tListID1, int tElementID1, int t
 
 #define DEBUG_Z 99
 
-static void drawCollisionRect(CollisionRect tRect, Position* tBasePosition){
+static void drawCollisionRect(CollisionRect tRect, Position tBasePosition, Position tScreenPositionOffset, Vector3D tColor, double tAlpha){
 	double dx = tRect.mBottomRight.x -  tRect.mTopLeft.x;
 	double dy = tRect.mBottomRight.y -  tRect.mTopLeft.y;
 	
 	if(dx < 0 || dy < 0) return;
 
-	Position position = vecAdd(tRect.mTopLeft, *tBasePosition);
-	
-	if(gData.mDebug.mScreenPositionReference != NULL) {	
-		position = vecAdd(position, vecScale(*gData.mDebug.mScreenPositionReference, -1));
-	}
-
+	Position position = vecAdd(tRect.mTopLeft, tBasePosition);
+	position = vecSub(position, tScreenPositionOffset);
 	position.z = DEBUG_Z;
 	
 	Vector3D scale = makePosition(dx / 16.0, dy / 16.0, 1);
 	scaleDrawing3D(scale, position);
+	
+	setDrawingBaseColorAdvanced(tColor.x, tColor.y, tColor.z);
+	setDrawingTransparency(tAlpha);
 
-	drawSprite(gData.mDebug.mCollisionRectTexture, position, makeRectangleFromTexture(gData.mDebug.mCollisionRectTexture));
+	TextureData whiteTexture = getEmptyWhiteTexture();
+	drawSprite(whiteTexture, position, makeRectangleFromTexture(whiteTexture));
 	setDrawingParametersToIdentity();
 
 	
 }
 
-static void drawCollisionCirc(CollisionCirc tCirc, Position* tBasePosition) {
+static void drawCollisionCirc(CollisionCirc tCirc, Position tBasePosition, Position tScreenPositionOffset, Vector3D tColor, double tAlpha) {
 	double r = tCirc.mRadius;
 	double d = r * 2;
 
 	if (r < 0) return;
 
-	Position position = vecAdd(tCirc.mCenter, *tBasePosition);
+	Position position = vecAdd(tCirc.mCenter, tBasePosition);
 	position = vecAdd(position, vecScale(makePosition(r, r, 0), -1));
-
-	if (gData.mDebug.mScreenPositionReference != NULL) {
-		position = vecAdd(position, vecScale(*gData.mDebug.mScreenPositionReference, -1));
-	}
-
+	position = vecSub(position, tScreenPositionOffset);
 	position.z = DEBUG_Z;
 
 	Vector3D scale = makePosition(d / 16.0, d / 16.0, 1);
 	scaleDrawing3D(scale, position);
+	
+	setDrawingBaseColorAdvanced(tColor.x, tColor.y, tColor.z);
+	setDrawingTransparency(tAlpha);
 
-	drawSprite(gData.mDebug.mCollisionCircTexture, position, makeRectangleFromTexture(gData.mDebug.mCollisionCircTexture));
+	TextureData whiteTexture = getEmptyWhiteTexture();
+	drawSprite(whiteTexture, position, makeRectangleFromTexture(whiteTexture)); // TODO: circle texture
 	setDrawingParametersToIdentity();
+}
+
+void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPositionOffset, Vector3D tColor, double tAlpha) {
+	Position basePosition;
+	if (tCollider.mBasePosition) basePosition = *tCollider.mBasePosition;
+	else basePosition = makePosition(0, 0, 0);
+
+	basePosition = vecAdd(basePosition, tOffset);
+
+	if (tCollider.mType == COLLISION_RECT) {
+		CollisionRect* rect = tCollider.mData;
+		drawCollisionRect(*rect, basePosition, tScreenPositionOffset, tColor, tAlpha);
+	}
+	else if (tCollider.mType == COLLISION_CIRC) {
+		CollisionCirc* circ = tCollider.mData;
+		drawCollisionCirc(*circ, basePosition, tScreenPositionOffset, tColor, tAlpha);
+	}
+	else {
+		logError("Unable to draw collision type");
+		logErrorInteger(tCollider.mType);
+		abortSystem();
+	}
 }
 
 static void drawCollisionElement(void* tCaller, void* tData) {
@@ -319,18 +339,11 @@ static void drawCollisionElement(void* tCaller, void* tData) {
 	
 	Collider col = e->mCollider;
 
-	if(col.mType == COLLISION_RECT) {
-		CollisionRect* rect = col.mData;
-		drawCollisionRect(*rect, col.mBasePosition);
-	} else if (col.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = col.mData;
-		drawCollisionCirc(*circ, col.mBasePosition);
-	}
-	else {
-		logError("Unable to draw collision type");
-		logErrorInteger(col.mType);
-		abortSystem();
-	}
+	Position screenOffset;
+	if (gData.mDebug.mScreenPositionReference) screenOffset = *gData.mDebug.mScreenPositionReference;
+	else screenOffset = makePosition(0, 0, 0);
+
+	drawColliderSolid(col, makePosition(0, 0, 0), screenOffset, makePosition(1, 1, 1), 1);
 }
 
 static void drawCollisionList(void* tCaller, void* tData) {
@@ -353,9 +366,4 @@ void drawHandledCollisions() {
 void activateCollisionHandlerDebugMode() {
 	gData.mDebug.mIsActive = 1;
 	gData.mDebug.mScreenPositionReference = NULL;	
-
-	
-	gData.mDebug.mCollisionRectTexture = createWhiteTexture();
-	gData.mDebug.mCollisionCircTexture = createWhiteTexture(); // TODO: fix
-
 }
