@@ -19,6 +19,11 @@ void destroyMemoryStack(MemoryStack * tStack)
 	freeMemory(tStack->mAddress);
 }
 
+void resizeMemoryStackToCurrentSize(MemoryStack* tStack) {
+	tStack->mAddress = reallocMemory(tStack->mAddress, tStack->mOffset);
+	tStack->mSize = tStack->mOffset;
+}
+
 void * allocMemoryOnMemoryStack(MemoryStack * tStack, uint32_t tSize)
 {
 	void* ret = (void*)((uint32_t)tStack->mAddress + tStack->mOffset);

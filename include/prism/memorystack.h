@@ -11,5 +11,6 @@ typedef struct {
 
 MemoryStack createMemoryStack(uint32_t tSize);
 void destroyMemoryStack(MemoryStack* tStack);
+void resizeMemoryStackToCurrentSize(MemoryStack* tStack);
 
 void* allocMemoryOnMemoryStack(MemoryStack* tStack, uint32_t tSize);

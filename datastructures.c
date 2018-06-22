@@ -21,6 +21,15 @@ void turnStringLowercase(char* tString) {
 	}
 }
 
+// TODO: remove duplicate
+char* copyToAllocatedString(char* tSrc) {
+	if (!tSrc) return NULL;
+
+	int len = strlen(tSrc);
+	char* ret = allocMemory(len+1);
+	strcpy(ret, tSrc);
+	return ret;
+}
 
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
 	ListElement* e = allocMemory(sizeof(ListElement));

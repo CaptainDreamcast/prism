@@ -1212,6 +1212,7 @@ void unloadMugenSpriteFileSprite(MugenSpriteFileSprite* tSprite) {
 
 MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite)
 {
+	if (!tFile) return;
 	if (!int_map_contains(&tFile->mGroups, tGroup)) return NULL;
 
 	MugenSpriteFileGroup* g = int_map_get(&tFile->mGroups, tGroup);

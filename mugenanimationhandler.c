@@ -235,6 +235,12 @@ static void unloadMugenAnimation(MugenAnimationHandlerElement* e) {
 	delete_list(&e->mActiveHitboxes);
 }
 
+static void updateStepSpriteAndSpriteValidity(MugenAnimationHandlerElement* e) {
+	MugenAnimationStep* step = getCurrentAnimationStep(e);
+	e->mSprite = getMugenSpriteFileTextureReference(e->mSprites, step->mGroupNumber, step->mSpriteNumber);
+	e->mHasSprite = e->mSprite != NULL;
+}
+
 static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* e) {
 	e->mStep++;
 	if (e->mStep == vector_size(&e->mAnimation->mSteps)) {
@@ -254,9 +260,7 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 
 	e->mStepTime = 0;
 
-	MugenAnimationStep* step = getCurrentAnimationStep(e);
-	e->mSprite = getMugenSpriteFileTextureReference(e->mSprites, step->mGroupNumber, step->mSpriteNumber);
-	e->mHasSprite = e->mSprite != NULL;
+	updateStepSpriteAndSpriteValidity(e);
 
 	updateHitboxes(e);
 
@@ -455,6 +459,10 @@ void setMugenAnimationDrawScale(int tID, Vector3D tScale)
 void setMugenAnimationDrawSize(int tID, Vector3D tSize)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	if (e->mHasSprite) {
+		logWarning("Trying to set draw size on element without sprite. Ignoring.");
+		return;
+	}
 	double scaleX = tSize.x / e->mSprite->mOriginalTextureSize.x;
 	double scaleY = tSize.y / e->mSprite->mOriginalTextureSize.y;
 	double scaleZ = tSize.z / 1;
@@ -523,6 +531,7 @@ void setMugenAnimationSprites(int tID, MugenSpriteFile * tSprites)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	e->mSprites = tSprites;
+	updateStepSpriteAndSpriteValidity(e);
 }
 
 void setMugenAnimationConstraintRectangle(int tID, GeoRectangle tConstraintRectangle)
