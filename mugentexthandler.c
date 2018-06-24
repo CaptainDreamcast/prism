@@ -332,9 +332,8 @@ void addMugenFont(int tKey, char* tPath) {
 
 static void loadMugenFonts(MugenDefScript* tScript) {
 
-	if (!isOnDreamcast()) {
-		addMugenFont(-1, "font/f4x6.fnt");
-	}
+
+	addMugenFont(-1, "font/f4x6.fnt");
 	
 	int i;
 	for (i = 0; i < 100; i++) {
