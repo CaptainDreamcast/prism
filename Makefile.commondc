@@ -33,7 +33,7 @@ copy_debug:
 	-cp assets/debug/*.pkg romdisk_boot/debug
 	
 make_filesystem:
-	mkdir filesystem
+	-mkdir filesystem
 	mkdir filesystem/assets
 	mkdir filesystem/logo
 	mkdir filesystem/effects
@@ -62,7 +62,9 @@ to_romdisk:
 clean: clean_user clean_filesystem clean_general
 	
 clean_filesystem:
-	-rm -r -f filesystem
+	-rm -r -f filesystem/assets
+	-rm -r -f filesystem/logo
+	-rm -r -f filesystem/effects
 	-rm -r -f romdisk_boot
 	-rm -f romdisk.img
 
