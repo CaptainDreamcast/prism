@@ -895,6 +895,7 @@ void setMugenTextPosition(int tID, Position tPosition)
 {
 	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
 	e->mPosition = tPosition;
+	e->mPosition = vecSub(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
 	MugenTextAlignment alignment = e->mAlignment;
 	e->mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
 	setMugenTextAlignment(tID, alignment);
@@ -981,6 +982,12 @@ Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 	}
 	else if (tIndex == 5) {
 		return COLOR_YELLOW;
+	}
+	else if (tIndex == 6) {
+		return COLOR_MAGENTA;
+	}
+	else if (tIndex == 7) {
+		return COLOR_BLACK;
 	}
 	else {
 		logError("Unrecognized Mugen text color.");

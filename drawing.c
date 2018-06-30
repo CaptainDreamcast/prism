@@ -44,6 +44,10 @@ void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 		(*tR) = 0;
 		(*tG) = (*tB) = 1.0f;
 	}
+	else if (tColor == COLOR_MAGENTA) {
+		(*tR) = (*tB) = 1.0f;
+		(*tG) = 0.0f;
+	}
 	else {
 		(*tR) = (*tG) = (*tB) = 1.0f;
 	}

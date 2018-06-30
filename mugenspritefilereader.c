@@ -816,7 +816,7 @@ static void loadSingleSFFFile(MugenSpriteFile* tDst) {
 		removeAllPalettesExceptFirst(tDst);
 	}
 
-	if (!gData.mIsOnlyLoadingPortraits || subHeader.mGroup == 9000) { // TODO: non-hardcoded
+	if (!gData.mIsOnlyLoadingPortraits || (subHeader.mGroup == 9000 && subHeader.mImage <= 1)) { // TODO: non-hardcoded
 		loadSingleSFFFileAndInsertIntoSpriteFile(subHeader, tDst);
 	}
 
@@ -1024,7 +1024,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 	debugInteger(sprite.mItemNo);
 	debugInteger(sprite.mFormat);
 
-	if (gData.mIsOnlyLoadingPortraits && sprite.mGroupNo != 9000) { // TODO: non-hardcoded
+	if (gData.mIsOnlyLoadingPortraits && (sprite.mGroupNo != 9000 || sprite.mItemNo > 1)) { // TODO: non-hardcoded
 		return;
 	}
 
