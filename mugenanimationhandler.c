@@ -129,7 +129,9 @@ static void unloadMugenAnimationHandler(void* tData) {
 }
 
 static MugenAnimationStep* getCurrentAnimationStep(MugenAnimationHandlerElement* e) {
-	return vector_get(&e->mAnimation->mSteps, min(e->mStep, vector_size(&e->mAnimation->mSteps) - 1));
+	int i = min(e->mStep, vector_size(&e->mAnimation->mSteps) - 1);
+	if (i < 0) return NULL;
+	return vector_get(&e->mAnimation->mSteps, i);
 }
 
 
@@ -193,6 +195,8 @@ static void addNewSingleHitboxType(MugenAnimationHandlerElement* e, List* tHitbo
 }
 
 static void addNewHitboxes(MugenAnimationHandlerElement* e, MugenAnimationStep* tStep) {
+	if (!tStep) return;
+
 	if (e->mHasPassiveHitboxes) {
 		addNewSingleHitboxType(e, &tStep->mPassiveHitboxes, e->mPassiveCollisionList, passiveAnimationHitCB, e->mPassiveCollisionData);
 	}
@@ -237,7 +241,7 @@ static void unloadMugenAnimation(MugenAnimationHandlerElement* e) {
 
 static void updateStepSpriteAndSpriteValidity(MugenAnimationHandlerElement* e) {
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
-	e->mSprite = getMugenSpriteFileTextureReference(e->mSprites, step->mGroupNumber, step->mSpriteNumber);
+	e->mSprite = step ? getMugenSpriteFileTextureReference(e->mSprites, step->mGroupNumber, step->mSpriteNumber) : NULL; // TODO: proper operator
 	e->mHasSprite = e->mSprite != NULL;
 }
 
@@ -390,7 +394,8 @@ int getMugenAnimationDuration(int tID) {
 Vector3DI getMugenAnimationSprite(int tID) {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
-	return makeVector3DI(step->mGroupNumber, step->mSpriteNumber, 0);
+	if (!step) return makeVector3DI(-1, -1, 0); // TODO: proper default
+	else return makeVector3DI(step->mGroupNumber, step->mSpriteNumber, 0);
 }
 
 void setMugenAnimationFaceDirection(int tID, int tIsFacingRight)
@@ -680,6 +685,7 @@ int getTimeFromMugenAnimationElement(int tID, int tStep)
 
 static int getMugenAnimationElementFromTimeOffsetLoop(MugenAnimationHandlerElement* e, int tTime, int tCurrentStep, int dx) {
 	int n = vector_size(&e->mAnimation->mSteps);
+	if (!n) return 0; // TODO: check default behavior
 
 	int isRunning = 1;
 	while (isRunning) {
@@ -698,13 +704,14 @@ static int getMugenAnimationElementFromTimeOffsetLoop(MugenAnimationHandlerEleme
 int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
 {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	if (!vector_size(&e->mAnimation->mSteps)) return 0; // TODO: check default behavior
 
 	int ret;
 	if (tTime > 0) {
 		tTime += e->mStepTime;
 		ret = getMugenAnimationElementFromTimeOffsetLoop(e, tTime, e->mStep, 1);
 	}
-	else {
+	else { 
 		MugenAnimationStep* step = vector_get(&e->mAnimation->mSteps, e->mStep);
 		tTime *= -1;
 		tTime += (step->mDuration - 1) - e->mStepTime;
@@ -733,6 +740,7 @@ static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	increaseMugenDuration(&e->mOverallTime);
 	increaseMugenDuration(&e->mStepTime);
+	if (!step) return 0; // TODO: check default behavior
 	if (step->mDuration == -1) return 0;
 	if (e->mStepTime >= step->mDuration) {
 		return loadNextStepAndReturnIfShouldBeRemoved(e);
@@ -1006,6 +1014,7 @@ static void drawSingleMugenAnimation(void* tCaller, void* tData) {
 	}
 
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
+	if (!step) return;
 
 	Vector3D drawScale = e->mBaseDrawScale;
 	drawScale = vecScale(drawScale, e->mDrawScale);

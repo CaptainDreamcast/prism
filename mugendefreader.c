@@ -596,9 +596,15 @@ static void setRawElement(MugenDefScriptGroupElement* element, MugenDefToken* t)
 	debugString(e->mString);
 }
 
+static void unloadMugenDefElement(void* tCaller, void* tData);
+
 static void addGroupElementToGroup(MugenDefScript* tScript, MugenDefScriptGroupElement* tElement, char* tVariableName) {
 	debugString(gScriptMaker.mGroup);
-	assert(string_map_contains(&tScript->mGroups, gScriptMaker.mGroup));
+	if (!string_map_contains(&tScript->mGroups, gScriptMaker.mGroup)) {
+		logWarning("Unable to add element to group, no group declared yet. Ignoring element.");
+		unloadMugenDefElement(NULL, tElement);
+		return;
+	}
 	
 	strcpy(tElement->mName, tVariableName);
 	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, gScriptMaker.mGroup);
