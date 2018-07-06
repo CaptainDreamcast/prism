@@ -111,12 +111,12 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
     right = tTexturePosition.bottomRight.x / ((double)tTexture.mTextureSize.x);
   }
 
-  if(tTexturePosition.topLeft.x < tTexturePosition.bottomRight.x) {
+  if(tTexturePosition.topLeft.y < tTexturePosition.bottomRight.y) {
 	up = tTexturePosition.topLeft.y / ((double) tTexture.mTextureSize.y);
-    down = (tTexturePosition.bottomRight.y + 1) / ((double)tTexture.mTextureSize.y);
+    	down = (tTexturePosition.bottomRight.y + 1) / ((double)tTexture.mTextureSize.y);
   } else {
 	up = (tTexturePosition.topLeft.y + 1) / ((double) tTexture.mTextureSize.y);
-    down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y);
+    	down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y);
   }
 
   vert[0].argb = PVR_PACK_COLOR(gData.a, gData.r, gData.g, gData.b);
