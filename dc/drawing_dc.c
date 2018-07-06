@@ -102,11 +102,22 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));
 
-  double left = tTexturePosition.topLeft.x / ((double) tTexture.mTextureSize.x);
-  double right = (tTexturePosition.bottomRight.x + 1) / ((double)tTexture.mTextureSize.x);
-  double up = tTexturePosition.topLeft.y / ((double) tTexture.mTextureSize.y);
-  double down = (tTexturePosition.bottomRight.y + 1) / ((double)tTexture.mTextureSize.y);
+  double left, right, up, down;
+  if(tTexturePosition.topLeft.x < tTexturePosition.bottomRight.x) {
+	left = tTexturePosition.topLeft.x / ((double) tTexture.mTextureSize.x);
+    right = (tTexturePosition.bottomRight.x + 1) / ((double)tTexture.mTextureSize.x);  
+  } else {
+	left = (tTexturePosition.topLeft.x + 1) / ((double) tTexture.mTextureSize.x);
+    right = tTexturePosition.bottomRight.x / ((double)tTexture.mTextureSize.x);
+  }
 
+  if(tTexturePosition.topLeft.x < tTexturePosition.bottomRight.x) {
+	up = tTexturePosition.topLeft.y / ((double) tTexture.mTextureSize.y);
+    down = (tTexturePosition.bottomRight.y + 1) / ((double)tTexture.mTextureSize.y);
+  } else {
+	up = (tTexturePosition.topLeft.y + 1) / ((double) tTexture.mTextureSize.y);
+    down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y);
+  }
 
   vert[0].argb = PVR_PACK_COLOR(gData.a, gData.r, gData.g, gData.b);
   vert[0].oargb = 0;
