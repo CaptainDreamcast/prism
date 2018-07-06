@@ -509,6 +509,16 @@ void stopDrawing() {
 
 void waitForScreen() {
 	int now = SDL_GetTicks();
+	double frameMS = (1.0 / 60) * 1000;
+	int frameEndTime = (int)(gBookkeepingData.mFrameStartTime + ceil(frameMS));
+	int waitTime = frameEndTime - SDL_GetTicks();
+
+	if (waitTime > 0) {
+#ifndef __EMSCRIPTEN__
+		SDL_Delay(waitTime);
+#endif
+	}
+
 	gBookkeepingData.mRealFramerate = 1000.0 / (now - gBookkeepingData.mFrameStartTime);
 	gBookkeepingData.mFrameStartTime = now;
 }
