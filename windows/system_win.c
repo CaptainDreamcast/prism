@@ -140,10 +140,7 @@ void shutdownSystem() {
 }
 
 static void resizeWindow(SDL_Event* e) {
-	gData.mDisplayedWindowSizeX = e->window.data1;
-	gData.mDisplayedWindowSizeY = e->window.data2;
-
-	setWindowSize();
+	setDisplayedScreenSize(e->window.data1, e->window.data2);
 }
 static void checkWindowEvents(SDL_Event* e) {
 	if (e->window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -215,6 +212,14 @@ ScreenSize getScreenSize() {
 	ret.x = gData.mScreenSizeX;
 	ret.y = gData.mScreenSizeY;
 	return ret;
+}
+
+void setDisplayedScreenSize(int tX, int tY)
+{
+	gData.mDisplayedWindowSizeX = tX;
+	gData.mDisplayedWindowSizeY = tY;
+
+	setWindowSize();
 }
 
 void setScreenFramerate(int tFramerate) {

@@ -5,51 +5,61 @@
 
 // TODO: refactor
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
-	if (tColor == COLOR_BLACK) {
+
+	switch (tColor) {
+	case COLOR_BLACK:
 		(*tR) = (*tG) = (*tB) = 0;
-	}
-	else if (tColor == COLOR_RED) {
+		break;
+	case COLOR_RED:
 		(*tR) = 1.0f;
 		(*tG) = (*tB) = 0;
-	}
-	else if (tColor == COLOR_DARK_RED) {
+		break;
+	case COLOR_DARK_RED:
 		(*tR) = 0.5f;
 		(*tG) = (*tB) = 0;
-	}
-	else if (tColor == COLOR_GREEN) {
+		break;
+	case COLOR_GREEN:
 		(*tG) = 1.0f;
 		(*tR) = (*tB) = 0;
-	}
-	else if (tColor == COLOR_DARK_GREEN) {
+		break;
+	case COLOR_DARK_GREEN:
 		(*tG) = 0.5f;
 		(*tR) = (*tB) = 0;
-	}
-	else if (tColor == COLOR_BLUE) {
+		break;
+	case COLOR_BLUE:
 		(*tB) = 1.0f;
 		(*tG) = (*tR) = 0;
-	}
-	else if (tColor == COLOR_DARK_BLUE) {
+		break;
+	case COLOR_DARK_BLUE:
 		(*tB) = 0.5f;
 		(*tG) = (*tR) = 0;
-	}
-	else if (tColor == COLOR_YELLOW) {
+		break;
+	case COLOR_YELLOW:
 		(*tG) = (*tR) = 1.0f;
 		(*tB) = 0;
-	}
-	else if (tColor == COLOR_DARK_YELLOW) {
+		break;
+	case COLOR_DARK_YELLOW:
 		(*tG) = (*tR) = 0.5f;
 		(*tB) = 0;
-	}
-	else if (tColor == COLOR_CYAN) {
+		break;
+	case COLOR_CYAN:
 		(*tR) = 0;
 		(*tG) = (*tB) = 1.0f;
-	}
-	else if (tColor == COLOR_MAGENTA) {
+		break;
+	case COLOR_MAGENTA:
 		(*tR) = (*tB) = 1.0f;
 		(*tG) = 0.0f;
-	}
-	else {
+		break;
+	case COLOR_GRAY:
+		(*tR) = (*tG) = (*tB) = 0.5f;
+		break;
+	case COLOR_LIGHT_GRAY:
+		(*tR) = (*tG) = (*tB) = 0.75f;
+		break;
+	case COLOR_WHITE:
+	default:
 		(*tR) = (*tG) = (*tB) = 1.0f;
+		break;
 	}
 }
 

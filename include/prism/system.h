@@ -29,6 +29,7 @@ void setGameName(char* tName);
 void setScreen(int tX, int tY, int tFramerate, int tIsVGA);
 void setScreenSize(int tX, int tY);
 ScreenSize getScreenSize();
+void setDisplayedScreenSize(int tX, int tY);
 void setScreenFramerate(int tFramerate);
 void setVGA();
 int isOnDreamcast();

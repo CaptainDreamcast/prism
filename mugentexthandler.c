@@ -750,6 +750,15 @@ int addMugenText(char * tText, Position tPosition, int tFont)
 	return int_map_push_back_owned(&gHandler.mHandledTexts, e);
 }
 
+int addMugenTextMugenStyle(char * tText, Position tPosition, Vector3DI tFont)
+{
+	int ret = addMugenText(tText, tPosition, tFont.x);
+	setMugenTextColor(ret, getMugenTextColorFromMugenTextColorIndex(tFont.y));
+	setMugenTextAlignment(ret, getMugenTextAlignmentFromMugenAlignmentIndex(tFont.z));
+
+	return ret;
+}
+
 void removeMugenText(int tID)
 {
 	int_map_remove(&gHandler.mHandledTexts, tID);
@@ -959,6 +968,11 @@ Position * getMugenTextPositionReference(int tID)
 	return &e->mPosition;
 }
 
+Vector3D getMugenTextColor(int tIndex) {
+	MugenText* e = int_map_get(&gHandler.mHandledTexts, tIndex);
+	return makePosition(e->mR, e->mG, e->mB);
+}
+
 MugenTextAlignment getMugenTextAlignmentFromMugenAlignmentIndex(int tIndex)
 {
 	if (tIndex > 0) return MUGEN_TEXT_ALIGNMENT_LEFT;
@@ -968,6 +982,7 @@ MugenTextAlignment getMugenTextAlignmentFromMugenAlignmentIndex(int tIndex)
 
 Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 {
+	// TODO: refactor
 	if (tIndex == 0) {
 		return COLOR_WHITE;
 	}
@@ -988,6 +1003,9 @@ Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 	}
 	else if (tIndex == 7) {
 		return COLOR_BLACK;
+	}
+	else if (tIndex == 8) {
+		return COLOR_LIGHT_GRAY; // TODO: new index(?)
 	}
 	else {
 		logError("Unrecognized Mugen text color.");

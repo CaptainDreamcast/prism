@@ -1265,6 +1265,15 @@ Vector3DI getMugenDefVectorIVariable(MugenDefScript * tScript, char * tGroupName
 	return getMugenDefVectorIVariableAsGroup(e, tVariableName);
 }
 
+int isMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
+	if (!string_map_contains(&tGroup->mElements, tVariableName)) {
+		return 0;
+	}
+
+	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	return isMugenDefStringVectorVariableAsElement(element);
+}
+
 int isMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
 	return tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT;
@@ -1274,8 +1283,12 @@ MugenStringVector getMugenDefStringVectorVariable(MugenDefScript* tScript, char*
 	assert(string_map_contains(&tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
 
-	assert(string_map_contains(&e->mElements, tVariableName));
-	MugenDefScriptGroupElement* element = string_map_get(&e->mElements, tVariableName);
+	return getMugenDefStringVectorVariableAsGroup(e, tVariableName);
+}
+
+MugenStringVector getMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
+	assert(string_map_contains(&tGroup->mElements, tVariableName));
+	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
 
 	return getMugenDefStringVectorVariableAsElement(element);
 }

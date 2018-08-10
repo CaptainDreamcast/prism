@@ -96,8 +96,10 @@ int isMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariabl
 Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 Vector3DI getMugenDefVectorIVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
 
+int isMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 int isMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 MugenStringVector getMugenDefStringVectorVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
+MugenStringVector getMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
 MugenStringVector getMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 MugenStringVector copyMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElement);
 
