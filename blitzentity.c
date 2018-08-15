@@ -157,6 +157,13 @@ void setBlitzEntityPositionY(int tID, double tY)
 	else e->mPosition.y = tY;
 }
 
+void addBlitzEntityPositionX(int tID, double tX) {
+	setBlitzEntityPositionX(tID, getBlitzEntityPositionX(tID) + tX);
+}
+void addBlitzEntityPositionY(int tID, double tY) {
+	setBlitzEntityPositionY(tID, getBlitzEntityPositionY(tID) + tY);
+}
+
 void setBlitzEntityScale2D(int tID, double tScale)
 {
 	if (tID == getBlitzCameraHandlerEntityID()) {
@@ -199,6 +206,10 @@ void setBlitzEntityRotationZ(int tID, double tAngle)
 
 	BlitzEntity* e = getBlitzEntity(tID);
 	e->mAngle = tAngle;
+}
+
+void addBlitzEntityRotationZ(int tID, double tAngle) {
+	setBlitzEntityRotationZ(tID, getBlitzEntityRotationZ(tID) + tAngle);
 }
 
 void setBlitzEntityParent(int tID, int tParentID)

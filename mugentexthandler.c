@@ -298,18 +298,18 @@ void addMugenFont(int tKey, char* tPath) {
 	// TODO: fix when assets is dropped from Dolmexica
 	if ((isOnWindows() || isOnWeb()) && !strcmp(".", getFileSystem())) {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "assets/%s", tPath);
+			sprintf(path, "%s", tPath); // TODO: readd assets
 		}
 		else {
-			sprintf(path, "assets/font/%s", tPath);
+			sprintf(path, "font/%s", tPath); // TODO: readd assets
 		}
 	}
 	else {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "assets/%s", tPath);
+			sprintf(path, "%s", tPath);
 		}
 		else {
-			sprintf(path, "assets/font/%s", tPath);
+			sprintf(path, "font/%s", tPath);
 		}
 	
 	}
@@ -958,6 +958,7 @@ Position getMugenTextPosition(int tID) {
 	MugenTextAlignment alignment = e->mAlignment;
 	setMugenTextAlignment(tID, MUGEN_TEXT_ALIGNMENT_LEFT);
 	Position ret = e->mPosition;
+	ret = vecAdd(ret, makePosition(0, e->mFont->mSize.y, 0));
 	setMugenTextAlignment(tID, alignment);
 	return ret;
 }

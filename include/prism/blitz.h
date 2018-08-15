@@ -10,6 +10,7 @@
 #include "timer.h"
 #include "screeneffect.h"
 #include "tweening.h"
+#include "sound.h"
 
 #include "mugendefreader.h"
 #include "mugentexthandler.h"
