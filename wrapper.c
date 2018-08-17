@@ -12,6 +12,7 @@
 #include "prism/memoryhandler.h"
 #include "prism/sound.h"
 
+#include "prism/framerate.h"
 #include "prism/timer.h"
 #include "prism/animation.h"
 #include "prism/input.h"
@@ -47,6 +48,10 @@ typedef struct {
 
 } WrapperDebug;
 
+typedef struct {
+	int mTicksSinceInput;
+} Exhibition;
+
 static struct {
 	int mIsAborted;
 	Screen* mNext;
@@ -68,6 +73,8 @@ static struct {
 	void* mBetweenScreensCaller;
 
 	int mIsNotPausingTracksBetweenScreens;
+	int mIsInExhibitionMode;
+	Exhibition mExhibition;
 
 	WrapperDebug mDebug;
 } gData;
@@ -321,9 +328,24 @@ static void updateScreenDebug() {
 
 }
 
+static void updateExhibitionMode() {
+	if (!gData.mIsInExhibitionMode) return;
+	if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) return;
+
+	if (hasPressedAnyButton()) {
+		gData.mExhibition.mTicksSinceInput = 0;
+	}
+
+	int secondsSinceInput = gData.mExhibition.mTicksSinceInput / (getFramerate() * 60);
+	if (secondsSinceInput >= 2) {
+		setNewScreen(gData.mTitleScreen);
+		gData.mExhibition.mTicksSinceInput = 0;
+	}
+}
+
 static void updateScreenAbort() {
 	if (hasPressedAbortFlank()) {
-		if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) {
+		if ((!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) && !gData.mIsInExhibitionMode) {
 			abortScreenHandling();
 		}
 		else {
@@ -358,6 +380,7 @@ static void updateScreen() {
 	}
 
 	updateScreenDebug();
+	updateExhibitionMode();
 	updateScreenAbort();
 }
 
@@ -458,6 +481,11 @@ void setWrapperBetweenScreensCB(void(*tCB)(void *), void* tCaller)
 void setWrapperIsPausingTracksBetweenScreens(int tIsPausingTracks)
 {
 	gData.mIsNotPausingTracksBetweenScreens = !tIsPausingTracks;
+}
+
+void setWrapperToExhibitionMode() {
+	gData.mExhibition.mTicksSinceInput = 0;
+	gData.mIsInExhibitionMode = 1;
 }
 
 void setWrapperTitleScreen(Screen * tTitleScreen)

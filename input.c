@@ -225,6 +225,14 @@ double getRNormalized() {
 	return getSingleRNormalized(getMainController());
 }
 
+int hasPressedAnyButton() { // TODO: smarter
+	int hasPressedFaceButton = hasPressedA() || hasPressedB() || hasPressedX() || hasPressedY() || hasPressedStart();
+	int hasPressedShoulderButton = hasPressedR() || hasPressedL();
+	int hasPressedDirection = hasPressedLeft() || hasPressedRight() || hasPressedUp() || hasPressedDown();
+
+	return hasPressedFaceButton || hasPressedShoulderButton || hasPressedDirection;
+}
+
 int hasShotGun()
 {
 	return hasShotGunSingle(getMainController());

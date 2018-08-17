@@ -42,6 +42,8 @@ double getLeftStickNormalizedY();
 double getLNormalized();
 double getRNormalized();
 
+int hasPressedAnyButton();
+
 int hasShotGun();
 int hasShotGunFlank();
 Vector3D getShotPosition();
