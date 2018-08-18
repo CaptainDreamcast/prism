@@ -620,7 +620,7 @@ static AssignmentReturnValue evaluateVariableAssignment(MugenAssignment* tAssign
 	if(!string_map_contains(&gData.mVariables, testString)) {
 		logError("Unknown variable.");
 		logErrorString(testString);
-		abortSystem();
+		recoverFromError();
 		return makeBooleanAssignmentReturn(0);
 	}
 
@@ -783,7 +783,7 @@ static AssignmentReturnValue evaluateArrayAssignment(MugenAssignment* tAssignmen
 	if(!string_map_contains(&gData.mArrays, test)) {
 		logError("Unknown array.");
 		logErrorString(test);
-		abortSystem();
+		recoverFromError();
 		return makeBooleanAssignmentReturn(0);
 	}
 
@@ -905,7 +905,7 @@ static AssignmentReturnValue evaluateAssignmentInternal(MugenAssignment* tAssign
 	else {
 		logError("Unidentified assignment type.");
 		logErrorInteger(tAssignment->mType);
-		abortSystem();
+		recoverFromError();
 		*ret.mValue = '\0';
 	}
 

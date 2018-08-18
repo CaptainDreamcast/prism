@@ -11,7 +11,7 @@ static const int COMPRESSION_BUFFER = 400;
 void compressBuffer(Buffer* tBuffer) {
 	if (!tBuffer->mIsOwned) {
 		logError("Unable to compress unowned Buffer");
-		abortSystem();
+		recoverFromError();
 	}
 
 	Buffer src = *tBuffer;
@@ -33,7 +33,7 @@ void decompressBuffer(Buffer * tBuffer)
 {
 	if (!tBuffer->mIsOwned) {
 		logError("Unable to decompress unowned Buffer");
-		abortSystem();
+		recoverFromError();
 	}
 
 	Buffer src = *tBuffer;

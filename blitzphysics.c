@@ -61,7 +61,7 @@ static BlitzComponent BlitzPhysicsComponent = {
 static PhysicsEntry* getBlitzPhysicsEntry(int tEntityID) {
 	if (!int_map_contains(&gData.mEntries, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have physics component.", tEntityID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return int_map_get(&gData.mEntries, tEntityID);

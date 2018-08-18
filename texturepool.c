@@ -79,7 +79,7 @@ void unloadTextureFromPool(TextureData tTexture) {
 	if (!hasBeenLoaded) {
 		logError("Unrecognized Texture.");
 		logErrorString(hashString);
-		abortSystem();
+		recoverFromError();
 	}
 
 	TexturePoolEntry* e = string_map_get(&gTexturePool.mTextureHashToLoadedTexture, hashString);

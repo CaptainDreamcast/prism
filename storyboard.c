@@ -76,7 +76,7 @@ static void destroyStoryboardTexture(Storyboard* e, int tSlot) {
 		logError("Attempt to destroy unloaded texture slot.");
 		logErrorInteger(tSlot);
 		logErrorInteger(e->mState.mTextures[tSlot].mID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	if (isHandledAnimation(e->mState.mTextures[tSlot].mID)) {
@@ -104,7 +104,7 @@ static void destroyStoryboardText(Storyboard* e, int tSlot) {
 		logError("Attempt to destroy unloaded text slot.");
 		logErrorInteger(tSlot);
 		logErrorInteger(e->mState.mTexts[tSlot].mID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	removeHandledText(e->mState.mTexts[tSlot].mID);
@@ -117,7 +117,7 @@ static void destroyStoryboardSoundEffect(Storyboard* e, int tSlot) {
 		logError("Attempt to destroy unloaded sound effect slot.");
 		logErrorInteger(tSlot);
 		logErrorInteger(e->mState.mSoundEffects[tSlot].mID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	unloadSoundEffect(e->mState.mSoundEffects[tSlot].mID);
@@ -409,7 +409,7 @@ int playStoryboard(char* tPath) {
 	if (list_size(&gData.mStoryboards)) {
 		logError("Unable to play more than one story board at a time.");
 		logErrorString(tPath);
-		abortSystem();
+		recoverFromError();
 	}
 
 	Storyboard* e = loadStoryboard(tPath);

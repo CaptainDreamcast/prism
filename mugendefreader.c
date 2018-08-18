@@ -97,7 +97,7 @@ static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char
 		if (increaseAndCheckIfOver(b, &p)) {
 			logError("Token reached end in wrong place."); // TODO: proper message
 			logErrorString(p);
-			abortSystem();
+			recoverFromError();
 		}
 		if(tDoesCheckNesting) depth += *p == start;
 		depth -= *p == end;
@@ -145,7 +145,7 @@ static void moveBufferPointerBack(Buffer* b, BufferPointer* p) {
 			(*p)[100] = '\0';
 			logError("Invalid parsing.");
 			logErrorString(*p);
-			abortSystem();
+			recoverFromError();
 		}
 	}
 }
@@ -870,7 +870,7 @@ static void unloadMugenDefElement(void* tCaller, void* tData) {
 	else {
 		logError("Unknoown element type.");
 		logErrorInteger(e->mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	freeMemory(e->mData);
@@ -987,7 +987,7 @@ char * getAllocatedMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupEle
 	else {
 		logError("Unknown type.");
 		logErrorInteger(tElement->mType);
-		abortSystem();
+		recoverFromError();
 	}
 	return ret;
 }
@@ -1064,7 +1064,7 @@ double getMugenDefFloatVariableAsElement(MugenDefScriptGroupElement * tElement)
 		ret = 0;
 		logError("Unknown type.");
 		logErrorInteger(tElement->mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return ret;
@@ -1126,7 +1126,7 @@ int getMugenDefNumberVariableAsElement(MugenDefScriptGroupElement * tElement)
 		ret = 0;
 		logError("Unknown type.");
 		logErrorInteger(tElement->mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return ret;
@@ -1201,7 +1201,7 @@ Vector3D getMugenDefVectorVariableAsElement(MugenDefScriptGroupElement * tElemen
 		ret = makePosition(0, 0, 0);
 		logError("Unknown type.");
 		logErrorInteger(tElement->mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return ret;
@@ -1251,7 +1251,7 @@ Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* t
 		ret = makeVector3DI(0, 0, 0);
 		logError("Unknown type.");
 		logErrorInteger(element->mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return ret;

@@ -217,13 +217,13 @@ void setCollisionHandlerOwningColliders() {
 static CollisionListElement* getCollisionListElement(int tListID, int tElementID) {
 	if (!int_map_contains(&gData.mCollisionLists, tListID)) {
 		logErrorFormat("Collision handler does not contain list with id %d.", tListID);
-		abortSystem();
+		recoverFromError();
 	}
 	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
 
 	if (!int_map_contains(&list->mCollisionElements, tElementID)) {
 		logErrorFormat("Collision handler list %d does not contain element with id %d.", tListID, tElementID);
-		abortSystem();
+		recoverFromError();
 	}
 	return int_map_get(&list->mCollisionElements, tElementID);
 }
@@ -329,7 +329,7 @@ void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPos
 	else {
 		logError("Unable to draw collision type");
 		logErrorInteger(tCollider.mType);
-		abortSystem();
+		recoverFromError();
 	}
 }
 

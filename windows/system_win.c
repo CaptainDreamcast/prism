@@ -25,12 +25,22 @@
 #include "prism/pvr.h"
 #include "prism/geometry.h"
 #include "prism/math.h"
-
+#include "prism/wrapper.h"
 
 void abortSystem(){
  	assert(0);
 	exit(0);
-}	
+}
+
+void recoverFromError()
+{
+	if (isUsingWrapper()) {
+		recoverWrapperError();
+	}
+	else {
+		abortSystem();
+	}
+}
 
 static struct {
 	

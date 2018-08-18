@@ -101,7 +101,7 @@ static void invertPosition(HandledCollisionAnimation* tData) {
 	} else {
 		logError("Unsupported collision type");
 		logErrorInteger(col.mType);
-		abortSystem();
+		recoverFromError();
 	}
 }
 

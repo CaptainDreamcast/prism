@@ -21,7 +21,7 @@ char* getFileExtension(char* tPath) {
 	if (pos == NULL) {
 		logError("Unable to find file ending.");
 		logErrorString(tPath);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return pos + 1;
@@ -115,7 +115,7 @@ Buffer fileToBuffer(char* tFileDir) {
 		logErrorString(tFileDir);
 		logErrorString(getWorkingDirectory());
 		logErrorString(getFileSystem());
-		abortSystem();
+		recoverFromError();
 	}
 
 	bufferLength = fileTotal(file);
@@ -181,7 +181,7 @@ void fileToMemory(void* tDst, int tSize, char* tPath) {
 		logErrorString(tPath);
 		logErrorInteger(tSize);
 		logErrorInteger(b.mLength);
-		abortSystem();
+		recoverFromError();
 	}
 	memcpy(tDst, b.mData, tSize);
 

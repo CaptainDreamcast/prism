@@ -76,7 +76,7 @@ static void updateSingleBlitzCollisionEntry(void* tCaller, void* tData) {
 static CollisionEntry* getBlitzCollisionEntry(int tEntityID) {
 	if (!int_map_contains(&gData.mEntries, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have collision component.", tEntityID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return int_map_get(&gData.mEntries, tEntityID);
@@ -87,7 +87,7 @@ static BlitzCollisionObject* getBlitzCollisionObject(int tEntityID, int tCollisi
 
 	if (!int_map_contains(&e->mCollisionObjects, tCollisionID)) {
 		logErrorFormat("Entity with ID %d does not have collision with id %d.", tEntityID, tCollisionID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return int_map_get(&e->mCollisionObjects, tCollisionID);
@@ -261,7 +261,7 @@ void setBlitzCollisionSolid(int tEntityID, int tCollisionID, int tIsMovable)
 	BlitzCollisionObject* e = getBlitzCollisionObject(tEntityID, tCollisionID);
 	if (!e->mOwnsCollisionHandlerObject) {
 		logErrorFormat("Unable to set entity %d collision id %d solid, does not own collision handler entry.", tEntityID, tCollisionID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	e->mIsMovable = tIsMovable;

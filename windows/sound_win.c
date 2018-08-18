@@ -195,7 +195,7 @@ static void startMicrophone(void* tData)
 	logString(SDL_GetAudioDeviceName(0, 1));
 	if (have.format != want.format) {
 		logError("We didn't get the wanted format.");
-		abortSystem();
+		recoverFromError();
 		return;
 	}
 

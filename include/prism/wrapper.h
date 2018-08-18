@@ -20,6 +20,7 @@ void shutdownPrismWrapper();
 void pauseWrapper();
 void resumeWrapper();
 int isWrapperPaused();
+int isUsingWrapper();
 
 void startScreenHandling(Screen* tScreen);
 void abortScreenHandling();
@@ -31,3 +32,4 @@ void setWrapperIsPausingTracksBetweenScreens(int tIsPausingTracks);
 void setWrapperToExhibitionMode();
 
 void setWrapperTitleScreen(Screen* tTitleScreen);
+void recoverWrapperError();

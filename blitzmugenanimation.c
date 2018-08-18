@@ -38,7 +38,7 @@ static BlitzComponent BlitzMugenAnimationComponent = {
 static BlitzAnimationEntry* getBlitzAnimationEntry(int tEntityID) {
 	if (!int_map_contains(&gData.mEntities, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have animation component.", tEntityID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return int_map_get(&gData.mEntities, tEntityID);

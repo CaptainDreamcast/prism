@@ -435,7 +435,7 @@ static ScriptPosition loadStageScriptLayerElement(void* tCaller, ScriptPosition 
 	else {
 		logError("Unrecognized token.");
 		logErrorString(word);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return tPos;
@@ -471,7 +471,7 @@ static ScriptPosition loadStageScriptLayer(void* tCaller, ScriptPosition tPos) {
 	else {
 		logError("Unrecognized token.");
 		logErrorString(word);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return tPos;
@@ -494,7 +494,7 @@ static ScriptPosition loadStageScriptStage(void* tCaller, ScriptPosition tPos) {
 	else {
 		logError("Unrecognized token.");
 		logErrorString(word);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return tPos;

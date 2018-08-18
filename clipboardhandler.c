@@ -139,7 +139,7 @@ static void parseParameterInput(char* tFormatString, int* i, char** tDst, char**
 	else {
 		logError("Unrecognized parsing parameter");
 		logErrorString(&tFormatString[*i - 1]);
-		abortSystem();
+		recoverFromError();
 	}
 
 
@@ -177,7 +177,7 @@ static void parseFormatInput(char* tFormatString, int* i, char** tDst, char* tTe
 	else {
 		logError("Unrecognized format parameter");
 		logErrorString(&tFormatString[*i - 1]);
-		abortSystem();
+		recoverFromError();
 	}
 }
 

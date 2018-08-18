@@ -43,7 +43,7 @@ void addBlitzMugenSoundComponent(int tEntityID, MugenSounds* tSounds)
 static SoundEntry* getSoundEntry(int tEntityID) {
 	if (!int_map_contains(&gData.mEntries, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have a mugen sound component.", tEntityID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return int_map_get(&gData.mEntries, tEntityID);

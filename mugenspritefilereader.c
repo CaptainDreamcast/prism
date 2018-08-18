@@ -433,7 +433,7 @@ static int getMaximumSizeFit(int tVal) {
 
 	logError("Unable to find fit");
 	logErrorInteger(tVal);
-	abortSystem();
+	recoverFromError();
 	return 0;
 }
 
@@ -479,14 +479,14 @@ static void readPNGDataFromInputStream(png_structp png_ptr, png_bytep outBytes, 
 	png_voidp io_ptr = png_get_io_ptr(png_ptr);
 	if (io_ptr == NULL) {
 		logError("Did not get caller");
-		abortSystem();
+		recoverFromError();
 	}
 
 
 	PNGReadCaller* caller = io_ptr;
 	if (((uint32_t)caller->p) + byteCountToRead > ((uint32_t)caller->b.mData) + caller->b.mLength) {
 		logError("Trying to read outside buffer");
-		abortSystem();
+		recoverFromError();
 	}
 	readFromBufferPointer(outBytes, &caller->p, byteCountToRead);
 }
@@ -575,7 +575,7 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 	p += 8;
 	if (!png_check_sig(pngSignature, 8)) {
 		logError("Invalid png signature");
-		abortSystem();
+		recoverFromError();
 	}
 
 	png_structp png_ptr = NULL;
@@ -583,7 +583,7 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 
 	if (png_ptr == NULL) {
 		logError("Cannot create read struct.");
-		abortSystem();
+		recoverFromError();
 	}
 
 	png_infop info_ptr = NULL;
@@ -593,7 +593,7 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 	{
 		png_destroy_read_struct(&png_ptr, NULL, NULL);
 		logError("Cannot create info struct.");
-		abortSystem();
+		recoverFromError();
 	}
 
 	PNGReadCaller caller;
@@ -620,7 +620,7 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 
 	if (retval != 1) {
 		logError("Unable to read image data");
-		abortSystem();
+		recoverFromError();
 	}
 
 	Buffer ret;
@@ -636,7 +636,7 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 	else {
 		logError("Unrecognized color type");
 		logErrorInteger(colorType);
-		abortSystem();
+		recoverFromError();
 		ret = makeBuffer(NULL, 0);
 	}
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
@@ -1002,7 +1002,7 @@ static Buffer readRawSprite2(SFFSprite2* tSprite, SFFHeader2* tHeader) {
 	else {
 		logError("Unable to parse sprite format.");
 		logErrorInteger(tSprite->mFormat);
-		abortSystem();
+		recoverFromError();
 		return makeBuffer(NULL, 0);
 	}
 	
@@ -1065,7 +1065,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 	else {
 		logError("Unrecognized image format.");
 		logErrorInteger(sprite.mFormat);
-		abortSystem();
+		recoverFromError();
 		e = NULL;
 	}
 
@@ -1117,6 +1117,11 @@ static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tPreferredPa
 	debugLog("Loading sprite file.");
 	debugString(tPath);
 	
+	if (!isFile(tPath)) {
+		logErrorFormat("Unable to open sprite file %s. Aborting.", tPath);
+		recoverFromError();
+	}
+
 	gData.mHasPaletteFile = tHasPaletteFile;
 	checkMugenSpriteFileReader();
 
@@ -1140,7 +1145,7 @@ static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tPreferredPa
 		logErrorInteger(header.mVersion[1])  ;
 		logErrorInteger(header.mVersion[2]);
 		logErrorInteger(header.mVersion[3]);
-		abortSystem();
+		recoverFromError();
 	}
 
 	gData.mReader.mDelete(&gData.mReader);

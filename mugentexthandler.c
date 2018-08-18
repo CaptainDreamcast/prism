@@ -118,7 +118,7 @@ static void parseSingleMapElement(void* tCaller, void* tData) {
 	else {
 		logError("Unrecognized map key.");
 		logErrorString(key);
-		abortSystem();
+		recoverFromError();
 		keyValue = -1;
 	}
 
@@ -143,7 +143,7 @@ static MugenElecbyteFontType getMugenElecbyteFontType(MugenDefScript* tScript) {
 	else {
 		logError("Unable to determine font type.");
 		logErrorString(text);
-		abortSystem();
+		recoverFromError();
 		ret = MUGEN_ELECBYTE_FONT_TYPE_VARIABLE;
 	}
 
@@ -186,7 +186,7 @@ static MugenFontType getMugenFontTypeFromScript(MugenDefScript* tScript) {
 		ret = MUGEN_FONT_TYPE_BITMAP;
 		logError("Unable to determine font type");
 		logErrorString(text);
-		abortSystem();
+		recoverFromError();
 	}
 
 	freeMemory(text);
@@ -282,7 +282,7 @@ static void addMugenFont2(int tKey, char* tPath) {
 	else {
 		logError("Unimplemented font type.");
 		logErrorInteger(e->mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	unloadMugenDefScript(script);
@@ -298,18 +298,18 @@ void addMugenFont(int tKey, char* tPath) {
 	// TODO: fix when assets is dropped from Dolmexica
 	if ((isOnWindows() || isOnWeb()) && !strcmp(".", getFileSystem())) {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "%s", tPath); // TODO: readd assets
+			sprintf(path, "assets/%s", tPath); 
 		}
 		else {
-			sprintf(path, "font/%s", tPath); // TODO: readd assets
+			sprintf(path, "assets/font/%s", tPath); 
 		}
 	}
 	else {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "%s", tPath);
+			sprintf(path, "assets/%s", tPath);
 		}
 		else {
-			sprintf(path, "font/%s", tPath);
+			sprintf(path, "assets/font/%s", tPath);
 		}
 	
 	}
@@ -325,7 +325,7 @@ void addMugenFont(int tKey, char* tPath) {
 	else {
 		logError("Unrecognized font file type.");
 		logErrorString(tPath);
-		abortSystem();
+		recoverFromError();
 	}
 
 }
@@ -405,7 +405,7 @@ static int unloadSingleFont(void* tCaller, void* tData) {
 	else {
 		logError("Unimplemented font type.");
 		logErrorInteger(font->mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return 1;
@@ -690,7 +690,7 @@ static void drawSingleText(void* tCaller, void* tData) {
 	else {
 		logError("Unimplemented font type.");
 		logErrorInteger(e->mFont->mType);
-		abortSystem();
+		recoverFromError();
 	}
 }
 
@@ -846,7 +846,7 @@ static double getMugenTextSizeX(MugenText* e) {
 	else {
 		logError("Unimplemented font type.");
 		logErrorInteger(e->mFont->mType);
-		abortSystem();
+		recoverFromError();
 		return 0;
 	}
 }
@@ -1011,7 +1011,7 @@ Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 	else {
 		logError("Unrecognized Mugen text color.");
 		logErrorInteger(tIndex);
-		abortSystem();
+		recoverFromError();
 		return COLOR_WHITE;
 	}
 }

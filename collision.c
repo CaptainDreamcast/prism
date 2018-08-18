@@ -232,7 +232,7 @@ int checkCollisionCollider(Collider tCollider1, Collider tCollider2) {
 		logError("Unrecognized collider types");			
 		logErrorInteger(tCollider1.mType);
 		logErrorInteger(tCollider2.mType);
-		abortSystem();
+		recoverFromError();
 		return 0;
 	}
 
@@ -277,7 +277,7 @@ double getColliderUp(Collider tCollider)
 	}
 	else {
 		logErrorFormat("Unrecognized type: %d.", tCollider.mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return pos.y;
@@ -297,7 +297,7 @@ double getColliderDown(Collider tCollider)
 	}
 	else {
 		logErrorFormat("Unrecognized type: %d.", tCollider.mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return pos.y;
@@ -317,7 +317,7 @@ double getColliderRight(Collider tCollider)
 	}
 	else {
 		logErrorFormat("Unrecognized type: %d.", tCollider.mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return pos.x;
@@ -337,7 +337,7 @@ double getColliderLeft(Collider tCollider)
 	}
 	else {
 		logErrorFormat("Unrecognized type: %d.", tCollider.mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return pos.x;

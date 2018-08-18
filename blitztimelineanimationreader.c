@@ -252,7 +252,7 @@ BlitzTimelineAnimation * getBlitzTimelineAnimation(BlitzTimelineAnimations * tAn
 {
 	if (!int_map_contains(&tAnimations->mAnimations, tAnimationID)) {
 		logErrorFormat("Unable to find blitz timeline animation with id: %d", tAnimationID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return int_map_get(&tAnimations->mAnimations, tAnimationID);

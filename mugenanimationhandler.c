@@ -285,7 +285,7 @@ static void startNewAnimationWithStartStep(MugenAnimationHandlerElement* e, int 
 		logError("Unable to start animation, is already over.");
 		logErrorInteger(e->mAnimation->mID);
 		logErrorInteger(tStartStep);
-		abortSystem();
+		recoverFromError();
 	}
 }
 

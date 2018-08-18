@@ -184,7 +184,7 @@ void initDrawing() {
 
 	if (gSDLWindow == NULL) {
 		logError("Unable to init drawing without SDL window.");
-		abortSystem();
+		recoverFromError();
 	}
 
 	ScreenSize sz = getScreenSize();
@@ -407,7 +407,7 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	else {
 		logError("Unimplemented blend type");
 		logErrorInteger(e->mData.mBlendType);
-		abortSystem();
+		recoverFromError();
 	}
 
 	if (e->mTexture.mHasPalette) {
@@ -495,7 +495,7 @@ static void drawSorted(void* tCaller, void* tData) {
 	else {
 		logError("Unrecognized draw type");
 		logErrorInteger(e->mType);
-		abortSystem();
+		recoverFromError();
 	}
 
 }
@@ -712,7 +712,7 @@ void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTa
 		logError("Over pixel buffer limit.");
 		logErrorInteger(w);
 		logErrorInteger(h);
-		abortSystem();
+		recoverFromError();
 	}
 
 	uint32_t val = SDL_MapRGB(dst->mSurface->format, r, g, b);

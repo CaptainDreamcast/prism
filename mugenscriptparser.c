@@ -55,7 +55,7 @@ void parseMugenScript(MugenDefScript * tScript)
 		if (!hasFound) {
 			logError("Unable to find script group.");
 			logErrorString(current->mName);
-			abortSystem();
+			recoverFromError();
 		}
 
 		current = current->mNext;

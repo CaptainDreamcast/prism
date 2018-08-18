@@ -93,7 +93,7 @@ int addBlitzEntity(Position tPos)
 static BlitzEntity* getBlitzEntity(int tID) {
 	if (!int_map_contains(&gData.mEntities, tID)) {
 		logErrorFormat("Unable to find entity %d", tID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return int_map_get(&gData.mEntities, tID);
@@ -103,7 +103,7 @@ void removeBlitzEntity(int tID)
 {
 	if (tID == getBlitzCameraHandlerEntityID()) {
 		logError("Unable to remove camera entity");
-		abortSystem();
+		recoverFromError();
 	}
 
 	BlitzEntity* e = getBlitzEntity(tID);

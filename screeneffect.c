@@ -258,7 +258,7 @@ void unsetScreenBlack() {
 
 	if (gData.mScreenFillID == -1) {
 		logError("Screen not set to black, unable to reset");
-		abortSystem();
+		recoverFromError();
 	}
 
 	removeHandledAnimation(gData.mScreenFillID);

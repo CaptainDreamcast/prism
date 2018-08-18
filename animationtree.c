@@ -74,7 +74,7 @@ static ScriptPosition loadTree(void* tCaller, ScriptPosition tPos) {
 	else {
 		logError("Unrecognized token.");
 		logErrorString(word);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return tPos;
@@ -113,7 +113,7 @@ static ScriptPosition loadSingleAnimationTree(void* tCaller, ScriptPosition tPos
 	else {
 		logError("Unrecognized token.");
 		logErrorString(word);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return tPos;
@@ -138,7 +138,7 @@ static ScriptPosition loadFrame(void* tCaller, ScriptPosition tPos) {
 	else {
 		logError("Unrecognized token.");
 		logErrorString(word);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return tPos;
@@ -165,7 +165,7 @@ static ScriptPosition loadSingleAnimation(void* tCaller, ScriptPosition tPos) {
 	else {
 		logError("Unrecognized token.");
 		logErrorString(word);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return tPos;
@@ -196,7 +196,7 @@ static ScriptPosition loadAnimations(void* tCaller, ScriptPosition tPos) {
 	else {
 		logError("Unrecognized token.");
 		logErrorString(word);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return tPos;

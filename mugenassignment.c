@@ -847,7 +847,7 @@ MugenAssignment * parseMugenAssignmentFromString(char * tText)
 	else {
 		logError("Unable to determine Mugen assignment.");
 		logErrorString(tText);
-		abortSystem();
+		recoverFromError();
 	}
 	
 	return NULL;

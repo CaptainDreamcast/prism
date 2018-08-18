@@ -77,6 +77,10 @@ static struct {
 	Exhibition mExhibition;
 
 	WrapperDebug mDebug;
+	jmp_buf mExceptionJumpBuffer;
+
+
+	int mIsActive;
 } gData;
 
 static void initBasicSystems() {
@@ -104,6 +108,7 @@ static void initBasicSystems() {
 	initInput();
 
 	gData.mGlobalTimeDilatation = 1;
+	gData.mIsActive = 1;
 }
 
 void initPrismWrapperWithDefaultFlags() {
@@ -144,6 +149,8 @@ void shutdownPrismWrapper() {
 	shutdownSound();
 	shutdownMemoryHandler();
 	shutdownSystem();
+
+	gData.mIsActive = 0;
 }
 
 void pauseWrapper() {
@@ -169,6 +176,11 @@ int isWrapperPaused()
 	return gData.mIsPaused;
 }
 
+int isUsingWrapper()
+{
+	return gData.mIsActive;
+}
+
 static void loadingThreadFunction(void* tCaller) {
 	Screen* tScreen = tCaller;
 
@@ -183,6 +195,7 @@ static void loadingThreadFunction(void* tCaller) {
 static void loadScreen(Screen* tScreen) {
 	gData.mScreen = tScreen;
 	gData.mNext = NULL;
+	gData.mHasFinishedLoading = 0;
 
 	logg("Loading handled screen");
 	debugLog("Pushing memory stacks");
@@ -247,7 +260,6 @@ static void loadScreen(Screen* tScreen) {
 	resetInputForAllControllers();
 	enableDrawing();
 
-	gData.mHasFinishedLoading = 0;
 	int hasLoadingScreen = 0;// TODO
 	if(hasLoadingScreen) {	
 		startThread(loadingThreadFunction, tScreen);
@@ -269,14 +281,7 @@ static void callBetweenScreensCB() {
 	gData.mHasBetweenScreensCB = 0;
 }
 
-static void unloadScreen(Screen* tScreen) {
-	logg("Unloading handled screen");
-	
-	if (tScreen->mUnload) {
-		debugLog("Unloading user screen data");
-		tScreen->mUnload();
-	}
-
+static void unloadWrapper() {
 	if (!gData.mIsNotPausingTracksBetweenScreens) {
 		stopTrack();
 	}
@@ -314,6 +319,17 @@ static void unloadScreen(Screen* tScreen) {
 
 	logMemoryState();
 	logTextureMemoryState();
+}
+
+static void unloadScreen(Screen* tScreen) {
+	logg("Unloading handled screen");
+	
+	if (tScreen->mUnload) {
+		debugLog("Unloading user screen data");
+		tScreen->mUnload();
+	}
+
+	unloadWrapper();
 }
 
 static void updateScreenDebug() {
@@ -413,6 +429,7 @@ static void performScreenIteration() {
 		gData.mNext = gData.mScreen->mGetNextScreen();
 	}
 	
+
 	// TODO: make Emscripten less hacky
 #ifdef __EMSCRIPTEN__
 	if (gData.mIsAborted || gData.mNext != NULL) {
@@ -454,6 +471,10 @@ void setNewScreen(Screen * tScreen)
 
 void startScreenHandling(Screen* tScreen) {
 	gData.mIsAborted = 0;
+
+	if (setjmp(gData.mExceptionJumpBuffer)) {
+		tScreen = gData.mNext;
+	}
 	while(!gData.mIsAborted) {
 		loadScreen(tScreen);
 		Screen* next = showScreen();
@@ -492,3 +513,17 @@ void setWrapperTitleScreen(Screen * tTitleScreen)
 {
 	gData.mTitleScreen = tTitleScreen;
 }
+
+void recoverWrapperError()
+{
+	if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) {
+		abortSystem();
+	} 
+	else {
+		setNewScreen(gData.mTitleScreen);
+		unloadWrapper();
+		longjmp(gData.mExceptionJumpBuffer, 1);
+	}
+
+}
+

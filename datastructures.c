@@ -128,7 +128,7 @@ void * list_get_by_ordered_index(List * tList, int tIndex)
 	if (tIndex >= list_size(tList)) {
 		logError("Trying to access invalid index.");
 		logErrorInteger(tIndex);
-		abortSystem();
+		recoverFromError();
 		return NULL;
 	}
 
@@ -230,7 +230,7 @@ void* list_iterator_get(ListIterator tIterator) {
 void list_iterator_increase(ListIterator* tIterator) {
 	if((*tIterator)->mNext == NULL) {
 		logError("Trying to increase end iterator.");
-		abortSystem();
+		recoverFromError();
 	}
 	*tIterator = (*tIterator)->mNext;
 }
@@ -493,7 +493,7 @@ void string_map_remove(StringMap* tMap, char* tKey) {
 	if (!list_size(&bucket->mEntries)) {
 		logError("Unable to find key in map.");
 		logErrorString(tKey);
-		abortSystem();
+		recoverFromError();
 	}
 	ListIterator it = list_iterator_begin(&bucket->mEntries);
 	while (1) {
@@ -508,7 +508,7 @@ void string_map_remove(StringMap* tMap, char* tKey) {
 		if (!list_has_next(it)) {
 			logError("Unable to find key in map.");
 			logErrorString(tKey);
-			abortSystem();
+			recoverFromError();
 		}
 
 		list_iterator_increase(&it);
@@ -522,7 +522,7 @@ void* string_map_get(StringMap* tMap, char* tKey) {
 	if (!list_size(&bucket->mEntries)) {
 		logError("Unable to find key in map.");
 		logErrorString(tKey);
-		abortSystem();
+		recoverFromError();
 	}
 
 	ListIterator it = list_iterator_begin(&bucket->mEntries);
@@ -535,7 +535,7 @@ void* string_map_get(StringMap* tMap, char* tKey) {
 		if (!list_has_next(it)) {
 			logError("Unable to find key in map.");
 			logErrorString(tKey);
-			abortSystem();
+			recoverFromError();
 		}
 
 		list_iterator_increase(&it);

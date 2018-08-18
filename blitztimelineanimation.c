@@ -192,7 +192,7 @@ static BlitzComponent BlitzTimelineAnimationComponent = {
 static BlitzTimelineAnimationEntry* getBlitzTimelineAnimationEntry(int tEntityID) {
 	if (!int_map_contains(&gData.mEntries, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have a timeline animation component.", tEntityID);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return int_map_get(&gData.mEntries, tEntityID);

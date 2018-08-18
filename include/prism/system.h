@@ -22,6 +22,7 @@ void initSystem();
 void shutdownSystem();
 void updateSystem();
 void abortSystem();
+void recoverFromError();
 void returnToMenu();
 
 void setGameName(char* tName);

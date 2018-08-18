@@ -273,7 +273,7 @@ size_t fileReadRomdisk(FileHandler tHandler, void* tBuffer, size_t tCount) {
 	if (fd >= MAX_RD_FILES || gFileHandlers[fd].index == 0 || gFileHandlers[fd].dir) {
 		logError("Invalid file handler");
 		logErrorInteger(fd);
-		abortSystem();
+		recoverFromError();
 	}
 
 	/* Is there enough left? */
@@ -295,7 +295,7 @@ size_t fileSeekRomdisk(FileHandler tHandler, size_t tOffset, int tWhence) {
 	if (fd >= MAX_RD_FILES || gFileHandlers[fd].index == 0 || gFileHandlers[fd].dir) {
 		logError("Invalid file handler");
 		logErrorInteger(fd);
-		abortSystem();
+		recoverFromError();
 	}
 
 	int32_t offset = (int32_t)tOffset;
@@ -305,7 +305,7 @@ size_t fileSeekRomdisk(FileHandler tHandler, size_t tOffset, int tWhence) {
 		if (offset < 0) {
 			logError("Invalid offset");
 			logErrorInteger(tOffset);
-			abortSystem();
+			recoverFromError();
 		}
 
 		gFileHandlers[fd].ptr = tOffset;
@@ -315,7 +315,7 @@ size_t fileSeekRomdisk(FileHandler tHandler, size_t tOffset, int tWhence) {
 		if (offset < 0 && (-offset) > (int32_t)gFileHandlers[fd].ptr) {
 			logError("Invalid offset");
 			logErrorInteger(tOffset);
-			abortSystem();
+			recoverFromError();
 		}
 
 		gFileHandlers[fd].ptr += tOffset;
@@ -325,7 +325,7 @@ size_t fileSeekRomdisk(FileHandler tHandler, size_t tOffset, int tWhence) {
 		if (offset < 0 && (-offset) >(int32_t)gFileHandlers[fd].size) {
 			logError("Invalid offset");
 			logErrorInteger(tOffset);
-			abortSystem();
+			recoverFromError();
 		}
 
 		gFileHandlers[fd].ptr = gFileHandlers[fd].size + tOffset;
@@ -334,7 +334,7 @@ size_t fileSeekRomdisk(FileHandler tHandler, size_t tOffset, int tWhence) {
 	default:
 		logError("Invalid whence");
 		logErrorInteger(tWhence);
-		abortSystem();
+		recoverFromError();
 	}
 
 	/* Check bounds */
@@ -350,7 +350,7 @@ size_t fileTellRomdisk(FileHandler tHandler) {
 	if (fd >= MAX_RD_FILES || gFileHandlers[fd].index == 0 || gFileHandlers[fd].dir) {
 		logError("Invalid file handler");
 		logErrorInteger(fd);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return gFileHandlers[fd].ptr;
@@ -363,7 +363,7 @@ size_t fileTotalRomdisk(FileHandler tHandler) {
 	if (fd >= MAX_RD_FILES || gFileHandlers[fd].index == 0 || gFileHandlers[fd].dir) {
 		logError("Invalid file handler");
 		logErrorInteger(fd);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return gFileHandlers[fd].size;
@@ -395,7 +395,7 @@ void mountRomdiskWindowsFromBuffer(Buffer b, char * tMountPath)
 	if (isAlreadyMounted) {
 		logError("Unable to mount. Already mounted.");
 		logErrorString(tMountPath);
-		abortSystem();
+		recoverFromError();
 	}
 
 
@@ -409,7 +409,7 @@ void mountRomdiskWindowsFromBuffer(Buffer b, char * tMountPath)
 	if (!gInitted) {
 		logError("Trying to mount romdisk before init");
 		logErrorString(tMountPath);
-		abortSystem();
+		recoverFromError();
 	}
 
 	/* Check the image and print some info about it */
@@ -418,7 +418,7 @@ void mountRomdiskWindowsFromBuffer(Buffer b, char * tMountPath)
 	if (strncmp((char *)img, "-rom1fs-", 8)) {
 		logError("Rom disk image is not a ROMFS image\n");
 		logErrorPointer(img);
-		abortSystem();
+		recoverFromError();
 	}
 
 	/* Create a mount struct */

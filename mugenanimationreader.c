@@ -236,7 +236,7 @@ static void handleHitboxSizeAssignment(char* tName) {
 	else {
 		logError("Unrecognized collision size name.");
 		logErrorString(name);
-		abortSystem();
+		recoverFromError();
 	}
 }
 
@@ -294,7 +294,7 @@ static void handleHitboxAssignment(MugenDefScriptGroupElement* tElement) {
 	else {
 		logError("Unable to decode assignment type.");
 		logErrorString(name);
-		abortSystem();
+		recoverFromError();
 	}
 
 }
@@ -382,7 +382,7 @@ static void handleInterpolation(MugenDefScriptGroupElement* e, MugenAnimations* 
 	else {
 		logError("Unrecognized interpolation type.");
 		logErrorString(text2);
-		abortSystem();
+		recoverFromError();
 	}
 }
 

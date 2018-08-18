@@ -115,7 +115,7 @@ static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, ch
 	logError("Unable to find word");
 	logString(tPos.mPointer);
 	logString(tWord);
-	abortSystem();
+	recoverFromError();
 	return tPos;
 }
 
@@ -140,7 +140,7 @@ static ScriptPosition findNextCharacterScriptOccurenceOnSameLevel(ScriptPosition
 	logError("Unable to find char");
 	logString(tPos.mPointer);
 	logInteger(tChar);
-	abortSystem();
+	recoverFromError();
 	return tPos;
 
 }
@@ -174,7 +174,7 @@ static ScriptPosition findScriptRegionStart(ScriptPosition tPos, char* tName) {
 	logError("Unable to find name");
 	logString(tPos.mPointer);
 	logString(tName);
-	abortSystem();
+	recoverFromError();
 	#ifdef DREAMCAST
 	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
 	#endif

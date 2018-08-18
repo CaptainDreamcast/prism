@@ -131,7 +131,7 @@ FileHandler fileOpen(char* tPath, int tFlags){
 	else {
 		logError("Unrecognized read mode");
 		logErrorInteger(tFlags)
-		abortSystem();
+			recoverFromError();
 	}
 
 	return fopen(path, flags);
@@ -151,7 +151,7 @@ size_t fileWrite(FileHandler tHandler, const void* tBuffer, size_t tCount) {
 	if (isRomdiskFileHandler(tHandler)) {
 		logError("Unable to write to romdisk file.");
 		logErrorInteger(tHandler);
-		abortSystem();
+		recoverFromError();
 	}
 
 	return fwrite(tBuffer, 1, tCount, tHandler);
@@ -230,7 +230,7 @@ void printDirectory(char* tPath) {
 		else {
 			logError("Unable to read directory");
 			logErrorString(path);
-			abortSystem();
+			recoverFromError();
 		}
 	}
 

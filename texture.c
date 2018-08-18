@@ -28,7 +28,7 @@ void loadFontHeader(char tFileDir[]) {
 	if (file == FILEHND_INVALID) {
 		logError("Cannot open font header.");
 		logErrorString(tFileDir);
-		abortSystem();
+		recoverFromError();
 	}
 
 	fileSeek(file, 0, 0);
