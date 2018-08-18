@@ -119,6 +119,14 @@ void initPrismWrapperWithDefaultFlags() {
 	gData.mIsUsingBasicTextHandler = 1;
 }
 
+void initPrismWrapperWithMugenFlags() {
+	initBasicSystems();
+	debugLog("Initiating font.");
+
+	gData.mIsUsingMugen = 1;
+	gData.mIsUsingClipboard = 1;
+}
+
 void initPrismWrapperWithConfigFile(char* tPath) {
 	initBasicSystems();
 
@@ -288,6 +296,8 @@ static void unloadWrapper() {
 
 	debugLog("Shutting down Actorhandling");
 	shutdownActorHandler();
+	debugLog("Shutting down Wrapper component handler");
+	shutdownWrapperComponentHandler();
 	debugLog("Shutting down Soundeffecthandling");
 	shutdownSoundEffectHandler();
 	debugLog("Shutting down Collisionanimationhandling");
@@ -306,8 +316,6 @@ static void unloadWrapper() {
 	shutdownTexturePool();
 	debugLog("Shutting down Timer");
 	shutdownTimer();
-	debugLog("Shutting down Wrapper component handler");
-	shutdownWrapperComponentHandler();
 
 	logFormat("Blocks allocated post-screen: %d.", getAllocatedMemoryBlockAmount());
 
@@ -518,7 +526,7 @@ void recoverWrapperError()
 {
 	if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) {
 		abortSystem();
-	} 
+	}
 	else {
 		setNewScreen(gData.mTitleScreen);
 		unloadWrapper();

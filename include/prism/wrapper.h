@@ -14,6 +14,7 @@ typedef struct Screen_internal{
 } Screen;
 
 void initPrismWrapperWithDefaultFlags();
+void initPrismWrapperWithMugenFlags();
 void initPrismWrapperWithoutMemoryManagement();
 void initPrismWrapperWithConfigFile(char* tPath);
 void shutdownPrismWrapper();
