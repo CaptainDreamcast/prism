@@ -165,6 +165,7 @@
     <ClCompile Include="..\..\compression.c" />
     <ClCompile Include="..\..\datastructures.c" />
     <ClCompile Include="..\..\drawing.c" />
+    <ClCompile Include="..\..\errorscreen.c" />
     <ClCompile Include="..\..\file.c" />
     <ClCompile Include="..\..\framerate.c" />
     <ClCompile Include="..\..\geometry.c" />
@@ -244,6 +245,7 @@
     <ClInclude Include="..\..\include\prism\compression.h" />
     <ClInclude Include="..\..\include\prism\datastructures.h" />
     <ClInclude Include="..\..\include\prism\drawing.h" />
+    <ClInclude Include="..\..\include\prism\errorscreen.h" />
     <ClInclude Include="..\..\include\prism\file.h" />
     <ClInclude Include="..\..\include\prism\framerate.h" />
     <ClInclude Include="..\..\include\prism\framerateselectscreen.h" />

@@ -2,24 +2,50 @@
 
 #include <stdio.h>
 
-#define logBase() {printf("[%s::%s, line %d] ", __FILE__, __FUNCTION__, __LINE__);}	
-#define logg(x)	{logBase(); printf(x); printf("\n");}
-#define logInteger(x) {logBase(); printf("Value of %s: %d\n", #x, (int)x);}
-#define logString(x) {logBase(); printf("Value of %s: %s\n", #x, x);}
-#define logWString(x) {logBase(); printf("Value of %s: %S\n", #x, x);}
-#define logDouble(x) {logBase(); printf("Value of %s: %f\n", #x, (double)x);}
-#define logHex(x) {logBase(); printf("Value of %s: %X\n", #x, (unsigned int)x);}
-#define logPointer(x) {logBase(); printf("Value of %s: %p\n", #x, (char*)x);}
-#define logFormat(x, ...) {logBase(); logFormatFunc(x,  __VA_ARGS__); }
+#include "datastructures.h"
+
+
+typedef enum {
+	LOG_TYPE_NORMAL,
+	LOG_TYPE_WARNING,
+	LOG_TYPE_ERROR
+
+} LogType;
+
+typedef struct {
+	char mText[1024];
+	LogType mType;
+} LogEntry;
+
+void logprintf(char* tFormatString, ...);
+void logCommit(LogType tType);
+#define logBegin() {logprintf("[%s::%s, line %d] ", __FILE__, __FUNCTION__, __LINE__);}	
+#define logGeneral(type, x)	{logBegin(); logprintf(x); logprintf("\n"); logCommit(type);}
+#define logIntegerGeneral(type, x) {logBegin(); logprintf("Value of %s: %d\n", #x, (int)x); logCommit(type);}
+#define logStringGeneral(type, x) {logBegin(); logprintf("Value of %s: %s\n", #x, x); logCommit(type);}
+#define logWStringGeneral(type, x) {logBegin(); logprintf("Value of %s: %S\n", #x, x); logCommit(type);} 
+#define logDoubleGeneral(type, x) {logBegin(); logprintf("Value of %s: %f\n", #x, (double)x); logCommit(type);}
+#define logHexGeneral(type, x) {logBegin(); logprintf("Value of %s: %X\n", #x, (unsigned int)x); logCommit(type);}
+#define logPointerGeneral(type, x) {logBegin(); logprintf("Value of %s: %p\n", #x, (char*)x); logCommit(type);}
+#define logFormatGeneral(type, x, ...) {logBegin(); logFormatFunc(x,  __VA_ARGS__); logCommit(type);}
 void logFormatFunc(char* tFormatString, ...);
 
-#define logError(x) logg(x)
-#define logErrorInteger(x) logInteger(x)
-#define logErrorString(x) logString(x)
-#define logErrorDouble(x) logDouble(x)
-#define logErrorHex(x) logHex(x)
-#define logErrorPointer(x) logPointer(x)
-#define logErrorFormat(x, ...) logFormat(x,  __VA_ARGS__)
+#define logg(x)	logGeneral(LOG_TYPE_NORMAL, x)
+#define logInteger(x) logIntegerGeneral(LOG_TYPE_NORMAL, x)
+#define logString(x) logStringGeneral(LOG_TYPE_NORMAL, x)
+#define logWString(x) logWStringGeneral(LOG_TYPE_NORMAL, x)
+#define logDouble(x) logDoubleGeneral(LOG_TYPE_NORMAL, x)
+#define logHex(x) logHexGeneral(LOG_TYPE_NORMAL, x)
+#define logPointer(x) logPointerGeneral(LOG_TYPE_NORMAL, x)
+#define logFormat(x, ...) logFormatGeneral(LOG_TYPE_NORMAL, x,  __VA_ARGS__)
+
+#define logError(x) logGeneral(LOG_TYPE_ERROR, x)
+#define logErrorInteger(x) logIntegerGeneral(LOG_TYPE_ERROR, x)
+#define logErrorString(x) logStringGeneral(LOG_TYPE_ERROR, x)
+#define logErrorDouble(x) logDoubleGeneral(LOG_TYPE_ERROR, x)
+#define logErrorHex(x) logHexGeneral(LOG_TYPE_ERROR, x)
+#define logErrorPointer(x) logPointerGeneral(LOG_TYPE_ERROR, x)
+#define logErrorFormat(x, ...) logFormatGeneral(LOG_TYPE_ERROR, x,  __VA_ARGS__)
 
 #ifdef LOGGER_WARNINGS_DISABLED
 #define logWarning(x) {}
@@ -27,10 +53,10 @@ void logFormatFunc(char* tFormatString, ...);
 #define logWarningString(x) {}
 #define logWarningFormat(x, ...) {}
 #else 
-#define logWarning(x) logg(x)
-#define logWarningInteger(x) logInteger(x)
-#define logWarningString(x) logString(x)
-#define logWarningFormat(x, ...) logFormat(x,  __VA_ARGS__)
+#define logWarning(x) logGeneral(LOG_TYPE_WARNING, x)
+#define logWarningInteger(x) logIntegerGeneral(LOG_TYPE_WARNING, x)
+#define logWarningString(x) logStringGeneral(LOG_TYPE_WARNING, x)
+#define logWarningFormat(x, ...) logFormatGeneral(LOG_TYPE_WARNING, x,  __VA_ARGS__)
 #endif
 
 #ifdef DEBUG
@@ -56,3 +82,4 @@ void logMemoryState();
 #define logMemoryState() {}
 #endif
 
+Vector getLogEntries(); // contains LogEntry

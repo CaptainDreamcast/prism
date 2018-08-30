@@ -7,3 +7,4 @@ void logTextureMemoryState(){
 void logMemoryState(){
 	// TODO: find windows equivalent for malloc_stats
 }
+

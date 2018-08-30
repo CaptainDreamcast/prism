@@ -42,6 +42,7 @@
 #include "prism/wrappercomponenthandler.h"
 #include "prism/thread.h"
 #include "prism/loadingscreen.h"
+#include "prism/errorscreen.h"
 
 typedef struct {
 	int mIsPaused;
@@ -524,6 +525,19 @@ void setWrapperTitleScreen(Screen * tTitleScreen)
 
 void recoverWrapperError()
 {
+	if (gData.mIsUsingMugen) {
+		setNewScreen(&ErrorScreen);
+		unloadWrapper();
+		longjmp(gData.mExceptionJumpBuffer, 1);
+	}
+	else {
+		gotoNextScreenAfterWrapperError();
+	}
+
+}
+
+void gotoNextScreenAfterWrapperError()
+{
 	if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) {
 		abortSystem();
 	}
@@ -532,6 +546,5 @@ void recoverWrapperError()
 		unloadWrapper();
 		longjmp(gData.mExceptionJumpBuffer, 1);
 	}
-
 }
 
