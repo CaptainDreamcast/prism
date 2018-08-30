@@ -4,6 +4,7 @@
 
 #include "prism/log.h"
 #include "prism/pvr.h"
+#include "prism/wrapper.h"
 
 void abortSystem(){
 	arch_exit();
@@ -11,6 +12,17 @@ void abortSystem(){
 
 void returnToMenu() {
 	arch_menu();
+}
+
+// TODO: move to general
+void recoverFromError()
+{
+	if (isUsingWrapper()) {
+		recoverWrapperError();
+	}
+	else {
+		abortSystem();
+	}
 }
 
 static struct {
@@ -91,6 +103,13 @@ ScreenSize getScreenSize() {
 	ret.x = gSystem.mScreenSizeX;
 	ret.y = gSystem.mScreenSizeY;
 	return ret;
+}
+
+void setDisplayedScreenSize(int tX, int tY)
+{
+	(void)tX;
+	(void)tY;
+	// TODO: check if the DC even needs something like that
 }
 
 void setScreenFramerate(int tFramerate) {

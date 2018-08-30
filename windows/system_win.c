@@ -32,6 +32,7 @@ void abortSystem(){
 	exit(0);
 }
 
+// TODO: move to general
 void recoverFromError()
 {
 	if (isUsingWrapper()) {
