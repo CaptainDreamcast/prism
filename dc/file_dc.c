@@ -16,7 +16,6 @@ static struct {
 void initFileSystem(){
 	logg("Initiate file system.");
 	sprintf(gData.cwd, "/");
-	gData.fileSystem[0] = '\0';
 	debugString(gData.cwd);
 }
 
