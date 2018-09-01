@@ -271,7 +271,7 @@ static void loadScreen(Screen* tScreen) {
 	resetInputForAllControllers();
 	enableDrawing();
 
-	int hasLoadingScreen = 0;// TODO
+	int hasLoadingScreen = isOnDreamcast();
 	if(hasLoadingScreen) {	
 		startThread(loadingThreadFunction, tScreen);
 		debugLog("Start loading screen");
@@ -527,6 +527,8 @@ void setWrapperTitleScreen(Screen * tTitleScreen)
 
 void recoverWrapperError()
 {
+	gData.mHasFinishedLoading = 1;
+
 	if (gData.mIsUsingMugen) {
 		setNewScreen(&ErrorScreen);
 		unloadWrapper();

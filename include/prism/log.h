@@ -27,7 +27,7 @@ void logCommit(LogType tType);
 #define logDoubleGeneral(type, x) {logBegin(); logprintf("Value of %s: %f\n", #x, (double)x); logCommit(type);}
 #define logHexGeneral(type, x) {logBegin(); logprintf("Value of %s: %X\n", #x, (unsigned int)x); logCommit(type);}
 #define logPointerGeneral(type, x) {logBegin(); logprintf("Value of %s: %p\n", #x, (char*)x); logCommit(type);}
-#define logFormatGeneral(type, x, ...) {logBegin(); logFormatFunc(x,  __VA_ARGS__); logCommit(type);}
+#define logFormatGeneral(type, x, ...) {logBegin(); logFormatFunc(x,  __VA_ARGS__); logprintf("\n"); logCommit(type);}
 void logFormatFunc(char* tFormatString, ...);
 
 #define logg(x)	logGeneral(LOG_TYPE_NORMAL, x)
@@ -82,4 +82,5 @@ void logMemoryState();
 #define logMemoryState() {}
 #endif
 
+void setMinimumLogType(LogType tType);
 Vector getLogEntries(); // contains LogEntry

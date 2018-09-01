@@ -11,6 +11,8 @@
 #define MAX_LOG_ENTRY_AMOUNT (MAX_LOG_AMOUNT + 1)
 
 static struct {
+	LogType mMinimumLogType;
+
 	int mPointer;
 	int mAmount;
 	LogEntry mLog[MAX_LOG_ENTRY_AMOUNT];
@@ -27,7 +29,10 @@ void logprintf(char* tFormatString, ...) {
 
 void logCommit(LogType tType) {
 	gData.mLog[gData.mPointer].mType = tType;
-	printf(gData.mLog[gData.mPointer].mText);
+
+	if(tType >= gData.mMinimumLogType) {
+		printf(gData.mLog[gData.mPointer].mText);
+	}
 
 	gData.mPointer = (gData.mPointer + 1) % MAX_LOG_ENTRY_AMOUNT;
 	gData.mAmount = gData.mAmount + 1 > MAX_LOG_AMOUNT ? MAX_LOG_AMOUNT : gData.mAmount + 1; // TODO: min error
@@ -44,15 +49,8 @@ void logFormatFunc(char* tFormatString, ...) {
 	logprintf("%s\n", text);
 }
 
-void logErrorFormatFunc(char * tFormatString, ...)
-{
-	char text[1024];
-	va_list args;
-	va_start(args, tFormatString);
-	vsprintf(text, tFormatString, args);
-	va_end(args);
-
-	logprintf("%s\n", text);
+void setMinimumLogType(LogType tType) {
+	gData.mMinimumLogType = tType;
 }
 
 Vector getLogEntries()

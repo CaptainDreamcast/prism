@@ -18,6 +18,8 @@
 #define HEADER_SIZE_KMG 64
 // TODO: use kmg.h from KOS
 
+extern semaphore_t gPVRAccessSemaphore;
+
 TextureData loadTexturePKG(char* tFileDir) {
 
   TextureData returnData;
@@ -48,8 +50,10 @@ TextureData loadTexturePKG(char* tFileDir) {
   memcpy4(&returnData.mTextureSize.x, kmgData + 16, sizeof returnData.mTextureSize.x);
   memcpy4(&returnData.mTextureSize.y, kmgData + 20, sizeof returnData.mTextureSize.y);
 
+  sem_wait(&gPVRAccessSemaphore);
   returnData.mTexture = allocTextureMemory(bufferLength - HEADER_SIZE_KMG);
   sq_cpy(returnData.mTexture->mData, kmgData + HEADER_SIZE_KMG, bufferLength - HEADER_SIZE_KMG);
+  sem_signal(&gPVRAccessSemaphore);
 
   freeMemory(kmgData);
 
@@ -130,8 +134,10 @@ TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight) {
 	returnData.mTextureSize.x = tWidth;
 	returnData.mTextureSize.y = tHeight;
 
+        sem_wait(&gPVRAccessSemaphore);
  	returnData.mTexture = allocTextureMemory(twiddledBuffer.mLength);
   	sq_cpy(returnData.mTexture->mData, twiddledBuffer.mData, twiddledBuffer.mLength);
+	sem_signal(&gPVRAccessSemaphore);
 
 	freeBuffer(twiddledBuffer);
 	return returnData;
@@ -147,8 +153,10 @@ TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 	returnData.mTextureSize.x = tWidth;
 	returnData.mTextureSize.y = tHeight;
 
+        sem_wait(&gPVRAccessSemaphore);
  	returnData.mTexture = allocTextureMemory(twiddledBuffer.mLength);
   	sq_cpy(returnData.mTexture->mData, twiddledBuffer.mData, twiddledBuffer.mLength);
+        sem_signal(&gPVRAccessSemaphore);
 
 	freeBuffer(twiddledBuffer);
 	return returnData;
@@ -162,9 +170,11 @@ TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWid
 	returnData.mPaletteID = tPaletteID;
 	returnData.mTextureSize.x = tWidth;
 	returnData.mTextureSize.y = tHeight;
-
+	
+        sem_wait(&gPVRAccessSemaphore);
 	returnData.mTexture = allocTextureMemory(twiddledBuffer.mLength);
   	sq_cpy(returnData.mTexture->mData, twiddledBuffer.mData, twiddledBuffer.mLength);
+        sem_signal(&gPVRAccessSemaphore);
 
 	freeBuffer(twiddledBuffer);
 	return returnData;

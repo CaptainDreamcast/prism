@@ -27,7 +27,11 @@ static struct {
 
 	uint64_t mPreviousFrameTime;
 	uint64_t mCurrentFrameTime;
+
+	
 } gData;
+
+semaphore_t gPVRAccessSemaphore;
 
 static void applyDrawingMatrix(pvr_vertex_t* tVert) {
   (void) tVert;
@@ -54,6 +58,8 @@ void initDrawing(){
 
 	gData.mPreviousFrameTime = timer_ms_gettime64() - (1000 / 60);
 	gData.mCurrentFrameTime = timer_ms_gettime64();
+
+	sem_init(&gPVRAccessSemaphore, 1);
 }
 
 #define PVR_BLEND_ZERO          0   /**< \brief None of this color */
@@ -66,6 +72,8 @@ void initDrawing(){
 #define PVR_BLEND_INVDESTALPHA  7   /**< \brief Blend with inverse destination alpha */
 
 static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pvr_vertex_t* vert) {
+  //sem_wait(&gPVRAccessSemaphore);
+
   referenceTextureMemory(tTexture.mTexture);
 
   pvr_poly_cxt_t cxt;
@@ -147,6 +155,7 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
   vert[3].v = down;
   pvr_prim(&vert[3], sizeof(pvr_vertex_t));
 
+  //sem_signal(&gPVRAccessSemaphore);
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
@@ -210,13 +219,18 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
 }
 
 void startDrawing() {
+
+  //sem_wait(&gPVRAccessSemaphore);
   pvr_scene_begin();
   pvr_list_begin(PVR_LIST_TR_POLY);
+  //sem_signal(&gPVRAccessSemaphore);
 }
 
 void stopDrawing() {
+  //sem_wait(&gPVRAccessSemaphore);
   pvr_list_finish();
   pvr_scene_finish();
+  //sem_signal(&gPVRAccessSemaphore);
 }
 
 void disableDrawing() {
@@ -257,6 +271,7 @@ static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position
 void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
   if(gData.mIsDisabled) return;
 
+  //sem_wait(&gPVRAccessSemaphore);
 
   pvr_poly_cxt_t cxt;
   pvr_poly_hdr_t hdr;
@@ -322,6 +337,7 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
     }
   }
 
+  //sem_signal(&gPVRAccessSemaphore);
 }
 
 void drawTruetypeText(char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth) {
@@ -425,6 +441,8 @@ static uint32_t packPaletteEntry(uint8_t a, uint8_t r, uint8_t g, uint8_t b) {
 
 void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
 	assert(tBuffer.mLength >= 256*4);
+	//sem_wait(&gPVRAccessSemaphore);
+
 	uint8_t* src = tBuffer.mData;
 	
 	int start = tPaletteID * 256;
@@ -437,10 +455,14 @@ void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
 		uint32_t value = packPaletteEntry(a, r, g, b);
 		pvr_set_pal_entry(start + i, value);
 	}
+
+	//sem_signal(&gPVRAccessSemaphore);
 }
 
 void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer tBuffer) {
 	assert(tBuffer.mLength >= 256*3);
+	//sem_wait(&gPVRAccessSemaphore);
+
 	uint8_t* src = tBuffer.mData;
 	
 	int start = tPaletteID * 256;
@@ -455,6 +477,8 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer 
 		uint32_t value = packPaletteEntry(a, r, g, b);
 		pvr_set_pal_entry(start + i, value);
 	}
+
+	//sem_signal(&gPVRAccessSemaphore);
 }
 
 double getRealFramerate() {

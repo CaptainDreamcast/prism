@@ -823,7 +823,6 @@ MugenDefScript loadMugenDefScript(char * tPath)
 
 MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer) {
 	MugenDefToken* root = parseTokens(&tBuffer);
-
 	MugenDefScript d = makeEmptyMugenDefScript();
 	tokensToDefScript(&d, root);
 
