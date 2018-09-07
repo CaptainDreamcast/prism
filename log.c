@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include <math.h>
 
@@ -31,7 +32,7 @@ void logCommit(LogType tType) {
 	gData.mLog[gData.mPointer].mType = tType;
 
 	if(tType >= gData.mMinimumLogType) {
-		printf(gData.mLog[gData.mPointer].mText);
+		printf("%s", gData.mLog[gData.mPointer].mText);
 	}
 
 	gData.mPointer = (gData.mPointer + 1) % MAX_LOG_ENTRY_AMOUNT;
