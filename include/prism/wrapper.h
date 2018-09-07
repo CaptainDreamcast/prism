@@ -35,3 +35,4 @@ void setWrapperToExhibitionMode();
 void setWrapperTitleScreen(Screen* tTitleScreen);
 void recoverWrapperError();
 void gotoNextScreenAfterWrapperError();
+void disableWrapperErrorRecovery();

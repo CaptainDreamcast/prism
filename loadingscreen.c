@@ -6,6 +6,8 @@
 #include "prism/system.h"
 #include "prism/screeneffect.h"
 
+// TODO: properly separate
+#ifdef DREAMCAST
 static struct {
 	int mTicks;
 } gData;
@@ -48,5 +50,12 @@ void startLoadingScreen(int* tHasFinishedLoadingReference)
 		loadScreenLoop();
 	}
 }
+#else
 
+void startLoadingScreen(int* tHasFinishedLoadingReference)
+{
+	
+}
+
+#endif
 

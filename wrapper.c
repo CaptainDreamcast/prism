@@ -82,7 +82,7 @@ static struct {
 	WrapperDebug mDebug;
 	jmp_buf mExceptionJumpBuffer;
 
-
+	int mIsNotUsingWrapperRecovery;
 	int mIsActive;
 } gData;
 
@@ -529,7 +529,7 @@ void recoverWrapperError()
 {
 	gData.mHasFinishedLoading = 1;
 
-	if (gData.mIsUsingMugen) {
+	if (gData.mIsUsingMugen && !gData.mIsNotUsingWrapperRecovery) {
 		setNewScreen(&ErrorScreen);
 		unloadWrapper();
 		longjmp(gData.mExceptionJumpBuffer, 1);
@@ -542,7 +542,7 @@ void recoverWrapperError()
 
 void gotoNextScreenAfterWrapperError()
 {
-	if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) {
+	if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen || gData.mIsNotUsingWrapperRecovery) {
 		abortSystem();
 	}
 	else {
@@ -550,5 +550,10 @@ void gotoNextScreenAfterWrapperError()
 		unloadWrapper();
 		longjmp(gData.mExceptionJumpBuffer, 1);
 	}
+}
+
+void disableWrapperErrorRecovery()
+{
+	gData.mIsNotUsingWrapperRecovery = 1;
 }
 
