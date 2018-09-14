@@ -815,15 +815,14 @@ MugenDefScript loadMugenDefScript(char * tPath)
 	debugString(tPath);
 	printf("loading file %s\n", tPath);
 	Buffer b = fileToBuffer(tPath);
-	MugenDefScript ret = loadMugenDefScriptFromBuffer(b);
-	freeBuffer(b);
-
+	MugenDefScript ret = loadMugenDefScriptFromBufferAndFreeBuffer(b);
 	return ret;
 }
 
-MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer) {
+MugenDefScript loadMugenDefScriptFromBufferAndFreeBuffer(Buffer tBuffer) {
 	MugenDefToken* root = parseTokens(&tBuffer);
 	MugenDefScript d = makeEmptyMugenDefScript();
+	freeBuffer(tBuffer);
 	tokensToDefScript(&d, root);
 
 	return d;

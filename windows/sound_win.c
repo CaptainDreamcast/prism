@@ -149,9 +149,19 @@ void playTrackOnce(int tTrack)
 	playTrackGeneral(tTrack, 0);
 }
 
+static void streamMusicFileGeneral(char* tPath, int tLoopAmount) {
+	(void)tLoopAmount; // TODO
+	playMusicPath(tPath);
+}
+
 void streamMusicFile(char * tPath)
 {
-	playMusicPath(tPath);
+	streamMusicFileGeneral(tPath, -1);
+}
+
+void streamMusicFileOnce(char * tPath)
+{
+	streamMusicFileGeneral(tPath, 0);
 }
 
 

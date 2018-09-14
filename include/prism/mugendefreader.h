@@ -56,7 +56,7 @@ typedef struct {
 } MugenDefScript;
 
 MugenDefScript loadMugenDefScript(char* tPath);
-MugenDefScript loadMugenDefScriptFromBuffer(Buffer tBuffer);
+MugenDefScript loadMugenDefScriptFromBufferAndFreeBuffer(Buffer tBuffer);
 void unloadMugenDefScript(MugenDefScript tScript);
 
 int isMugenDefStringVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);

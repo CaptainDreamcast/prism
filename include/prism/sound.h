@@ -16,6 +16,8 @@ void resumeTrack();
 void playTrackOnce(int tTrack);
 
 void streamMusicFile(char* tPath);
+void streamMusicFileOnce(char* tPath);
+
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint();
 double getMicrophoneVolume();
