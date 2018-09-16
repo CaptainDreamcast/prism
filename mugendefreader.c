@@ -342,6 +342,7 @@ static int isTextStatement() {
 	ret |= !strcmp("[ExtraStages]", text); // TODO: check
 	ret |= !strcmp("[Stories]", text); // TODO: check
 	ret |= !strcmp("[Map]", text); // TODO: check
+	ret |= !strcmp("[HitObjects]", text); 
 
 	return ret;
 }
@@ -766,6 +767,7 @@ static int isTextStatementToken() {
 	if (!strcmp(gScriptMaker.mGroup, "ExtraStages")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "Stories")) return 1;
 	if (!strcmp(gScriptMaker.mGroup, "Map")) return 1; // TODO: check
+	if (!strcmp(gScriptMaker.mGroup, "HitObjects")) return 1; 
 
 	return 0;
 }
@@ -866,7 +868,7 @@ static void unloadMugenDefElement(void* tCaller, void* tData) {
 		unloadMugenDefScriptStringElement(e->mData);
 	}
 	else {
-		logError("Unknoown element type.");
+		logError("Unknown element type.");
 		logErrorInteger(e->mType);
 		recoverFromError();
 	}
