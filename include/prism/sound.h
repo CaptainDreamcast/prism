@@ -17,7 +17,7 @@ void playTrackOnce(int tTrack);
 
 void streamMusicFile(char* tPath);
 void streamMusicFileOnce(char* tPath);
-
+void stopStreamingMusicFile();
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint();
 double getMicrophoneVolume();
