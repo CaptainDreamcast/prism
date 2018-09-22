@@ -175,7 +175,7 @@ static ScriptPosition findScriptRegionStart(ScriptPosition tPos, char* tName) {
 	logString(tPos.mPointer);
 	logString(tName);
 	recoverFromError();
-	#ifdef DREAMCAST
+	#if defined(DREAMCAST) || defined(__EMSCRIPTEN__)
 	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
 	#endif
 }

@@ -195,6 +195,23 @@ void list_remove_predicate(List* tList, predicateCB tCB, void* tCaller){
 
 }
 
+ListIterator list_find_first_predicate(List * tList, predicateCB tCB, void * tCaller)
+{
+	int left = tList->mSize;
+
+	ListElement* cur = tList->mFirst;
+	while (left--) {
+		ListElement* next = cur->mNext;
+		if (tCB(tCaller, cur->mData)) {
+			return cur;
+		}
+
+		cur = next;
+	}
+
+	return NULL;
+}
+
 
 int list_size(List* tList){
 	return tList->mSize;

@@ -137,9 +137,9 @@ static void parseParameterInput(char* tFormatString, int* i, char** tDst, char**
 		*tDst += len;
 	}
 	else {
-		logError("Unrecognized parsing parameter");
-		logErrorString(&tFormatString[*i - 1]);
-		recoverFromError();
+		logWarning("Unrecognized parsing parameter");
+		logWarningString(&tFormatString[*i - 1]);
+		return;
 	}
 
 

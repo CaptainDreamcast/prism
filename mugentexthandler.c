@@ -194,8 +194,9 @@ static MugenFontType getMugenFontTypeFromScript(MugenDefScript* tScript) {
 	return ret;
 }
 
-static void setMugenFontDirectory() {
+static void setMugenFontDirectory(char* tPath) {
 
+	(void)tPath;
 	setWorkingDirectory("/"); // TODO
 }
 

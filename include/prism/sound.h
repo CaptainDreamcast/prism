@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include "actorhandler.h"
 
 void initSound();
@@ -18,6 +20,8 @@ void playTrackOnce(int tTrack);
 void streamMusicFile(char* tPath);
 void streamMusicFileOnce(char* tPath);
 void stopStreamingMusicFile();
+uint64_t getStreamingSoundTimeElapsedInMilliseconds();
+int isPlayingStreamingMusic();
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint();
 double getMicrophoneVolume();

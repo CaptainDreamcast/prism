@@ -558,8 +558,8 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
 		tTexturePosition.bottomRight.x = (int)(fontData.mTextureSize.x*charData.mFilePositionX2);
 		tTexturePosition.bottomRight.y = (int)(fontData.mTextureSize.y*charData.mFilePositionY2);
 
-		double dx = fabs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x);
-		double dy = fabs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y);
+		double dx = (double)abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x);
+		double dy = (double)abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y);
 		Vector3D scale = makePosition(1 / dx, 1 / dy, 1);
 		scaleDrawing3D(vecScale3D(tFontSize, scale), pos);
 

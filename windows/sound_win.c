@@ -1,6 +1,7 @@
 #include "prism/sound.h"
 
 #include <assert.h>
+#include <stdio.h>
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
@@ -43,6 +44,8 @@ static struct {
 	Mix_Chunk* mTrackChunk;
 	int mTrackChannel;
 	
+	uint64_t mTimeWhenMusicPlaybackStarted;
+
 	Microphone mMicrophone;
 } gData;
 
@@ -54,6 +57,7 @@ void initSound() {
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 	Mix_AllocateChannels(1024);
 
+	gData.mTrackChannel = -1;
 	gData.mHasLoadedTrack = 0;
 	gData.mIsPlayingTrack = 0;
 
@@ -83,7 +87,9 @@ static void playMusicPath(char* tPath) {
 
 	Buffer b = fileToBuffer(fullPath);
 	SDL_RWops* rwOps = SDL_RWFromConstMem(b.mData, b.mLength);
+	logg(SDL_GetError());
 	gData.mTrackChunk = Mix_LoadWAV_RW(rwOps, 0);
+	logg(Mix_GetError());
 	freeBuffer(b);
 	gData.mHasLoadedTrack = 1;
 }
@@ -103,6 +109,8 @@ static void unloadTrack() {
 	gData.mHasLoadedTrack = 0;
 }
 
+static void streamMusicFileGeneral(char* tPath, int tLoopAmount);
+
 static void playTrackGeneral(int tTrack, int tLoopAmount) {
 #ifdef __EMSCRIPTEN__
 	//return;
@@ -111,10 +119,9 @@ static void playTrackGeneral(int tTrack, int tLoopAmount) {
 	if (gData.mIsPlayingTrack) stopTrack();
 	if (gData.mHasLoadedTrack) unloadTrack();
 
-	loadTrack(tTrack);
-	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, tLoopAmount);
-	gData.mIsPaused = 0;
-	gData.mIsPlayingTrack = 1;
+	char path[1024];
+	sprintf(path, "tracks/%d.wav", tTrack);
+	streamMusicFileGeneral(path, tLoopAmount);
 }
 
 void playTrack(int tTrack) {
@@ -126,7 +133,6 @@ void stopTrack()
 	if (!gData.mIsPlayingTrack) return;
 
 	Mix_HaltChannel(gData.mTrackChannel);
-	gData.mIsPlayingTrack = 0;
 }
 
 void pauseTrack()
@@ -149,9 +155,23 @@ void playTrackOnce(int tTrack)
 	playTrackGeneral(tTrack, 0);
 }
 
+static void musicFinishedCB(int tChannel) {
+	if (tChannel != gData.mTrackChannel) return;
+	gData.mTrackChannel = -1;
+	gData.mIsPlayingTrack = 0;
+
+	Mix_FreeChunk(gData.mTrackChunk);
+	gData.mHasLoadedTrack = 0;
+}
+
 static void streamMusicFileGeneral(char* tPath, int tLoopAmount) {
-	(void)tLoopAmount; // TODO
 	playMusicPath(tPath);
+	Mix_ChannelFinished(musicFinishedCB);
+	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, tLoopAmount);
+	logg(Mix_GetError());
+	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
+	gData.mIsPaused = 0;
+	gData.mIsPlayingTrack = 1;
 }
 
 void streamMusicFile(char * tPath)
@@ -162,6 +182,23 @@ void streamMusicFile(char * tPath)
 void streamMusicFileOnce(char * tPath)
 {
 	streamMusicFileGeneral(tPath, 0);
+}
+
+void stopStreamingMusicFile()
+{
+	stopTrack();
+}
+
+uint64_t getStreamingSoundTimeElapsedInMilliseconds()
+{
+	if (!gData.mIsPlayingTrack) return 0;
+	uint64_t now = SDL_GetTicks();
+	return (uint64_t)(now - gData.mTimeWhenMusicPlaybackStarted);
+}
+
+int isPlayingStreamingMusic()
+{
+	return gData.mIsPlayingTrack;
 }
 
 
