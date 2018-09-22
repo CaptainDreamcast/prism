@@ -18,7 +18,6 @@ void shutdownSoundEffectHandler() {
 }
 
 int loadSoundEffect(char* tPath) {
-	return -1;
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);
 	return snd_sfx_load(fullPath);
@@ -26,7 +25,7 @@ int loadSoundEffect(char* tPath) {
 
 int loadSoundEffectFromBuffer(Buffer tBuffer) {
 	char tempPath[1024];
-	strcpy(tempPath, "/ram/tempsound.wav");
+	strcpy(tempPath, "$/ram/tempsound.wav");
 
 	bufferToFile(tempPath, tBuffer);
 	int ret = loadSoundEffect(tempPath);
@@ -41,12 +40,10 @@ void unloadSoundEffect(int tID) {
 }
 
 int playSoundEffect(int tID) {
-	return -1;
-	return snd_sfx_play(tID, getVolume(), getPanningValue());
+	return snd_sfx_play(tID, 255, 128);
 }
 
 void stopSoundEffect(int tSFX) {
-	return;
 	snd_sfx_stop(tSFX);
 }
 

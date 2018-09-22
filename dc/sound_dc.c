@@ -2,9 +2,13 @@
 
 #include <kos.h>
 #include <dc/sound/sound.h>
+#include <oggvorbis/sndoggvorbis.h>
 
 #include "prism/file.h"
 #include "prism/thread.h"
+
+#define BUF_SIZE 65536			/* Size of buffer */
+
 
 static struct {
 
@@ -17,8 +21,7 @@ static struct {
 	
 	int mSampleAmount;
 	int mLastSoundBufferRequested;
-	short mSoundBuffer16[88000];		
-	char mSoundBuffer[88000];	
+	uint8_t mSoundBuffer[(BUF_SIZE+16384)*2];	
 	
 } gData;
 
@@ -68,47 +71,20 @@ void resumeTrack() {
 
 #define STREAM_MUSIC_SAFETY_BUFFER 4000
 
+
 static void* streamMusicFileCB(snd_stream_hnd_t tHandler, int tAmount, int * tActualAmount) {
-	(void)tHandler;	
-
-
-	int bufferedSamples = gData.mSampleAmount - gData.mLastSoundBufferRequested;
-	int samplesNecessary = tAmount + STREAM_MUSIC_SAFETY_BUFFER - bufferedSamples;
-
-	int requestedSampleSize = samplesNecessary*2;
-	//printf("req %d\n", requestedSampleSize);
-	size_t readSize = fileRead(gData.mSoundFile, gData.mSoundBuffer16, requestedSampleSize);
-	int readSampleAmount = readSize/2;	
-
-	if(gData.mLastSoundBufferRequested > 0) {
-		gData.mSampleAmount -= gData.mLastSoundBufferRequested;
-		memcpy(gData.mSoundBuffer, gData.mSoundBuffer + gData.mLastSoundBufferRequested, gData.mSampleAmount);
-	}
-	gData.mSampleAmount += readSampleAmount;
-
-	int i;
-	for(i = bufferedSamples; i < bufferedSamples+readSampleAmount; i++) {
-		gData.mSoundBuffer[i] = (gData.mSoundBuffer16[i-bufferedSamples] >> 8);
-	}
-
-	//printf("read %d\n", readSize);
-	
-
-	*tActualAmount = tAmount;
-	gData.mLastSoundBufferRequested = tAmount;
-
-	return gData.mSoundBuffer;
-}
-
-static void* streamMusicFileCB2(snd_stream_hnd_t tHandler, int tAmount, int * tActualAmount) {
 	(void)tHandler;	
 
 	int samplesNecessary = tAmount;
 
-	int requestedSampleSize = samplesNecessary;
-	//printf("req %d\n", requestedSampleSize);
+	int requestedSampleSize = samplesNecessary * 2;
+	printf("req %d\n", requestedSampleSize);
 	size_t readSize = fileRead(gData.mSoundFile, gData.mSoundBuffer, requestedSampleSize);
-	int readSampleAmount = readSize;	
+	
+	int i;
+	for(i = 0; i < tAmount; i++) {
+	  	gData.mSoundBuffer[i] = gData.mSoundBuffer[i*2];
+	}
 
 	*tActualAmount = tAmount;
 
@@ -118,14 +94,14 @@ static void* streamMusicFileCB2(snd_stream_hnd_t tHandler, int tAmount, int * tA
 static void streamMusicThread(void* tCaller) {
 	(void)tCaller;
 
-	snd_stream_start(gData.mSoundStream, 22050 / 2, 0);
+	snd_stream_start(gData.mSoundStream, 44100, 0);
 
 	while(gData.mIsStreamingSoundFile) {
 		if(snd_stream_poll(gData.mSoundStream) < 0) {
 			// TODO: release file
 			gData.mIsStreamingSoundFile = 0;
 		} else {
-			thd_sleep(10);
+			thd_sleep(50);
 		}
 	}
 
@@ -135,11 +111,11 @@ static void streamMusicThread(void* tCaller) {
 void streamMusicFile(char* tPath) {
 
 	gData.mSoundFile = fileOpen(tPath, O_RDONLY);
-	fileSeek(gData.mSoundFile, 1708, SEEK_SET);
+	fileSeek(gData.mSoundFile, 226, SEEK_SET);
 	gData.mSampleAmount = 0;
 	gData.mLastSoundBufferRequested = 0;
 
-	gData.mSoundStream = snd_stream_alloc(streamMusicFileCB2, SND_STREAM_BUFFER_MAX);
+	gData.mSoundStream = snd_stream_alloc(streamMusicFileCB, SND_STREAM_BUFFER_MAX);
 	gData.mIsStreamingSoundFile = 1;
 
 	startThread(streamMusicThread, NULL);

@@ -53,7 +53,7 @@ convert_assets:
 	find filesystem/ -name '*.png' | xargs rm -f
 	find filesystem/ -name '*.kmg' | xargs rm -f
 	find filesystem/ -name '*.xcf' | xargs rm -f
-	find filesystem/ -name '*.wav' | xargs rm -f
+	#find filesystem/ -name '*.wav' | xargs rm -f
 	#find assets/ -name '*.wav' | xargs -I {} sox {} -b 16 filesystem/{}
 	
 to_romdisk:
