@@ -154,6 +154,14 @@ void stopStreamingMusicFile() {
 	
 }
 
+uint64_t getStreamingSoundTimeElapsedInMilliseconds() {
+	return 0;
+}
+
+int isPlayingStreamingMusic() {
+	return gData.mIsStreamingSoundFile;
+}
+
 static ActorBlueprint MicrophoneHandler; // TODO: implement microphone
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint()
