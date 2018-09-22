@@ -16,12 +16,7 @@ static struct {
 	double mPanning;
 
 	int mIsStreamingSoundFile;
-	FileHandler mSoundFile;
-	snd_stream_hnd_t mSoundStream;
 	
-	int mSampleAmount;
-	int mLastSoundBufferRequested;
-	uint8_t mSoundBuffer[(BUF_SIZE+16384)*2];	
 	
 } gData;
 
@@ -29,10 +24,13 @@ void initSound() {
 	gData.mVolume = 1;
 	gData.mPanning = 0;
 	snd_init();
+
+	snd_stream_init();
+    	sndoggvorbis_init();
 }
 
 void shutdownSound(){
-	
+
 }
 
 double getVolume() {
@@ -69,56 +67,15 @@ void resumeTrack() {
 	cdrom_cdda_resume();
 }
 
-#define STREAM_MUSIC_SAFETY_BUFFER 4000
-
-
-static void* streamMusicFileCB(snd_stream_hnd_t tHandler, int tAmount, int * tActualAmount) {
-	(void)tHandler;	
-
-	int samplesNecessary = tAmount;
-
-	int requestedSampleSize = samplesNecessary * 2;
-	printf("req %d\n", requestedSampleSize);
-	size_t readSize = fileRead(gData.mSoundFile, gData.mSoundBuffer, requestedSampleSize);
-	
-	int i;
-	for(i = 0; i < tAmount; i++) {
-	  	gData.mSoundBuffer[i] = gData.mSoundBuffer[i*2];
-	}
-
-	*tActualAmount = tAmount;
-
-	return gData.mSoundBuffer;
-}
-
-static void streamMusicThread(void* tCaller) {
-	(void)tCaller;
-
-	snd_stream_start(gData.mSoundStream, 44100, 0);
-
-	while(gData.mIsStreamingSoundFile) {
-		if(snd_stream_poll(gData.mSoundStream) < 0) {
-			// TODO: release file
-			gData.mIsStreamingSoundFile = 0;
-		} else {
-			thd_sleep(50);
-		}
-	}
-
-	
-}
 
 void streamMusicFile(char* tPath) {
 
-	gData.mSoundFile = fileOpen(tPath, O_RDONLY);
-	fileSeek(gData.mSoundFile, 226, SEEK_SET);
-	gData.mSampleAmount = 0;
-	gData.mLastSoundBufferRequested = 0;
+	char fullPath[1024];
+	getFullPath(fullPath, tPath);	
+	sndoggvorbis_start(fullPath, 0);
+	
 
-	gData.mSoundStream = snd_stream_alloc(streamMusicFileCB, SND_STREAM_BUFFER_MAX);
 	gData.mIsStreamingSoundFile = 1;
-
-	startThread(streamMusicThread, NULL);
 }
 
 void streamMusicFileOnce(char* tPath) {
@@ -127,15 +84,22 @@ void streamMusicFileOnce(char* tPath) {
 }
 
 void stopStreamingMusicFile() {
-	
+	if(!gData.mIsStreamingSoundFile) return;
+	sndoggvorbis_stop();
+	gData.mIsStreamingSoundFile = 0;
 }
 
 uint64_t getStreamingSoundTimeElapsedInMilliseconds() {
-	return 0;
+	return sndoggvorbis_getposition();
 }
 
 int isPlayingStreamingMusic() {
 	return gData.mIsStreamingSoundFile;
+}
+
+void stopMusic() {
+	stopTrack();
+	stopStreamingMusicFile();
 }
 
 static ActorBlueprint MicrophoneHandler; // TODO: implement microphone

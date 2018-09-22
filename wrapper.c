@@ -294,7 +294,7 @@ static void callBetweenScreensCB() {
 
 static void unloadWrapper() {
 	if (!gData.mIsNotPausingTracksBetweenScreens) {
-		stopTrack();
+		stopMusic();
 	}
 
 	debugLog("Shutting down Actorhandling");
