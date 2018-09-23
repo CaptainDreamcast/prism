@@ -2,7 +2,7 @@
 
 #include <kos.h>
 #include <dc/sound/sound.h>
-#include <oggvorbis/sndoggvorbis.h>
+#include <vorbis/sndoggvorbis.h>
 
 #include "prism/file.h"
 #include "prism/thread.h"

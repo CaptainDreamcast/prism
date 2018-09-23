@@ -3,7 +3,6 @@
 #include "prism/log.h"
 #include "prism/system.h"
 
-#include <zstd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
