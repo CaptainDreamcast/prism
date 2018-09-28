@@ -7,6 +7,7 @@
 #include <string.h>
 #include <assert.h>
 
+
 #include "prism/klib/khash.h"
 #include "prism/memorypool.h"
 
@@ -24,6 +25,7 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 
 #elif defined _WIN32 || defined __EMSCRIPTEN__
 
+#include <zstd.h>
 #include <SDL.h>
 #include <GL/glew.h>
 #include "prism/texture.h"

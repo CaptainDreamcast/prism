@@ -555,6 +555,7 @@ Vector3DI getAnimationFirstElementSpriteSize(MugenAnimation * tAnimation, MugenS
 	MugenAnimationStep* firstStep = vector_get(&tAnimation->mSteps, 0);
 	
 	MugenSpriteFileSprite* sprite = getMugenSpriteFileTextureReference(tSprites, firstStep->mGroupNumber, firstStep->mSpriteNumber);
+	if(!sprite)	return makeVector3DI(0, 0, 0);
 	return makeVector3DI(sprite->mOriginalTextureSize.x, sprite->mOriginalTextureSize.y, 0);
 }
 

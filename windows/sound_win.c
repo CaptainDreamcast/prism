@@ -5,6 +5,7 @@
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
+#include <emscripten.h>
 #include <SDL/SDL_mixer.h>
 #elif defined _WIN32
 #include <SDL_mixer.h>
@@ -42,8 +43,7 @@ static struct {
 	int mIsPlayingTrack;
 	int mIsPaused;
 	Mix_Chunk* mTrackChunk;
-	int mTrackChannel;
-	
+	int mTrackChannel;	
 	uint64_t mTimeWhenMusicPlaybackStarted;
 
 	Microphone mMicrophone;
@@ -87,9 +87,7 @@ static void playMusicPath(char* tPath) {
 
 	Buffer b = fileToBuffer(fullPath);
 	SDL_RWops* rwOps = SDL_RWFromConstMem(b.mData, b.mLength);
-	logg(SDL_GetError());
 	gData.mTrackChunk = Mix_LoadWAV_RW(rwOps, 0);
-	logg(Mix_GetError());
 	freeBuffer(b);
 	gData.mHasLoadedTrack = 1;
 }
@@ -167,9 +165,15 @@ static void musicFinishedCB(int tChannel) {
 static void streamMusicFileGeneral(char* tPath, int tLoopAmount) {
 	playMusicPath(tPath);
 	Mix_ChannelFinished(musicFinishedCB);
-	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, tLoopAmount);
-	logg(Mix_GetError());
+
+#ifdef __EMSCRIPTEN__
 	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
+	while (SDL_GetTicks() - gData.mTimeWhenMusicPlaybackStarted < 10000);
+#endif
+
+	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, tLoopAmount);
+	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
+
 	gData.mIsPaused = 0;
 	gData.mIsPlayingTrack = 1;
 }
@@ -192,6 +196,8 @@ void stopStreamingMusicFile()
 uint64_t getStreamingSoundTimeElapsedInMilliseconds()
 {
 	if (!gData.mIsPlayingTrack) return 0;
+	if (!gData.mTimeWhenMusicPlaybackStarted) return 0;
+	
 	uint64_t now = SDL_GetTicks();
 	return (uint64_t)(now - gData.mTimeWhenMusicPlaybackStarted);
 }
@@ -199,6 +205,11 @@ uint64_t getStreamingSoundTimeElapsedInMilliseconds()
 int isPlayingStreamingMusic()
 {
 	return gData.mIsPlayingTrack;
+}
+
+void stopMusic()
+{
+	stopTrack();
 }
 
 
