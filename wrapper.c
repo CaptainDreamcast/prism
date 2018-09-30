@@ -294,7 +294,7 @@ static void callBetweenScreensCB() {
 
 static void unloadWrapper() {
 	if (!gData.mIsNotPausingTracksBetweenScreens) {
-		stopMusic();
+		stopMusic(); // TODO: remove double
 	}
 
 	debugLog("Shutting down Actorhandling");
@@ -335,6 +335,10 @@ static void unloadWrapper() {
 static void unloadScreen(Screen* tScreen) {
 	logg("Unloading handled screen");
 	
+	if (!gData.mIsNotPausingTracksBetweenScreens) {
+		stopMusic();
+	}
+
 	if (tScreen->mUnload) {
 		debugLog("Unloading user screen data");
 		tScreen->mUnload();

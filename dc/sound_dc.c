@@ -17,6 +17,7 @@ static struct {
 
 	int mIsStreamingSoundFile;
 	
+    uint64_t mStreamStartTime;
 	
 } gData;
 
@@ -67,20 +68,28 @@ void resumeTrack() {
 	cdrom_cdda_resume();
 }
 
+static uint64_t getCurrentTimeInMilliseconds() {
+    uint32 s_s, s_ms;
+    timer_ms_gettime(&s_s, &s_ms);
+    return s_s*1000 + s_ms;
+}
 
-void streamMusicFile(char* tPath) {
-
+static void streamMusicFileGeneral(char* tPath, int tLoop) {
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);	
-	sndoggvorbis_start(fullPath, 0);
+	sndoggvorbis_start(fullPath, tLoop);
 	
+    gData.mStreamStartTime = getCurrentTimeInMilliseconds();
 
 	gData.mIsStreamingSoundFile = 1;
 }
 
+void streamMusicFile(char* tPath) {
+    streamMusicFileGeneral(tPath, 1);
+}
+
 void streamMusicFileOnce(char* tPath) {
-	(void)tPath;
-	// TODO
+	streamMusicFileGeneral(tPath, 0);
 }
 
 void stopStreamingMusicFile() {
@@ -90,7 +99,10 @@ void stopStreamingMusicFile() {
 }
 
 uint64_t getStreamingSoundTimeElapsedInMilliseconds() {
-	return sndoggvorbis_getposition();
+    if(!sndoggvorbis_isplaying()) {
+        gData.mIsStreamingSoundFile = 0;
+    }
+    return (uint64_t)(getCurrentTimeInMilliseconds() - gData.mStreamStartTime);
 }
 
 int isPlayingStreamingMusic() {

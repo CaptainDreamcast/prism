@@ -40,6 +40,7 @@ void unloadSoundEffect(int tID) {
 }
 
 int playSoundEffect(int tID) {
+    return -1;
 	return snd_sfx_play(tID, 255, 128);
 }
 
