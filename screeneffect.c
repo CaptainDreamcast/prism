@@ -212,6 +212,11 @@ void setFadeColorRGB(double r, double g, double b) {
 	gData.mFadeColor.mB = b;
 }
 
+void setScreenEffectZ(double tZ)
+{
+	gData.mZ = tZ;
+}
+
 void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
 	if (!gData.mIsActive) return;
 

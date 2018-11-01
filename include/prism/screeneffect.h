@@ -12,6 +12,7 @@ void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalC
 void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
 void setFadeColor(Color tColor);
 void setFadeColorRGB(double r, double g, double b);
+void setScreenEffectZ(double tZ);
 
 void drawColoredRectangle(GeoRectangle tRect, Color tColor);
 void drawColoredHorizontalLine(Position tA, Position tB, Color tColor);
