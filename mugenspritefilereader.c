@@ -1184,7 +1184,6 @@ static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 	gData.mReader.mRead(&gData.mReader, &textureSize.y, 4);
 
 	Buffer b = loadPaddedBufferPreloaded();
-	decompressBuffer(&b);
 
 	TextureData data;
 	if (hasPalette) {

@@ -158,7 +158,6 @@ static void writeSpriteSubSprite(void* tCaller, void* tData) {
 	StoredTexture* texture = (StoredTexture*)subsprite->mTexture.mTexture;
 	Buffer* rawBuffer = &texture->mBuffer;
 	Buffer dataBuffer =  *rawBuffer;
-	compressBuffer(&dataBuffer);
 	appendBufferUint32(caller->b, dataBuffer.mLength);
 	appendBufferBufferPadded(caller->b, dataBuffer);
 
