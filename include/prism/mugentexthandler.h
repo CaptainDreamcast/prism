@@ -37,6 +37,7 @@ void setMugenTextBuildup(int tID, Duration mBuildUpDurationPerLetter);
 void setMugenTextBuiltUp(int tID);
 int isMugenTextBuiltUp(int tID);
 void setMugenTextVisibility(int tID, int tIsVisible);
+double getMugenTextSizeX(int tID);
 
 
 void changeMugenText(int tID, char* tText);

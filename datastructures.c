@@ -21,6 +21,14 @@ void turnStringLowercase(char* tString) {
 	}
 }
 
+void copyStringLowercase(char* tDst, char* tSrc) {
+	int n = strlen(tSrc);
+	int i;
+	for (i = 0; i <= n; i++) {
+		tDst[i] = (char)tolower((int)(tSrc[i]));
+	}
+}
+
 // TODO: remove duplicate
 char* copyToAllocatedString(char* tSrc) {
 	if (!tSrc) return NULL;
@@ -173,8 +181,9 @@ void list_map(List* tList, mapCB tCB, void* tCaller) {
 
 	ListElement* cur = tList->mFirst;
 	while(left--) {
+		ListElement* next = cur->mNext;
 		tCB(tCaller, cur->mData);
-		cur = cur->mNext;
+		cur = next;
 	}
 
 

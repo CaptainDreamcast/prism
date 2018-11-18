@@ -6,6 +6,9 @@ windows/vs17/Debug/*
 tools/bin/*
 tools/storyboardbuilder/windows/Release/*
 tools/kompressor/windows/Release/*
+tools/mugendreamcastoptimizer/Debug/*
+tools/mugendreamcastoptimizer/Release/*
+tools/mugendreamcastoptimizer/.vs/*
 
 *.aps
 *.exe

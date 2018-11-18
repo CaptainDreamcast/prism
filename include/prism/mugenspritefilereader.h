@@ -24,9 +24,9 @@ typedef struct {
 } MugenSpriteFileGroup;
 
 typedef struct {
-	IntMap mGroups;
-	Vector mAllSprites;
-	Vector mPalettes;
+	IntMap mGroups; // contains MugenSpriteFileGroup
+	Vector mAllSprites; // contains MugenSpriteFileSprite
+	Vector mPalettes; // contains Buffer
 } MugenSpriteFile;
 
 
@@ -44,3 +44,4 @@ void setMugenSpriteFileReaderToBuffer();
 void setMugenSpriteFileReaderToFileOperations();
 void setMugenSpriteFileReaderToUsePalette(int tPaletteID);
 void setMugenSpriteFileReaderToNotUsePalette();
+void setMugenSpriteFileReaderCustomFunctionsAndForceARGB16(TextureData(*mCustomLoadTextureFromARGB16Buffer)(Buffer, int, int), TextureData(*mCustomLoadTextureFromARGB32Buffer)(Buffer, int, int), TextureData(*mCustomLoadPalettedTextureFrom8BitBuffer)(Buffer, int, int, int));

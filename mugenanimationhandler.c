@@ -225,6 +225,7 @@ static void updateHitboxes(MugenAnimationHandlerElement* e) {
 
 static MugenDuration getTimeWhenStepStarts(MugenAnimationHandlerElement* e, int tStep) {
 	MugenDuration sum = 0;
+	tStep = min(tStep, vector_size(&e->mAnimation->mSteps));
 	int i;
 	for (i = 0; i < tStep; i++) {
 		MugenAnimationStep* step = vector_get(&e->mAnimation->mSteps, i);
@@ -369,6 +370,13 @@ int getMugenAnimationAnimationStep(int tID) {
 int getMugenAnimationAnimationStepAmount(int tID) {
 	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
 	return vector_size(&e->mAnimation->mSteps);
+}
+
+int getMugenAnimationAnimationStepDuration(int tID)
+{
+	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationStep* step = getCurrentAnimationStep(e);
+	return step->mDuration;
 }
 
 int getMugenAnimationRemainingAnimationTime(int tID)
@@ -741,7 +749,7 @@ static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	increaseMugenDuration(&e->mOverallTime);
 	increaseMugenDuration(&e->mStepTime);
 	if (!step) return 0; // TODO: check default behavior
-	if (step->mDuration == -1) return 0;
+	if (isMugenAnimationStepDurationInfinite(step->mDuration)) return 0;
 	if (e->mStepTime >= step->mDuration) {
 		return loadNextStepAndReturnIfShouldBeRemoved(e);
 	}
@@ -924,7 +932,11 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		texturePos.bottomRight.y = originalTexturePos.topLeft.y;
 	}
 
-	p = vecAdd2D(p, step->mDelta); // TODO: check if must be inverted
+	Vector3D animationStepDelta = step->mDelta;
+	if (!isFacingRight) {
+		animationStepDelta.x = -animationStepDelta.x;
+	}
+	p = vecAdd2D(p, animationStepDelta); 
 
 	if (e->mHasCameraPositionReference) {
 		p = vecSub(p, *e->mCameraPositionReference);
@@ -1031,7 +1043,7 @@ static void drawSingleMugenAnimation(void* tCaller, void* tData) {
 	else {
 		e->mPlayerPositionReference = makePosition(0, 0, 0);
 	}
-
+	
 	e->mPlayerPositionReference = vecAdd(e->mPlayerPositionReference, e->mOffset);
 	Position p = e->mPlayerPositionReference;
 

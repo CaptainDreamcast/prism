@@ -49,6 +49,8 @@ int isDirectory(char* tPath);
 
 Buffer makeBuffer(void* tData, uint32_t tLength);
 Buffer makeBufferOwned(void* tData, uint32_t tLength);
+Buffer makeBufferEmptyOwned();
+Buffer copyBuffer(Buffer tBuffer);
 Buffer fileToBuffer(char* path);
 void bufferToFile(char* tPath, Buffer tBuffer);
 void freeBuffer(Buffer buffer);
@@ -57,6 +59,14 @@ void fileToMemory(void* tDst, int tSize, char* tPath);
 BufferPointer getBufferPointer(Buffer tBuffer);
 void readFromBufferPointer(void* tDst, BufferPointer* tPointer, uint32_t tSize);
 int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer);
+
+void appendBufferChar(Buffer* tBuffer, char tChar);
+void appendBufferUint32(Buffer* tBuffer, uint32_t tInteger);
+void appendBufferInteger(Buffer* tBuffer, int tInteger);
+void appendBufferFloat(Buffer* tBuffer, double tFloat);
+void appendBufferString(Buffer* tBuffer, char* tString, int tLength);
+void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer);
+
 
 void initFileSystem();
 void setFileSystem(char* path);

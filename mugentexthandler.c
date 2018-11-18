@@ -240,9 +240,6 @@ static void addMugenFont1(int tKey, char* tPath) {
 
 	MugenDefScript script = loadMugenDefScriptFromBufferAndFreeBuffer(textBuffer);
 
-	unloadMugenDefScript(script);
-	script = loadMugenDefScriptFromBufferAndFreeBuffer(textBuffer);
-
 	MugenFont* e = allocMemory(sizeof(MugenFont));
 	e->mSize = getMugenDefVectorIOrDefault(&script, "Def", "size", makeVector3DI(1, 1, 0));
 	e->mSpacing = getMugenDefVectorIOrDefault(&script, "Def", "spacing", makeVector3DI(0, 0, 0));
@@ -833,7 +830,7 @@ static double getElecbyteTextSize(MugenText* e) {
 	return sizeX;
 }
 
-static double getMugenTextSizeX(MugenText* e) {
+static double getMugenTextSizeXInternal(MugenText* e) {
 
 	if (e->mFont->mType == MUGEN_FONT_TYPE_BITMAP) {
 		return getBitmapTextSize(e);
@@ -853,7 +850,7 @@ static double getMugenTextSizeX(MugenText* e) {
 }
 
 static double getMugenTextAlignmentOffsetX(MugenText* e, MugenTextAlignment tAlignment) {
-	double sizeX = getMugenTextSizeX(e);
+	double sizeX = getMugenTextSizeXInternal(e);
 
 	double ret = 0;
 	if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_CENTER) {
@@ -941,6 +938,12 @@ void setMugenTextVisibility(int tID, int tIsVisible)
 {
 	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
 	e->mIsVisible = tIsVisible;
+}
+
+double getMugenTextSizeX(int tID)
+{
+	MugenText* e = int_map_get(&gHandler.mHandledTexts, tID);
+	return getMugenTextSizeXInternal(e);
 }
 
 void changeMugenText(int tID, char * tText)

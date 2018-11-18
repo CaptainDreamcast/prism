@@ -100,6 +100,20 @@ Buffer makeBufferOwned(void * tData, uint32_t tLength)
 	return makeBufferInternal(tData, tLength, 1);
 }
 
+Buffer makeBufferEmptyOwned() {
+	return makeBufferInternal(NULL, 0, 1);
+}
+
+Buffer copyBuffer(Buffer tBuffer) {
+	Buffer ret;
+	ret.mIsOwned = 1;
+	ret.mLength = tBuffer.mLength;
+	ret.mData = allocMemory(ret.mLength + 2);
+	memcpy(ret.mData, tBuffer.mData, ret.mLength);
+
+	return ret;
+}
+
 Buffer fileToBuffer(char* tFileDir) {
 	debugLog("Reading file to Buffer.");
 	Buffer ret;
@@ -209,4 +223,34 @@ int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer) {
 	}
 	(*tPointer) += size;
 	return value;
+}
+
+void appendBufferChar(Buffer* tBuffer, char tChar) {
+	appendBufferString(tBuffer, &tChar, 1);
+}
+
+void appendBufferUint32(Buffer* tBuffer, uint32_t tInteger) {
+	appendBufferString(tBuffer, (char*)(&tInteger), sizeof(uint32_t));
+
+}
+
+void appendBufferInteger(Buffer* tBuffer, int tInteger) {
+	appendBufferString(tBuffer, (char*)(&tInteger), sizeof(int));
+
+}
+
+void appendBufferFloat(Buffer* tBuffer, double tFloat) {
+	appendBufferString(tBuffer, (char*)(&tFloat), sizeof(double));
+}
+
+void appendBufferString(Buffer* tBuffer, char* tString, int tLength) {
+	tBuffer->mLength += tLength;
+	tBuffer->mData = reallocMemory(tBuffer->mData, tBuffer->mLength + 2);
+
+	char* pos = &(((char*)tBuffer->mData)[tBuffer->mLength - tLength]);
+	memcpy(pos, tString, tLength);
+}
+
+void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer) {
+	appendBufferString(tBuffer, (char*)tInputBuffer.mData, tInputBuffer.mLength);
 }

@@ -30,6 +30,8 @@ static struct {
 } gMugenAnimationState;
 
 static void* allocMemoryOnMemoryStackOrMemory(uint32_t tSize) {
+	return allocMemory(tSize);
+	
 	if (gMugenAnimationState.mMemoryStack) return allocMemoryOnMemoryStack(gMugenAnimationState.mMemoryStack, tSize);
 	else return allocMemory(tSize);
 }
@@ -108,7 +110,8 @@ static int isAnimationVector(char* tVariableName) {
 
 static void insertAnimationStepIntoAnimation(MugenAnimation* e, MugenAnimationStep* tElement) {
 	if (gMugenAnimationState.mIsLoopStart) e->mLoopStart = vector_size(&e->mSteps);
-	e->mTotalDuration += tElement->mDuration;
+	if (isMugenAnimationStepDurationInfinite(tElement->mDuration)) e->mTotalDuration = INF;
+	else e->mTotalDuration += tElement->mDuration;
 	vector_push_back_owned(&e->mSteps, tElement);
 }
 
@@ -429,6 +432,8 @@ static void loadSingleAnimationGroup(MugenAnimations* tAnimations, MugenDefScrip
 	if (!isAnimationGroup(tGroup)) return;
 
 	int id = getAnimationID(tGroup);
+	if (int_map_contains(&tAnimations->mAnimations, id)) return; // TODO: check id safe to ignore
+
 	MugenAnimation* anim = makeEmptyMugenAnimation(id);
 	int_map_push_owned(&tAnimations->mAnimations, id, anim);
 	resetGlobalAnimationState();
@@ -566,6 +571,11 @@ Vector3D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, Mugen
 
 	MugenSpriteFileSprite* sprite = getMugenSpriteFileTextureReference(tSprites, firstStep->mGroupNumber, firstStep->mSpriteNumber);
 	return sprite->mAxisOffset;
+}
+
+int isMugenAnimationStepDurationInfinite(int tDuration)
+{
+	return tDuration == -1;
 }
 
 int hasMugenAnimation(MugenAnimations* tAnimations, int i) {

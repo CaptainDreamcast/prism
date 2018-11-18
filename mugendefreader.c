@@ -48,7 +48,7 @@ static MugenDefToken* makeMugenDefToken(char* tValue) {
 }
 
 static int isEmpty(BufferPointer p) {
-	return *p == ' ' || *p == '	' || *p < 0;
+	return *p == ' ' || *p == '	' || *p < 0; // TODO: add symbol support for 128+
 }
 
 static int increaseAndCheckIfOver(Buffer* b, BufferPointer* p) {

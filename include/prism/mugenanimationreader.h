@@ -56,3 +56,4 @@ void destroyMugenAnimation(MugenAnimation* tAnimation);
 
 Vector3DI  getAnimationFirstElementSpriteSize(MugenAnimation* tAnimation, MugenSpriteFile* tSprites);
 Vector3D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, MugenSpriteFile* tSprites);
+int isMugenAnimationStepDurationInfinite(int tDuration);
