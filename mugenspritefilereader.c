@@ -1171,7 +1171,7 @@ static void loadPalettesPreloaded(MugenSpriteFile* tDst) {
 
 static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 	Vector3DI offset;
-	int hasPalette;
+	int32_t hasPalette;
 	TextureSize textureSize;
 
 
@@ -1202,9 +1202,9 @@ static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 }
 
 static void loadSingleSpritePreloaded(MugenSpriteFile* tDst) {
-	int groupNumber, spriteNumber;
-	int isLinked;
-	int isLinkedTo;
+	int32_t groupNumber, spriteNumber;
+	int32_t isLinked;
+	int32_t isLinkedTo;
 	Vector3D axisOffset;
 
 	gData.mReader.mRead(&gData.mReader, &isLinked, 4);

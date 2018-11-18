@@ -147,13 +147,13 @@ static void writeSpriteSubSprite(void* tCaller, void* tData) {
 	TraversalCaller* caller = tCaller;
 	MugenSpriteFileSubSprite* subsprite = tData;
 
-	appendBufferInteger(caller->b, subsprite->mOffset.x);
-	appendBufferInteger(caller->b, subsprite->mOffset.y);
-	appendBufferInteger(caller->b, subsprite->mOffset.z);
+	appendBufferInt32(caller->b, subsprite->mOffset.x);
+	appendBufferInt32(caller->b, subsprite->mOffset.y);
+	appendBufferInt32(caller->b, subsprite->mOffset.z);
 
-	appendBufferInteger(caller->b, subsprite->mTexture.mHasPalette);
-	appendBufferInteger(caller->b, subsprite->mTexture.mTextureSize.x);
-	appendBufferInteger(caller->b, subsprite->mTexture.mTextureSize.y);
+	appendBufferInt32(caller->b, subsprite->mTexture.mHasPalette);
+	appendBufferInt32(caller->b, subsprite->mTexture.mTextureSize.x);
+	appendBufferInt32(caller->b, subsprite->mTexture.mTextureSize.y);
 
 	StoredTexture* texture = (StoredTexture*)subsprite->mTexture.mTexture;
 	Buffer* rawBuffer = &texture->mBuffer;
@@ -170,19 +170,19 @@ static void writeSprite(void* tCaller, void* tData) {
 	Buffer* b = tCaller;
 	MugenSpriteFileSprite* sprite = tData;
 
-	appendBufferInteger(b, sprite->mIsLinked);
-	appendBufferInteger(b, sprite->mIsLinkedTo);
+	appendBufferInt32(b, sprite->mIsLinked);
+	appendBufferInt32(b, sprite->mIsLinkedTo);
 	appendBufferFloat(b, sprite->mAxisOffset.x);
 	appendBufferFloat(b, sprite->mAxisOffset.y);
 	appendBufferFloat(b, sprite->mAxisOffset.z);
 
 	if (sprite->mIsLinked) {
-		appendBufferInteger(b, sprite->mOriginalTextureSize.x);
-		appendBufferInteger(b, sprite->mOriginalTextureSize.y);
+		appendBufferInt32(b, sprite->mOriginalTextureSize.x);
+		appendBufferInt32(b, sprite->mOriginalTextureSize.y);
 		return;
 	}
-	appendBufferInteger(b, sprite->mOriginalTextureSize.x);
-	appendBufferInteger(b, sprite->mOriginalTextureSize.y);
+	appendBufferInt32(b, sprite->mOriginalTextureSize.x);
+	appendBufferInt32(b, sprite->mOriginalTextureSize.y);
 
 	appendBufferUint32(b, (uint32_t)list_size(&sprite->mTextures));
 
@@ -192,8 +192,8 @@ static void writeSprite(void* tCaller, void* tData) {
 	caller.sprite = -1;
 	list_map(&sprite->mTextures, writeSpriteSubSprite, &caller);
 
-	appendBufferInteger(b, caller.group);
-	appendBufferInteger(b, caller.sprite);
+	appendBufferInt32(b, caller.group);
+	appendBufferInt32(b, caller.sprite);
 }
 
 static void writeSprites(Buffer* b, MugenSpriteFile* tSprites) {
@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
 {
 	initPrismWrapperWithMugenFlags();
 
-	convertPlayerSFF("kfm.sff");
+	convertNoPlayerSFF("system.sff");
 
 	return 0;
 }

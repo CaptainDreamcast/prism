@@ -62,8 +62,9 @@ int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer);
 
 void appendBufferChar(Buffer* tBuffer, char tChar);
 void appendBufferUint32(Buffer* tBuffer, uint32_t tInteger);
+void appendBufferInt32(Buffer* tBuffer, int32_t tInteger);
 void appendBufferInteger(Buffer* tBuffer, int tInteger);
-void appendBufferFloat(Buffer* tBuffer, double tFloat);
+void appendBufferFloat(Buffer* tBuffer, float tFloat);
 void appendBufferString(Buffer* tBuffer, char* tString, int tLength);
 void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer);
 

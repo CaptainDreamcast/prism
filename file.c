@@ -231,7 +231,10 @@ void appendBufferChar(Buffer* tBuffer, char tChar) {
 
 void appendBufferUint32(Buffer* tBuffer, uint32_t tInteger) {
 	appendBufferString(tBuffer, (char*)(&tInteger), sizeof(uint32_t));
+}
 
+void appendBufferInt32(Buffer* tBuffer, int32_t tInteger) {
+	appendBufferString(tBuffer, (char*)(&tInteger), sizeof(int32_t));
 }
 
 void appendBufferInteger(Buffer* tBuffer, int tInteger) {
@@ -239,8 +242,8 @@ void appendBufferInteger(Buffer* tBuffer, int tInteger) {
 
 }
 
-void appendBufferFloat(Buffer* tBuffer, double tFloat) {
-	appendBufferString(tBuffer, (char*)(&tFloat), sizeof(double));
+void appendBufferFloat(Buffer* tBuffer, float tFloat) {
+	appendBufferString(tBuffer, (char*)(&tFloat), sizeof(float));
 }
 
 void appendBufferString(Buffer* tBuffer, char* tString, int tLength) {
