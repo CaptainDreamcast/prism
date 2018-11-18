@@ -1209,9 +1209,13 @@ static void loadSingleSpritePreloaded(MugenSpriteFile* tDst) {
 
 	gData.mReader.mRead(&gData.mReader, &isLinked, 4);
 	gData.mReader.mRead(&gData.mReader, &isLinkedTo, 4);
-	gData.mReader.mRead(&gData.mReader, &axisOffset.x, sizeof(double));
-	gData.mReader.mRead(&gData.mReader, &axisOffset.y, sizeof(double));
-	gData.mReader.mRead(&gData.mReader, &axisOffset.z, sizeof(double));
+	float val;
+	gData.mReader.mRead(&gData.mReader, &val, sizeof(float));
+	axisOffset.x = val;
+	gData.mReader.mRead(&gData.mReader, &val, sizeof(float));
+	axisOffset.y = val;
+	gData.mReader.mRead(&gData.mReader, &val, sizeof(float));
+	axisOffset.z = val;
 
 	if (isLinked) {
 		MugenSpriteFileSprite* sprite = makeLinkedMugenSpriteFileSprite(isLinkedTo, axisOffset);
