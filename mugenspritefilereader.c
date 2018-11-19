@@ -1169,80 +1169,73 @@ static void loadPalettesPreloaded(MugenSpriteFile* tDst) {
 
 }
 
+typedef struct {
+	Vector3DI mOffset;
+	int32_t mHasPalette;
+	TextureSize mTextureSize;
+} SubspriteHeader;
+
 static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
-	Vector3DI offset;
-	int32_t hasPalette;
-	TextureSize textureSize;
-
-
-	gData.mReader.mRead(&gData.mReader, &offset.x, 4);
-	gData.mReader.mRead(&gData.mReader, &offset.y, 4);
-	gData.mReader.mRead(&gData.mReader, &offset.z, 4);
-
-	gData.mReader.mRead(&gData.mReader, &hasPalette, 4);
-	gData.mReader.mRead(&gData.mReader, &textureSize.x, 4);
-	gData.mReader.mRead(&gData.mReader, &textureSize.y, 4);
+	SubspriteHeader header;
+	gData.mReader.mRead(&gData.mReader, &header, sizeof(SubspriteHeader));
 
 	Buffer b = loadPaddedBufferPreloaded();
+	decompressBufferZSTD(&b);
 
 	TextureData data;
-	if (hasPalette) {
-		data = loadPalettedTextureFrom8BitBuffer(b, gData.mPaletteID, textureSize.x, textureSize.y);
+	if (header.mHasPalette) {
+		data = loadPalettedTextureFrom8BitBuffer(b, gData.mPaletteID, header.mTextureSize.x, header.mTextureSize.y);
 	}
 	else {
-		data = loadTextureFromARGB16Buffer(b, textureSize.x, textureSize.y);
+		data = loadTextureFromARGB16Buffer(b, header.mTextureSize.x, header.mTextureSize.y);
 	}
 
 	MugenSpriteFileSubSprite* newSprite = allocMemory(sizeof(MugenSpriteFileSubSprite));
-	newSprite->mOffset = offset;
+	newSprite->mOffset = header.mOffset;
 	newSprite->mTexture = data;
 
 	return newSprite;
 }
 
+typedef struct {
+	int32_t mIsLinked;
+	int32_t mIsLinkedTo;
+
+	float mAxisOffsetX;
+	float mAxisOffsetY;
+	float mAxisOffsetZ;
+
+	int32_t mGroupNumber;
+	int32_t mSpriteNumber;
+
+	int32_t mOriginalTextureSizeX;
+	int32_t mOriginalTextureSizeY;
+
+	uint32_t mSubspriteAmount;
+} PreloadedSprite;
+
 static void loadSingleSpritePreloaded(MugenSpriteFile* tDst) {
-	int32_t groupNumber, spriteNumber;
-	int32_t isLinked;
-	int32_t isLinkedTo;
-	Vector3D axisOffset;
+	PreloadedSprite spriteHeader;
 
-	gData.mReader.mRead(&gData.mReader, &isLinked, 4);
-	gData.mReader.mRead(&gData.mReader, &isLinkedTo, 4);
-	float val;
-	gData.mReader.mRead(&gData.mReader, &val, sizeof(float));
-	axisOffset.x = val;
-	gData.mReader.mRead(&gData.mReader, &val, sizeof(float));
-	axisOffset.y = val;
-	gData.mReader.mRead(&gData.mReader, &val, sizeof(float));
-	axisOffset.z = val;
+	gData.mReader.mRead(&gData.mReader, &spriteHeader, sizeof(PreloadedSprite));
 
-	if (isLinked) {
-		MugenSpriteFileSprite* sprite = makeLinkedMugenSpriteFileSprite(isLinkedTo, axisOffset);
-		gData.mReader.mRead(&gData.mReader, &groupNumber, 4);
-		gData.mReader.mRead(&gData.mReader, &spriteNumber, 4);
-		insertTextureIntoSpriteFile(tDst, sprite, groupNumber, spriteNumber);
+	Vector3D axisOffset = makePosition(spriteHeader.mAxisOffsetX, spriteHeader.mAxisOffsetY, spriteHeader.mAxisOffsetZ);
+
+	if (spriteHeader.mIsLinked) {
+		MugenSpriteFileSprite* sprite = makeLinkedMugenSpriteFileSprite(spriteHeader.mIsLinkedTo, axisOffset);
+		insertTextureIntoSpriteFile(tDst, sprite, spriteHeader.mGroupNumber, spriteHeader.mSpriteNumber);
 		return;
 	}
 
-	TextureSize originalTextureSize;
-	gData.mReader.mRead(&gData.mReader, &originalTextureSize.x, 4);
-	gData.mReader.mRead(&gData.mReader, &originalTextureSize.y, 4);
-
-	uint32_t subspriteAmount;
-	gData.mReader.mRead(&gData.mReader, &subspriteAmount, 4);
-
 	List textures = new_list();
 	uint32_t i;
-	for (i = 0; i < subspriteAmount; i++) {
+	for (i = 0; i < spriteHeader.mSubspriteAmount; i++) {
 		MugenSpriteFileSubSprite* subSprite = loadSingleSpriteSubSpritePreloaded(&textures);
 		list_push_back_owned(&textures, subSprite);
 	}
 
-	gData.mReader.mRead(&gData.mReader, &groupNumber, 4);
-	gData.mReader.mRead(&gData.mReader, &spriteNumber, 4);
-
-	MugenSpriteFileSprite* sprite = makeMugenSpriteFileSprite(textures, originalTextureSize, axisOffset);
-	insertTextureIntoSpriteFile(tDst, sprite, groupNumber, spriteNumber);
+	MugenSpriteFileSprite* sprite = makeMugenSpriteFileSprite(textures, makeTextureSize(spriteHeader.mOriginalTextureSizeX, spriteHeader.mOriginalTextureSizeY), axisOffset);
+	insertTextureIntoSpriteFile(tDst, sprite, spriteHeader.mGroupNumber, spriteHeader.mSpriteNumber);
 }
 
 static void loadSpritesPreloaded(MugenSpriteFile* tDst) {
