@@ -124,3 +124,33 @@ Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc) {
 
 	return makeBufferOwned(dst, dstSize);
 }
+
+/* Linear/iterative twiddling algorithm from Marcus' tatest */
+#define TWIDTAB(x) ( (x&1)|((x&2)<<1)|((x&4)<<2)|((x&8)<<3)|((x&16)<<4)| \
+                     ((x&32)<<5)|((x&64)<<6)|((x&128)<<7)|((x&256)<<8)|((x&512)<<9) )
+#define TWIDOUT(x, y) ( TWIDTAB((y)) | (TWIDTAB((x)) << 1) )
+#define MIN(a, b) ( (a)<(b)? (a):(b) )
+
+/* This twiddling code is copied from pvr_texture.c, and the original
+algorithm was written by Vincent Penne. */
+
+Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight) {
+	int w = tWidth;
+	int h = tHeight;
+	int mini = min(w, h);
+	int mask = mini - 1;
+	uint16_t * pixels = (uint16_t *)tBuffer.mData;
+	uint16_t * vtex = allocMemory(tBuffer.mLength);
+	int x, y, yout;
+
+	for (y = 0; y < h; y++) {
+		yout = y;
+
+		for (x = 0; x < w; x++) {
+			vtex[TWIDOUT(x & mask, yout & mask) +
+				(x / mini + yout / mini)*mini * mini] = pixels[y * w + x];
+		}
+	}
+
+	return makeBufferOwned(vtex, tBuffer.mLength);
+}

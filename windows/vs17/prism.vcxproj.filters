@@ -220,6 +220,9 @@
     <ClCompile Include="..\..\errorscreen.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\profiling.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -443,6 +446,9 @@
       <Filter>hdr</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\prism\errorscreen.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\profiling.h">
       <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>

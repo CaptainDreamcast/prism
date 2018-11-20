@@ -6,6 +6,7 @@
 #include <prism/compression.h>
 #include <prism/wrapper.h>
 #include <prism/file.h>
+#include <prism/texture.h>
 
 int romdisk_buffer_length = 0;
 char romdisk_buffer[2];
@@ -168,9 +169,17 @@ static void writeSpriteSubSprite(void* tCaller, void* tData) {
 	StoredTexture* texture = (StoredTexture*)subsprite->mTexture.mTexture;
 	Buffer* rawBuffer = &texture->mBuffer;
 	Buffer dataBuffer = *rawBuffer;
-	compressBufferZSTD(&dataBuffer);
-	appendBufferUint32(caller->b, dataBuffer.mLength);
-	appendBufferBufferPadded(caller->b, dataBuffer);
+	if (subsprite->mTexture.mHasPalette) {
+		compressBufferZSTD(&dataBuffer);
+		appendBufferUint32(caller->b, dataBuffer.mLength);
+		appendBufferBufferPadded(caller->b, dataBuffer);
+	}
+	else {
+		Buffer twiddledBuffer = twiddleTextureBuffer16(dataBuffer, subsprite->mTexture.mTextureSize.x, subsprite->mTexture.mTextureSize.y);
+		compressBufferZSTD(&twiddledBuffer);
+		appendBufferUint32(caller->b, twiddledBuffer.mLength);
+		appendBufferBufferPadded(caller->b, twiddledBuffer);
+	}
 
 	caller->group = texture->group;
 	caller->sprite = texture->sprite;

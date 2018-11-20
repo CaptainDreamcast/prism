@@ -190,6 +190,7 @@
     <ClCompile Include="..\..\optionhandler.c" />
     <ClCompile Include="..\..\physics.c" />
     <ClCompile Include="..\..\physicshandler.c" />
+    <ClCompile Include="..\..\profiling.c" />
     <ClCompile Include="..\..\quicklz.c" />
     <ClCompile Include="..\..\screeneffect.c" />
     <ClCompile Include="..\..\script.c" />
@@ -273,6 +274,7 @@
     <ClInclude Include="..\..\include\prism\optionhandler.h" />
     <ClInclude Include="..\..\include\prism\physics.h" />
     <ClInclude Include="..\..\include\prism\physicshandler.h" />
+    <ClInclude Include="..\..\include\prism\profiling.h" />
     <ClInclude Include="..\..\include\prism\pvr.h" />
     <ClInclude Include="..\..\include\prism\quicklz.h" />
     <ClInclude Include="..\..\include\prism\screeneffect.h" />

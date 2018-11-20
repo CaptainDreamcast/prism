@@ -75,36 +75,6 @@ TextureData loadTexture(char* tFileDir) {
 	}
 }
 
-/* Linear/iterative twiddling algorithm from Marcus' tatest */
-#define TWIDTAB(x) ( (x&1)|((x&2)<<1)|((x&4)<<2)|((x&8)<<3)|((x&16)<<4)| \
-                     ((x&32)<<5)|((x&64)<<6)|((x&128)<<7)|((x&256)<<8)|((x&512)<<9) )
-#define TWIDOUT(x, y) ( TWIDTAB((y)) | (TWIDTAB((x)) << 1) )
-#define MIN(a, b) ( (a)<(b)? (a):(b) )
-
-/* This twiddling code is copied from pvr_texture.c, and the original
-   algorithm was written by Vincent Penne. */
-
-static Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight) {
-    int w = tWidth;
-    int h = tHeight;
-    int mini = min(w, h);
-    int mask = mini - 1;
-    uint16 * pixels = (uint16 *)tBuffer.mData;
-    uint16 * vtex = allocMemory(tBuffer.mLength);
-    int x, y, yout;
-
-    for(y = 0; y < h; y++) {
-        yout = y;
-
-        for(x = 0; x < w; x++) {
-            vtex[TWIDOUT(x & mask, yout & mask) +
-                 (x / mini + yout / mini)*mini * mini] = pixels[y * w + x];
-        }
-    }
-
-    return makeBufferOwned(vtex, tBuffer.mLength);
-}
-
 static Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
     int w = tWidth;
     int h = tHeight;
@@ -127,19 +97,23 @@ static Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
 }
 
 TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight) {
-	Buffer twiddledBuffer = twiddleTextureBuffer16(b, tWidth, tHeight);	
+	Buffer twiddledBuffer = twiddleTextureBuffer16(b, tWidth, tHeight);
+	TextureData ret = loadTextureFromTwiddledARGB16Buffer(twiddledBuffer, tWidth, tHeight);
+	freeBuffer(twiddledBuffer);
+	return ret;
+}
 
+TextureData loadTextureFromTwiddledARGB16Buffer(Buffer b, int tWidth, int tHeight) {
 	TextureData returnData;
 	returnData.mHasPalette = 0;
 	returnData.mTextureSize.x = tWidth;
 	returnData.mTextureSize.y = tHeight;
 
-        sem_wait(&gPVRAccessSemaphore);
- 	returnData.mTexture = allocTextureMemory(twiddledBuffer.mLength);
-  	sq_cpy(returnData.mTexture->mData, twiddledBuffer.mData, twiddledBuffer.mLength);
+    sem_wait(&gPVRAccessSemaphore);
+ 	returnData.mTexture = allocTextureMemory(b.mLength);
+  	sq_cpy(returnData.mTexture->mData, b.mData, b.mLength);
 	sem_signal(&gPVRAccessSemaphore);
 
-	freeBuffer(twiddledBuffer);
 	return returnData;
 }
 

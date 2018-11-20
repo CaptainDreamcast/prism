@@ -1187,7 +1187,7 @@ static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 		data = loadPalettedTextureFrom8BitBuffer(b, gData.mPaletteID, header.mTextureSize.x, header.mTextureSize.y);
 	}
 	else {
-		data = loadTextureFromARGB16Buffer(b, header.mTextureSize.x, header.mTextureSize.y);
+		data = loadTextureFromTwiddledARGB16Buffer(b, header.mTextureSize.x, header.mTextureSize.y);
 	}
 
 	MugenSpriteFileSubSprite* newSprite = allocMemory(sizeof(MugenSpriteFileSubSprite));

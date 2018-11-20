@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #ifdef _WIN32
 #define PERFORMANCE_FACTOR_INVERTED 1
 
@@ -38,3 +40,4 @@ int isOnWindows();
 int isOnWeb();
 
 
+uint64_t getSystemTicks();

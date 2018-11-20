@@ -62,9 +62,9 @@ void compressBufferZSTD(Buffer * tBuffer)
 
 	char* src = tBuffer->mData;
 	int dstBufferSize = tBuffer->mLength + COMPRESSION_BUFFER;
-	char* dst = malloc(dstBufferSize);
+	char* dst = allocMemory(dstBufferSize);
 	int dstLength = ZSTD_compress(dst, dstBufferSize, src, tBuffer->mLength, 1);
-	dst = realloc(dst, dstLength);
+	dst = reallocMemory(dst, dstLength);
 
 	freeBuffer(*tBuffer);
 	*tBuffer = makeBufferOwned(dst, dstLength);
@@ -80,9 +80,9 @@ void decompressBufferZSTD(Buffer * tBuffer)
 	char* src = tBuffer->mData;
 	size_t uncompressedLength = (size_t)ZSTD_getFrameContentSize(src, tBuffer->mLength);
 
-	char* dst = malloc(uncompressedLength);
+	char* dst = allocMemory(uncompressedLength);
 	int dstLength = ZSTD_decompress(dst, uncompressedLength, src, tBuffer->mLength);
-	dst = realloc(dst, dstLength);
+	dst = reallocMemory(dst, dstLength);
 
 	freeBuffer(*tBuffer);
 	*tBuffer = makeBufferOwned(dst, dstLength);

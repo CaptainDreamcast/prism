@@ -113,7 +113,17 @@ static SDL_Surface* makeSurfaceFromUntwiddledTexture(Buffer b, KMGHeader tHeader
 	return SDL_CreateRGBSurfaceFrom(b.mData, tHeader.width, tHeader.height, depth, pitch, rmask, gmask, bmask, amask);
 }
 
-static KMGHeader untwiddleBufferAndReturnHeader(Buffer* tBuffer) {
+static Buffer untwiddleBuffer(Buffer tBuffer, uint32_t tWidth, uint32_t tHeight) {
+	uint16_t* dst = allocMemory(tBuffer.mLength);
+	uint32_t dstLength = tBuffer.mLength;
+
+	untwiddle((uint16_t*)tBuffer.mData, dst, tWidth, tHeight);
+	freeBuffer(tBuffer);
+
+	return makeBufferOwned(dst, dstLength);
+}
+
+static KMGHeader untwiddleKMGBufferAndReturnHeader(Buffer* tBuffer) {
 	Buffer src = *tBuffer;
 	Buffer dst = *tBuffer;
 
@@ -141,7 +151,7 @@ static KMGHeader untwiddleBufferAndReturnHeader(Buffer* tBuffer) {
 static TextureData loadTexturePKGWindows(char* tFileDir) {
 	Buffer b = fileToBuffer(tFileDir);
 	decompressBuffer(&b);
-	KMGHeader hdr = untwiddleBufferAndReturnHeader(&b);
+	KMGHeader hdr = untwiddleKMGBufferAndReturnHeader(&b);
 	SDL_Surface* s = makeSurfaceFromUntwiddledTexture(b, hdr);
 	return textureFromSurface(s);
 }
@@ -220,6 +230,13 @@ TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight)
 
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(b.mData, tWidth, tHeight, depth, pitch, rmask, gmask, bmask, amask);
 	return textureFromSurface(surface);
+}
+
+TextureData loadTextureFromTwiddledARGB16Buffer(Buffer b, int tWidth, int tHeight) {
+	Buffer untwiddled = untwiddleBuffer(b, (uint32_t)tWidth, (uint32_t)tHeight);
+	TextureData ret = loadTextureFromARGB16Buffer(untwiddled, tWidth, tHeight);
+	freeBuffer(untwiddled);
+	return ret;
 }
 
 TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {

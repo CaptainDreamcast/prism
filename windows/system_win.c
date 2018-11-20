@@ -263,3 +263,7 @@ int isOnWeb()
 {
 	return !isOnWindows();
 }
+
+uint64_t getSystemTicks() {
+	return SDL_GetTicks();
+}
