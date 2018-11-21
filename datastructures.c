@@ -755,3 +755,119 @@ int int_map_contains(IntMap * tMap, int tKey)
 int int_map_size(IntMap* tMap) {
 	return string_map_size(tMap);
 }
+
+static SuffixTreeEntryNode createEmptyNode() {
+	SuffixTreeEntryNode node;
+	node.mEntry = NULL;
+	node.mChildren = NULL;
+	return node;
+}
+
+
+SuffixTree new_suffix_tree()
+{
+	SuffixTree ret;
+	ret.mSize = 0;
+	ret.mRoot = createEmptyNode();
+	return ret;
+}
+
+static void new_suffix_tree_from_string_map_copy_single(void* tCaller, char* tKey, void* tData) {
+	SuffixTree* tree = tCaller;
+
+	suffix_tree_push(tree, tKey, tData);
+
+}
+
+SuffixTree new_suffix_tree_from_string_map(StringMap * tMap)
+{
+	SuffixTree ret = new_suffix_tree();
+	string_map_map(tMap, new_suffix_tree_from_string_map_copy_single, &ret);
+	return ret;
+}
+
+#define SUFFIX_TREE_CHILDREN_AMOUNT (128 - 0x20)
+
+static void delete_suffy_tree_recursively(SuffixTreeEntryNode* tNode) {
+	if (tNode->mEntry) {
+		SuffixTreeEntryData* entry = tNode->mEntry;
+		if (entry->mIsOwned) {
+			freeMemory(entry->mData);
+		}
+
+		freeMemory(tNode->mEntry);
+	}
+
+	if (tNode->mChildren) {
+		int i;
+		for (i = 0; i < SUFFIX_TREE_CHILDREN_AMOUNT; i++) {
+			delete_suffy_tree_recursively(&tNode->mChildren[i]);
+		}
+		freeMemory(tNode->mChildren);
+	}
+}
+
+void delete_suffix_tree(SuffixTree * tTree)
+{
+	delete_suffy_tree_recursively(&tTree->mRoot);
+}
+
+static void suffix_tree_add_data_to_node(SuffixTreeEntryNode* tNode, void* tData, int tIsOwned) {
+	tNode->mEntry = allocMemory(sizeof(SuffixTreeEntryData));
+	tNode->mEntry->mData = tData;
+	tNode->mEntry->mIsOwned = tIsOwned;
+}
+
+static void suffix_tree_add_children_to_node(SuffixTreeEntryNode* tNode) {
+	tNode->mChildren = allocClearedMemory(SUFFIX_TREE_CHILDREN_AMOUNT, sizeof(SuffixTreeEntryNode));
+}
+
+static void suffix_tree_push_recursive(SuffixTreeEntryNode* tNode, char* tRestString, void* tData, int tIsOwned) {
+	if (*tRestString == '\0') {
+		suffix_tree_add_data_to_node(tNode, tData, tIsOwned);
+		return;
+	}
+
+	if (!tNode->mChildren) {
+		suffix_tree_add_children_to_node(tNode);
+	}
+
+	char currentChar = *tRestString;
+	int index = currentChar - 0x20;
+
+	suffix_tree_push_recursive(&tNode->mChildren[index], tRestString + 1, tData, tIsOwned);
+}
+
+static void suffix_tree_push_general(SuffixTree* tTree, char* tKey, void* tData, int tIsOwned) {
+	suffix_tree_push_recursive(&tTree->mRoot, tKey, tData, tIsOwned);
+}
+
+void suffix_tree_push_owned(SuffixTree * tTree, char * tKey, void * tData)
+{
+	suffix_tree_push_general(tTree, tKey, tData, 1);
+}
+
+void suffix_tree_push(SuffixTree * tTree, char * tKey, void * tData)
+{
+	suffix_tree_push_general(tTree, tKey, tData, 0);
+}
+
+static void* suffix_tree_find_recursive(SuffixTreeEntryNode* tNode, char* tRestString) {
+	if (*tRestString == '\0') {
+		return (tNode->mEntry) ? tNode->mEntry->mData : NULL;
+	}
+
+	if (!tNode->mChildren) {
+		return NULL;
+	}
+
+	char currentChar = *tRestString;
+	int index = currentChar - 0x20;
+	return suffix_tree_find_recursive(&tNode->mChildren[index], tRestString + 1);
+}
+
+int suffix_tree_contains(SuffixTree * tTree, char * tKey)
+{
+	void* data = suffix_tree_find_recursive(&tTree->mRoot, tKey);
+	return data != NULL;
+}

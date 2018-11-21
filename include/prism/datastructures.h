@@ -118,3 +118,34 @@ void int_map_map(IntMap* tMap, mapCB tCB, void* tCaller);
 void int_map_remove_predicate(IntMap* tMap, predicateCB tCB, void* tCaller);
 int int_map_contains(IntMap* tMap, int tKey);
 int int_map_size(IntMap* tMap);
+
+typedef struct {
+	void* mData;
+	int mIsOwned;
+} SuffixTreeEntryData;
+
+typedef struct SuffixTreeEntryNode_t {
+	SuffixTreeEntryData* mEntry;
+	struct SuffixTreeEntryNode_t* mChildren;
+} SuffixTreeEntryNode;
+
+typedef struct {
+	int mSize;
+	SuffixTreeEntryNode mRoot;
+} SuffixTree;
+
+SuffixTree new_suffix_tree();
+SuffixTree new_suffix_tree_from_string_map(StringMap* tMap);
+void delete_suffix_tree(SuffixTree* tTree);
+void suffix_tree_push_owned(SuffixTree* tTree, char* tKey, void* tData);
+void suffix_tree_push(SuffixTree* tTree, char* tKey, void* tData);
+int suffix_tree_contains(SuffixTree* tTree, char* tKey);
+
+
+
+
+
+
+
+
+

@@ -140,8 +140,8 @@ Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
     int h = tHeight;
     int mini = min(w, h);
     int mask = mini - 1;
-    uint8 * pixels = (uint8 *)tBuffer.mData;
-    uint8 * vtex = allocMemory(tBuffer.mLength);
+    uint8_t * pixels = (uint8_t *)tBuffer.mData;
+	uint8_t * vtex = allocMemory(tBuffer.mLength);
     int x, y, yout;
 
     for(y = 0; y < h; y++) {
