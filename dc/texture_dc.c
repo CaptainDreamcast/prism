@@ -75,27 +75,6 @@ TextureData loadTexture(char* tFileDir) {
 	}
 }
 
-static Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
-    int w = tWidth;
-    int h = tHeight;
-    int mini = min(w, h);
-    int mask = mini - 1;
-    uint8 * pixels = (uint8 *)tBuffer.mData;
-    uint8 * vtex = allocMemory(tBuffer.mLength);
-    int x, y, yout;
-
-    for(y = 0; y < h; y++) {
-        yout = y;
-
-        for(x = 0; x < w; x++) {
-            vtex[TWIDOUT(x & mask, yout & mask) +
-                 (x / mini + yout / mini)*mini * mini] = pixels[y * w + x];
-        }
-    }
-
-    return makeBufferOwned(vtex, tBuffer.mLength);
-}
-
 TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight) {
 	Buffer twiddledBuffer = twiddleTextureBuffer16(b, tWidth, tHeight);
 	TextureData ret = loadTextureFromTwiddledARGB16Buffer(twiddledBuffer, tWidth, tHeight);

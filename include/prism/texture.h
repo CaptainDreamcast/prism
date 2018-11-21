@@ -48,4 +48,5 @@ TextureSize makeTextureSize(int x, int y);
 TextureData createWhiteTexture();
 
 Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc);
+Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight);
 Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight);

@@ -142,3 +142,9 @@ int isOnWindows() {
 int isOnWeb() {
 	return 0;
 }
+
+uint64_t getSystemTicks() {
+    uint32 s_s, s_ms;
+    timer_ms_gettime(&s_s, &s_ms);
+    return s_s*1000 + s_ms;
+}

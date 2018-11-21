@@ -6,6 +6,7 @@
 
 #include "prism/file.h"
 #include "prism/thread.h"
+#include "prism/system.h"
 
 #define BUF_SIZE 65536			/* Size of buffer */
 
@@ -69,9 +70,7 @@ void resumeTrack() {
 }
 
 static uint64_t getCurrentTimeInMilliseconds() {
-    uint32 s_s, s_ms;
-    timer_ms_gettime(&s_s, &s_ms);
-    return s_s*1000 + s_ms;
+    return getSystemTicks();
 }
 
 static void streamMusicFileGeneral(char* tPath, int tLoop) {
