@@ -1,7 +1,7 @@
 TARGET = 1ST_READ
 
 OBJS += romdisk.o 
-OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -DDREAMCAST -Wall
+OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -DDREAMCAST -Wall -fpermissive
 KOS_CPPFLAGS+= $(OPTFLAGS)
 KOS_ROMDISK_DIR = romdisk_boot
 
