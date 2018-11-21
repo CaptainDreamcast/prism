@@ -146,7 +146,10 @@ static BlitzComponent BlitzCollisionComponent = {
 
 ActorBlueprint BlitzCollisionHandler = {
 	.mLoad = loadBlitzCollisionHandler,
+    .mUnload = NULL,
 	.mUpdate = updateBlitzCollisionHandler,
+    .mDraw = NULL,
+    .mIsActive = NULL
 };
 
 static void internalCollisionHandleSingleCB(void* tCaller, void* tData) {

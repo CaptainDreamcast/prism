@@ -1230,7 +1230,7 @@ static void loadSingleSpritePreloaded(MugenSpriteFile* tDst) {
 	List textures = new_list();
 	uint32_t i;
 	for (i = 0; i < spriteHeader.mSubspriteAmount; i++) {
-		MugenSpriteFileSubSprite* subSprite = loadSingleSpriteSubSpritePreloaded(&textures);
+		MugenSpriteFileSubSprite* subSprite = loadSingleSpriteSubSpritePreloaded();
 		list_push_back_owned(&textures, subSprite);
 	}
 

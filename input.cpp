@@ -40,7 +40,7 @@ void resetInputForAllControllers() {
 		hasPressedDownFlankSingle(i);
 		hasPressedStartFlankSingle(i);
 		hasPressedAbortFlankSingle(i);
-		hasShotGunFlank(i);
+		hasShotGunFlankSingle(i);
 	}
 }
 

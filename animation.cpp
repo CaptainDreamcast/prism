@@ -168,7 +168,7 @@ void setupAnimationHandler(){
 
 static int updateAndRemoveCB(void* tCaller, void* tData) {
 	(void) tCaller;
-	AnimationElement* cur = tData;
+	AnimationElement* cur = (AnimationElement*)tData;
 	AnimationResult res = animateWithoutLoop(&cur->mAnimation);
 	if(res == ANIMATION_OVER) {
 		if(cur->mCB != NULL) {

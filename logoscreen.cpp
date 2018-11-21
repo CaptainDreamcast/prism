@@ -75,6 +75,9 @@ static Screen* getNextLogoScreenScreen() {
 
 static Screen LogoScreenFromWrapper = {
 	.mLoad = loadWrapperLogoScreen,
+    .mUpdate = NULL,
+    .mDraw = NULL,
+    .mUnload = NULL,
 	.mGetNextScreen = getNextLogoScreenScreen,
 };
 

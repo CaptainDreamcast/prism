@@ -74,7 +74,10 @@ static void updateBlitzMugenAnimationHandler(void* tData) {
 // TODO: unload
 ActorBlueprint BlitzEntityHandler = {
 	.mLoad = loadBlitzMugenAnimationHandler,
+    .mUnload = NULL,
 	.mUpdate = updateBlitzMugenAnimationHandler,
+    .mDraw = NULL,
+    .mIsActive = NULL
 };
 
 int addBlitzEntity(Position tPos)

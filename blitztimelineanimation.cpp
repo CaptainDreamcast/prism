@@ -180,7 +180,10 @@ static void updateBlitzTimelineAnimationHandler(void* tData) {
 
 ActorBlueprint BlitzTimelineAnimationHandler = {
 	.mLoad = loadBlitzTimelineAnimationHandler,
+    .mUnload = NULL,
 	.mUpdate = updateBlitzTimelineAnimationHandler,
+    .mDraw = NULL,
+    .mIsActive = NULL
 };
 
 static void unregisterEntity(int tEntityID);

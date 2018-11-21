@@ -1,0 +1,22 @@
+blitzphysics.cpp: In function ‘void updateSinglePhysicsEntry(void*, void*)’:
+blitzphysics.cpp:32:20: warning: invalid conversion from ‘void*’ to ‘PhysicsEntry*’ [-fpermissive]
+blitzphysics.cpp: In function ‘PhysicsEntry* getBlitzPhysicsEntry(int)’:
+blitzphysics.cpp:63:3: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+blitzphysics.cpp:63:3: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+blitzphysics.cpp:63:3: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+blitzphysics.cpp:67:47: warning: invalid conversion from ‘void*’ to ‘PhysicsEntry*’ [-fpermissive]
+blitzphysics.cpp: At global scope:
+blitzphysics.cpp:73:1: sorry, unimplemented: non-trivial designated initializers not supported
+blitzphysics.cpp:73:1: warning: missing initializer for member ‘ActorBlueprint::mUpdate’ [-Wmissing-field-initializers]
+blitzphysics.cpp:73:1: warning: missing initializer for member ‘ActorBlueprint::mDraw’ [-Wmissing-field-initializers]
+blitzphysics.cpp:73:1: warning: missing initializer for member ‘ActorBlueprint::mIsActive’ [-Wmissing-field-initializers]
+blitzphysics.cpp: In function ‘void addBlitzPhysicsComponent(int)’:
+blitzphysics.cpp:77:52: warning: invalid conversion from ‘void*’ to ‘PhysicsEntry*’ [-fpermissive]
+blitzphysics.cpp: In function ‘Velocity getBlitzPhysicsVelocity(int)’:
+blitzphysics.cpp:110:58: warning: invalid conversion from ‘void*’ to ‘PhysicsEntry*’ [-fpermissive]
+blitzphysics.cpp: In function ‘Velocity* getBlitzPhysicsVelocityReference(int)’:
+blitzphysics.cpp:117:3: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+blitzphysics.cpp:117:3: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+blitzphysics.cpp:117:3: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+blitzphysics.cpp:121:58: warning: invalid conversion from ‘void*’ to ‘PhysicsEntry*’ [-fpermissive]
+make: *** [blitzphysics.o] Error 1

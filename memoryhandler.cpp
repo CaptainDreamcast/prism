@@ -19,6 +19,7 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 #ifdef DREAMCAST
 
 #include <kos.h>
+#include <zstd.h>
 
 #define allocTextureHW pvr_mem_malloc
 #define freeTextureHW pvr_mem_free
@@ -226,7 +227,7 @@ static AllocationStrategy HashMapStrategyTextureMemory = {
 
 static void initPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
 	(void)tStrategy;
-	tMap->mData = createMemoryPool(32 * 1000 * 1000);
+	tMap->mData = createMemoryPool();
 }
 
 static void* addMemoryToMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, int tSize) {

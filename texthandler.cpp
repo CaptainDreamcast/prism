@@ -215,7 +215,8 @@ static void shutdownTextHandlerCB(void* tData) {
 
 ActorBlueprint TextHandler = {
 	.mLoad = setupTextHandlerCB,
+	.mUnload = shutdownTextHandlerCB,
 	.mUpdate = updateTextHandlerCB,
 	.mDraw = drawTextHandlerCB,
-	.mUnload = shutdownTextHandlerCB,
+    .mIsActive = NULL,
 };

@@ -69,7 +69,10 @@ static PhysicsEntry* getBlitzPhysicsEntry(int tEntityID) {
 
 ActorBlueprint BlitzPhysicsHandler = {
 	.mLoad = loadBlitzPhysicsHandler,
+    .mUnload = NULL,
 	.mUpdate = updateBlitzPhysicsHandler,
+    .mDraw = NULL,
+    .mIsActive = NULL
 };
 
 void addBlitzPhysicsComponent(int tEntityID)

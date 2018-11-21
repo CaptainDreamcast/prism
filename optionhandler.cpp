@@ -184,9 +184,10 @@ static void shutdownOptionHandlerBlueprint(void* tData) {
 
 static ActorBlueprint gOptionHandler = {
 	.mLoad = setupOptionHandlerBlueprint,
+	.mUnload = shutdownOptionHandlerBlueprint,
 	.mUpdate = updateOptionHandlerBlueprint,
 	.mDraw = drawOptionHandlerBlueprint,
-	.mUnload = shutdownOptionHandlerBlueprint,
+    .mIsActive = NULL
 };
 
 ActorBlueprint getOptionHandlerBlueprint()

@@ -69,8 +69,10 @@ static void drawParticleHandler(void* tData) {
 
 ActorBlueprint BlitzParticleHandler = {
 	.mLoad = loadParticleHandler,
+    .mUnload = NULL,
 	.mUpdate = updateParticleHandler,
 	.mDraw = drawParticleHandler,
+    .mIsActive = NULL
 };
 
 void addBlitzParticles(int tAmount, Position tPosition, Position tPositionRange, double tSpeed, double tSpeedRange, double tAngle, double tAngleRange, Velocity tGravity, Vector3D tColor, Vector3D tColorRange, Duration tLifetime, Duration tLifetimeRange) {
