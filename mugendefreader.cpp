@@ -2,12 +2,15 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <algorithm>
 
 #include "prism/file.h"
 #include "prism/memoryhandler.h"
 #include "prism/log.h"
 #include "prism/system.h"
 #include "prism/math.h"
+
+using namespace std;
 
 typedef struct MugenDefToken_t {
 	char* mValue;
@@ -39,8 +42,8 @@ static void addTokenToTokenReader(MugenDefToken* tToken) {
 }
 
 static MugenDefToken* makeMugenDefToken(char* tValue) {
-	MugenDefToken* e = allocMemory(sizeof(MugenDefToken));
-	e->mValue = allocMemory(strlen(tValue) + 10);
+	MugenDefToken* e = (MugenDefToken*)allocMemory(sizeof(MugenDefToken));
+	e->mValue = (char*)allocMemory(strlen(tValue) + 10);
 	strcpy(e->mValue, tValue);
 	e->mNext = NULL;
 
@@ -116,7 +119,7 @@ static BufferPointer getNextDefCharPosition(Buffer* b, BufferPointer p, char tCh
 }
 
 static char* makeMugenDefString(char* tPos, int tLength) {
-	char* e = allocMemory(tLength + 10);
+	char* e = (char*)allocMemory(tLength + 10);
 	memcpy(e, tPos, tLength);
 	e[tLength] = '\0';
 	return e;
@@ -421,7 +424,7 @@ static void setGroup(MugenDefScript* tScript, MugenDefToken* t) {
 
 	MugenDefScriptGroup* prev;
 	if (string_map_contains(&tScript->mGroups, gScriptMaker.mGroup)) {
-		prev = string_map_get(&tScript->mGroups, gScriptMaker.mGroup);
+		prev = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, gScriptMaker.mGroup);
 	}
 	else {
 		prev = NULL;
@@ -430,7 +433,7 @@ static void setGroup(MugenDefScript* tScript, MugenDefToken* t) {
 	strcpy(gScriptMaker.mGroup, t->mValue + 1);
 	gScriptMaker.mGroup[strlen(gScriptMaker.mGroup) - 1] = '\0';
 
-	MugenDefScriptGroup* e = allocMemory(sizeof(MugenDefScriptGroup));
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)allocMemory(sizeof(MugenDefScriptGroup));
 	e->mElements = new_string_map();
 	strcpy(e->mName, gScriptMaker.mGroup);
 	e->mNext = NULL;
@@ -513,8 +516,8 @@ static void setStringElement(MugenDefScriptGroupElement* element, MugenDefToken*
 	debugLog("Setting string element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT;
 	
-	MugenDefScriptStringElement* e = allocMemory(sizeof(MugenDefScriptStringElement));
-	e->mString = allocMemory(strlen(t->mValue) + 10);
+	MugenDefScriptStringElement* e = (MugenDefScriptStringElement*)allocMemory(sizeof(MugenDefScriptStringElement));
+	e->mString = (char*)allocMemory(strlen(t->mValue) + 10);
 	strcpy(e->mString, t->mValue);
 	element->mData = e;
 
@@ -525,7 +528,7 @@ static void setNumberElement(MugenDefScriptGroupElement* element, MugenDefToken*
 	debugLog("Setting number element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT;
 
-	MugenDefScriptNumberElement* e = allocMemory(sizeof(MugenDefScriptNumberElement));
+	MugenDefScriptNumberElement* e = (MugenDefScriptNumberElement*)allocMemory(sizeof(MugenDefScriptNumberElement));
 	e->mValue = atoi(t->mValue);
 	element->mData = e;
 
@@ -536,7 +539,7 @@ static void setFloatElement(MugenDefScriptGroupElement* element, MugenDefToken* 
 	debugLog("Setting float element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT;
 
-	MugenDefScriptFloatElement* e = allocMemory(sizeof(MugenDefScriptFloatElement));
+	MugenDefScriptFloatElement* e = (MugenDefScriptFloatElement*)allocMemory(sizeof(MugenDefScriptFloatElement));
 	e->mValue = atof(t->mValue);
 	element->mData = e;
 
@@ -549,7 +552,7 @@ static void setVectorElement(MugenDefScriptGroupElement* element, MugenDefToken*
 	debugLog("Setting vector element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT;
 
-	MugenDefScriptVectorElement* e = allocMemory(sizeof(MugenDefScriptVectorElement));
+	MugenDefScriptVectorElement* e = (MugenDefScriptVectorElement*)allocMemory(sizeof(MugenDefScriptVectorElement));
 	
 	char* comma = t->mValue - 1;
 	e->mVector.mSize = 0;
@@ -558,7 +561,7 @@ static void setVectorElement(MugenDefScriptGroupElement* element, MugenDefToken*
 		comma = strchr(comma + 1, ',');
 	}
 
-	e->mVector.mElement = allocMemory(sizeof(char*)*e->mVector.mSize);
+	e->mVector.mElement = (char**)allocMemory(sizeof(char*)*e->mVector.mSize);
 	
 	comma = t->mValue - 1;
 	int i = 0;
@@ -574,7 +577,7 @@ static void setVectorElement(MugenDefScriptGroupElement* element, MugenDefToken*
 		while (temp[offset] == ' ') offset++;
 		char* start = temp + offset;
 
-		e->mVector.mElement[i] = allocMemory(strlen(start) + 3);
+		e->mVector.mElement[i] = (char*)allocMemory(strlen(start) + 3);
 		strcpy(e->mVector.mElement[i], start);
 
 		i++;
@@ -589,8 +592,8 @@ static void setRawElement(MugenDefScriptGroupElement* element, MugenDefToken* t)
 	debugLog("Setting raw element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT;
 
-	MugenDefScriptStringElement* e = allocMemory(sizeof(MugenDefScriptStringElement));
-	e->mString = allocMemory(strlen(t->mValue) + 10);
+	MugenDefScriptStringElement* e = (MugenDefScriptStringElement*)allocMemory(sizeof(MugenDefScriptStringElement));
+	e->mString = (char*)allocMemory(strlen(t->mValue) + 10);
 	strcpy(e->mString, t->mValue);
 	element->mData = e;
 
@@ -608,7 +611,7 @@ static void addGroupElementToGroup(MugenDefScript* tScript, MugenDefScriptGroupE
 	}
 	
 	strcpy(tElement->mName, tVariableName);
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, gScriptMaker.mGroup);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, gScriptMaker.mGroup);
 
 	char variableName[100];
 	if (string_map_contains(&e->mElements, tVariableName)) {	
@@ -641,7 +644,7 @@ static void setAssignment(MugenDefScript* tScript, MugenDefToken** tToken) {
 	assert(valueToken != NULL);
 	debugString(valueToken->mValue);
 
-	MugenDefScriptGroupElement* element = allocMemory(sizeof(MugenDefScriptGroupElement));
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)allocMemory(sizeof(MugenDefScriptGroupElement));
 	if (isStringToken(valueToken)) {
 		setStringElement(element, valueToken);
 	}
@@ -676,7 +679,7 @@ static void setVectorStatement(MugenDefScript* tScript, MugenDefToken** tToken) 
 	assert(valueToken != NULL);
 	debugString(valueToken->mValue);
 
-	MugenDefScriptGroupElement* element = allocMemory(sizeof(MugenDefScriptGroupElement));
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)allocMemory(sizeof(MugenDefScriptGroupElement));
 	assert(isVectorToken(*tToken));
 	setVectorElement(element, valueToken);
 	
@@ -696,7 +699,7 @@ static void setLoopStartStatement(MugenDefScript* tScript, MugenDefToken** tToke
 	assert(!strcmp("Loopstart", loopStartToken->mValue));
 
 	
-	MugenDefScriptGroupElement* element = allocMemory(sizeof(MugenDefScriptGroupElement));
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)allocMemory(sizeof(MugenDefScriptGroupElement));
 	setRawElement(element, *tToken);
 
 	debugLog("Adding loop start to group.");
@@ -713,7 +716,7 @@ static void setInterpolationStatement(MugenDefScript* tScript, MugenDefToken** t
 	MugenDefToken* interpolationToken = *tToken;
 	assert(interpolationToken != NULL);
 	
-	MugenDefScriptGroupElement* element = allocMemory(sizeof(MugenDefScriptGroupElement));
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)allocMemory(sizeof(MugenDefScriptGroupElement));
 	setRawElement(element, *tToken);
 
 	debugLog("Adding interpolation to group.");
@@ -728,7 +731,7 @@ static void setTextStatement(MugenDefScript* tScript, MugenDefToken** tToken) {
 	MugenDefToken* textToken = *tToken;
 	assert(textToken != NULL);
 
-	MugenDefScriptGroupElement* element = allocMemory(sizeof(MugenDefScriptGroupElement));
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)allocMemory(sizeof(MugenDefScriptGroupElement));
 	setRawElement(element, *tToken);
 
 	debugLog("Adding text to group.");
@@ -853,19 +856,19 @@ static void unloadMugenDefScriptStringElement(MugenDefScriptStringElement* e) {
 
 static void unloadMugenDefElement(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenDefScriptGroupElement* e = tData;
+	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)tData;
 
 	if (e->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
-		unloadMugenDefScriptFloatElement(e->mData);
+		unloadMugenDefScriptFloatElement((MugenDefScriptFloatElement*)e->mData);
 	}
 	else if (e->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
-		unloadMugenDefScriptNumberElement(e->mData);
+		unloadMugenDefScriptNumberElement((MugenDefScriptNumberElement*)e->mData);
 	}
 	else if (e->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
-		unloadMugenDefScriptVectorElement(e->mData);
+		unloadMugenDefScriptVectorElement((MugenDefScriptVectorElement*)e->mData);
 	}
 	else if (e->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
-		unloadMugenDefScriptStringElement(e->mData);
+		unloadMugenDefScriptStringElement((MugenDefScriptStringElement*)e->mData);
 	}
 	else {
 		logError("Unknown element type.");
@@ -903,7 +906,7 @@ int isMugenDefStringVariable(MugenDefScript* tScript, char * tGroupName, char * 
 	if (!string_map_contains(&tScript->mGroups, tGroupName)) {
 		return 0;
 	}
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return isMugenDefStringVariableAsGroup(e, tVariableName);
 }
@@ -911,7 +914,7 @@ int isMugenDefStringVariable(MugenDefScript* tScript, char * tGroupName, char * 
 char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, char * tGroupName, char * tVariableName)
 {
 	assert(string_map_contains(&tScript->mGroups, tGroupName));
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return 	getAllocatedMugenDefStringVariableAsGroup(e, tVariableName);
 }
@@ -927,7 +930,7 @@ int isMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariable
 char * getAllocatedMugenDefStringVariableAsGroup(MugenDefScriptGroup * tGroup, char * tVariableName)
 {
 	assert(string_map_contains(&tGroup->mElements, tVariableName));
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	return getAllocatedMugenDefStringVariableAsElement(element);
 }
@@ -965,23 +968,23 @@ static void checkStringElementForQuotesAndReturnRaw(char* tRet, MugenDefScriptSt
 
 char * getAllocatedMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
 {
-	char* ret = allocMemory(1024);
+	char* ret = (char*)allocMemory(1024);
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
-		MugenDefScriptStringElement* stringElement = tElement->mData;
+		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)tElement->mData;
 		if (tDoesReturnStringsRaw) strcpy(ret, stringElement->mString);
 		else checkStringElementForQuotesAndReturnRaw(ret, stringElement);
 
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
-		MugenDefScriptNumberElement* numberElement = tElement->mData;
+		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)tElement->mData;
 		sprintf(ret, "%d", numberElement->mValue);
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
-		MugenDefScriptFloatElement* floatElement = tElement->mData;
+		MugenDefScriptFloatElement* floatElement = (MugenDefScriptFloatElement*)tElement->mData;
 		sprintf(ret, "%f", floatElement->mValue);
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
-		MugenDefScriptVectorElement* vectorElement = tElement->mData;
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 		turnMugenDefVectorToString(ret, vectorElement);
 	}
 	else {
@@ -1012,7 +1015,7 @@ int isMugenDefFloatVariable(MugenDefScript * tScript, char * tGroupName, char * 
 	if (!string_map_contains(&tScript->mGroups, tGroupName)) {
 		return 0;
 	}
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return isMugenDefFloatVariableAsGroup(e, tVariableName);
 }
@@ -1020,7 +1023,7 @@ int isMugenDefFloatVariable(MugenDefScript * tScript, char * tGroupName, char * 
 double getMugenDefFloatVariable(MugenDefScript * tScript, char * tGroupName, char * tVariableName)
 {
 	assert(string_map_contains(&tScript->mGroups, tGroupName));
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return getMugenDefFloatVariableAsGroup(e, tVariableName);
 }
@@ -1030,14 +1033,14 @@ int isMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableN
 		return 0;
 	}
 
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	return isMugenDefFloatVariableAsElement(element);
 }
 
 double getMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
 	assert(string_map_contains(&tGroup->mElements, tVariableName));
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 	
 	return getMugenDefFloatVariableAsElement(element);
 }
@@ -1053,11 +1056,11 @@ double getMugenDefFloatVariableAsElement(MugenDefScriptGroupElement * tElement)
 
 	double ret;
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
-		MugenDefScriptNumberElement* numberElement = tElement->mData;
+		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)tElement->mData;
 		ret = numberElement->mValue;
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
-		MugenDefScriptFloatElement* floatElement = tElement->mData;
+		MugenDefScriptFloatElement* floatElement = (MugenDefScriptFloatElement*)tElement->mData;
 		ret = floatElement->mValue;
 	}
 	else {
@@ -1076,7 +1079,7 @@ int isMugenDefNumberVariable(MugenDefScript * tScript, char * tGroupName, char *
 	if (!string_map_contains(&tScript->mGroups, tGroupName)) {
 		return 0;
 	}
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return isMugenDefNumberVariableAsGroup(e, tVariableName);
 }
@@ -1085,7 +1088,7 @@ int isMugenDefNumberVariable(MugenDefScript * tScript, char * tGroupName, char *
 int getMugenDefNumberVariable(MugenDefScript * tScript, char * tGroupName, char * tVariableName)
 {
 	assert(string_map_contains(&tScript->mGroups, tGroupName));
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return getMugenDefNumberVariableAsGroup(e, tVariableName);
 }
@@ -1095,7 +1098,7 @@ int isMugenDefNumberVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariable
 		return 0;
 	}
 
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	return isMugenDefNumberVariableAsElement(element);
 }
@@ -1103,7 +1106,7 @@ int isMugenDefNumberVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariable
 int getMugenDefNumberVariableAsGroup(MugenDefScriptGroup * tGroup, char * tVariableName)
 {
 	assert(string_map_contains(&tGroup->mElements, tVariableName));
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	return getMugenDefNumberVariableAsElement(element);
 }
@@ -1119,7 +1122,7 @@ int getMugenDefNumberVariableAsElement(MugenDefScriptGroupElement * tElement)
 
 	int ret;
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
-		MugenDefScriptNumberElement* numberElement = tElement->mData;
+		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)tElement->mData;
 		ret = numberElement->mValue;
 	}
 	else {
@@ -1137,7 +1140,7 @@ int isMugenDefVectorVariable(MugenDefScript * tScript, char * tGroupName, char *
 	if (!string_map_contains(&tScript->mGroups, tGroupName)) {
 		return 0;
 	}
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return isMugenDefVectorVariableAsGroup(e, tVariableName);
 }
@@ -1145,7 +1148,7 @@ int isMugenDefVectorVariable(MugenDefScript * tScript, char * tGroupName, char *
 Vector3D getMugenDefVectorVariable(MugenDefScript * tScript, char * tGroupName, char * tVariableName)
 {
 	assert(string_map_contains(&tScript->mGroups, tGroupName));
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return getMugenDefVectorVariableAsGroup(e, tVariableName);
 }
@@ -1156,7 +1159,7 @@ int isMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char * tVariabl
 		return 0;
 	}
 
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	return isMugenDefVectorVariableAsElement(element);
 }
@@ -1164,7 +1167,7 @@ int isMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char * tVariabl
 
 Vector3D getMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
 	assert(string_map_contains(&tGroup->mElements, tVariableName));
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	return getMugenDefVectorVariableAsElement(element);
 }
@@ -1178,20 +1181,20 @@ Vector3D getMugenDefVectorVariableAsElement(MugenDefScriptGroupElement * tElemen
 {
 	Vector3D ret;
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
-		MugenDefScriptVectorElement* vectorElement = tElement->mData;
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 		double x = atof(vectorElement->mVector.mElement[0]);
 		double y = vectorElement->mVector.mSize >= 2 ? atof(vectorElement->mVector.mElement[1]) : 0;
 		double z = vectorElement->mVector.mSize >= 3 ? atof(vectorElement->mVector.mElement[2]) : 0;
 		ret = makePosition(x, y, z);
 	} else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
-		MugenDefScriptFloatElement* floatElement = tElement->mData;
+		MugenDefScriptFloatElement* floatElement = (MugenDefScriptFloatElement*)tElement->mData;
 		double x = floatElement->mValue;
 		double y = 0;
 		double z = 0;
 		ret = makePosition(x, y, z);
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
-		MugenDefScriptNumberElement* numberElement = tElement->mData;
+		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)tElement->mData;
 		double x = numberElement->mValue;
 		double y = 0;
 		double z = 0;
@@ -1213,7 +1216,7 @@ int isMugenDefVectorIVariable(MugenDefScript * tScript, char * tGroupName, char 
 	if (!string_map_contains(&tScript->mGroups, tGroupName)) {
 		return 0;
 	}
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return isMugenDefVectorIVariableAsGroup(e, tVariableName);
 }
@@ -1223,25 +1226,25 @@ int isMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariabl
 		return 0;
 	}
 
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	return element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT || element->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT;
 }
 
 Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
 	assert(string_map_contains(&tGroup->mElements, tVariableName));
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	Vector3DI ret;
 	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
-		MugenDefScriptVectorElement* vectorElement = element->mData;
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
 		int x = atoi(vectorElement->mVector.mElement[0]);
 		int y = vectorElement->mVector.mSize >= 2 ? atoi(vectorElement->mVector.mElement[1]) : 0;
 		int z = vectorElement->mVector.mSize >= 3 ? atoi(vectorElement->mVector.mElement[2]) : 0;
 		ret = makeVector3DI(x, y, z);
 	}
 	else if (element->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
-		MugenDefScriptNumberElement* numberElement = element->mData;
+		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)element->mData;
 		int x = numberElement->mValue;
 		int y = 0;
 		int z = 0;
@@ -1260,7 +1263,7 @@ Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* t
 Vector3DI getMugenDefVectorIVariable(MugenDefScript * tScript, char * tGroupName, char * tVariableName)
 {
 	assert(string_map_contains(&tScript->mGroups, tGroupName));
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return getMugenDefVectorIVariableAsGroup(e, tVariableName);
 }
@@ -1270,7 +1273,7 @@ int isMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVa
 		return 0;
 	}
 
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 	return isMugenDefStringVectorVariableAsElement(element);
 }
 
@@ -1281,14 +1284,14 @@ int isMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElemen
 
 MugenStringVector getMugenDefStringVectorVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName) {
 	assert(string_map_contains(&tScript->mGroups, tGroupName));
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 
 	return getMugenDefStringVectorVariableAsGroup(e, tVariableName);
 }
 
 MugenStringVector getMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
 	assert(string_map_contains(&tGroup->mElements, tVariableName));
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 
 	return getMugenDefStringVectorVariableAsElement(element);
 }
@@ -1296,7 +1299,7 @@ MugenStringVector getMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tG
 MugenStringVector getMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
-	MugenDefScriptVectorElement* vectorElement = tElement->mData;
+	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	return vectorElement->mVector;
 }
 
@@ -1304,7 +1307,7 @@ int isMugenDefGeoRectangleVariable(MugenDefScript* tScript, char* tGroupName, ch
 	if (!string_map_contains(&tScript->mGroups, tGroupName)) {
 		return 0;
 	}
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 	return isMugenDefGeoRectangleVariableAsGroup(e, tVariableName);
 }
 
@@ -1313,30 +1316,30 @@ int isMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVa
 		return 0;
 	}
 
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 	return isMugenDefGeoRectangleVariableAsElement(element);
 }
 
 int isMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement) {
 	if (tElement->mType != MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) return 0;
 
-	MugenDefScriptVectorElement* vectorElement = tElement->mData;
+	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	return vectorElement->mVector.mSize >= 4;
 }
 
 GeoRectangle getMugenDefGeoRectangleVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName) {
 	assert(string_map_contains(&tScript->mGroups, tGroupName)); 
-	MugenDefScriptGroup* e = string_map_get(&tScript->mGroups, tGroupName);
+	MugenDefScriptGroup* e = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, tGroupName);
 	return getMugenDefGeoRectangleVariableAsGroup(e, tVariableName);
 }
 GeoRectangle getMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName) {
 	assert(string_map_contains(&tGroup->mElements, tVariableName));
-	MugenDefScriptGroupElement* element = string_map_get(&tGroup->mElements, tVariableName);
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tVariableName);
 	return getMugenDefGeoRectangleVariableAsElement(element);
 }
 GeoRectangle getMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement) {
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
-	MugenDefScriptVectorElement* vectorElement = tElement->mData;
+	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	assert(vectorElement->mVector.mSize >= 4);
 	GeoRectangle ret;
 	ret.mTopLeft.x = atof(vectorElement->mVector.mElement[0]);
@@ -1350,15 +1353,15 @@ GeoRectangle getMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement
 MugenStringVector copyMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
-	MugenDefScriptVectorElement* vectorElement = tElement->mData;
+	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 
 	MugenDefScriptVectorElement ret;
 	ret.mVector.mSize = vectorElement->mVector.mSize;
-	ret.mVector.mElement = allocMemory(sizeof(char*)*ret.mVector.mSize);
+	ret.mVector.mElement = (char**)allocMemory(sizeof(char*)*ret.mVector.mSize);
 
 	int i;
 	for (i = 0; i < ret.mVector.mSize; i++) {
-		ret.mVector.mElement[i] = allocMemory(strlen(vectorElement->mVector.mElement[i]) + 10);
+		ret.mVector.mElement[i] = (char*)allocMemory(strlen(vectorElement->mVector.mElement[i]) + 10);
 		strcpy(ret.mVector.mElement[i], vectorElement->mVector.mElement[i]);
 	}
 
@@ -1377,7 +1380,7 @@ void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, char* tGroup, cha
 }
 
 static char* createAllocatedString(char* tString) {
-	char* ret = allocMemory(strlen(tString) + 1);
+	char* ret = (char*)allocMemory(strlen(tString) + 1);
 	strcpy(ret, tString);
 	return ret;
 }

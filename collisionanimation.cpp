@@ -16,7 +16,7 @@ CollisionAnimation makeEmptyCollisionAnimation() {
 
 static void destroyCollisionAnimationFrame(void* tCaller, void* tData) {
 	(void) tCaller;
-	Collider* col = tData;
+	Collider* col = (Collider*)tData;
 	destroyCollider(col);
 }
 
@@ -36,7 +36,7 @@ void resetCollisionAnimation(CollisionAnimation* tAnimation) {
 
 
 Collider getCollisionAnimationCollider(CollisionAnimation* tAnimation) {
-	Collider* col = vector_get(&tAnimation->mFrames, tAnimation->mAnimation.mFrame);
+	Collider* col = (Collider*)vector_get(&tAnimation->mFrames, tAnimation->mAnimation.mFrame);
 	return *col;
 }
 
@@ -71,7 +71,7 @@ static void cleanupHandledCollisionAnimation(HandledCollisionAnimation* tAnimati
 
 static int removeAllCollisionAnimations(void* tCaller, void* tData) {
 	(void) tCaller;
-	HandledCollisionAnimation* collision = tData;
+	HandledCollisionAnimation* collision = (HandledCollisionAnimation*)tData;
 
 	cleanupHandledCollisionAnimation(collision);
 	return 1;
@@ -96,7 +96,7 @@ static void invertPosition(HandledCollisionAnimation* tData) {
 	Collider col = getCollisionAnimationCollider(&tData->mAnimation);
 	
 	if(col.mType == COLLISION_RECT) {
-		CollisionRect* rect = col.mData;
+		CollisionRect* rect = (CollisionRect*)col.mData;
 		invertPositionRect(tData, *rect);
 	} else {
 		logError("Unsupported collision type");
@@ -107,7 +107,7 @@ static void invertPosition(HandledCollisionAnimation* tData) {
 
 static int updateSingleCollisionAnimation(void* tCaller, void* tData) {
 	(void) tCaller;
-	HandledCollisionAnimation* collision = tData;
+	HandledCollisionAnimation* collision = (HandledCollisionAnimation*)tData;
 
 	Frame before = collision->mAnimation.mAnimation.mFrame;
 	AnimationResult res = updateCollisionAnimation(&collision->mAnimation);
@@ -119,7 +119,7 @@ static int updateSingleCollisionAnimation(void* tCaller, void* tData) {
 	Frame after = collision->mAnimation.mAnimation.mFrame;
 
 	if(before != after)  {
-		Collider* nCol = vector_get(&collision->mAnimation.mFrames, after);
+		Collider* nCol = (Collider*)vector_get(&collision->mAnimation.mFrames, after);
 		setColliderBasePosition(nCol, &collision->mPosition);
 		updateColliderForCollisionHandler(collision->mCollisionHandlerListID, collision->mCollisionHandlerElementID, *nCol);
 	}
@@ -138,7 +138,7 @@ void updateCollisionAnimationHandler() {
 }
 
 int addHandledCollisionAnimation(int tListID, Position* tBasePosition, CollisionAnimation tAnimation, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
-	HandledCollisionAnimation* e = allocMemory(sizeof(HandledCollisionAnimation));
+	HandledCollisionAnimation* e = (HandledCollisionAnimation*)allocMemory(sizeof(HandledCollisionAnimation));
 
 	e->mAnimation = tAnimation;
 	e->mCollisionHandlerListID = tListID;
@@ -147,7 +147,7 @@ int addHandledCollisionAnimation(int tListID, Position* tBasePosition, Collision
 	e->mPosition = *tBasePosition;
 	e->mBasePosition = tBasePosition;
 	
-	Collider* firstCollider = vector_get(&tAnimation.mFrames, 0);
+	Collider* firstCollider = (Collider*)vector_get(&tAnimation.mFrames, 0);
 
 	e->mCollisionHandlerElementID = addColliderToCollisionHandler(tListID, &e->mPosition, *firstCollider, tCB, tCaller, tCollisionData);
 
@@ -155,14 +155,14 @@ int addHandledCollisionAnimation(int tListID, Position* tBasePosition, Collision
 }
 
 void removeHandledCollisionAnimation(int tID) {
-	HandledCollisionAnimation* e = list_get(&gData.mList, tID);
+	HandledCollisionAnimation* e = (HandledCollisionAnimation*)list_get(&gData.mList, tID);
 	cleanupHandledCollisionAnimation(e);
 
 	list_remove(&gData.mList, tID);
 }
 
 void invertCollisionAnimationVertical(int tID) {
-	HandledCollisionAnimation* e = list_get(&gData.mList, tID);
+	HandledCollisionAnimation* e = (HandledCollisionAnimation*)list_get(&gData.mList, tID);
 
 	e->mIsInverted ^= 1;
 
@@ -172,7 +172,7 @@ void invertCollisionAnimationVertical(int tID) {
 }
 
 void setCollisionAnimationCenter(int tID, Position tCenter) {
-	HandledCollisionAnimation* e = list_get(&gData.mList, tID);
+	HandledCollisionAnimation* e = (HandledCollisionAnimation*)list_get(&gData.mList, tID);
 
 	e->mCenter = tCenter;
 }

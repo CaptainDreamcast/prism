@@ -1,3 +1,3 @@
 #include "wrapper.h"
 
-extern Screen ErrorScreen;
+Screen* getErrorScreen();

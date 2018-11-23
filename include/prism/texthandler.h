@@ -21,4 +21,4 @@ int isHandledTextBuiltUp(int tID);
 
 void removeHandledText(int tID);
 
-extern ActorBlueprint TextHandler;
+ActorBlueprint getTextHandler();

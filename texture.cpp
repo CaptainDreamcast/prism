@@ -1,9 +1,13 @@
 #include "prism/texture.h"
 
+#include<algorithm>
+
 #include "prism/file.h"
 #include "prism/log.h"
 #include "prism/system.h"
 #include "prism/math.h"
+
+using namespace std;
 
 #define FONT_CHARACTER_AMOUNT 91
 
@@ -93,7 +97,7 @@ TextureSize makeTextureSize(int x, int y) {
 
 TextureData createWhiteTexture() {
 	int length = 16 * 16 * 4;
-	uint8_t* data = allocMemory(length);
+	uint8_t* data = (uint8_t*)allocMemory(length);
 	memset(data, 0xFF, length);
 
 	TextureData ret = loadTextureFromARGB32Buffer(makeBuffer(data, length), 16, 16);
@@ -104,8 +108,8 @@ TextureData createWhiteTexture() {
 
 Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc) {
 	int dstSize = tSrc.mLength / 2;
-	char* dst = allocMemory(dstSize);
-	char* src = tSrc.mData;
+	char* dst = (char*)allocMemory(dstSize);
+	char* src = (char*)tSrc.mData;
 
 	int n = dstSize / 2;
 	int i;
@@ -141,7 +145,7 @@ Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
     int mini = min(w, h);
     int mask = mini - 1;
     uint8_t * pixels = (uint8_t *)tBuffer.mData;
-	uint8_t * vtex = allocMemory(tBuffer.mLength);
+	uint8_t * vtex = (uint8_t*)allocMemory(tBuffer.mLength);
     int x, y, yout;
 
     for(y = 0; y < h; y++) {
@@ -162,7 +166,7 @@ Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight) {
 	int mini = min(w, h);
 	int mask = mini - 1;
 	uint16_t * pixels = (uint16_t *)tBuffer.mData;
-	uint16_t * vtex = allocMemory(tBuffer.mLength);
+	uint16_t * vtex = (uint16_t*)allocMemory(tBuffer.mLength);
 	int x, y, yout;
 
 	for (y = 0; y < h; y++) {

@@ -89,5 +89,5 @@ void unpauseMugenAnimation(int tID);
 void pauseMugenAnimationHandler();
 void unpauseMugenAnimationHandler();
 
-extern ActorBlueprint MugenAnimationHandler;
+ActorBlueprint getMugenAnimationHandler(); // TODO: fix
 ActorBlueprint getMugenAnimationHandlerActorBlueprint();

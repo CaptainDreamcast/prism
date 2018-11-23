@@ -4,7 +4,7 @@
 #include "blitzcomponent.h"
 #include "actorhandler.h"
 
-extern ActorBlueprint BlitzEntityHandler;
+ActorBlueprint getBlitzEntityHandler();
 
 int addBlitzEntity(Position tPos);
 void removeBlitzEntity(int tID);

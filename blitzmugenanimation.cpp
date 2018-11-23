@@ -25,15 +25,15 @@ static void loadBlitzMugenAnimationHandler(void* tData) {
 	gData.mEntities = new_int_map();
 }
 
-ActorBlueprint BlitzMugenAnimationHandler = {
-	.mLoad = loadBlitzMugenAnimationHandler,
-};
+ActorBlueprint getBlitzMugenAnimationHandler() {
+	return makeActorBlueprint(loadBlitzMugenAnimationHandler);
+}
 
 static void unregisterEntity(int tEntityID);
 
-static BlitzComponent BlitzMugenAnimationComponent = {
-	.mUnregisterEntity = unregisterEntity,
-};
+BlitzComponent getBlitzMugenAnimationComponent() {
+	return makeBlitzComponent(unregisterEntity);
+}
 
 static BlitzAnimationEntry* getBlitzAnimationEntry(int tEntityID) {
 	if (!int_map_contains(&gData.mEntities, tEntityID)) {
@@ -41,12 +41,12 @@ static BlitzAnimationEntry* getBlitzAnimationEntry(int tEntityID) {
 		recoverFromError();
 	}
 
-	return int_map_get(&gData.mEntities, tEntityID);
+	return (BlitzAnimationEntry*)int_map_get(&gData.mEntities, tEntityID);
 }
 
 void addBlitzMugenAnimationComponentGeneral(int tEntityID, MugenSpriteFile * tSprites, MugenAnimations * tAnimations, MugenAnimation* tStartAnimation, int tIsStatic)
 {
-	BlitzAnimationEntry* e = allocMemory(sizeof(BlitzAnimationEntry));
+	BlitzAnimationEntry* e = (BlitzAnimationEntry*)allocMemory(sizeof(BlitzAnimationEntry));
 	e->mEntityID = tEntityID;
 	e->mSprites = tSprites;
 	e->mAnimations = tAnimations;
@@ -61,7 +61,7 @@ void addBlitzMugenAnimationComponentGeneral(int tEntityID, MugenSpriteFile * tSp
 		setMugenAnimationCameraAngleReference(e->mAnimationID, getBlitzCameraHandlerRotationZReference());
 	}
 	
-	registerBlitzComponent(tEntityID, BlitzMugenAnimationComponent);
+	registerBlitzComponent(tEntityID, getBlitzMugenAnimationComponent());
 	int_map_push_owned(&gData.mEntities, tEntityID, e);
 }
 

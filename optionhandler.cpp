@@ -62,7 +62,7 @@ void disableOptionHandler() {
 }
 
 int addOption(Position tPosition, char* tText, OptionCB tCB, void* tCaller){
-	HandledOption* o = allocMemory(sizeof(HandledOption));
+	HandledOption* o = (HandledOption*)allocMemory(sizeof(HandledOption));
 	o->mPosition = tPosition;
 	strcpy(o->mText, tText);
 	o->mCB = tCB;
@@ -97,7 +97,7 @@ void setOptionButtonStart(){
 
 static void performSelectedAction(void* tCaller, void* tRaw) {
 	(void) tCaller;
-	HandledOption* data = tRaw;
+	HandledOption* data = (HandledOption*)tRaw;
 
 	if(data->mNumber != gData.mSelectedOption) return;
 
@@ -135,7 +135,7 @@ void updateOptionHandler(){
 
 static void drawOption(void* tCaller, void* tRaw) {
 	(void) tCaller;
-	HandledOption* data = tRaw;
+	HandledOption* data = (HandledOption*)tRaw;
 
 	drawAdvancedText(data->mText, data->mPosition, makePosition(gData.mTextSize, gData.mTextSize, 1), gData.mColor, gData.mBreakSize);
 
@@ -182,16 +182,8 @@ static void shutdownOptionHandlerBlueprint(void* tData) {
 	shutdownOptionHandler();
 }
 
-static ActorBlueprint gOptionHandler = {
-	.mLoad = setupOptionHandlerBlueprint,
-	.mUnload = shutdownOptionHandlerBlueprint,
-	.mUpdate = updateOptionHandlerBlueprint,
-	.mDraw = drawOptionHandlerBlueprint,
-    .mIsActive = NULL
-};
-
 ActorBlueprint getOptionHandlerBlueprint()
 {
-	return gOptionHandler;
+	return makeActorBlueprint(setupOptionHandlerBlueprint, shutdownOptionHandlerBlueprint, updateOptionHandlerBlueprint, drawOptionHandlerBlueprint);
 }
 

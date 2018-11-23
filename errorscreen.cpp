@@ -22,7 +22,7 @@ static void loadLogEntryText() {
 	double y = 40;
 	int i;
 	for (i = 0; i < vector_size(&logEntries); i++) {
-		LogEntry* entry = vector_get(&logEntries, i);
+		LogEntry* entry = (LogEntry*)vector_get(&logEntries, i);
 		id = addMugenText(strchr(entry->mText, ']') + 2, makePosition(20, y, 1), -1);
 		setMugenTextColor(id, getColorFromLogEntryType(entry));
 		y += 10;
@@ -42,7 +42,9 @@ static void updateErrorScreen() {
 	}
 }
 
-Screen ErrorScreen = {
-	.mLoad = loadErrorScreen,
-	.mUpdate = updateErrorScreen,
-};
+static Screen gErrorScreen;
+
+Screen* getErrorScreen() {
+	gErrorScreen = makeScreen(loadErrorScreen, updateErrorScreen);
+	return &gErrorScreen;
+}

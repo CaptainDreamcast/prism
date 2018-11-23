@@ -1,9 +1,13 @@
 #include "prism/mugenanimationhandler.h"
 
+#include <algorithm>
+
 #include "prism/collisionhandler.h"
 #include "prism/math.h"
 #include <prism/log.h>
 #include <prism/system.h>
+
+using namespace std;
 
 typedef int MugenDuration;
 
@@ -117,7 +121,7 @@ static void unloadMugenAnimation(MugenAnimationHandlerElement* e);
 
 static int unloadSingleMugenAnimationCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenAnimationHandlerElement* e = tData;
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)tData;
 	unloadMugenAnimation(e);
 	return 1;
 }
@@ -131,12 +135,12 @@ static void unloadMugenAnimationHandler(void* tData) {
 static MugenAnimationStep* getCurrentAnimationStep(MugenAnimationHandlerElement* e) {
 	int i = min(e->mStep, vector_size(&e->mAnimation->mSteps) - 1);
 	if (i < 0) return NULL;
-	return vector_get(&e->mAnimation->mSteps, i);
+	return (MugenAnimationStep*)vector_get(&e->mAnimation->mSteps, i);
 }
 
 
 static void passiveAnimationHitCB(void* tCaller, void* tCollisionData) {
-	MugenAnimationHandlerElement* e = tCaller;
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)tCaller;
 	if (!e->mHasPassiveHitCB || e->mPassiveHitCB == NULL) return;
 	e->mPassiveHitCB(e->mPassiveHitCaller, tCollisionData);
 }
@@ -145,7 +149,7 @@ static void passiveAnimationHitCB(void* tCaller, void* tCollisionData) {
 static void attackAnimationHitCB(void* tCaller, void* tCollisionData) {
 	(void)tCaller;
 	(void)tCollisionData;
-	MugenAnimationHandlerElement* e = tCaller;
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)tCaller;
 	if (!e->mHasAttackHitCB || e->mAttackHitCB == NULL) return;
 	e->mAttackHitCB(e->mAttackHitCaller, tCollisionData);
 }
@@ -158,10 +162,10 @@ typedef struct {
 } HitboxAdditionCaller;
 
 static void addSingleHitbox(void* tCaller, void* tData) {
-	HitboxAdditionCaller* caller = tCaller;
-	CollisionRect* rect = tData;
+	HitboxAdditionCaller* caller = (HitboxAdditionCaller*)tCaller;
+	CollisionRect* rect = (CollisionRect*)tData;
 
-	MugenAnimationHandlerHitboxElement* e = allocMemory(sizeof(MugenAnimationHandlerHitboxElement));
+	MugenAnimationHandlerHitboxElement* e = (MugenAnimationHandlerHitboxElement*)allocMemory(sizeof(MugenAnimationHandlerHitboxElement));
 
 	CollisionRect scaledRectangle = *rect;
 	scaledRectangle = scaleGeoRectangleByFactor(scaledRectangle, caller->mElement->mDrawScale);
@@ -207,7 +211,7 @@ static void addNewHitboxes(MugenAnimationHandlerElement* e, MugenAnimationStep* 
 
 static int removeSingleHitbox(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenAnimationHandlerHitboxElement* hitbox = tData;
+	MugenAnimationHandlerHitboxElement* hitbox = (MugenAnimationHandlerHitboxElement*)tData;
 
 	removeFromCollisionHandler(hitbox->mList, hitbox->mID);
 	destroyCollider(&hitbox->mCollider);
@@ -228,7 +232,7 @@ static MugenDuration getTimeWhenStepStarts(MugenAnimationHandlerElement* e, int 
 	tStep = min(tStep, vector_size(&e->mAnimation->mSteps));
 	int i;
 	for (i = 0; i < tStep; i++) {
-		MugenAnimationStep* step = vector_get(&e->mAnimation->mSteps, i);
+		MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&e->mAnimation->mSteps, i);
 		sum += step->mDuration;
 	}
 	return sum;
@@ -292,7 +296,7 @@ static void startNewAnimationWithStartStep(MugenAnimationHandlerElement* e, int 
 
 int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites, Position tPosition)
 {
-	MugenAnimationHandlerElement* e = allocMemory(sizeof(MugenAnimationHandlerElement));
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)allocMemory(sizeof(MugenAnimationHandlerElement));
 	e->mAnimation = tStartAnimation;
 	e->mSprites = tSprites;
 	e->mStep = 0;
@@ -347,7 +351,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 
 void removeMugenAnimation(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	unloadMugenAnimation(e);
 	int_map_remove(&gData.mAnimations, tID);
 }
@@ -358,30 +362,30 @@ int isRegisteredMugenAnimation(int tID) {
 
 int getMugenAnimationAnimationNumber(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mAnimation->mID;
 }
 
 int getMugenAnimationAnimationStep(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mStep;
 }
 
 int getMugenAnimationAnimationStepAmount(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return vector_size(&e->mAnimation->mSteps);
 }
 
 int getMugenAnimationAnimationStepDuration(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	return step->mDuration;
 }
 
 int getMugenAnimationRemainingAnimationTime(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	int remainingTime = (e->mAnimation->mTotalDuration - e->mOverallTime) - 1;
 
 	remainingTime = max(0, remainingTime); // TODO: fix when reading out
@@ -390,17 +394,17 @@ int getMugenAnimationRemainingAnimationTime(int tID)
 }
 
 int getMugenAnimationTime(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mOverallTime;
 }
 
 int getMugenAnimationDuration(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mAnimation->mTotalDuration;
 }
 
 Vector3DI getMugenAnimationSprite(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	if (!step) return makeVector3DI(-1, -1, 0); // TODO: proper default
 	else return makeVector3DI(step->mGroupNumber, step->mSpriteNumber, 0);
@@ -408,70 +412,70 @@ Vector3DI getMugenAnimationSprite(int tID) {
 
 void setMugenAnimationFaceDirection(int tID, int tIsFacingRight)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mIsFacingRight = tIsFacingRight;
 }
 
 void setMugenAnimationVerticalFaceDirection(int tID, int tIsFacingDown) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mIsFacingDown = tIsFacingDown;
 }
 
 void setMugenAnimationRectangleWidth(int tID, int tWidth)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasRectangleWidth = 1;
 	e->mRectangleWidth = tWidth;
 }
 
 void setMugenAnimationRectangleHeight(int tID, int tHeight)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasRectangleHeight = 1;
 	e->mRectangleHeight = tHeight;
 }
 
 void setMugenAnimationCameraPositionReference(int tID, Position * tCameraPosition)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasCameraPositionReference = 1;
 	e->mCameraPositionReference = tCameraPosition;
 }
 
 void setMugenAnimationCameraScaleReference(int tID, Position * tCameraScale)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasCameraScaleReference = 1;
 	e->mCameraScaleReference = tCameraScale;
 }
 
 void setMugenAnimationCameraAngleReference(int tID, double * tCameraAngle)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasCameraAngleReference = 1;
 	e->mCameraAngleReference = tCameraAngle;
 }
 
 void setMugenAnimationInvisible(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mIsInvisible = 1;
 }
 
 void setMugenAnimationVisibility(int tID, int tIsVisible) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mIsInvisible = !tIsVisible;
 }
 
 void setMugenAnimationDrawScale(int tID, Vector3D tScale)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mBaseDrawScale = tScale;
 }
 
 void setMugenAnimationDrawSize(int tID, Vector3D tSize)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	if (e->mHasSprite) {
 		logWarning("Trying to set draw size on element without sprite. Ignoring.");
 		return;
@@ -484,171 +488,171 @@ void setMugenAnimationDrawSize(int tID, Vector3D tSize)
 
 void setMugenAnimationDrawAngle(int tID, double tAngle)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mBaseDrawAngle = tAngle;
 }
 
 void setMugenAnimationBaseDrawScale(int tID, double tScale)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mDrawScale = tScale;
 }
 
 void setMugenAnimationBasePosition(int tID, Position * tBasePosition)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasBasePositionReference = 1;
 	e->mBasePositionReference = tBasePosition;
 }
 
 void setMugenAnimationScaleReference(int tID, Vector3D * tScale)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasScaleReference = 1;
 	e->mScaleReference = tScale;
 }
 
 void setMugenAnimationAngleReference(int tID, double * tAngle)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasAngleReference = 1;
 	e->mAngleReference = tAngle;
 }
 
 void setMugenAnimationColor(int tID, double tR, double tG, double tB) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mR = tR;
 	e->mG = tG;
 	e->mB = tB;
 }
 
 void setMugenAnimationTransparency(int tID, double tOpacity) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mAlpha = tOpacity;
 }
 
 void setMugenAnimationPosition(int tID, Position tPosition)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mOffset = tPosition;
 }
 
 void setMugenAnimationBlendType(int tID, BlendType tBlendType)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mBlendType = tBlendType;
 	e->mHasBlendType = 1;
 }
 
 void setMugenAnimationSprites(int tID, MugenSpriteFile * tSprites)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mSprites = tSprites;
 	updateStepSpriteAndSpriteValidity(e);
 }
 
 void setMugenAnimationConstraintRectangle(int tID, GeoRectangle tConstraintRectangle)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mConstraintRectangle = tConstraintRectangle;
 	e->mHasConstraintRectangle = 1;
 }
 
 Position getMugenAnimationPosition(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mOffset;
 }
 
 int getMugenAnimationIsFacingRight(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mIsFacingRight;
 }
 
 int getMugenAnimationIsFacingDown(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mIsFacingDown;
 }
 
 int getMugenAnimationVisibility(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return !e->mIsInvisible;
 }
 
 Vector3D getMugenAnimationDrawScale(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mBaseDrawScale;
 }
 
 double getMugenAnimationDrawAngle(int tID) 
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mBaseDrawAngle;
 }
 
 double getMugenAnimationColorRed(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mR;
 }
 
 double getMugenAnimationColorGreen(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mG;
 }
 
 double getMugenAnimationColorBlue(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return e->mB;
 }
 
 double * getMugenAnimationColorRedReference(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return &e->mR;
 }
 
 double * getMugenAnimationColorGreenReference(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return &e->mG;
 }
 
 double * getMugenAnimationColorBlueReference(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return &e->mB;
 }
 
 double * getMugenAnimationTransparencyReference(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return &e->mAlpha;
 }
 
 double * getMugenAnimationScaleXReference(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return &e->mBaseDrawScale.x;
 }
 
 double* getMugenAnimationScaleYReference(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return &e->mBaseDrawScale.y;
 }
 
 double * getMugenAnimationBaseScaleReference(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return &e->mDrawScale;
 }
 
 Position * getMugenAnimationPositionReference(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	return &e->mOffset;
 }
 
@@ -659,14 +663,14 @@ void changeMugenAnimation(int tID, MugenAnimation * tNewAnimation)
 
 void changeMugenAnimationWithStartStep(int tID, MugenAnimation * tNewAnimation, int tStartStep)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mAnimation = tNewAnimation;
 	startNewAnimationWithStartStep(e, tStartStep);
 }
 
 int isStartingMugenAnimationElementWithID(int tID, int tStepID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	if (e->mIsPaused) return 0;
 
 	int currentStep = e->mStep + 1;
@@ -679,7 +683,7 @@ int getTimeFromMugenAnimationElement(int tID, int tStep)
 {
 	tStep--;
 
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	if (tStep >= vector_size(&e->mAnimation->mSteps)) {
 		tStep = vector_size(&e->mAnimation->mSteps) - 1; // TODO: think about this
 	}
@@ -697,7 +701,7 @@ static int getMugenAnimationElementFromTimeOffsetLoop(MugenAnimationHandlerEleme
 
 	int isRunning = 1;
 	while (isRunning) {
-		MugenAnimationStep* step = vector_get(&e->mAnimation->mSteps, tCurrentStep);
+		MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&e->mAnimation->mSteps, tCurrentStep);
 		if (tTime < step->mDuration) return tCurrentStep;
 		tTime -= step->mDuration;
 
@@ -711,7 +715,7 @@ static int getMugenAnimationElementFromTimeOffsetLoop(MugenAnimationHandlerEleme
 
 int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	if (!vector_size(&e->mAnimation->mSteps)) return 0; // TODO: check default behavior
 
 	int ret;
@@ -720,7 +724,7 @@ int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
 		ret = getMugenAnimationElementFromTimeOffsetLoop(e, tTime, e->mStep, 1);
 	}
 	else { 
-		MugenAnimationStep* step = vector_get(&e->mAnimation->mSteps, e->mStep);
+		MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&e->mAnimation->mSteps, e->mStep);
 		tTime *= -1;
 		tTime += (step->mDuration - 1) - e->mStepTime;
 		ret = getMugenAnimationElementFromTimeOffsetLoop(e, tTime, e->mStep, -1);
@@ -730,14 +734,14 @@ int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
 }
 
 int isMugenAnimationTimeOffsetInAnimation(int tID, int tTime) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 
 	MugenDuration sum = getTimeWhenStepStarts(e, vector_size(&e->mAnimation->mSteps));
 	return tTime < sum;
 }
 
 int getMugenAnimationTimeWhenStepStarts(int tID, int tStep) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	tStep = min(tStep, vector_size(&e->mAnimation->mSteps));
 	return getTimeWhenStepStarts(e, tStep);
 }
@@ -759,14 +763,14 @@ static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 
 static int updateSingleMugenAnimationCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenAnimationHandlerElement* e = tData;
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)tData;
 
 	return updateSingleMugenAnimation(e);
 }
 
 void advanceMugenAnimationOneTick(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	int shouldBeRemoved = updateSingleMugenAnimation(e); // TODO: think about replacing this
 	if (shouldBeRemoved) {
 		removeMugenAnimation(tID);
@@ -774,19 +778,19 @@ void advanceMugenAnimationOneTick(int tID)
 }
 
 void setMugenAnimationCollisionDebug(int tID, int tIsActive) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mIsCollisionDebugActive = tIsActive;
 }
 
 void pauseMugenAnimation(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mIsPaused = 1;
 }
 
 void unpauseMugenAnimation(int tID)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mIsPaused = 0;
 }
 
@@ -811,7 +815,7 @@ void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(
 
 void setMugenAnimationPassiveCollisionActive(int tID, int tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasPassiveHitboxes = 1;
 	e->mPassiveCollisionList = tCollisionList;
 	e->mPassiveCollisionData = tCollisionData;
@@ -822,7 +826,7 @@ void setMugenAnimationPassiveCollisionActive(int tID, int tCollisionList, void(*
 
 void setMugenAnimationAttackCollisionActive(int tID, int tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
 {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasAttackHitboxes = 1;
 	e->mAttackCollisionList = tCollisionList;
 	e->mAttackCollisionData = tCollisionData;
@@ -832,12 +836,12 @@ void setMugenAnimationAttackCollisionActive(int tID, int tCollisionList, void(*t
 }
 
 void setMugenAnimationNoLoop(int tID) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mIsLooping = 0;
 }
 
 void setMugenAnimationCallback(int tID, void(*tFunc)(void*), void* tCaller) {
-	MugenAnimationHandlerElement* e = int_map_get(&gData.mAnimations, tID);
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)int_map_get(&gData.mAnimations, tID);
 	e->mHasAnimationFinishedCallback = 1;
 	e->mAnimationFinishedCB = tFunc;
 	e->mAnimationFinishedCaller = tCaller;
@@ -856,8 +860,8 @@ typedef struct {
 } DrawSingleMugenAnimationSpriteCaller;
 
 static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
-	DrawSingleMugenAnimationSpriteCaller* caller = tCaller;
-	MugenSpriteFileSubSprite* sprite = tData;
+	DrawSingleMugenAnimationSpriteCaller* caller = (DrawSingleMugenAnimationSpriteCaller*)tCaller;
+	MugenSpriteFileSubSprite* sprite = (MugenSpriteFileSubSprite*)tData;
 
 	MugenAnimationHandlerElement* e = caller->e;
 	MugenAnimationStep* step = caller->mStep;
@@ -975,8 +979,8 @@ typedef struct {
 } DebugCollisionHitboxDrawCaller;
 
 static void drawSingleAnimationSingleDebugCollisionHitbox(void* tCaller, void* tData) {
-	DebugCollisionHitboxDrawCaller* caller = tCaller;
-	MugenAnimationHandlerHitboxElement* element = tData;
+	DebugCollisionHitboxDrawCaller* caller = (DebugCollisionHitboxDrawCaller*)tCaller;
+	MugenAnimationHandlerHitboxElement* element = (MugenAnimationHandlerHitboxElement*)tData;
 
 	Position cameraOffset;
 	if (caller->e->mHasCameraPositionReference) {
@@ -1012,7 +1016,7 @@ static void drawSingleAnimationDebugCollisionHitboxes(MugenAnimationHandlerEleme
 
 static void drawSingleMugenAnimation(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenAnimationHandlerElement* e = tData;
+	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)tData;
 
 	if (e->mIsCollisionDebugActive) {
 		drawSingleAnimationDebugCollisionHitboxes(e);
@@ -1088,14 +1092,11 @@ static void drawMugenAnimationHandler(void* tData) {
 }
 
 
-ActorBlueprint MugenAnimationHandler = {
-	.mLoad = loadMugenAnimationHandler,
-	.mUnload = unloadMugenAnimationHandler,
-	.mUpdate = updateMugenAnimationHandler,
-	.mDraw = drawMugenAnimationHandler,
-};
+ActorBlueprint getMugenAnimationHandler() {
+	return makeActorBlueprint(loadMugenAnimationHandler, unloadMugenAnimationHandler, updateMugenAnimationHandler, drawMugenAnimationHandler);
+}
 
 ActorBlueprint getMugenAnimationHandlerActorBlueprint()
 {
-	return MugenAnimationHandler;
+	return getMugenAnimationHandler();
 }

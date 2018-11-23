@@ -31,8 +31,8 @@ static void loadBlitzMugenAnimationHandler(void* tData) {
 }
 
 static void unregisterSingleEntityComponent(void* tCaller, void* tData) {
-	BlitzEntity* entity = tCaller;
-	BlitzComponent* component = tData;
+	BlitzEntity* entity = (BlitzEntity*)tCaller;
+	BlitzComponent* component = (BlitzComponent*)tData;
 
 	component->mUnregisterEntity(entity->mID);
 }
@@ -54,7 +54,7 @@ static void updateEntityParentReferencePosition(BlitzEntity* e) {
 
 static int updateSingleEntity(void* tCaller, void* tData) {
 	(void)tCaller;
-	BlitzEntity* e = tData;
+	BlitzEntity* e = (BlitzEntity*)tData;
 
 	if (e->mIsMarkedForDeletion) {
 		unloadBlitzEntity(e);
@@ -72,17 +72,13 @@ static void updateBlitzMugenAnimationHandler(void* tData) {
 }
 
 // TODO: unload
-ActorBlueprint BlitzEntityHandler = {
-	.mLoad = loadBlitzMugenAnimationHandler,
-    .mUnload = NULL,
-	.mUpdate = updateBlitzMugenAnimationHandler,
-    .mDraw = NULL,
-    .mIsActive = NULL
-};
+ActorBlueprint getBlitzEntityHandler() {
+	return makeActorBlueprint(loadBlitzMugenAnimationHandler, NULL, updateBlitzMugenAnimationHandler);
+}
 
 int addBlitzEntity(Position tPos)
 {
-	BlitzEntity* e = allocMemory(sizeof(BlitzEntity));
+	BlitzEntity* e = (BlitzEntity*)allocMemory(sizeof(BlitzEntity));
 	e->mPosition = tPos;
 	e->mScale = makePosition(1, 1, 1);
 	e->mAngle = 0;
@@ -99,7 +95,7 @@ static BlitzEntity* getBlitzEntity(int tID) {
 		recoverFromError();
 	}
 
-	return int_map_get(&gData.mEntities, tID);
+	return (BlitzEntity*)int_map_get(&gData.mEntities, tID);
 }
 
 void removeBlitzEntity(int tID)
@@ -118,7 +114,7 @@ void registerBlitzComponent(int tID, BlitzComponent tComponent)
 	if (tID == getBlitzCameraHandlerEntityID()) return;
 
 	BlitzEntity* e = getBlitzEntity(tID);
-	BlitzComponent* component = allocMemory(sizeof(BlitzComponent));
+	BlitzComponent* component = (BlitzComponent*)allocMemory(sizeof(BlitzComponent));
 	*component = tComponent;
 
 	vector_push_back_owned(&e->mComponents, component);

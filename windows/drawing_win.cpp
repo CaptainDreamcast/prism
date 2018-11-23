@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <algorithm>
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -49,6 +50,7 @@ static const GLchar* fragment_shader =
 "	gl_FragColor = Frag_Color * texture2D(Texture, Frag_UV);\n"
 "}\n";
 
+using namespace std;
 
 typedef struct {
 
@@ -224,13 +226,13 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
 	}
 
 
-	DrawListSpriteElement* e = allocMemory(sizeof(DrawListSpriteElement));
+	DrawListSpriteElement* e = (DrawListSpriteElement*)allocMemory(sizeof(DrawListSpriteElement));
 	e->mTexture = tTexture;
 	e->mPos = tPos;
 	e->mTexturePosition = tTexturePosition;
 	e->mData = gData;
 
-	DrawListElement* listElement = allocMemory(sizeof(DrawListElement));
+	DrawListElement* listElement = (DrawListElement*)allocMemory(sizeof(DrawListElement));
 	listElement->mType = DRAW_LIST_ELEMENT_TYPE_SPRITE;
 	listElement->mData = e;
 	listElement->mZ = tPos.z;
@@ -239,7 +241,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
 
 static void clearSingleDrawElement(void* tCaller, void* tData) {
 	(void)tCaller;
-	DrawListElement* e = tData;
+	DrawListElement* e = (DrawListElement*)tData;
 	freeMemory(e->mData);
 }
 
@@ -256,8 +258,8 @@ void startDrawing() {
 
 static int cmpZ(void* tCaller, void* tData1, void* tData2) {
 	(void)tCaller;
-	DrawListElement* e1 = tData1;
-	DrawListElement* e2 = tData2;
+	DrawListElement* e1 = (DrawListElement*)tData1;
+	DrawListElement* e2 = (DrawListElement*)tData2;
 
 	if (e1->mZ < e2->mZ) return -1;
 	if (e1->mZ > e2->mZ) return 1;
@@ -390,7 +392,7 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	dstRect.mTopLeft = e->mPos;
 	dstRect.mBottomRight = vecAdd(e->mPos, makePosition(sizeX, sizeY, 0));
 
-	Texture texture = e->mTexture.mTexture->mData;
+	Texture texture = (Texture)e->mTexture.mTexture->mData;
 
 	if (e->mData.mBlendType == BLEND_TYPE_ADDITION) {
 		glBlendEquation(GL_FUNC_ADD);
@@ -484,13 +486,13 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 
 static void drawSorted(void* tCaller, void* tData) {
 	(void)tCaller;
-	DrawListElement* e = tData;
+	DrawListElement* e = (DrawListElement*)tData;
 
 	if (e->mType == DRAW_LIST_ELEMENT_TYPE_SPRITE) {
-		drawSortedSprite(e->mData);
+		drawSortedSprite((DrawListSpriteElement*)e->mData);
 	}
 	else if (e->mType == DRAW_LIST_ELEMENT_TYPE_TRUETYPE) {
-		drawSortedTruetype(e->mData);
+		drawSortedTruetype((DrawListTruetypeElement*)e->mData);
 	}
 	else {
 		logError("Unrecognized draw type");
@@ -579,16 +581,16 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
 
 void drawTruetypeText(char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth)
 {
-	DrawListTruetypeElement* e = allocMemory(sizeof(DrawListTruetypeElement));
+	DrawListTruetypeElement* e = (DrawListTruetypeElement*)allocMemory(sizeof(DrawListTruetypeElement));
 	strcpy(e->mText, tText);
-	e->mFont = tFont;
+	e->mFont = (TTF_Font*)tFont;
 	e->mPos = tPosition;
 	e->mTextSize = tTextSize;
 	e->mColor = tColor;
 	e->mTextBoxWidth = tTextBoxWidth;
 	e->mData = gData;
 
-	DrawListElement* listElement = allocMemory(sizeof(DrawListElement));
+	DrawListElement* listElement = (DrawListElement*)allocMemory(sizeof(DrawListElement));
 	listElement->mType = DRAW_LIST_ELEMENT_TYPE_TRUETYPE;
 	listElement->mData = e;
 	listElement->mZ = tPosition.z;
@@ -658,14 +660,14 @@ void pushDrawingTranslation(Vector3D tTranslation) {
 
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(tTranslation));
 
-	TranslationEffect* e = allocMemory(sizeof(TranslationEffect));
+	TranslationEffect* e = (TranslationEffect*)allocMemory(sizeof(TranslationEffect));
 	e->mTranslation = tTranslation;
 	vector_push_back_owned(&gData.mEffectStack, e);
 }
 void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
 	setDrawingRotationZ(tAngle, tCenter);
 
-	RotationZEffect* e = allocMemory(sizeof(RotationZEffect));
+	RotationZEffect* e = (RotationZEffect*)allocMemory(sizeof(RotationZEffect));
 	e->mAngle = tAngle;
 	e->mCenter = tCenter;
 	vector_push_back_owned(&gData.mEffectStack, e);
@@ -673,7 +675,7 @@ void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
 
 void popDrawingRotationZ() {
 	int ind = vector_size(&gData.mEffectStack) - 1;
-	RotationZEffect* e = vector_get(&gData.mEffectStack, ind);
+	RotationZEffect* e = (RotationZEffect*)vector_get(&gData.mEffectStack, ind);
 
 	setDrawingRotationZ(-e->mAngle, e->mCenter);
 
@@ -681,7 +683,7 @@ void popDrawingRotationZ() {
 }
 void popDrawingTranslation() {
 	int ind = vector_size(&gData.mEffectStack) - 1;
-	TranslationEffect* e = vector_get(&gData.mEffectStack, ind);
+	TranslationEffect* e = (TranslationEffect*)vector_get(&gData.mEffectStack, ind);
 
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(vecScale(e->mTranslation, -1)));
 
@@ -690,7 +692,7 @@ void popDrawingTranslation() {
 
 
 static uint32_t* getPixelFromSurface(SDL_Surface* tSurface, int x, int y) {
-	uint32_t* pixels = tSurface->pixels;
+	uint32_t* pixels = (uint32_t*)tSurface->pixels;
 	return &pixels[y*tSurface->w + x];
 }
 
@@ -698,7 +700,7 @@ static uint32_t* getPixelFromSurface(SDL_Surface* tSurface, int x, int y) {
 uint32_t gPixelBuffer[PIXEL_BUFFER_SIZE];
 
 void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget) {
-	Texture dst = tDst.mTexture->mData;
+	Texture dst = (Texture)tDst.mTexture->mData;
 
 	double rd, gd, bd;
 	getRGBFromColor(tColor, &rd, &gd, &bd);

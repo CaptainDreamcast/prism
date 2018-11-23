@@ -193,7 +193,7 @@ int isUsingWrapper()
 }
 
 static void loadingThreadFunction(void* tCaller) {
-	Screen* tScreen = tCaller;
+	Screen* tScreen = (Screen*)tCaller;
 
 	if (tScreen->mLoad) {
 		debugLog("Loading user screen data");
@@ -242,29 +242,29 @@ static void loadScreen(Screen* tScreen) {
 
 	if (gData.mIsUsingBasicTextHandler) {
 		debugLog("Setting up Texthandling");
-		addWrapperComponent(TextHandler);
+		addWrapperComponent(getTextHandler());
 	}
 
 	if (gData.mIsUsingMugen) {
 		debugLog("Setting up Mugen Module");
-		addWrapperComponent(MugenAnimationHandler);
-		addWrapperComponent(MugenTextHandler);
+		addWrapperComponent(getMugenAnimationHandler());
+		addWrapperComponent(getMugenTextHandler());
 	}
 
 	if (gData.mIsUsingClipboard) {
 		debugLog("Setting up Clipboard");
-		addWrapperComponent(ClipboardHandler);
+		addWrapperComponent(getClipboardHandler());
 	}
 	if (gData.mIsUsingBlitzModule) {
 		debugLog("Setting up Blitz Module");
-		addWrapperComponent(BlitzCameraHandler);
-		addWrapperComponent(BlitzParticleHandler);
-		addWrapperComponent(BlitzEntityHandler);
-		addWrapperComponent(BlitzMugenAnimationHandler);
-		addWrapperComponent(BlitzMugenSoundHandler);
-		addWrapperComponent(BlitzCollisionHandler);
-		addWrapperComponent(BlitzPhysicsHandler);
-		addWrapperComponent(BlitzTimelineAnimationHandler);
+		addWrapperComponent(getBlitzCameraHandler());
+		addWrapperComponent(getBlitzParticleHandler());
+		addWrapperComponent(getBlitzEntityHandler());
+		addWrapperComponent(getBlitzMugenAnimationHandler());
+		addWrapperComponent(getBlitzMugenSoundHandler());
+		addWrapperComponent(getBlitzCollisionHandler());
+		addWrapperComponent(getBlitzPhysicsHandler());
+		addWrapperComponent(getBlitzTimelineAnimationHandler());
 	}
 
 	debugLog("Setting up input flanks");
@@ -484,6 +484,16 @@ void setNewScreen(Screen * tScreen)
 	gData.mNext = tScreen;
 }
 
+Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate, DrawScreenFunction tDraw, UnloadScreenFunction tUnload, Screen*(*tGetNextScreen)()) {
+	Screen ret;
+	ret.mLoad = tLoad;
+	ret.mUpdate = tUpdate;
+	ret.mDraw = tDraw;
+	ret.mUnload = tUnload;
+	ret.mGetNextScreen = tGetNextScreen;
+	return ret;
+}
+
 void startScreenHandling(Screen* tScreen) {
 	gData.mIsAborted = 0;
 
@@ -534,7 +544,7 @@ void recoverWrapperError()
 	gData.mHasFinishedLoading = 1;
 
 	if (gData.mIsUsingMugen && !gData.mIsNotUsingWrapperRecovery) {
-		setNewScreen(&ErrorScreen);
+		setNewScreen(getErrorScreen());
 		unloadWrapper();
 		longjmp(gData.mExceptionJumpBuffer, 1);
 	}

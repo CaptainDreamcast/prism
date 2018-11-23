@@ -11,7 +11,7 @@
 #include "prism/math.h"
 
 static MugenAssignment* makeMugenAssignment(MugenAssignmentType tType, void* tData) {
-	MugenAssignment* e = allocMemory(sizeof(MugenAssignment));
+	MugenAssignment* e = (MugenAssignment*)allocMemory(sizeof(MugenAssignment));
 	e->mType = tType;
 	e->mData = tData;
 	return e;
@@ -19,7 +19,7 @@ static MugenAssignment* makeMugenAssignment(MugenAssignmentType tType, void* tDa
 
 MugenAssignment * makeTrueMugenAssignment()
 {
-	MugenFixedBooleanAssignment* data = allocMemory(sizeof(MugenFixedBooleanAssignment));
+	MugenFixedBooleanAssignment* data = (MugenFixedBooleanAssignment*)allocMemory(sizeof(MugenFixedBooleanAssignment));
 	data->mValue = 1;
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN, data);
 }
@@ -38,7 +38,7 @@ void destroyMugenAssignment(MugenAssignment * tAssignment)
 
 MugenAssignment * makeFalseMugenAssignment()
 {
-	MugenFixedBooleanAssignment* data = allocMemory(sizeof(MugenFixedBooleanAssignment));
+	MugenFixedBooleanAssignment* data = (MugenFixedBooleanAssignment*)allocMemory(sizeof(MugenFixedBooleanAssignment));
 	data->mValue = 0;
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_FIXED_BOOLEAN, data);
 }
@@ -46,7 +46,7 @@ MugenAssignment * makeFalseMugenAssignment()
 MugenAssignment * makeMugenOneElementAssignment(MugenAssignmentType tType, MugenAssignment * a) 
 {
 
-	MugenDependOnOneAssignment* data = allocMemory(sizeof(MugenDependOnOneAssignment));
+	MugenDependOnOneAssignment* data = (MugenDependOnOneAssignment*)allocMemory(sizeof(MugenDependOnOneAssignment));
 	data->a = a;
 	return makeMugenAssignment(tType, data);
 }
@@ -54,7 +54,7 @@ MugenAssignment * makeMugenOneElementAssignment(MugenAssignmentType tType, Mugen
 
 MugenAssignment * makeMugenTwoElementAssignment(MugenAssignmentType tType, MugenAssignment * a, MugenAssignment * b)
 {
-	MugenDependOnTwoAssignment* data = allocMemory(sizeof(MugenDependOnTwoAssignment));
+	MugenDependOnTwoAssignment* data = (MugenDependOnTwoAssignment*)allocMemory(sizeof(MugenDependOnTwoAssignment));
 	data->a = a;
 	data->b = b;
 	return makeMugenAssignment(tType, data);
@@ -65,7 +65,7 @@ MugenAssignment * makeMugenTwoElementAssignment(MugenAssignmentType tType, Mugen
 MugenAssignment * makeNumberMugenAssignment(int tVal)
 {
 
-	MugenNumberAssignment* number = allocMemory(sizeof(MugenNumberAssignment));
+	MugenNumberAssignment* number = (MugenNumberAssignment*)allocMemory(sizeof(MugenNumberAssignment));
 	number->mValue = tVal;
 
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_NUMBER, number);
@@ -73,7 +73,7 @@ MugenAssignment * makeNumberMugenAssignment(int tVal)
 
 MugenAssignment * makeFloatMugenAssignment(double tVal)
 {
-	MugenFloatAssignment* f = allocMemory(sizeof(MugenFloatAssignment));
+	MugenFloatAssignment* f = (MugenFloatAssignment*)allocMemory(sizeof(MugenFloatAssignment));
 	f->mValue = tVal;
 
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_FLOAT, f);
@@ -81,8 +81,8 @@ MugenAssignment * makeFloatMugenAssignment(double tVal)
 
 MugenAssignment * makeStringMugenAssignment(char * tVal)
 {
-	MugenStringAssignment* s = allocMemory(sizeof(MugenStringAssignment));
-	s->mValue = allocMemory(strlen(tVal) + 10);
+	MugenStringAssignment* s = (MugenStringAssignment*)allocMemory(sizeof(MugenStringAssignment));
+	s->mValue = (char*)allocMemory(strlen(tVal) + 10);
 	strcpy(s->mValue, tVal);
 
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_STRING, s);
@@ -90,7 +90,7 @@ MugenAssignment * makeStringMugenAssignment(char * tVal)
 
 MugenAssignment * make2DVectorMugenAssignment(Vector3D tVal)
 {
-	MugenDependOnTwoAssignment* data = allocMemory(sizeof(MugenDependOnTwoAssignment));
+	MugenDependOnTwoAssignment* data = (MugenDependOnTwoAssignment*)allocMemory(sizeof(MugenDependOnTwoAssignment));
 	data->a = makeFloatMugenAssignment(tVal.x);
 	data->b = makeFloatMugenAssignment(tVal.y);
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_VECTOR, data);
@@ -192,7 +192,7 @@ static int isEmptyCharacter(char tChar) {
 }
 
 static MugenAssignment* parseMugenNullFromString() {
-	MugenFixedBooleanAssignment* data = allocMemory(sizeof(MugenFixedBooleanAssignment));
+	MugenFixedBooleanAssignment* data = (MugenFixedBooleanAssignment*)allocMemory(sizeof(MugenFixedBooleanAssignment));
 	data->mValue = 0;
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_NULL, data);
 }
@@ -258,7 +258,7 @@ static int isRange(char* tText) {
 }
 
 static MugenAssignment* parseMugenRangeFromString(char* tText) {
-	MugenRangeAssignment* e = allocMemory(sizeof(MugenRangeAssignment));
+	MugenRangeAssignment* e = (MugenRangeAssignment*)allocMemory(sizeof(MugenRangeAssignment));
 	int n = strlen(tText);
 	e->mExcludeLeft = tText[0] == '(';
 	e->mExcludeRight = tText[n - 1] == ')';
@@ -521,8 +521,8 @@ static int isStringConstant(char* tText) {
 }
 
 static MugenAssignment* parseStringConstantFromString(char* tText) {
-	MugenStringAssignment* s = allocMemory(sizeof(MugenStringAssignment));
-	s->mValue = allocMemory(strlen(tText + 1) + 10);
+	MugenStringAssignment* s = (MugenStringAssignment*)allocMemory(sizeof(MugenStringAssignment));
+	s->mValue = (char*)allocMemory(strlen(tText + 1) + 10);
 	strcpy(s->mValue, tText+1);
 	s->mValue[strlen(s->mValue) - 1] = '\0';
 
@@ -548,7 +548,7 @@ static int isVariable(char* tText) {
 }
 
 static MugenAssignment* parseMugenVariableFromString(char* tText) {
-	MugenVariableAssignment* data = allocMemory(sizeof(MugenVariableAssignment));
+	MugenVariableAssignment* data = (MugenVariableAssignment*)allocMemory(sizeof(MugenVariableAssignment));
 	strcpy(data->mName, tText);
 
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_VARIABLE, data);
@@ -857,7 +857,7 @@ MugenAssignment * parseMugenAssignmentFromString(char * tText)
 int fetchMugenAssignmentFromGroupAndReturnWhetherItExists(char* tName, MugenDefScriptGroup* tGroup, MugenAssignment** tOutput) {
 	if (!string_map_contains(&tGroup->mElements, tName)) return 0;
 
-	MugenDefScriptGroupElement* e = string_map_get(&tGroup->mElements, tName);
+	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tName);
 	char* text = getAllocatedMugenDefStringVariableAsElement(e);
 	*tOutput = parseMugenAssignmentFromString(text);
 	freeMemory(text);

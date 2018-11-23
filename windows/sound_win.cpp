@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <algorithm>
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
@@ -21,6 +22,8 @@
 #define MICROPHONE_SAMPLE_AMOUNT 128
 
 #include "prism/soundeffect.h"
+
+using namespace std;
 
 typedef struct {
 	int mIsMicrophoneActive;
@@ -232,7 +235,7 @@ static void microphoneCB(void *userdata, Uint8 *stream, int len) {
 
 	gData.mMicrophone.mMasterPeakVolume = 0;
 	for (i = 0; i < MICROPHONE_SAMPLE_AMOUNT; i++) {
-		gData.mMicrophone.mMasterPeakVolume = max(gData.mMicrophone.mMasterPeakVolume, gData.mMicrophone.mSamples[i]);
+		gData.mMicrophone.mMasterPeakVolume = max(gData.mMicrophone.mMasterPeakVolume, (int)gData.mMicrophone.mSamples[i]);
 	}
 }
 
@@ -274,14 +277,9 @@ static void stopMicrophone(void* tData)
 	gData.mMicrophone.mIsMicrophoneActive = 0;
 }
 
-static ActorBlueprint MicrophoneHandler = {
-	.mLoad = startMicrophone,
-	.mUnload = stopMicrophone,
-};
-
 ActorBlueprint getMicrophoneHandlerActorBlueprint()
 {
-	return MicrophoneHandler;
+	return makeActorBlueprint(startMicrophone, stopMicrophone);
 }
 
 double getMicrophoneVolume()

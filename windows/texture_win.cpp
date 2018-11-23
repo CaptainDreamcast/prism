@@ -26,7 +26,7 @@ TextureData textureFromSurface(SDL_Surface* tSurface) {
 	returnData.mTextureSize.x = tSurface->w;
 	returnData.mTextureSize.y = tSurface->h;
 	returnData.mHasPalette = 0;
-	Texture texture = returnData.mTexture->mData;
+	Texture texture = (Texture)returnData.mTexture->mData;
 	
 	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
 	SDL_FreeSurface(tSurface);
@@ -114,7 +114,7 @@ static SDL_Surface* makeSurfaceFromUntwiddledTexture(Buffer b, KMGHeader tHeader
 }
 
 static Buffer untwiddleBuffer(Buffer tBuffer, uint32_t tWidth, uint32_t tHeight) {
-	uint16_t* dst = allocMemory(tBuffer.mLength);
+	uint16_t* dst = (uint16_t*)allocMemory(tBuffer.mLength);
 	uint32_t dstLength = tBuffer.mLength;
 
 	untwiddle((uint16_t*)tBuffer.mData, dst, tWidth, tHeight);
@@ -140,7 +140,7 @@ static KMGHeader untwiddleKMGBufferAndReturnHeader(Buffer* tBuffer) {
 		abortSystem();
 	}
 
-	untwiddle((uint16_t*)p, dst.mData, hdr.width, hdr.height);
+	untwiddle((uint16_t*)p, (uint16_t*)dst.mData, hdr.width, hdr.height);
 
 	freeBuffer(src);
 	*tBuffer = dst;
@@ -276,8 +276,8 @@ extern SDL_Color* getSDLColorPalette(int tIndex);
 
 TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight) {
 	uint32_t size = tWidth * tHeight * 4;
-	uint8_t* data = allocMemory(tWidth * tHeight * 4);
-	uint8_t* src = b.mData;
+	uint8_t* data = (uint8_t*)allocMemory(tWidth * tHeight * 4);
+	uint8_t* src = (uint8_t*)b.mData;
 
 	SDL_Color* colors = getSDLColorPalette(tPaletteID);
 	int32_t amount = size / 4;
@@ -354,6 +354,6 @@ TruetypeFont loadTruetypeFont(char * tName, double tSize)
 
 void unloadTruetypeFont(TruetypeFont tFont)
 {
-	TTF_Font* font = tFont;
+	TTF_Font* font = (TTF_Font*)tFont;
 	TTF_CloseFont(font);
 }

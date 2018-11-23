@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <algorithm>
 
 #include "prism/log.h"
 #include "prism/collision.h"
@@ -10,6 +11,7 @@
 
 #include "prism/mugendefreader.h"
 
+using namespace std;
 
 static struct {
 	int mIsLoaded;
@@ -82,7 +84,7 @@ static void resetSingleAnimationState() {
 
 
 static MugenAnimation* makeEmptyMugenAnimation(int tID) {
-	MugenAnimation* ret = allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimation));
+	MugenAnimation* ret = (MugenAnimation*)allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimation));
 	ret->mLoopStart = 0;
 	ret->mSteps = new_vector();
 	ret->mID = tID;
@@ -118,7 +120,7 @@ static void insertAnimationStepIntoAnimation(MugenAnimation* e, MugenAnimationSt
 static void insertAnimationStepIntoAnimations(MugenAnimations* tAnimations, int tGroupID, MugenAnimationStep* tElement) {
 	assert(int_map_contains(&tAnimations->mAnimations, tGroupID));
 	
-	MugenAnimation* e = int_map_get(&tAnimations->mAnimations, tGroupID);
+	MugenAnimation* e = (MugenAnimation*)int_map_get(&tAnimations->mAnimations, tGroupID);
 	insertAnimationStepIntoAnimation(e, tElement);
 }
 
@@ -157,10 +159,10 @@ static void handleNewAnimationStepBlendFlags(MugenAnimationStep* e, char* blendF
 }
 
 static void copySingleHitboxToNewList(void* tCaller, void* tData) {
-	List* dst = tCaller;
-	CollisionRect* e = tData;
+	List* dst = (List*)tCaller;
+	CollisionRect* e = (CollisionRect*)tData;
 
-	CollisionRect* newRect = allocMemoryOnMemoryStackOrMemory(sizeof(CollisionRect));
+	CollisionRect* newRect = (CollisionRect*)allocMemoryOnMemoryStackOrMemory(sizeof(CollisionRect));
 	*newRect = *e;
 
 	list_push_back_owned(dst, newRect);
@@ -174,9 +176,9 @@ static List copyHitboxList(List tSource) {
 
 static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, MugenDefScriptGroupElement* tElement) {
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
-	MugenDefScriptVectorElement* vectorElement = tElement->mData;
+	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	
-	MugenAnimationStep* e = allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimationStep));
+	MugenAnimationStep* e = (MugenAnimationStep*)allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimationStep));
 	
 	if (gMugenAnimationState.mHasOwnHitbox1) {
 		e->mAttackHitboxes = copyHitboxList(gMugenAnimationState.mOwnHitbox1);
@@ -252,7 +254,7 @@ static int isHitboxSizeAssignment(char* tName) {
 static void handleCollisionHitboxAssignment(List* tHitboxes, MugenDefScriptGroupElement* tElement) {
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
 
-	MugenDefScriptVectorElement* vectorElement = tElement->mData;
+	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	
 	double x1 = atof(vectorElement->mVector.mElement[0]);
 	double y1 = atof(vectorElement->mVector.mElement[1]);
@@ -262,7 +264,7 @@ static void handleCollisionHitboxAssignment(List* tHitboxes, MugenDefScriptGroup
 	Position topLeft = makePosition(min(x1, x2), min(y1, y2), 0);
 	Position bottomRight = makePosition(max(x1, x2), max(y1, y2), 0);
 
-	CollisionRect* e = allocMemory(sizeof(CollisionRect));
+	CollisionRect* e = (CollisionRect*)allocMemory(sizeof(CollisionRect));
 	*e = makeCollisionRect(topLeft, bottomRight);
 	
 	list_push_back_owned(tHitboxes, e);
@@ -335,7 +337,7 @@ static int isInterpolation(char* tVariableName) {
 static void handleOffsetInterpolation(MugenAnimations* tAnimation, int tGroup) {
 	MugenAnimation* anim = getMugenAnimation(tAnimation, tGroup);
 	assert(vector_size(&anim->mSteps));
-	MugenAnimationStep* step = vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
+	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
 
 	step->mInterpolateOffset = 1;
 }
@@ -343,7 +345,7 @@ static void handleOffsetInterpolation(MugenAnimations* tAnimation, int tGroup) {
 static void handleBlendInterpolation(MugenAnimations* tAnimation, int tGroup) {
 	MugenAnimation* anim = getMugenAnimation(tAnimation, tGroup);
 	assert(vector_size(&anim->mSteps));
-	MugenAnimationStep* step = vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
+	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
 
 	step->mInterpolateBlend = 1;
 }
@@ -351,7 +353,7 @@ static void handleBlendInterpolation(MugenAnimations* tAnimation, int tGroup) {
 static void handleScaleInterpolation(MugenAnimations* tAnimation, int tGroup) {
 	MugenAnimation* anim = getMugenAnimation(tAnimation, tGroup);
 	assert(vector_size(&anim->mSteps));
-	MugenAnimationStep* step = vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
+	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
 
 	step->mInterpolateScale = 1;
 }
@@ -359,7 +361,7 @@ static void handleScaleInterpolation(MugenAnimations* tAnimation, int tGroup) {
 static void handleAngleInterpolation(MugenAnimations* tAnimation, int tGroup) {
 	MugenAnimation* anim = getMugenAnimation(tAnimation, tGroup);
 	assert(vector_size(&anim->mSteps));
-	MugenAnimationStep* step = vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
+	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
 
 	step->mInterpolateAngle = 1;
 }
@@ -390,8 +392,8 @@ static void handleInterpolation(MugenDefScriptGroupElement* e, MugenAnimations* 
 }
 
 static void loadSingleAnimationElementStatement(void* tCaller, void* tData) {
-	MugenDefScriptGroupElement* element = tData;
-	AnimationLoadCaller* caller = tCaller;
+	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
+	AnimationLoadCaller* caller = (AnimationLoadCaller*)tCaller;
 
 	if (isAnimationVector(element->mName)) {
 		handleNewAnimationStep(caller->mAnimations, caller->mGroupID, element);
@@ -488,14 +490,14 @@ MugenAnimations loadMugenAnimationFileWithMemoryStack(char* tPath, MemoryStack* 
 
 static void unloadSingleMugenAnimationStep(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenAnimationStep* e = tData;
+	MugenAnimationStep* e = (MugenAnimationStep*)tData;
 	delete_list(&e->mPassiveHitboxes);
 	delete_list(&e->mAttackHitboxes);
 }
 
 static int unloadSingleMugenAnimation(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenAnimation* e = tData;
+	MugenAnimation* e = (MugenAnimation*)tData;
 	vector_map(&e->mSteps, unloadSingleMugenAnimationStep, NULL);
 	delete_vector(&e->mSteps);
 	return 1;
@@ -512,16 +514,16 @@ MugenAnimation* getMugenAnimation(MugenAnimations * tAnimations, int i)
 	if (!int_map_contains(&tAnimations->mAnimations, i)) {
 		logWarning("Could not load animation. Defaulting to empty.");
 		logWarningInteger(i);
-		return int_map_get(&tAnimations->mAnimations, -1);
+		return (MugenAnimation*)int_map_get(&tAnimations->mAnimations, -1);
 	}
 
-	return int_map_get(&tAnimations->mAnimations, i);
+	return (MugenAnimation*)int_map_get(&tAnimations->mAnimations, i);
 }
 
 MugenAnimation * createOneFrameMugenAnimationForSprite(int tSpriteGroup, int tSpriteItem)
 {
 	MugenAnimation* e = makeEmptyMugenAnimation(-1);
-	MugenAnimationStep* step = allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimationStep));
+	MugenAnimationStep* step = (MugenAnimationStep*)allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimationStep));
 
 	step->mPassiveHitboxes = new_list();
 	step->mAttackHitboxes = new_list();
@@ -557,7 +559,7 @@ void destroyMugenAnimation(MugenAnimation * tAnimation)
 Vector3DI getAnimationFirstElementSpriteSize(MugenAnimation * tAnimation, MugenSpriteFile* tSprites)
 {
 	assert(vector_size(&tAnimation->mSteps));
-	MugenAnimationStep* firstStep = vector_get(&tAnimation->mSteps, 0);
+	MugenAnimationStep* firstStep = (MugenAnimationStep*)vector_get(&tAnimation->mSteps, 0);
 	
 	MugenSpriteFileSprite* sprite = getMugenSpriteFileTextureReference(tSprites, firstStep->mGroupNumber, firstStep->mSpriteNumber);
 	if(!sprite)	return makeVector3DI(0, 0, 0);
@@ -567,7 +569,7 @@ Vector3DI getAnimationFirstElementSpriteSize(MugenAnimation * tAnimation, MugenS
 Vector3D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, MugenSpriteFile* tSprites)
 {
 	assert(vector_size(&tAnimation->mSteps));
-	MugenAnimationStep* firstStep = vector_get(&tAnimation->mSteps, 0);
+	MugenAnimationStep* firstStep = (MugenAnimationStep*)vector_get(&tAnimation->mSteps, 0);
 
 	MugenSpriteFileSprite* sprite = getMugenSpriteFileTextureReference(tSprites, firstStep->mGroupNumber, firstStep->mSpriteNumber);
 	return sprite->mAxisOffset;

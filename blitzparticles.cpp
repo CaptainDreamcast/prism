@@ -32,7 +32,7 @@ static void loadParticleHandler(void* tData) {
 
 static int updateSingleParticle(void* tCaller, void* tData) {
 	(void)tCaller;
-	ParticleEntry* e = tData;
+	ParticleEntry* e = (ParticleEntry*)tData;
 
 	e->mVel = vecAdd(e->mVel, e->mGravity);
 	e->mPos = vecAdd(e->mPos, e->mVel);
@@ -51,7 +51,7 @@ static void updateParticleHandler(void* tData) {
 
 static void drawSingleParticle(void* tCaller, void* tData) {
 	(void)tCaller;
-	ParticleEntry* e = tData;
+	ParticleEntry* e = (ParticleEntry*)tData;
 
 	Position pos = vecSub(e->mPos, getBlitzCameraHandlerPosition());
 
@@ -67,12 +67,8 @@ static void drawParticleHandler(void* tData) {
 	int_map_map(&gData.mParticles, drawSingleParticle, NULL);
 }
 
-ActorBlueprint BlitzParticleHandler = {
-	.mLoad = loadParticleHandler,
-    .mUnload = NULL,
-	.mUpdate = updateParticleHandler,
-	.mDraw = drawParticleHandler,
-    .mIsActive = NULL
+ActorBlueprint getBlitzParticleHandler() {
+	return makeActorBlueprint(loadParticleHandler, NULL, updateParticleHandler, drawParticleHandler);
 };
 
 void addBlitzParticles(int tAmount, Position tPosition, Position tPositionRange, double tSpeed, double tSpeedRange, double tAngle, double tAngleRange, Velocity tGravity, Vector3D tColor, Vector3D tColorRange, Duration tLifetime, Duration tLifetimeRange) {
@@ -85,7 +81,7 @@ void addBlitzParticles(int tAmount, Position tPosition, Position tPositionRange,
 
 void addBlitzParticle(Position tPosition, Position tPositionRange, double tSpeed, double tSpeedRange, double tAngle, double tAngleRange, Velocity tGravity, Vector3D tColor, Vector3D tColorRange, Duration tLifetime, Duration tLifetimeRange)
 {
-	ParticleEntry* e = allocMemory(sizeof(ParticleEntry));
+	ParticleEntry* e = (ParticleEntry*)allocMemory(sizeof(ParticleEntry));
 	
 	e->mPos = vecAdd(vecSub(tPosition, vecScale(tPositionRange, 0.5)), vecScale(tPositionRange, randfrom(0, 1)));
 	double speed = randfrom(tSpeed - tSpeedRange / 2, tSpeed + tSpeedRange / 2);

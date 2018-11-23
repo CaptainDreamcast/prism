@@ -39,7 +39,7 @@ static void unloadSoundEffectEntry(SoundEffectEntry* e) {
 
 static int unloadSingleSoundEffect(void* tCaller, void* tData) {
 	(void)tCaller;
-	SoundEffectEntry* e = tData;
+	SoundEffectEntry* e = (SoundEffectEntry*)tData;
 	unloadSoundEffectEntry(e);
 	return 1;
 }
@@ -50,7 +50,7 @@ void shutdownSoundEffectHandler() {
 }
 
 static int addChunkToSoundEffectHandler(Mix_Chunk* tChunk) {
-	SoundEffectEntry* e = allocMemory(sizeof(SoundEffectEntry));
+	SoundEffectEntry* e = (SoundEffectEntry*)allocMemory(sizeof(SoundEffectEntry));
 	e->mChunk = tChunk;
 	return list_push_back_owned(&gData.mAllocatedChunks, e);
 }
@@ -71,13 +71,13 @@ int loadSoundEffectFromBuffer(Buffer tBuffer) {
 }
 
 void unloadSoundEffect(int tID) {
-	SoundEffectEntry* e = list_get(&gData.mAllocatedChunks, tID);
+	SoundEffectEntry* e = (SoundEffectEntry*)list_get(&gData.mAllocatedChunks, tID);
 	unloadSoundEffectEntry(e);
 	list_remove(&gData.mAllocatedChunks, tID);
 }
 
 int playSoundEffect(int tID) {
-	SoundEffectEntry* e = list_get(&gData.mAllocatedChunks, tID);
+	SoundEffectEntry* e = (SoundEffectEntry*)list_get(&gData.mAllocatedChunks, tID);
 	return Mix_PlayChannel(-1, e->mChunk, 0);
 }
 

@@ -39,7 +39,7 @@ static ScriptPosition loadTreeAnimation(TreeNode* e, ScriptPosition tPos) {
 	tPos = getNextScriptInteger(tPos, &v);
 	e->mAnimation.mFrameAmount = v;
 
-	e->mTextures = allocMemory(e->mAnimation.mFrameAmount*sizeof(TextureData));
+	e->mTextures = (TextureData*)allocMemory(e->mAnimation.mFrameAmount*sizeof(TextureData));
 	char name[1024];
 	int i;
 	for (i = 0; i < (int)e->mAnimation.mFrameAmount; i++) {
@@ -51,7 +51,7 @@ static ScriptPosition loadTreeAnimation(TreeNode* e, ScriptPosition tPos) {
 }
 
 static ScriptPosition loadTree(void* tCaller, ScriptPosition tPos) {
-	TreeNode* e = tCaller;
+	TreeNode* e = (TreeNode*)tCaller;
 
 	char word[100];
 	tPos = getNextScriptString(tPos, word);
@@ -60,7 +60,7 @@ static ScriptPosition loadTree(void* tCaller, ScriptPosition tPos) {
 		char name[100];
 		tPos = getNextScriptString(tPos, name);
 
-		TreeNode* newNode = allocMemory(sizeof(TreeNode));
+		TreeNode* newNode = (TreeNode*)allocMemory(sizeof(TreeNode));
 		initTreeNode(newNode);
 		string_map_push_owned(&e->mSubElements, name, newNode);
 
@@ -81,7 +81,7 @@ static ScriptPosition loadTree(void* tCaller, ScriptPosition tPos) {
 }
 
 static ScriptPosition loadSingleAnimationTree(void* tCaller, ScriptPosition tPos) {
-	TreeNode* e = tCaller;
+	TreeNode* e = (TreeNode*)tCaller;
 
 	char word[100];
 	tPos = getNextScriptString(tPos, word);
@@ -90,7 +90,7 @@ static ScriptPosition loadSingleAnimationTree(void* tCaller, ScriptPosition tPos
 		char name[100];
 		tPos = getNextScriptString(tPos, name);
 
-		TreeNode* newNode = allocMemory(sizeof(TreeNode));
+		TreeNode* newNode = (TreeNode*)allocMemory(sizeof(TreeNode));
 		initTreeNode(newNode);
 		string_map_push_owned(&e->mSubElements, name, newNode);
 
@@ -120,7 +120,7 @@ static ScriptPosition loadSingleAnimationTree(void* tCaller, ScriptPosition tPos
 }
 
 static ScriptPosition loadFrame(void* tCaller, ScriptPosition tPos) {
-	AnimationTreeFrame* e = tCaller;
+	AnimationTreeFrame* e = (AnimationTreeFrame*)tCaller;
 
 	char word[100];
 	tPos = getNextScriptString(tPos, word);
@@ -149,13 +149,13 @@ static void initTreeFrame(AnimationTreeFrame* e) {
 }
 
 static ScriptPosition loadSingleAnimation(void* tCaller, ScriptPosition tPos) {
-	AnimationNode* e = tCaller;
+	AnimationNode* e = (AnimationNode*)tCaller;
 
 	char word[100];
 	tPos = getNextScriptString(tPos, word);
 
 	if (!strcmp("FRAME", word)) {
-		AnimationTreeFrame* newFrame = allocMemory(sizeof(AnimationTreeFrame));
+		AnimationTreeFrame* newFrame = (AnimationTreeFrame*)allocMemory(sizeof(AnimationTreeFrame));
 		initTreeFrame(newFrame);
 		ScriptRegion reg = getScriptRegionAtPosition(tPos);
 		executeOnScriptRegion(reg, loadFrame, newFrame);
@@ -176,7 +176,7 @@ static void initAnimationNode(AnimationNode* e) {
 }
 
 static ScriptPosition loadAnimations(void* tCaller, ScriptPosition tPos) {
-	StringMap* animations = tCaller;
+	StringMap* animations = (StringMap*)tCaller;
 
 	char word[100];
 	tPos = getNextScriptString(tPos, word);
@@ -184,7 +184,7 @@ static ScriptPosition loadAnimations(void* tCaller, ScriptPosition tPos) {
 	if (!strcmp("ANIMATION", word)) {
 		char name[100];
 		tPos = getNextScriptString(tPos, name);
-		AnimationNode* newNode = allocMemory(sizeof(AnimationNode));
+		AnimationNode* newNode = (AnimationNode*)allocMemory(sizeof(AnimationNode));
 		initAnimationNode(newNode);
 
 		string_map_push_owned(animations, name, newNode);
@@ -246,7 +246,7 @@ void updateAnimationTreeHandling() {
 static void drawTreeNode(void* tCaller, char* tKey, void* tData) {
 	(void)tCaller;
 	(void)tKey;
-	TreeNode* tNode = tData;
+	TreeNode* tNode = (TreeNode*)tData;
 
 	TextureData currentTexture = tNode->mTextures[tNode->mAnimation.mFrame];
 
@@ -263,7 +263,7 @@ static void drawTreeNode(void* tCaller, char* tKey, void* tData) {
 
 static void drawSingleTree(void* tCaller, void* tData) {
 	(void)tCaller;
-	AnimationTreeHandlerEntry* e = tData;
+	AnimationTreeHandlerEntry* e = (AnimationTreeHandlerEntry*)tData;
 
 	string_map_map(&e->mTree.mTree.mSubElements, drawTreeNode, NULL);
 }
@@ -279,10 +279,10 @@ static void copySingleTreeNode(TreeNode* tDst, TreeNode* tSrc) {
 }
 
 static void copyTreeFunction(void* tCaller, char* tKey, void* tData) {
-	TreeNode* dstRoot = tCaller;
-	TreeNode* srcCur = tData;
+	TreeNode* dstRoot = (TreeNode*)tCaller;
+	TreeNode* srcCur = (TreeNode*)tData;
 
-	TreeNode* dstCur = string_map_get(&dstRoot->mSubElements, tKey);
+	TreeNode* dstCur = (TreeNode*)string_map_get(&dstRoot->mSubElements, tKey);
 
 	copySingleTreeNode(dstCur, srcCur);
 
@@ -295,8 +295,8 @@ static void setAnimationTreeTreeFromSource(TreeNode* tDst, TreeNode* tSrc) {
 }
 
 static void setAnimationTreeFrame(AnimationTree* tTree, int tFrame) {
-	AnimationNode* e = string_map_get(&tTree->mAnimations, tTree->mCurrentAnimation);
-	AnimationTreeFrame* frame = vector_get(&e->mFrames, tFrame);
+	AnimationNode* e = (AnimationNode*)string_map_get(&tTree->mAnimations, tTree->mCurrentAnimation);
+	AnimationTreeFrame* frame = (AnimationTreeFrame*)vector_get(&e->mFrames, tFrame);
 	setAnimationTreeTreeFromSource(&tTree->mTree, &frame->mTree);
 }
 
@@ -306,7 +306,7 @@ void setAnimationTreeAnimation(AnimationTree* tTree, char* tAnimation) {
 }
 
 int playAnimationTreeLoop(Position tPosition, AnimationTree tTree, char* tAnimation) {
-	AnimationTreeHandlerEntry* e = allocMemory(sizeof(AnimationTreeHandlerEntry)); 
+	AnimationTreeHandlerEntry* e = (AnimationTreeHandlerEntry*)allocMemory(sizeof(AnimationTreeHandlerEntry));
 
 	e->mTree = tTree;
 	e->mPosition = tPosition;
@@ -316,7 +316,7 @@ int playAnimationTreeLoop(Position tPosition, AnimationTree tTree, char* tAnimat
 }
 
 void setHandledAnimationTreeAnimation(int tID, char* tAnimation) {
-	AnimationTreeHandlerEntry* e = list_get(&gData.mAnimationTreeList, tID);
+	AnimationTreeHandlerEntry* e = (AnimationTreeHandlerEntry*)list_get(&gData.mAnimationTreeList, tID);
 	setAnimationTreeAnimation(&e->mTree, tAnimation);
 }
 

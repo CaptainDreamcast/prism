@@ -136,11 +136,11 @@ Buffer fileToBuffer(char* tFileDir) {
 	debugInteger(bufferLength);
 
 	if (isFileMemoryMapped(file)) {
-		data = fileMemoryMap(file);
+		data = (char*)fileMemoryMap(file);
 		ret.mIsOwned = 0;
 	}
 	else {
-		data = allocMemory(bufferLength);
+		data = (char*)allocMemory(bufferLength);
 		fileRead(file, data, bufferLength);
 		ret.mIsOwned = 1;
 	}
@@ -173,7 +173,7 @@ void freeBuffer(Buffer buffer) {
 
 void appendTerminationSymbolToBuffer(Buffer* tBuffer) {
 	if (!tBuffer->mIsOwned) {
-		char* nData = allocMemory(tBuffer->mLength + 1);
+		char* nData = (char*)allocMemory(tBuffer->mLength + 1);
 		memcpy(nData, tBuffer->mData, tBuffer->mLength);
 		tBuffer->mData = nData;
 		tBuffer->mIsOwned = 1;
@@ -183,7 +183,7 @@ void appendTerminationSymbolToBuffer(Buffer* tBuffer) {
 	}
 
 
-	char* buf = tBuffer->mData;
+	char* buf = (char*)tBuffer->mData;
 	buf[tBuffer->mLength] = '\0';
 	tBuffer->mLength++;
 }
@@ -204,7 +204,7 @@ void fileToMemory(void* tDst, int tSize, char* tPath) {
 
 BufferPointer getBufferPointer(Buffer tBuffer)
 {
-	return tBuffer.mData;
+	return (BufferPointer)tBuffer.mData;
 }
 
 void readFromBufferPointer(void * tDst, BufferPointer* tPointer, uint32_t tSize)

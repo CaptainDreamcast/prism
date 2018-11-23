@@ -39,7 +39,7 @@ void shutdownPhysicsHandler() {
 
 static void handleSinglePhysicsObjectInList(void* tCaller, void* tData) {
 	(void) tCaller;
-	HandledPhysicsData* data = tData;
+	HandledPhysicsData* data = (HandledPhysicsData*)tData;
 	
 	Gravity prevGravity = getGravity();	
 	setGravity(data->mGravity);
@@ -56,7 +56,7 @@ void updatePhysicsHandler() {
 }
 
 int addToPhysicsHandler(Position tPosition) {
-	HandledPhysicsData* data = allocMemory(sizeof(HandledPhysicsData));
+	HandledPhysicsData* data = (HandledPhysicsData*)allocMemory(sizeof(HandledPhysicsData));
 	resetPhysicsObject(&data->mObj);
 	data->mObj.mPosition = tPosition;
 	data->mMaxVelocity = INFINITY;
@@ -71,24 +71,24 @@ void removeFromPhysicsHandler(int tID) {
 }
 
 PhysicsObject* getPhysicsFromHandler(int tID) {
-	HandledPhysicsData* data = int_map_get(&gData.mList, tID);
+	HandledPhysicsData* data = (HandledPhysicsData*)int_map_get(&gData.mList, tID);
 	return &data->mObj;
 }
 
 Position* getHandledPhysicsPositionReference(int tID) {
-	HandledPhysicsData* data = int_map_get(&gData.mList, tID);
+	HandledPhysicsData* data = (HandledPhysicsData*)int_map_get(&gData.mList, tID);
 	return &data->mObj.mPosition;
 }
 
 Velocity * getHandledPhysicsVelocityReference(int tID)
 {
-	HandledPhysicsData* data = int_map_get(&gData.mList, tID);
+	HandledPhysicsData* data = (HandledPhysicsData*)int_map_get(&gData.mList, tID);
 	return &data->mObj.mVelocity;
 }
 
 Acceleration* getHandledPhysicsAccelerationReference(int tID)
 {
-	HandledPhysicsData* data = int_map_get(&gData.mList, tID);
+	HandledPhysicsData* data = (HandledPhysicsData*)int_map_get(&gData.mList, tID);
 	return &data->mObj.mAcceleration;
 }
 
@@ -103,17 +103,17 @@ void stopHandledPhysics(int tID) {
 }
 
 void setHandledPhysicsMaxVelocity(int tID, double tVelocity) {
-	HandledPhysicsData* data = int_map_get(&gData.mList, tID);
+	HandledPhysicsData* data = (HandledPhysicsData*)int_map_get(&gData.mList, tID);
 	data->mMaxVelocity = tVelocity;
 }
 
 void setHandledPhysicsDragCoefficient(int tID, Vector3D tDragCoefficient) {
-	HandledPhysicsData* data = int_map_get(&gData.mList, tID);
+	HandledPhysicsData* data = (HandledPhysicsData*)int_map_get(&gData.mList, tID);
 	data->mDragCoefficient = tDragCoefficient;
 }
 
 void setHandledPhysicsGravity(int tID, Vector3D tGravity) {
-	HandledPhysicsData* data = int_map_get(&gData.mList, tID);
+	HandledPhysicsData* data = (HandledPhysicsData*)int_map_get(&gData.mList, tID);
 	data->mGravity = tGravity;
 }
 

@@ -73,16 +73,11 @@ static Screen* getNextLogoScreenScreen() {
 	return NULL;
 }
 
-static Screen LogoScreenFromWrapper = {
-	.mLoad = loadWrapperLogoScreen,
-    .mUpdate = NULL,
-    .mDraw = NULL,
-    .mUnload = NULL,
-	.mGetNextScreen = getNextLogoScreenScreen,
-};
+static Screen gLogoScreen;
 
 Screen* getLogoScreenFromWrapper() {
-	return &LogoScreenFromWrapper;
+	gLogoScreen = makeScreen(loadWrapperLogoScreen, NULL, NULL, NULL, getNextLogoScreenScreen);
+	return &gLogoScreen;
 }
 
 void setScreenAfterWrapperLogoScreen(Screen * tScreen)

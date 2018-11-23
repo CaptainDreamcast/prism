@@ -153,7 +153,7 @@ static void unloadStoryboard(Storyboard* e) {
 
 static int removeStoryboardEntry(void* tCaller, void* tData) {
 	(void) tCaller;
-	Storyboard* e = tData;
+	Storyboard* e = (Storyboard*)tData;
 	unloadStoryboard(e);
 	return 1;
 }
@@ -170,7 +170,7 @@ static void loadStoryboardTextureTexture(Storyboard* e, StoryBoardTextureStruct*
 	e->mState.mTextures[slot].mAnimation.mFrameAmount = tTexture->FrameAmount;
 	e->mState.mTextures[slot].mAnimation.mDuration = tTexture->Speed;
 
-	e->mState.mTextures[slot].mTextures = allocMemory(e->mState.mTextures[slot].mAnimation.mFrameAmount*sizeof(TextureData));
+	e->mState.mTextures[slot].mTextures = (TextureData*)allocMemory(e->mState.mTextures[slot].mAnimation.mFrameAmount*sizeof(TextureData));
 
 	if (!tTexture->WhichFrame) {
 		char path[1024];
@@ -229,7 +229,7 @@ static void loadStoryboardTexture(Storyboard* e, StoryBoardTextureStruct* tTextu
 static void loadStoryboardTextures(Storyboard* e, StoryBoardHeaderStruct* tHeader) {
 	int i;
 	for (i = 0; i < tHeader->TextureStructAmount; i++) {
-		StoryBoardTextureStruct* texture = (void*)e->mState.mPosition;
+		StoryBoardTextureStruct* texture = (StoryBoardTextureStruct*)e->mState.mPosition;
 		e->mState.mPosition += sizeof(StoryBoardTextureStruct);
 
 		if (texture->TextureAction == StoryBoardDestroyTextureIdentifier) {
@@ -256,14 +256,14 @@ static void loadStoryboardText(Storyboard* e, StoryBoardTextStruct* tText) {
 	}
 
 	tText->FontColor = parseDolmexicaColor(tText->FontColor);
-	if (tText->BuildUp) e->mState.mTexts[slot].mID = addHandledTextWithBuildup(makePosition(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), makePosition(tText->BreakSizeX, tText->BreakSizeY, 0), makePosition(tText->SizeX, tText->SizeY, 0), INF, tText->BuildUpSpeed);
-	else e->mState.mTexts[slot].mID = addHandledText(makePosition(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), makePosition(tText->BreakSizeX, tText->BreakSizeY, 0), makePosition(tText->SizeX, tText->SizeY, 0), INF);
+	if (tText->BuildUp) e->mState.mTexts[slot].mID = addHandledTextWithBuildup(makePosition(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, (Color)tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), makePosition(tText->BreakSizeX, tText->BreakSizeY, 0), makePosition(tText->SizeX, tText->SizeY, 0), INF, tText->BuildUpSpeed);
+	else e->mState.mTexts[slot].mID = addHandledText(makePosition(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, (Color)tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), makePosition(tText->BreakSizeX, tText->BreakSizeY, 0), makePosition(tText->SizeX, tText->SizeY, 0), INF);
 }
 
 static void loadStoryboardTexts(Storyboard* e, StoryBoardHeaderStruct* tHeader) {
 	int i;
 	for (i = 0; i < tHeader->TextStructAmount; i++) {
-		StoryBoardTextStruct* text = (void*)e->mState.mPosition;
+		StoryBoardTextStruct* text = (StoryBoardTextStruct*)e->mState.mPosition;
 		e->mState.mPosition += sizeof(StoryBoardTextStruct);
 		int slot = text->TextID;
 
@@ -277,7 +277,7 @@ static void loadStoryboardTexts(Storyboard* e, StoryBoardHeaderStruct* tHeader) 
 }
 
 static void playStoryboardSoundEffect(void* tCaller) {
-	StoryboardSoundEffect* e = tCaller;
+	StoryboardSoundEffect* e = (StoryboardSoundEffect*)tCaller;
 
 	if (e->mID == -1) return;
 
@@ -300,7 +300,7 @@ static void loadStoryboardSoundEffects(Storyboard* e, StoryBoardHeaderStruct* tH
 	int i;
 	for (i = 0; i < tHeader->SoundEffectStructAmount; i++) {
 
-		StoryBoardSoundEffectStruct* soundEffect = (void*)e->mState.mPosition;
+		StoryBoardSoundEffectStruct* soundEffect = (StoryBoardSoundEffectStruct*)e->mState.mPosition;
 		e->mState.mPosition += sizeof(StoryBoardSoundEffectStruct);
 
 		if (soundEffect->SoundEffectAction == StoryBoardDestroySoundEffectIdentifier) {
@@ -314,7 +314,7 @@ static void loadStoryboardSoundEffects(Storyboard* e, StoryBoardHeaderStruct* tH
 }
 
 static void loadNextStoryboardAction(Storyboard* e) {
-	StoryBoardHeaderStruct* header = (void*)e->mState.mPosition;
+	StoryBoardHeaderStruct* header = (StoryBoardHeaderStruct*)e->mState.mPosition;
 	e->mState.mPosition += sizeof(StoryBoardHeaderStruct);
 
 	if (header->SoundTrack != 0) {
@@ -343,7 +343,7 @@ static void checkStoryboardInputs(Storyboard* e) {
 
 static int updateSingleStoryboard(void* tCaller, void* tData) {
 	(void) tCaller;
-	Storyboard* e = tData;
+	Storyboard* e = (Storyboard*)tData;
 
 	checkStoryboardInputs(e);
 
@@ -389,7 +389,7 @@ static void resetStoryboard(Storyboard* e) {
 }
 
 static Storyboard* loadStoryboard(char* tPath) {
-	Storyboard* e = allocMemory(sizeof(Storyboard));
+	Storyboard* e = (Storyboard*)allocMemory(sizeof(Storyboard));
 
 	mountRomdisk(tPath, "STORY");
 
@@ -417,7 +417,7 @@ int playStoryboard(char* tPath) {
 }
 
 void setStoryboardFinishedCB(int tID, StoryboardFinishedCB tCB, void* tCaller) {
-	Storyboard* e = list_get(&gData.mStoryboards, tID);
+	Storyboard* e = (Storyboard*)list_get(&gData.mStoryboards, tID);
 	e->mFinishedCB = tCB;
 	e->mFinishedCaller = tCaller;
 }
@@ -449,14 +449,7 @@ static void updateStoryboardsCB(void* tCaller) {
 	updateStoryboards();
 }
 
-
-static ActorBlueprint StoryboardHandler = {
-	.mLoad = loadStoryboardsCB,
-	.mUnload = unloadStoryboardsCB,
-	.mUpdate = updateStoryboardsCB,
-};
-
 ActorBlueprint getStoryboardHandlerActorBlueprint()
 {
-	return StoryboardHandler;
+	return makeActorBlueprint(loadStoryboardsCB, unloadStoryboardsCB, updateStoryboardsCB);
 }

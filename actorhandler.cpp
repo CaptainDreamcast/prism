@@ -19,6 +19,16 @@ static struct {
 	int mIsInitialized;
 } gData;
 
+ActorBlueprint makeActorBlueprint(LoadActorFunction tLoad, UnloadActorFunction tUnload, UpdateActorFunction tUpdate, DrawActorFunction tDraw, IsActorActiveFunction tIsActive) {
+	ActorBlueprint ret;
+	ret.mLoad = tLoad;
+	ret.mUnload = tUnload;
+	ret.mUpdate = tUpdate;
+	ret.mDraw = tDraw;
+	ret.mIsActive = tIsActive;
+	return ret;
+}
+
 void setupActorHandler()
 {
 	if (gData.mIsInitialized) {
@@ -43,7 +53,7 @@ static void unloadActor(Actor* e) {
 
 static int removeActorCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	Actor* e = tData;
+	Actor* e = (Actor*)tData;
 	unloadActor(e);
 	return 1;
 }
@@ -58,7 +68,7 @@ void shutdownActorHandler()
 
 static int updateSingleActor(void* tCaller, void* tData) {
 	(void)tCaller;
-	Actor* e = tData;
+	Actor* e = (Actor*)tData;
 
 	int isActive = e->mBP.mIsActive == NULL || e->mBP.mIsActive(e->mData);
 	if (!isActive) {
@@ -77,7 +87,7 @@ void updateActorHandler()
 
 static void drawSingleActor(void* tCaller, void* tData) {
 	(void)tCaller;
-	Actor* e = tData;
+	Actor* e = (Actor*)tData;
 
 	if(e->mBP.mDraw) e->mBP.mDraw(e->mData);
 }
@@ -94,7 +104,7 @@ int instantiateActor(ActorBlueprint tBP)
 
 int instantiateActorWithData(ActorBlueprint tBP, void * tData, int tIsOwned)
 {
-	Actor* e = allocMemory(sizeof(Actor));
+	Actor* e = (Actor*)allocMemory(sizeof(Actor));
 	e->mBP = tBP;
 	e->mData = tData;
 	e->mIsOwned = tIsOwned;
@@ -110,19 +120,19 @@ int instantiateActorWithData(ActorBlueprint tBP, void * tData, int tIsOwned)
 
 void performOnActor(int tID, ActorInteractionFunction tFunc, void * tCaller)
 {
-	Actor* e = int_map_get(&gData.mActors, tID);
+	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
 	tFunc(tCaller, e->mData);
 }
 
 void removeActor(int tID)
 {
-	Actor* e = int_map_get(&gData.mActors, tID);
+	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
 	unloadActor(e);
 	list_iterator_remove(&gData.mSequentialActorList, e->mListEntry);
 }
 
 void * getActorData(int tID)
 {
-	Actor* e = int_map_get(&gData.mActors, tID);
+	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
 	return e->mData;
 }

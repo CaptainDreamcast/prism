@@ -202,7 +202,7 @@ static Position getAnimationPositionWithAllReferencesIncluded(AnimationElement* 
 
 static void drawAnimationHandlerCB(void* tCaller, void* tData) {
 	(void) tCaller;
-	AnimationElement* cur = tData;
+	AnimationElement* cur = (AnimationElement*)tData;
 	int frame = cur->mAnimation.mFrame;
 	
 	Position p = getAnimationPositionWithAllReferencesIncluded(cur);
@@ -266,7 +266,7 @@ static void emptyAnimationHandler(){
 
 static int playAnimationInternal(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller, int tIsLooped){
 	
-	AnimationElement* e = allocMemory(sizeof(AnimationElement));
+	AnimationElement* e = (AnimationElement*)allocMemory(sizeof(AnimationElement));
 	e->mCaller = tCaller;
 	e->mCB = tOptionalCB;
 	e->mIsLooped = tIsLooped;
@@ -304,7 +304,7 @@ int playOneFrameAnimationLoop(Position tPosition, TextureData* tTextures) {
 }
 
 void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 
 	e->mTexturePosition = tTexturePosition;
 	e->mTextureData = tTextures;
@@ -312,25 +312,25 @@ void changeAnimation(int tID, TextureData* tTextures, Animation tAnimation, Rect
 }
 
 void setAnimationScreenPositionReference(int tID, Position* tScreenPositionReference) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mScreenPositionReference = tScreenPositionReference;
 
 }
 
 void setAnimationBasePositionReference(int tID, Position* tBasePositionReference) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mBasePositionReference = tBasePositionReference;
 }
 
 void setAnimationScale(int tID, Vector3D tScale, Position tCenter) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mIsScaled = 1;
 	e->mScaleEffectCenter = tCenter;
 	e->mScale = tScale;
 }
 
 void setAnimationSize(int tID, Vector3D tSize, Position tCenter) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mIsScaled = 1;
 	e->mScaleEffectCenter = tCenter;
 
@@ -346,7 +346,7 @@ static void setAnimationRotationZ_internal(AnimationElement* e, double tAngle, V
 }
 
 void setAnimationRotationZ(int tID, double tAngle, Position tCenter) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	setAnimationRotationZ_internal(e, tAngle, tCenter);
 }
 
@@ -356,7 +356,7 @@ static void setAnimationColor_internal(AnimationElement* e, double r, double g, 
 }
 
 void setAnimationColor(int tID, double r, double g, double b) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	setAnimationColor_internal(e, r, g, b);
 }
 
@@ -368,35 +368,35 @@ void setAnimationColorType(int tID, Color tColor)
 }
 
 void setAnimationTransparency(int tID, double a) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mHasTransparency = 1;
 	e->mTransparency = a;
 }
 
 void setAnimationCenter(int tID, Position tCenter) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mCenter = tCenter;
 }
 
 void setAnimationCB(int tID, AnimationPlayerCB tCB, void* tCaller) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mCB = tCB;
 	e->mCaller = tCaller;
 }
 
 void setAnimationPosition(int tID, Position tPosition) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mPosition = tPosition;
 }
 
 void setAnimationTexturePosition(int tID, Rectangle tTexturePosition)
 {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mTexturePosition = tTexturePosition;
 }
 
 void setAnimationLoop(int tID, int tIsLooping) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mIsLooped = tIsLooping;
 }
 
@@ -411,7 +411,7 @@ typedef struct {
 } AnimationColorIncrease;
 
 static void increaseAnimationColor(void* tCaller) {
-	AnimationColorIncrease* e = tCaller;
+	AnimationColorIncrease* e = (AnimationColorIncrease*)tCaller;
 
 	e->mColor = vecAdd(e->mColor, makePosition(1.0 / e->mDuration, 1.0 / e->mDuration, 1.0 / e->mDuration));
 
@@ -424,7 +424,7 @@ static void increaseAnimationColor(void* tCaller) {
 }
 
 void fadeInAnimation(int tID, Duration tDuration) {
-	AnimationColorIncrease* e = allocMemory(sizeof(AnimationColorIncrease));
+	AnimationColorIncrease* e = (AnimationColorIncrease*)allocMemory(sizeof(AnimationColorIncrease));
 	e->mID = tID;
 	e->mColor = makePosition(0, 0, 0);
 	e->mDuration = tDuration;
@@ -434,22 +434,22 @@ void fadeInAnimation(int tID, Duration tDuration) {
 }
 
 void inverseAnimationVertical(int tID) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mInversionState.x ^= 1;
 }
 
 void inverseAnimationHorizontal(int tID) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mInversionState.y ^= 1;
 }
 
 void setAnimationVerticalInversion(int tID, int tValue) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mInversionState.x = tValue;
 }
 
 void setAnimationHorizontalInversion(int tID, int tValue) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	e->mInversionState.y = tValue;
 }
 
@@ -459,8 +459,8 @@ typedef struct {
 } ScreenRotationZ;
 
 static void setScreenRotationZForSingleAnimation(void* tCaller, void* tData) {
-	ScreenRotationZ* rot = tCaller;
-	AnimationElement* e = tData;
+	ScreenRotationZ* rot = (ScreenRotationZ*)tCaller;
+	AnimationElement* e = (AnimationElement*)tData;
 
 	Position p = getAnimationPositionWithAllReferencesIncluded(e);
 	Position center = vecSub(rot->mCenter, p);
@@ -482,8 +482,8 @@ typedef struct {
 } AnimationHandlerScreenTint;
 
 static void setAnimationHandlerScreenTintSingle(void* tCaller, void* tData) {
-	AnimationHandlerScreenTint* tint = tCaller;
-	AnimationElement* e = tData;
+	AnimationHandlerScreenTint* tint = (AnimationHandlerScreenTint*)tCaller;
+	AnimationElement* e = (AnimationElement*)tData;
 	setAnimationColor_internal(e, tint->r, tint->g, tint->b);
 }
 
@@ -504,12 +504,12 @@ void resetAnimationHandlerScreenTint()
 
 double* getAnimationTransparencyReference(int tID)
 {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	return &e->mTransparency;
 }
 
 Position* getAnimationPositionReference(int tID) {
-	AnimationElement* e = int_map_get(&gAnimationHandler.mList, tID);
+	AnimationElement* e = (AnimationElement*)int_map_get(&gAnimationHandler.mList, tID);
 	return &e->mPosition;
 }
 

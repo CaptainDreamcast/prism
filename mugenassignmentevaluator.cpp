@@ -86,7 +86,7 @@ static AssignmentReturnValue makeStringAssignmentReturn(char* tValue) {
 }
 
 static AssignmentReturnValue evaluateOrAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* orAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* orAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(orAssignment->a, tCaller);
 	int valA = evaluateAssignmentReturnAsBool(a);
@@ -99,7 +99,7 @@ static AssignmentReturnValue evaluateOrAssignment(MugenAssignment* tAssignment, 
 }
 
 static AssignmentReturnValue evaluateAndAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* andAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* andAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(andAssignment->a, tCaller);
 	int valA = evaluateAssignmentReturnAsBool(a);
@@ -112,7 +112,7 @@ static AssignmentReturnValue evaluateAndAssignment(MugenAssignment* tAssignment,
 }
 
 static AssignmentReturnValue evaluateBitwiseOrAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* bitwiseOrAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* bitwiseOrAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(bitwiseOrAssignment->a, tCaller);
 	int valA = evaluateAssignmentReturnAsNumber(a);
@@ -124,7 +124,7 @@ static AssignmentReturnValue evaluateBitwiseOrAssignment(MugenAssignment* tAssig
 }
 
 static AssignmentReturnValue evaluateBitwiseAndAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* bitwiseAndAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* bitwiseAndAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(bitwiseAndAssignment->a, tCaller);
 	int valA = evaluateAssignmentReturnAsNumber(a);
@@ -177,7 +177,7 @@ static AssignmentReturnValue evaluateComparisonAssignmentInternal(MugenAssignmen
 	char name[MUGEN_DEF_STRING_LENGTH];
 	
 	if (mAssignment->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE) {
-		MugenVariableAssignment* var = mAssignment->mData;
+		MugenVariableAssignment* var = (MugenVariableAssignment*)mAssignment->mData;
 		strcpy(name, var->mName);
 		turnStringLowercase(name);
 	}
@@ -219,13 +219,13 @@ static void* getCallerRedirectAssignment(AssignmentReturnValue a, void* tCaller)
 }
 
 static AssignmentReturnValue evaluateComparisonAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* comparisonAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* comparisonAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	//printf("eval assign a\n");
 
 	AssignmentReturnValue b = evaluateAssignmentInternal(comparisonAssignment->b, tCaller);
 
 	if (comparisonAssignment->a->mType == MUGEN_ASSIGNMENT_TYPE_VECTOR) {
-		MugenDependOnTwoAssignment* vectorAssignment = comparisonAssignment->a->mData;
+		MugenDependOnTwoAssignment* vectorAssignment = (MugenDependOnTwoAssignment*)comparisonAssignment->a->mData;
 		AssignmentReturnValue vecA = evaluateAssignmentInternal(vectorAssignment->a, tCaller);
 
 		if (isCallerRedirectAssignment(vecA, tCaller)) {
@@ -256,7 +256,7 @@ static AssignmentReturnValue evaluateGreaterFloats(AssignmentReturnValue a, Assi
 }
 
 static AssignmentReturnValue evaluateGreaterAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* greaterAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* greaterAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(greaterAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(greaterAssignment->b, tCaller);
 
@@ -279,7 +279,7 @@ static AssignmentReturnValue evaluateGreaterOrEqualFloats(AssignmentReturnValue 
 }
 
 static AssignmentReturnValue evaluateGreaterOrEqualAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* greaterOrEqualAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* greaterOrEqualAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(greaterOrEqualAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(greaterOrEqualAssignment->b, tCaller);
 
@@ -302,7 +302,7 @@ static AssignmentReturnValue evaluateLessFloats(AssignmentReturnValue a, Assignm
 }
 
 static AssignmentReturnValue evaluateLessAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* lessAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* lessAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(lessAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(lessAssignment->b, tCaller);
 
@@ -325,7 +325,7 @@ static AssignmentReturnValue evaluateLessOrEqualFloats(AssignmentReturnValue a, 
 }
 
 static AssignmentReturnValue evaluateLessOrEqualAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* lessOrEqualAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* lessOrEqualAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(lessOrEqualAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(lessOrEqualAssignment->b, tCaller);
 
@@ -349,7 +349,7 @@ static AssignmentReturnValue evaluateModuloFloats(AssignmentReturnValue a, Assig
 }
 
 static AssignmentReturnValue evaluateModuloAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* moduloAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* moduloAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(moduloAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(moduloAssignment->b, tCaller);
 
@@ -385,7 +385,7 @@ static AssignmentReturnValue evaluateExponentiationFloats(AssignmentReturnValue 
 }
 
 static AssignmentReturnValue evaluateExponentiationAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* exponentiationAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* exponentiationAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(exponentiationAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(exponentiationAssignment->b, tCaller);
 
@@ -409,7 +409,7 @@ static AssignmentReturnValue evaluateMultiplicationFloats(AssignmentReturnValue 
 }
 
 static AssignmentReturnValue evaluateMultiplicationAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* multiplicationAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* multiplicationAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(multiplicationAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(multiplicationAssignment->b, tCaller);
 
@@ -432,7 +432,7 @@ static AssignmentReturnValue evaluateDivisionFloats(AssignmentReturnValue a, Ass
 }
 
 static AssignmentReturnValue evaluateDivisionAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* divisionAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* divisionAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(divisionAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(divisionAssignment->b, tCaller);
 
@@ -479,7 +479,7 @@ static AssignmentReturnValue evaluateAdditionFloats(AssignmentReturnValue a, Ass
 }
 
 static AssignmentReturnValue evaluateAdditionAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* additionAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* additionAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(additionAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(additionAssignment->b, tCaller);
 
@@ -506,7 +506,7 @@ static AssignmentReturnValue evaluateSubtractionFloats(AssignmentReturnValue a, 
 }
 
 static AssignmentReturnValue evaluateSubtractionAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* subtractionAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* subtractionAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(subtractionAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(subtractionAssignment->b, tCaller);
 
@@ -520,7 +520,7 @@ static AssignmentReturnValue evaluateSubtractionAssignment(MugenAssignment* tAss
 
 
 static AssignmentReturnValue evaluateOperatorArgumentAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* operatorAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* operatorAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(operatorAssignment->a, tCaller);
 	AssignmentReturnValue b = evaluateAssignmentInternal(operatorAssignment->b, tCaller);
 
@@ -530,25 +530,25 @@ static AssignmentReturnValue evaluateOperatorArgumentAssignment(MugenAssignment*
 }
 
 static AssignmentReturnValue evaluateBooleanAssignment(MugenAssignment* tAssignment) {
-	MugenFixedBooleanAssignment* fixedAssignment = tAssignment->mData;
+	MugenFixedBooleanAssignment* fixedAssignment = (MugenFixedBooleanAssignment*)tAssignment->mData;
 
 	return makeBooleanAssignmentReturn(fixedAssignment->mValue);
 }
 
 static AssignmentReturnValue evaluateNumberAssignment(MugenAssignment* tAssignment) {
-	MugenNumberAssignment* number = tAssignment->mData;
+	MugenNumberAssignment* number = (MugenNumberAssignment*)tAssignment->mData;
 
 	return makeNumberAssignmentReturn(number->mValue);
 }
 
 static AssignmentReturnValue evaluateFloatAssignment(MugenAssignment* tAssignment) {
-	MugenFloatAssignment* f = tAssignment->mData;
+	MugenFloatAssignment* f = (MugenFloatAssignment*)tAssignment->mData;
 
 	return makeFloatAssignmentReturn(f->mValue);
 }
 
 static AssignmentReturnValue evaluateStringAssignment(MugenAssignment* tAssignment) {
-	MugenStringAssignment* s = tAssignment->mData;
+	MugenStringAssignment* s = (MugenStringAssignment*)tAssignment->mData;
 
 	return makeStringAssignmentReturn(s->mValue);
 }
@@ -562,7 +562,7 @@ static AssignmentReturnValue evaluateCallerRedirectVectorAssignment(AssignmentRe
 }
 
 static AssignmentReturnValue evaluateVectorAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* vectorAssignment = tAssignment->mData;
+	MugenDependOnTwoAssignment* vectorAssignment = (MugenDependOnTwoAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(vectorAssignment->a, tCaller);
 
 	if (isCallerRedirectAssignment(a, tCaller)) {
@@ -578,7 +578,7 @@ static AssignmentReturnValue evaluateVectorAssignment(MugenAssignment* tAssignme
 }
 
 static AssignmentReturnValue evaluateRangeAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenRangeAssignment* rangeAssignment = tAssignment->mData;
+	MugenRangeAssignment* rangeAssignment = (MugenRangeAssignment*)tAssignment->mData;
 	AssignmentReturnValue a = evaluateAssignmentInternal(rangeAssignment->a, tCaller);
 
 	char valString1[100], comma[10], valString2[100];
@@ -599,7 +599,7 @@ static AssignmentReturnValue evaluateRangeAssignment(MugenAssignment* tAssignmen
 
 
 static AssignmentReturnValue evaluateVariableAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenVariableAssignment* variable = tAssignment->mData;
+	MugenVariableAssignment* variable = (MugenVariableAssignment*)tAssignment->mData;
 	char testString[100];
 	strcpy(testString, variable->mName);
 	turnStringLowercase(testString);
@@ -624,7 +624,7 @@ static AssignmentReturnValue evaluateVariableAssignment(MugenAssignment* tAssign
 		return makeBooleanAssignmentReturn(0);
 	}
 
-	MugenAssignmentVariableEntry* e = string_map_get(&gData.mVariables, testString);
+	MugenAssignmentVariableEntry* e = (MugenAssignmentVariableEntry*)string_map_get(&gData.mVariables, testString);
 	AssignmentReturnValue ret;
 	e->mEvalFunc(ret.mValue, tCaller);
 	return ret;
@@ -709,9 +709,9 @@ static AssignmentReturnValue evaluateIfElseArrayAssignment(AssignmentReturnValue
 
 static AssignmentReturnValue evaluateCondArrayAssignment(MugenAssignment* tCondVector, void* tCaller) {
 	assert(tCondVector->mType == MUGEN_ASSIGNMENT_TYPE_VECTOR);
-	MugenDependOnTwoAssignment* firstV = tCondVector->mData;
+	MugenDependOnTwoAssignment* firstV = (MugenDependOnTwoAssignment*)tCondVector->mData;
 	assert(firstV->b->mType == MUGEN_ASSIGNMENT_TYPE_VECTOR);
-	MugenDependOnTwoAssignment* secondV = firstV->b->mData;
+	MugenDependOnTwoAssignment* secondV = (MugenDependOnTwoAssignment*)firstV->b->mData;
 
 	AssignmentReturnValue ret;
 	int isTrue = evaluateMugenAssignment(firstV->a, tCaller);
@@ -729,18 +729,18 @@ static AssignmentReturnValue evaluateUserArrayAssignment(char* tVariableName, As
 	AssignmentReturnValue ret;
 
 	assert(string_map_contains(&gData.mArrays, tVariableName));
-	MugenAssignmentArrayEntry* e = string_map_get(&gData.mArrays, tVariableName);
+	MugenAssignmentArrayEntry* e = (MugenAssignmentArrayEntry*)string_map_get(&gData.mArrays, tVariableName);
 
 	e->mEvalFunc(ret.mValue, tCaller, tIndex.mValue);
 	return ret;
 }
 
 static AssignmentReturnValue evaluateArrayAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnTwoAssignment* arrays = tAssignment->mData;
+	MugenDependOnTwoAssignment* arrays = (MugenDependOnTwoAssignment*)tAssignment->mData;
 
 	char test[100];
 	assert(arrays->a->mType == MUGEN_ASSIGNMENT_TYPE_VARIABLE);
-	MugenVariableAssignment* arrayName = arrays->a->mData;
+	MugenVariableAssignment* arrayName = (MugenVariableAssignment*)arrays->a->mData;
 	strcpy(test, arrayName->mName);
 	turnStringLowercase(test);
 
@@ -792,7 +792,7 @@ static AssignmentReturnValue evaluateArrayAssignment(MugenAssignment* tAssignmen
 }
 
 static AssignmentReturnValue evaluateUnaryMinusAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnOneAssignment* min = tAssignment->mData;
+	MugenDependOnOneAssignment* min = (MugenDependOnOneAssignment*)tAssignment->mData;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(min->a, tCaller);
 	if (isFloatReturn(a)) {
@@ -804,7 +804,7 @@ static AssignmentReturnValue evaluateUnaryMinusAssignment(MugenAssignment* tAssi
 }
 
 static AssignmentReturnValue evaluateNegationAssignment(MugenAssignment* tAssignment, void* tCaller) {
-	MugenDependOnOneAssignment* neg = tAssignment->mData;
+	MugenDependOnOneAssignment* neg = (MugenDependOnOneAssignment*)tAssignment->mData;
 
 	AssignmentReturnValue a = evaluateAssignmentInternal(neg->a, tCaller);
 	int val = evaluateAssignmentReturnAsBool(a);
@@ -933,7 +933,7 @@ int evaluateMugenAssignmentAndReturnAsInteger(MugenAssignment * tAssignment, voi
 char * evaluateMugenAssignmentAndReturnAsAllocatedString(MugenAssignment * tAssignment, void* tCaller)
 {
 	AssignmentReturnValue ret = evaluateAssignmentInternal(tAssignment, tCaller);
-	char* str = allocMemory(strlen(ret.mValue) + 10);
+	char* str = (char*)allocMemory(strlen(ret.mValue) + 10);
 	strcpy(str, ret.mValue);
 
 	return str;
@@ -965,7 +965,7 @@ void resetMugenAssignmentContext() {
 }
 
 void addMugenAssignmentVariable(char* tVariable, void(*tEvalFunc)(char* tOutput, void* tCaller)) {
-	MugenAssignmentVariableEntry* e = allocMemory(sizeof(MugenAssignmentVariableEntry));
+	MugenAssignmentVariableEntry* e = (MugenAssignmentVariableEntry*)allocMemory(sizeof(MugenAssignmentVariableEntry));
 	e->mEvalFunc = tEvalFunc;
 	char varText[100];
 	strcpy(varText, tVariable);
@@ -975,7 +975,7 @@ void addMugenAssignmentVariable(char* tVariable, void(*tEvalFunc)(char* tOutput,
 
 void addMugenAssignmentArray(char * tVariable, void(*tEvalFunc)(char *tOutput, void *tCaller, char *tArrayIndex))
 {
-	MugenAssignmentArrayEntry* e = allocMemory(sizeof(MugenAssignmentArrayEntry));
+	MugenAssignmentArrayEntry* e = (MugenAssignmentArrayEntry*)allocMemory(sizeof(MugenAssignmentArrayEntry));
 	e->mEvalFunc = tEvalFunc;
 	char varText[100];
 	strcpy(varText, tVariable);

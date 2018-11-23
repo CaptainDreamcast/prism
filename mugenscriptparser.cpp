@@ -31,7 +31,7 @@ void resetMugenScriptParser()
 
 void addMugenScriptParseFunction(int(*tIsFunc)(MugenDefScriptGroup *), void(*tHandleFunc)(MugenDefScriptGroup *))
 {
-	ScriptParseElement* e = allocMemory(sizeof(ScriptParseElement));
+	ScriptParseElement* e = (ScriptParseElement*)allocMemory(sizeof(ScriptParseElement));
 	e->mIsFunc = tIsFunc;
 	e->mHandleFunc = tHandleFunc;
 	vector_push_back_owned(&gData.mParseElements, e);
@@ -44,7 +44,7 @@ void parseMugenScript(MugenDefScript * tScript)
 		int hasFound = 0;
 		int i;
 		for (i = 0; i < vector_size(&gData.mParseElements); i++) {
-			ScriptParseElement* e = vector_get(&gData.mParseElements, i);
+			ScriptParseElement* e = (ScriptParseElement*)vector_get(&gData.mParseElements, i);
 			if (e->mIsFunc(current)) {
 				e->mHandleFunc(current);
 				hasFound = 1;

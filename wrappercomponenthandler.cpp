@@ -17,7 +17,7 @@ void setupWrapperComponentHandler()
 
 static void updateSingleWrapperComponent(void* tCaller, void* tData) {
 	(void)tCaller;
-	ActorBlueprint* e = tData;
+	ActorBlueprint* e = (ActorBlueprint*)tData;
 	if (e->mUpdate) e->mUpdate(NULL);
 }
 
@@ -29,7 +29,7 @@ void updateWrapperComponentHandler()
 
 static void drawSingleWrapperComponent(void* tCaller, void* tData) {
 	(void)tCaller;
-	ActorBlueprint* e = tData;
+	ActorBlueprint* e = (ActorBlueprint*)tData;
 	if (e->mDraw) e->mDraw(NULL);
 }
 
@@ -40,7 +40,7 @@ void drawWrapperComponentHandler()
 
 static int shutdownSingleWrapperComponent(void* tCaller, void* tData) {
 	(void)tCaller;
-	ActorBlueprint* e = tData;
+	ActorBlueprint* e = (ActorBlueprint*)tData;
 	if (e->mUnload) e->mUnload(NULL);
 
 	return 1;
@@ -54,7 +54,7 @@ void shutdownWrapperComponentHandler()
 
 void addWrapperComponent(ActorBlueprint tComponentBlueprint)
 {
-	ActorBlueprint* e = allocMemory(sizeof(ActorBlueprint));
+	ActorBlueprint* e = (ActorBlueprint*)allocMemory(sizeof(ActorBlueprint));
 	*e = tComponentBlueprint;
 	if (e->mLoad) e->mLoad(NULL);
 

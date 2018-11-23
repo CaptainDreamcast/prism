@@ -74,7 +74,7 @@ static void increaseDrawnText(HandledText* e) {
 
 static int updateSingleText(void* tCaller, void* tData) {
 	(void) tCaller;
-	HandledText* e = tData;
+	HandledText* e = (HandledText*)tData;
 
 	if (handleDurationAndCheckIfOver(&e->mNow, e->mDuration)) {
 		return 1;
@@ -93,7 +93,7 @@ void updateTextHandler() {
 
 static void drawSingleText(void* tCaller, void* tData) {
 	(void) tCaller;
-	HandledText* e = tData;
+	HandledText* e = (HandledText*)tData;
 
 	Position p = e->mPosition;
 	if (e->mHasBasePositionReference) {
@@ -109,7 +109,7 @@ void drawHandledTexts() {
 }
 
 int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration) {
-	HandledText* e = allocMemory(sizeof(HandledText));
+	HandledText* e = (HandledText*)allocMemory(sizeof(HandledText));
 
 	strcpy(e->mText, tText);
 	strcpy(e->mDrawnText, tText);
@@ -139,7 +139,7 @@ int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vec
 
 int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration, Duration tBuildupDuration) {
 	int id = addHandledText(tPosition, tText, tFont, tColor, tFontSize, tBreakSize, tTextBoxSize, tDuration);
-	HandledText* e = list_get(&gData.mTexts, id);
+	HandledText* e = (HandledText*)list_get(&gData.mTexts, id);
 	e->mSingleLetterBuildupDuration = tBuildupDuration / strlen(tText);
 	e->mDrawnText[0] = '\0';
 	return id;
@@ -152,40 +152,40 @@ int addHandledTextWithInfiniteDurationOnOneLine(Position tPosition, char * tText
 
 void setHandledText(int tID, char * tText)
 {
-	HandledText* e = list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
 	strcpy(e->mText, tText);
 	strcpy(e->mDrawnText, tText);
 }
 
 void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects)
 {
-	HandledText* e = list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
 	e->mHasSoundEffects = 1;
 	e->mSoundEffects = tSoundEffects;
 }
 
 void setHandledTextPosition(int tID, Position tPosition)
 {
-	HandledText* e = list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
 	e->mPosition = tPosition;
 }
 
 void setHandledTextBasePositionReference(int tID, Position * tPosition)
 {
-	HandledText* e = list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
 	e->mHasBasePositionReference = 1;
 	e->mBasePositionReference = tPosition;
 }
 
 void setHandledTextBuiltUp(int tID)
 {
-	HandledText* e = list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
 	strcpy(e->mDrawnText, e->mText);
 }
 
 int isHandledTextBuiltUp(int tID)
 {
-	HandledText* e = list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
 	return !strcmp(e->mDrawnText, e->mText);
 }
 
@@ -213,10 +213,6 @@ static void shutdownTextHandlerCB(void* tData) {
 	shutdownTextHandler();
 }
 
-ActorBlueprint TextHandler = {
-	.mLoad = setupTextHandlerCB,
-	.mUnload = shutdownTextHandlerCB,
-	.mUpdate = updateTextHandlerCB,
-	.mDraw = drawTextHandlerCB,
-    .mIsActive = NULL,
+ActorBlueprint getTextHandler() {
+	return makeActorBlueprint(setupTextHandlerCB, shutdownTextHandlerCB, updateTextHandlerCB, drawTextHandlerCB);
 };

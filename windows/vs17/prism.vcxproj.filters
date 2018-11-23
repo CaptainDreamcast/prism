@@ -1,230 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\animation.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\collision.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\collisionanimation.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\collisionhandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\datastructures.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\framerate.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\geometry.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\optionhandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\physics.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\physicshandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\quicklz.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\script.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\stagehandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\timer.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\wrapper.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\math_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\drawing_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\file_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\framerateselect_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\input_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\log_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pvr_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sound_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\soundeffect_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\system_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\texture_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\file.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\input.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\memoryhandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\drawing.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\texture.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\math.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\animationtree.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\texturepool.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\storyboard.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\texthandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\screeneffect.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\memoryhandler_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\compression.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\romdisk_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\actorhandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\tweening.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\soundeffect.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\logoscreen.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\logoscreen_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\screeneffect_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugendefreader.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\lz5.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugenspritefilereader.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugenanimationreader.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugenanimationhandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugenscriptparser.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugenassignment.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugenassignmentevaluator.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugensoundfilereader.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugentexthandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\clipboardhandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitzentity.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\log.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitzcamerahandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitzmugenanimation.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitzphysics.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitzmugensound.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitztimelineanimationreader.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitztimelineanimation.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitzcollision.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\blitzparticles.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\wrappercomponenthandler.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thread_win.c">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\loadingscreen.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\memorypool.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\memorystack.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\errorscreen.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\profiling.c">
-      <Filter>src</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="src">
       <UniqueIdentifier>{70cd4700-f13f-4125-ba0c-0674d46ebdb6}</UniqueIdentifier>
     </Filter>
@@ -451,5 +227,232 @@
     <ClInclude Include="..\..\include\prism\profiling.h">
       <Filter>hdr</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\drawing_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\file_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\framerateselect_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\input_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\log_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\logoscreen_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\memoryhandler_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pvr_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\romdisk_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\screeneffect_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sound_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\soundeffect_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\system_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\texture_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thread_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\actorhandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\animation.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\animationtree.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzcamerahandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzcollision.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzentity.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzmugenanimation.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzmugensound.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzparticles.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzphysics.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitztimelineanimation.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitztimelineanimationreader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\clipboardhandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collision.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collisionanimation.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\collisionhandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\compression.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\datastructures.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\drawing.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\errorscreen.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\file.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\framerate.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\geometry.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\input.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\loadingscreen.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\log.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\logoscreen.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lz5.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\math.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\memoryhandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\memorypool.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\memorystack.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenanimationhandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenanimationreader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenassignment.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenassignmentevaluator.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugendefreader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenscriptparser.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugensoundfilereader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugenspritefilereader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugentexthandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\optionhandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\physics.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\physicshandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\profiling.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\quicklz.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\screeneffect.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\script.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\soundeffect.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\stagehandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\storyboard.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\texthandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\texture.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\texturepool.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\timer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tweening.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wrapper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wrappercomponenthandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzcomponent.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

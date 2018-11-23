@@ -59,7 +59,7 @@ static struct {
 } gData;
 
 SDL_Window* gSDLWindow;
-SDL_GLContext* gGLContext;
+SDL_GLContext gGLContext;
 
 static void initScreenDefault() {
 	gData.mIsLoaded = 1;

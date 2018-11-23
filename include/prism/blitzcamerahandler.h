@@ -3,7 +3,7 @@
 #include "actorhandler.h"
 #include "geometry.h"
 
-extern ActorBlueprint BlitzCameraHandler;
+ActorBlueprint getBlitzCameraHandler();
 
 int isBlitzCameraHandlerEnabled();
 Position* getBlitzCameraHandlerPositionReference();

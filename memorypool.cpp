@@ -894,12 +894,12 @@ static 	void *
 	}
 
 	void destroyMemoryPool(void* tPool) {
-		wof_allocator_t* allocator = tPool;
+		wof_allocator_t* allocator = (wof_allocator_t*)tPool;
 		wof_allocator_destroy(allocator);
 	}
 
 	void* allocPoolMemory(void* tPool, size_t size) {
-		wof_allocator_t* allocator = tPool;
+		wof_allocator_t* allocator = (wof_allocator_t*)tPool;
 		return wof_alloc(allocator, size);
 	}
 	
@@ -911,12 +911,12 @@ static 	void *
 	}
 
 	void* reallocPoolMemory(void* tPool, void *ptr, size_t size) {
-		wof_allocator_t* allocator = tPool;
+		wof_allocator_t* allocator = (wof_allocator_t*)tPool;
 		return wof_realloc(allocator, ptr, size);
 	}
 
 	void freePoolMemory(void* tPool, void *ptr) {
-		wof_allocator_t* allocator = tPool;
+		wof_allocator_t* allocator = (wof_allocator_t*)tPool;
 		wof_free(allocator, ptr);
 	}
 	
@@ -925,7 +925,7 @@ static 	void *
 			return 0;
 		}
 
-		wof_allocator_t* allocator = tPool;
+		wof_allocator_t* allocator = (wof_allocator_t*)tPool;
 		wof_chunk_hdr_t *chunk;
 		chunk = WOF_DATA_TO_CHUNK(ptr);
 		return chunk->allocator == (int)allocator;

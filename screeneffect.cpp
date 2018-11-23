@@ -1,5 +1,7 @@
 #include "prism/screeneffect.h"
 
+#include<algorithm>
+
 #include "prism/file.h"
 #include "prism/timer.h"
 #include "prism/memoryhandler.h"
@@ -9,6 +11,8 @@
 #include "prism/system.h"
 #include "prism/log.h"
 #include "prism/math.h"
+
+using namespace std;
 
 struct FadeInStruct;
 
@@ -97,7 +101,7 @@ static void updateSingleFadeInAnimation(FadeIn* e, int i) {
 }
 
 static void updateFadeIn(void* tCaller) {
-	FadeIn* e = tCaller;
+	FadeIn* e = (FadeIn*)tCaller;
 
 	if (e->mIsOverFunction(e)) {
 		if (e->mCB) e->mCB(e->mCaller);
@@ -121,7 +125,7 @@ static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptio
 
 	ScreenSize screen = getScreenSize();
 
-	FadeIn* e = allocMemory(sizeof(FadeIn));
+	FadeIn* e = (FadeIn*)allocMemory(sizeof(FadeIn));
 	e->mDuration = tDuration;
 	e->mCB = tOptionalCB;
 	e->mCaller = tCaller;
@@ -141,7 +145,7 @@ static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptio
 	int amountY = (int)((screen.y + (tFullPatchSize.y - 1)) / tFullPatchSize.y);
 	e->mAnimationAmount = amountX*amountY;
 
-	e->mAnimationIDs = allocMemory(e->mAnimationAmount*sizeof(int));
+	e->mAnimationIDs = (int*)allocMemory(e->mAnimationAmount*sizeof(int));
 	Position p = makePosition(0, 0, gData.mZ);
 	int i;
 	for (i = 0; i < e->mAnimationAmount; i++) {
@@ -180,7 +184,7 @@ typedef struct {
 } FadeOutData;
 
 static void fadeOutOverCB(void* tCaller) {
-	FadeOutData* e = tCaller;
+	FadeOutData* e = (FadeOutData*)tCaller;
 	setScreenBlack();
 	if (e->mCB) {
 		e->mCB(e->mCaller);
@@ -195,7 +199,7 @@ static int isFadeOutOver(FadeIn* e) {
 void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
 	double da = 1 / (double)tDuration;
 	Vector3D patchSize = makePosition(getScreenSize().x, getScreenSize().y, 1);
-	FadeOutData* e = allocMemory(sizeof(FadeOutData));
+	FadeOutData* e = (FadeOutData*)allocMemory(sizeof(FadeOutData));
 	e->mCB = tOptionalCB;
 	e->mCaller = tCaller;
 

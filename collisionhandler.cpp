@@ -66,13 +66,13 @@ static void destroyCollisionElement(CollisionListElement* e) {
 
 static void cleanSingleCollisionListElement(void* tCaller, void* tData) {
 	(void) tCaller;
-	CollisionListElement* data = tData;
+	CollisionListElement* data = (CollisionListElement*)tData;
 	destroyCollisionElement(data);
 }
 
 static void cleanSingleCollisionList(void* tCaller, void* tData) {
 	(void) tCaller;
-	CollisionListData* data = tData;
+	CollisionListData* data = (CollisionListData*)tData;
 	int_map_map(&data->mCollisionElements, cleanSingleCollisionListElement, NULL);
 	delete_int_map(&data->mCollisionElements);
 }
@@ -84,8 +84,8 @@ void shutdownCollisionHandler() {
 }
 
 static void checkCollisionElements(void* tCaller, void* tData) {
-	CollisionListElement* e1 = tCaller;
-	CollisionListElement* e2 = tData;
+	CollisionListElement* e1 = (CollisionListElement*)tCaller;
+	CollisionListElement* e2 = (CollisionListElement*)tData;
 
 	if (e1->mIsScheduledForDeletion || e2->mIsScheduledForDeletion) return;
 
@@ -96,8 +96,8 @@ static void checkCollisionElements(void* tCaller, void* tData) {
 }
 
 static void checkAgainstOtherList(void* tCaller, void *tData) {
-	IntMap* list = tCaller;
-	CollisionListElement* e = tData;
+	IntMap* list = (IntMap*)tCaller;
+	CollisionListElement* e = (CollisionListElement*)tData;
 
 	if (e->mIsScheduledForDeletion) return;
 
@@ -106,7 +106,7 @@ static void checkAgainstOtherList(void* tCaller, void *tData) {
 
 static int checkElementRemoval(void* tCaller, void * tData) {
 	(void) tCaller;
-	CollisionListElement* e = tData;
+	CollisionListElement* e = (CollisionListElement*)tData;
 	
 	if (e->mIsScheduledForDeletion) {
 		destroyCollisionElement(e);
@@ -117,10 +117,10 @@ static int checkElementRemoval(void* tCaller, void * tData) {
 
 static void updateSingleCollisionPair(void* tCaller, void* tData) {
 	(void) tCaller;
-	CollisionListPair* data = tData;
+	CollisionListPair* data = (CollisionListPair*)tData;
 
-	CollisionListData* list1 = int_map_get(&gData.mCollisionLists, data->mID1);
-	CollisionListData* list2 = int_map_get(&gData.mCollisionLists, data->mID2);
+	CollisionListData* list1 = (CollisionListData*)int_map_get(&gData.mCollisionLists, data->mID1);
+	CollisionListData* list2 = (CollisionListData*)int_map_get(&gData.mCollisionLists, data->mID2);
 
 	int_map_remove_predicate(&list1->mCollisionElements, checkElementRemoval, NULL);
 	int_map_remove_predicate(&list2->mCollisionElements, checkElementRemoval, NULL);
@@ -137,8 +137,8 @@ void updateCollisionHandler() {
 }
 
 static void setColliderOwned(int tListID, int tID) {
-	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
-	CollisionListElement* e = int_map_get(&list->mCollisionElements, tID);
+	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
+	CollisionListElement* e = (CollisionListElement*)int_map_get(&list->mCollisionElements, tID);
 
 	e->mIsColliderOwned = 1;
 }
@@ -158,9 +158,9 @@ int addCollisionCircleToCollisionHandler(int tListID, Position* tBasePosition, C
 }
 
 int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
-	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
+	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
 	
-	CollisionListElement* e = allocMemory(sizeof(CollisionListElement));
+	CollisionListElement* e = (CollisionListElement*)allocMemory(sizeof(CollisionListElement));
 	e->mListID = tListID;
 
 	e->mCollider = tCollider;
@@ -179,7 +179,7 @@ int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider
 
 
 void addCollisionHandlerCheck(int tListID1, int tListID2) {
-	CollisionListPair* e = allocMemory(sizeof(CollisionListPair));
+	CollisionListPair* e = (CollisionListPair*)allocMemory(sizeof(CollisionListPair));
 	e->mID1 = tListID1;
 	e->mID2 = tListID2;
 
@@ -187,21 +187,21 @@ void addCollisionHandlerCheck(int tListID1, int tListID2) {
 }
 
 int addCollisionListToHandler() {
-	CollisionListData* e = allocMemory(sizeof(CollisionListData));
+	CollisionListData* e = (CollisionListData*)allocMemory(sizeof(CollisionListData));
 	e->mCollisionElements = new_int_map();
 
 	return int_map_push_back_owned(&gData.mCollisionLists, e);
 }
 
 void removeFromCollisionHandler(int tListID, int tElementID) {
-	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
-	CollisionListElement* e = int_map_get(&list->mCollisionElements, tElementID);
+	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
+	CollisionListElement* e = (CollisionListElement*)int_map_get(&list->mCollisionElements, tElementID);
 	e->mIsScheduledForDeletion = 1;
 }
 
 void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider) {
-	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
-	CollisionListElement* e = int_map_get(&list->mCollisionElements, tElementID);
+	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
+	CollisionListElement* e = (CollisionListElement*)int_map_get(&list->mCollisionElements, tElementID);
 
 	if (e->mIsColliderOwned) {
 		destroyCollider(&e->mCollider);
@@ -219,13 +219,13 @@ static CollisionListElement* getCollisionListElement(int tListID, int tElementID
 		logErrorFormat("Collision handler does not contain list with id %d.", tListID);
 		recoverFromError();
 	}
-	CollisionListData* list = int_map_get(&gData.mCollisionLists, tListID);
+	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
 
 	if (!int_map_contains(&list->mCollisionElements, tElementID)) {
 		logErrorFormat("Collision handler list %d does not contain element with id %d.", tListID, tElementID);
 		recoverFromError();
 	}
-	return int_map_get(&list->mCollisionElements, tElementID);
+	return (CollisionListElement*)int_map_get(&list->mCollisionElements, tElementID);
 }
 
 void resolveHandledCollisionMovableStatic(int tListID1, int tElementID1, int tListID2, int tElementID2, Position* tPos1, Velocity tVel1)
@@ -319,11 +319,11 @@ void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPos
 	basePosition = vecAdd(basePosition, tOffset);
 
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = tCollider.mData;
+		CollisionRect* rect = (CollisionRect*)tCollider.mData;
 		drawCollisionRect(*rect, basePosition, tScreenPositionOffset, tColor, tAlpha);
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = tCollider.mData;
+		CollisionCirc* circ = (CollisionCirc*)tCollider.mData;
 		drawCollisionCirc(*circ, basePosition, tScreenPositionOffset, tColor, tAlpha);
 	}
 	else {
@@ -335,7 +335,7 @@ void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPos
 
 static void drawCollisionElement(void* tCaller, void* tData) {
 	(void) tCaller;
-	CollisionListElement* e = tData;
+	CollisionListElement* e = (CollisionListElement*)tData;
 	
 	Collider col = e->mCollider;
 
@@ -348,7 +348,7 @@ static void drawCollisionElement(void* tCaller, void* tData) {
 
 static void drawCollisionList(void* tCaller, void* tData) {
 	(void) tCaller;
-	CollisionListData* list = tData;
+	CollisionListData* list = (CollisionListData*)tData;
 	
 	int_map_map(&list->mCollisionElements, drawCollisionElement, NULL);
 }

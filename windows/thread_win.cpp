@@ -26,7 +26,7 @@ void initThreading() {
 
 static int forceShutdownSingleThread(void* tCaller, void* tData) {
 	(void)tCaller;
-	ThreadData* e = tData;
+	ThreadData* e = (ThreadData*)tData;
 
 	TerminateThread(e->mThreadHandle, 0);
 
@@ -42,7 +42,7 @@ void shutdownThreading()
 }
 
 DWORD WINAPI threadFunction(LPVOID lpParam) {
-	ThreadData* e = lpParam;
+	ThreadData* e = (ThreadData*)lpParam;
 
 	e->mFunc(e->mCaller);
 
@@ -56,7 +56,7 @@ DWORD WINAPI threadFunction(LPVOID lpParam) {
 
 int startThread(void(tFunc)(void *), void* tCaller)
 {
-	ThreadData* e = allocMemory(sizeof(ThreadData));
+	ThreadData* e = (ThreadData*)allocMemory(sizeof(ThreadData));
 	e->mFunc = tFunc;
 	e->mCaller = tCaller;
 

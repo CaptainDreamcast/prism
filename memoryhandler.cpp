@@ -32,7 +32,7 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 #include "prism/texture.h"
 
 void freeSDLTexture(void* tData) {
-	SDLTextureData* e = tData;
+	SDLTextureData* e = (SDLTextureData*)tData;
 	glDeleteTextures(1, &e->mTexture);
 	SDL_FreeSurface(e->mSurface);
 	free(tData);
@@ -53,7 +53,7 @@ static void* allocTextureFunc(size_t tSize) {
 
 	makeSpaceInTextureMemory(tSize);
 
-	TextureMemory ret = malloc(sizeof(struct TextureMemory_internal));
+	TextureMemory ret = (TextureMemory)malloc(sizeof(struct TextureMemory_internal));
 	decreaseAvailableTextureMemoryHW(tSize);
 	ret->mData = allocTextureHW(tSize);
 	ret->mSize = tSize;
@@ -65,7 +65,7 @@ static void* allocTextureFunc(size_t tSize) {
 }
 
 static void freeTextureFunc(void* tData) {
-	TextureMemory tMem = tData;
+	TextureMemory tMem = (TextureMemory)tData;
 	if(tMem->mIsVirtual) {
 		free(tMem->mData);
 	} else {
@@ -136,7 +136,7 @@ static void initHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap*
 }
 
 static void* addAllocatedMemoryToMemoryHandlerMapHashMapStrategy(MemoryHandlerMap* tMap, void* tData) {
-	khash_t(Bucket)* map = tMap->mData;
+	khash_t(Bucket)* map = (kh_Bucket_t*)tMap->mData;
 	khiter_t iter;
 	int ret;
 	iter = kh_put(Bucket, map, (khint32_t)tData, &ret);
@@ -153,7 +153,7 @@ static void* addMemoryToMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStr
 }
 
 static int removeMemoryFromMemoryHandlerMapWithoutFreeingMemoryHashMapStrategy(MemoryHandlerMap* tMap, void* tData) {
-	khash_t(Bucket)* map = tMap->mData;
+	khash_t(Bucket)* map = (kh_Bucket_t*)tMap->mData;
 
 	khiter_t iter;
 	iter = kh_get(Bucket, map, (khint32_t)tData);
@@ -189,7 +189,7 @@ static int resizeMemoryOnMemoryHandlerMapHashMapStrategy(AllocationStrategy* tSt
 }
 
 static void emptyMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
-	khash_t(Bucket)* map = tMap->mData;
+	khash_t(Bucket)* map = (kh_Bucket_t*)tMap->mData;
 	khiter_t iter;
 	for (iter = kh_begin(map); iter != kh_end(map); ++iter) {
 		if (kh_exist(map, iter)) {
@@ -201,29 +201,34 @@ static void emptyMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStrategy, 
 	kh_destroy(Bucket, map);
 }
 
-static AllocationStrategy HashMapStrategyMainMemory = {
-	.mInitMemoryHandlerMap = initHashMapStrategy,
-	.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapHashMapStrategy,
-	.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapHashMapStrategy,
-	.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapHashMapStrategy,
-	.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapHashMapStrategy,
+static AllocationStrategy getHashMapStrategyMainMemory() {
+	AllocationStrategy ret;
+	ret.mInitMemoryHandlerMap = initHashMapStrategy;
+	ret.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapHashMapStrategy;
+	ret.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapHashMapStrategy;
+	ret.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapHashMapStrategy;
+	ret.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapHashMapStrategy;
 
-	.mMalloc = malloc,
-	.mFreeFunc = free,
-	.mReallocFunc = realloc,
-};
+	ret.mMalloc = malloc;
+	ret.mFreeFunc = free;
+	ret.mReallocFunc = realloc;
 
-static AllocationStrategy HashMapStrategyTextureMemory = {
-	.mInitMemoryHandlerMap = initHashMapStrategy,
-	.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapHashMapStrategy,
-	.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapHashMapStrategy,
-	.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapHashMapStrategy,
-	.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapHashMapStrategy,
+	return ret;
+}
 
-	.mMalloc = allocTextureFunc,
-	.mFreeFunc = freeTextureFunc,
-	.mReallocFunc = NULL,
-};
+static AllocationStrategy getHashMapStrategyTextureMemory() {
+	AllocationStrategy ret;
+	ret.mInitMemoryHandlerMap = initHashMapStrategy;
+	ret.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapHashMapStrategy;
+	ret.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapHashMapStrategy;
+	ret.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapHashMapStrategy;
+	ret.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapHashMapStrategy;
+
+	ret.mMalloc = allocTextureFunc;
+	ret.mFreeFunc = freeTextureFunc;
+	ret.mReallocFunc = NULL;
+	return ret;
+}
 
 static void initPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
 	(void)tStrategy;
@@ -258,17 +263,19 @@ static void emptyMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, Mem
 	destroyMemoryPool(tMap->mData);
 }
 
-static AllocationStrategy PoolStrategyMainMemory = {
-	.mInitMemoryHandlerMap = initPoolStrategy,
-	.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapPoolStrategy,
-	.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapPoolStrategy,
-	.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapPoolStrategy,
-	.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapPoolStrategy,
+static AllocationStrategy getPoolStrategyMainMemory() {
+	AllocationStrategy ret;
+	ret.mInitMemoryHandlerMap = initPoolStrategy;
+	ret.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapPoolStrategy;
+	ret.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapPoolStrategy;
+	ret.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapPoolStrategy;
+	ret.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapPoolStrategy;
 
-	.mMalloc = malloc,
-	.mFreeFunc = free,
-	.mReallocFunc = realloc,
-};
+	ret.mMalloc = malloc;
+	ret.mFreeFunc = free;
+	ret.mReallocFunc = realloc;
+	return ret;
+}
 
 
 int getAllocatedMemoryBlockAmount() {
@@ -328,11 +335,11 @@ static void compressMemory(TextureMemory tMem, void** tBuffer, int tSrcSize) {
 		return;
 	}
 
-	char* src = *tBuffer;
+	char* src = (char*)(*tBuffer);
 	int dstBufferSize = tSrcSize + COMPRESSION_BUFFER;
-	char* dst = malloc(dstBufferSize);
+	char* dst = (char*)malloc(dstBufferSize);
 	int dstLength = ZSTD_compress(dst, dstBufferSize, src, tSrcSize, 1);
-	dst = realloc(dst, dstLength);
+	dst = (char*)realloc(dst, dstLength);
 
 	free(src);
 	*tBuffer = dst;
@@ -345,12 +352,12 @@ static void decompressMemory(TextureMemory tMem, void** tBuffer) {
 		return;
 	}
 	
-	char* src = *tBuffer;
+	char* src = (char*)(*tBuffer);
 	size_t uncompressedLength = (size_t)ZSTD_getFrameContentSize(src, tMem->mCompressedSize);
 
-	char* dst = malloc(uncompressedLength);
+	char* dst = (char*)malloc(uncompressedLength);
 	int dstLength = ZSTD_decompress(dst, uncompressedLength, src, tMem->mCompressedSize);
-	dst = realloc(dst, dstLength);
+	dst = (char*)realloc(dst, dstLength);
 
 	free(src);
 	*tBuffer = dst;	
@@ -545,7 +552,7 @@ TextureMemory allocTextureMemory(int tSize) {
 		return NULL;
 	}
 	
-	return addMemoryToMemoryListStack(&gMemoryHandler.mTextureMemoryStack, tSize);
+	return (TextureMemory)addMemoryToMemoryListStack(&gMemoryHandler.mTextureMemoryStack, tSize);
 }
 
 void freeTextureMemory(TextureMemory tMem) {
@@ -609,8 +616,8 @@ void initMemoryHandler() {
 	gMemoryHandler.mActive = 1;
 	gMemoryHandler.mIsCompressionActive = 0;
 	gMemoryHandler.mMemoryStack.mHead = -1;
-	initMemoryListStack(&gMemoryHandler.mMemoryStack, HashMapStrategyMainMemory);
-	initMemoryListStack(&gMemoryHandler.mTextureMemoryStack, HashMapStrategyTextureMemory);
+	initMemoryListStack(&gMemoryHandler.mMemoryStack, getHashMapStrategyMainMemory());
+	initMemoryListStack(&gMemoryHandler.mTextureMemoryStack, getHashMapStrategyTextureMemory());
 	initTextureMemoryUsageList();
 	pushMemoryStack();
 	pushTextureMemoryStack();

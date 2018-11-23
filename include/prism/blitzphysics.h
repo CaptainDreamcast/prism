@@ -5,7 +5,7 @@
 #include "actorhandler.h"
 #include "physics.h"
 
-extern ActorBlueprint BlitzPhysicsHandler;
+ActorBlueprint getBlitzPhysicsHandler();
 
 void addBlitzPhysicsComponent(int tEntityID);
 void setBlitzPhysicsGravity(int tEntityID, Acceleration tGravity);

@@ -58,7 +58,7 @@ static void callCallback(ActiveAnimation* tActiveAnimation, BlitzTimelineAnimati
 	int value = atoi(tStep->mStartValue);
 
 	if (int_map_contains(&tActiveAnimation->mCBMap, value)) {
-		ActiveAnimationCB* e = int_map_get(&tActiveAnimation->mCBMap, value);
+		ActiveAnimationCB* e = (ActiveAnimationCB*)int_map_get(&tActiveAnimation->mCBMap, value);
 		e->mCB(e->mCBCaller);
 	}
 }
@@ -116,7 +116,7 @@ static void unloadActiveAnimation(ActiveAnimation* e) {
 
 static int unloadSingleActiveAnimationCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	ActiveAnimation* e = tData;
+	ActiveAnimation* e = (ActiveAnimation*)tData;
 	unloadActiveAnimation(e);
 	return 1;
 }
@@ -127,8 +127,8 @@ typedef struct {
 } BlitzTimelineActiveAnimationStepUpdateCaller;
 
 static void updateSingleActiveAnimationStep(void* tCaller, void* tData) {
-	BlitzTimelineActiveAnimationStepUpdateCaller* caller = tCaller;
-	BlitzTimelineAnimationStep* step = tData;
+	BlitzTimelineActiveAnimationStepUpdateCaller* caller = (BlitzTimelineActiveAnimationStepUpdateCaller*)tCaller;
+	BlitzTimelineAnimationStep* step = (BlitzTimelineAnimationStep*)tData;
 	ActiveAnimation* activeAnimation = caller->mActiveAnimation;
 
 	if (activeAnimation->mTime < step->mTime) return;
@@ -144,8 +144,8 @@ static void updateSingleActiveAnimationStep(void* tCaller, void* tData) {
 }
 
 static int updateSingleActiveAnimation(void* tCaller, void* tData) {
-	BlitzTimelineAnimationEntry* entry = tCaller;
-	ActiveAnimation* e = tData;
+	BlitzTimelineAnimationEntry* entry = (BlitzTimelineAnimationEntry*)tCaller;
+	ActiveAnimation* e = (ActiveAnimation*)tData;
 	BlitzTimelineAnimation* animation = getBlitzTimelineAnimation(entry->mAnimations, e->mAnimationNumber);
 	
 	BlitzTimelineActiveAnimationStepUpdateCaller caller;
@@ -169,7 +169,7 @@ static int updateSingleActiveAnimation(void* tCaller, void* tData) {
 
 static void updateSingleBlitzTimelineAnimationEntry(void* tCaller, void* tData) {
 	(void)tCaller;
-	BlitzTimelineAnimationEntry* e = tData;
+	BlitzTimelineAnimationEntry* e = (BlitzTimelineAnimationEntry*)tData;
 	int_map_remove_predicate(&e->mActiveAnimations, updateSingleActiveAnimation, e);
 }
 
@@ -178,18 +178,14 @@ static void updateBlitzTimelineAnimationHandler(void* tData) {
 	int_map_map(&gData.mEntries, updateSingleBlitzTimelineAnimationEntry, NULL);
 }
 
-ActorBlueprint BlitzTimelineAnimationHandler = {
-	.mLoad = loadBlitzTimelineAnimationHandler,
-    .mUnload = NULL,
-	.mUpdate = updateBlitzTimelineAnimationHandler,
-    .mDraw = NULL,
-    .mIsActive = NULL
-};
+ActorBlueprint getBlitzTimelineAnimationHandler() {
+	return makeActorBlueprint(loadBlitzTimelineAnimationHandler, NULL, updateBlitzTimelineAnimationHandler);
+}
 
 static void unregisterEntity(int tEntityID);
 
-static BlitzComponent BlitzTimelineAnimationComponent = {
-	.mUnregisterEntity = unregisterEntity,
+static BlitzComponent getBlitzTimelineAnimationComponent() {
+	return makeBlitzComponent(unregisterEntity);
 };
 
 static BlitzTimelineAnimationEntry* getBlitzTimelineAnimationEntry(int tEntityID) {
@@ -198,7 +194,7 @@ static BlitzTimelineAnimationEntry* getBlitzTimelineAnimationEntry(int tEntityID
 		recoverFromError();
 	}
 
-	return int_map_get(&gData.mEntries, tEntityID);
+	return (BlitzTimelineAnimationEntry*)int_map_get(&gData.mEntries, tEntityID);
 }
 
 static ActiveAnimation* getBlitzTimelineActiveAnimation(int tEntityID, int tAnimationID) {
@@ -209,17 +205,17 @@ static ActiveAnimation* getBlitzTimelineActiveAnimation(int tEntityID, int tAnim
 		return NULL;
 	}
 
-	return int_map_get(&e->mActiveAnimations, tAnimationID);
+	return (ActiveAnimation*)int_map_get(&e->mActiveAnimations, tAnimationID);
 }
 
 
 void addBlitzTimelineComponent(int tEntityID, BlitzTimelineAnimations* tAnimations) {
-	BlitzTimelineAnimationEntry* e = allocMemory(sizeof(BlitzTimelineAnimationEntry));
+	BlitzTimelineAnimationEntry* e = (BlitzTimelineAnimationEntry*)allocMemory(sizeof(BlitzTimelineAnimationEntry));
 	e->mEntityID = tEntityID;
 	e->mAnimations = tAnimations;
 	e->mActiveAnimations = new_int_map();
 
-	registerBlitzComponent(tEntityID, BlitzTimelineAnimationComponent);
+	registerBlitzComponent(tEntityID, getBlitzTimelineAnimationComponent());
 	int_map_push_owned(&gData.mEntries, tEntityID, e);
 }
 
@@ -235,7 +231,7 @@ static void unregisterEntity(int tEntityID) {
 int playBlitzTimelineAnimation(int tEntityID, int tAnimation) {
 	BlitzTimelineAnimationEntry* entry = getBlitzTimelineAnimationEntry(tEntityID);
 	
-	ActiveAnimation* e = allocMemory(sizeof(ActiveAnimation));
+	ActiveAnimation* e = (ActiveAnimation*)allocMemory(sizeof(ActiveAnimation));
 	e->mAnimationNumber = tAnimation;
 	e->mTime = 0;
 	e->mCBMap = new_int_map();
@@ -254,11 +250,11 @@ void setBlitzTimelineAnimationCB(int tEntityID, int tAnimationID, int tCBID, voi
 {
 	ActiveAnimation* e = getBlitzTimelineActiveAnimation(tEntityID, tAnimationID);
 	if (!int_map_contains(&e->mCBMap, tCBID)) {
-		ActiveAnimationCB* cb = allocMemory(sizeof(ActiveAnimationCB));
+		ActiveAnimationCB* cb = (ActiveAnimationCB*)allocMemory(sizeof(ActiveAnimationCB));
 		int_map_push_owned(&e->mCBMap, tCBID, cb);
 	}
 
-	ActiveAnimationCB* cb = int_map_get(&e->mCBMap, tCBID);
+	ActiveAnimationCB* cb = (ActiveAnimationCB*)int_map_get(&e->mCBMap, tCBID);
 	cb->mCB = tCB;
 	cb->mCBCaller = tCaller;
 }

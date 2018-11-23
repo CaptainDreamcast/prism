@@ -22,21 +22,21 @@ static void loadBlitzMugenSoundHandler(void* tData) {
 
 static void unregisterEntity(int tEntityID);
 
-static BlitzComponent BlitzMugenSoundComponent = {
-	.mUnregisterEntity = unregisterEntity,
-};
+static BlitzComponent getBlitzMugenSoundComponent() {
+	return makeBlitzComponent(unregisterEntity);
+}
 
-ActorBlueprint BlitzMugenSoundHandler = {
-	.mLoad = loadBlitzMugenSoundHandler,
-};
+ActorBlueprint getBlitzMugenSoundHandler() {
+	return makeActorBlueprint(loadBlitzMugenSoundHandler);
+}
 
 void addBlitzMugenSoundComponent(int tEntityID, MugenSounds* tSounds)
 {
-	SoundEntry* e = allocMemory(sizeof(SoundEntry));
+	SoundEntry* e = (SoundEntry*)allocMemory(sizeof(SoundEntry));
 	e->mEntityID = tEntityID;
 	e->mSounds = tSounds;
 
-	registerBlitzComponent(tEntityID, BlitzMugenSoundComponent);
+	registerBlitzComponent(tEntityID, getBlitzMugenSoundComponent());
 	int_map_push_owned(&gData.mEntries, tEntityID, e);
 }
 
@@ -46,7 +46,7 @@ static SoundEntry* getSoundEntry(int tEntityID) {
 		recoverFromError();
 	}
 
-	return int_map_get(&gData.mEntries, tEntityID);
+	return (SoundEntry*)int_map_get(&gData.mEntries, tEntityID);
 }
 
 void playEntityMugenSound(int tEntityID, int tGroup, int tSample)

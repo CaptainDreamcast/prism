@@ -4,11 +4,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <algorithm>
 
 #include "prism/memoryhandler.h"
 #include "prism/log.h"
 #include "prism/system.h"
 #include "prism/math.h"
+
+using namespace std;
 
 void turnStringLowercase(char* tString) {
 	int n = strlen(tString);
@@ -34,13 +37,13 @@ char* copyToAllocatedString(char* tSrc) {
 	if (!tSrc) return NULL;
 
 	int len = strlen(tSrc);
-	char* ret = allocMemory(len+1);
+	char* ret = (char*)allocMemory(len+1);
 	strcpy(ret, tSrc);
 	return ret;
 }
 
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
-	ListElement* e = allocMemory(sizeof(ListElement));
+	ListElement* e = (ListElement*)allocMemory(sizeof(ListElement));
 	e->mID = tList->mIDs++;
 	e->mData = tData;
 	e->mIsDataOwned = tIsOwned;
@@ -280,7 +283,7 @@ typedef struct {
 } ListContainsCaller;
 
 static void compareSingleListElement(void* tCaller, void* tData) {
-	ListContainsCaller* caller = tCaller;
+	ListContainsCaller* caller = (ListContainsCaller*)tCaller;
 	caller->mFound |= caller->mData == tData;
 }
 
@@ -296,7 +299,7 @@ Vector new_vector() {
 	Vector ret;
 	ret.mSize = 0;
 	ret.mAlloc = 2;
-	ret.mData = allocMemory(sizeof(VectorElement) * ret.mAlloc);
+	ret.mData = (VectorElement*)allocMemory(sizeof(VectorElement) * ret.mAlloc);
 	return ret;
 }
 
@@ -318,7 +321,7 @@ void vector_empty(Vector* tVector) {
 
 	tVector->mSize = 0;		
 	tVector->mAlloc = 2;
-	tVector->mData = reallocMemory(tVector->mData, sizeof(VectorElement)*tVector->mAlloc);
+	tVector->mData = (VectorElement*)reallocMemory(tVector->mData, sizeof(VectorElement)*tVector->mAlloc);
 }
 
 void vector_empty_to_previous_size(Vector* tVector) {
@@ -330,13 +333,13 @@ void vector_empty_to_previous_size(Vector* tVector) {
 
 	tVector->mAlloc = max(tVector->mSize, 2);
 	tVector->mSize = 0;
-	tVector->mData = reallocMemory(tVector->mData, sizeof(VectorElement)*tVector->mAlloc);	
+	tVector->mData = (VectorElement*)reallocMemory(tVector->mData, sizeof(VectorElement)*tVector->mAlloc);
 }
 
 static void vector_push_back_internal(Vector* tVector, void* tData, int tIsOwned) {
 	if(tVector->mSize == tVector->mAlloc) {
 		tVector->mAlloc *= 2;
-		tVector->mData = reallocMemory(tVector->mData, sizeof(VectorElement)*tVector->mAlloc);
+		tVector->mData = (VectorElement*)reallocMemory(tVector->mData, sizeof(VectorElement)*tVector->mAlloc);
 	}
 
 	VectorElement* e = &tVector->mData[tVector->mSize];
@@ -354,7 +357,7 @@ void vector_push_back_owned(Vector* tVector, void* tData) {
 }
 
 void* vector_push_back_new_buffer(Vector* tVector, int tSize) {
-	char* b = allocMemory(tSize);
+	char* b = (char*)allocMemory(tSize);
 	vector_push_back_owned(tVector, b);
 	return b;
 }
@@ -385,8 +388,8 @@ static sortCB gSortFunc;
 static void* gSortCaller;
 
 static int vector_sort_cmp(const void* tData1, const void* tData2) {
-	const VectorElement* e1 = tData1;
-	const VectorElement* e2 = tData2;
+	const VectorElement* e1 = (VectorElement*)tData1;
+	const VectorElement* e2 = (VectorElement*)tData2;
 
 	return gSortFunc(gSortCaller, e1->mData, e2->mData);
 }
@@ -454,8 +457,8 @@ static void string_map_remove_element(StringMap* tMap, StringMapBucketListEntry*
 }
 
 static int clearStringMapBucketEntry(void* tCaller, void* tData) {
-	StringMap* map = tCaller;
-	string_map_remove_element(map, tData);
+	StringMap* map = (StringMap*)tCaller;
+	string_map_remove_element(map, (StringMapBucketListEntry*)tData);
 
 	return 1;
 }
@@ -495,7 +498,7 @@ static void string_map_push_internal(StringMap* tMap, char* tKey, void* tData, i
 	int offset = getBucketIDFromString((uint8_t*)tKey);
 	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 
-	StringMapBucketListEntry* newEntry = allocMemory(sizeof(StringMapBucketListEntry));
+	StringMapBucketListEntry* newEntry = (StringMapBucketListEntry*)allocMemory(sizeof(StringMapBucketListEntry));
 	strcpy(newEntry->mKey, tKey);
 	newEntry->mData = tData;
 	newEntry->mIsOwned = tIsOwned;
@@ -524,7 +527,7 @@ void string_map_remove(StringMap* tMap, char* tKey) {
 	ListIterator it = list_iterator_begin(&bucket->mEntries);
 	while (1) {
 		
-		StringMapBucketListEntry* e = list_iterator_get(it);
+		StringMapBucketListEntry* e = (StringMapBucketListEntry*)list_iterator_get(it);
 		if (!strcmp(tKey, e->mKey)) {
 			string_map_remove_element(tMap, e);
 			list_iterator_remove(&bucket->mEntries, it);
@@ -553,7 +556,7 @@ void* string_map_get(StringMap* tMap, char* tKey) {
 
 	ListIterator it = list_iterator_begin(&bucket->mEntries);
 	while (1) {
-		StringMapBucketListEntry* e = list_iterator_get(it);
+		StringMapBucketListEntry* e = (StringMapBucketListEntry*)list_iterator_get(it);
 		if (!strcmp(tKey, e->mKey)) {
 			return e->mData;
 		}
@@ -576,8 +579,8 @@ typedef struct {
 } StringMapCaller;
 
 static void string_map_map_single_list_entry(void* tCaller, void* tData) {
-	StringMapCaller* caller = tCaller;
-	StringMapBucketListEntry* e = tData;
+	StringMapCaller* caller = (StringMapCaller*)tCaller;
+	StringMapBucketListEntry* e = (StringMapBucketListEntry*)tData;
 
 	caller->mCB(caller->mCaller, e->mKey, e->mData);
 }
@@ -605,7 +608,7 @@ int string_map_contains(StringMap* tMap, char* tKey) {
 
 	ListIterator it = list_iterator_begin(&bucket->mEntries);
 	while (1) {
-		StringMapBucketListEntry* e = list_iterator_get(it);
+		StringMapBucketListEntry* e = (StringMapBucketListEntry*)list_iterator_get(it);
 		if (!strcmp(tKey, e->mKey)) {
 			return 1;
 		}
@@ -689,8 +692,8 @@ typedef struct {
 } IntMapCaller;
 
 static void int_map_map_single_list_entry(void* tCaller, void* tData) {
-	IntMapCaller* caller = tCaller;
-	StringMapBucketListEntry* e = tData;
+	IntMapCaller* caller = (IntMapCaller*)tCaller;
+	StringMapBucketListEntry* e = (StringMapBucketListEntry*)tData;
 
 	caller->mCB(caller->mCaller, e->mData);
 }
@@ -717,8 +720,8 @@ typedef struct {
 } IntPredicateCaller;
 
 static int int_map_remove_predicate_single_list_entry(void* tCaller, void* tData) {
-	IntPredicateCaller* caller = tCaller;
-	StringMapBucketListEntry* e = tData;
+	IntPredicateCaller* caller = (IntPredicateCaller*)tCaller;
+	StringMapBucketListEntry* e = (StringMapBucketListEntry*)tData;
 
 	int ret = caller->mCB(caller->mCaller, e->mData);
 	if (ret) {
@@ -773,7 +776,7 @@ SuffixTree new_suffix_tree()
 }
 
 static void new_suffix_tree_from_string_map_copy_single(void* tCaller, char* tKey, void* tData) {
-	SuffixTree* tree = tCaller;
+	SuffixTree* tree = (SuffixTree*)tCaller;
 
 	suffix_tree_push(tree, tKey, tData);
 
@@ -813,13 +816,13 @@ void delete_suffix_tree(SuffixTree * tTree)
 }
 
 static void suffix_tree_add_data_to_node(SuffixTreeEntryNode* tNode, void* tData, int tIsOwned) {
-	tNode->mEntry = allocMemory(sizeof(SuffixTreeEntryData));
+	tNode->mEntry = (SuffixTreeEntryData*)allocMemory(sizeof(SuffixTreeEntryData));
 	tNode->mEntry->mData = tData;
 	tNode->mEntry->mIsOwned = tIsOwned;
 }
 
 static void suffix_tree_add_children_to_node(SuffixTreeEntryNode* tNode) {
-	tNode->mChildren = allocClearedMemory(SUFFIX_TREE_CHILDREN_AMOUNT, sizeof(SuffixTreeEntryNode));
+	tNode->mChildren = (SuffixTreeEntryNode*)allocClearedMemory(SUFFIX_TREE_CHILDREN_AMOUNT, sizeof(SuffixTreeEntryNode));
 }
 
 static void suffix_tree_push_recursive(SuffixTreeEntryNode* tNode, char* tRestString, void* tData, int tIsOwned) {

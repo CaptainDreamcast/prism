@@ -28,7 +28,7 @@ typedef struct {
 } MugenSoundFileHeader;
 
 static void addSoundGroup(MugenSounds* tSounds, int tGroupNumber) {
-	MugenSoundGroup* e = allocMemory(sizeof(MugenSoundGroup));
+	MugenSoundGroup* e = (MugenSoundGroup*)allocMemory(sizeof(MugenSoundGroup));
 	e->mSamples = new_int_map();
 	int_map_push_owned(&tSounds->mGroups, tGroupNumber, e);
 }
@@ -42,13 +42,13 @@ static void loadSingleMugenSoundSubfile(MugenSounds* tSounds, BufferPointer* p, 
 	if (!int_map_contains(&tSounds->mGroups, subHeader.mGroupNumber)) {
 		addSoundGroup(tSounds, subHeader.mGroupNumber);
 	}
-	group = int_map_get(&tSounds->mGroups, subHeader.mGroupNumber);
+	group = (MugenSoundGroup*)int_map_get(&tSounds->mGroups, subHeader.mGroupNumber);
 
-	char* waveFileData = allocMemory(subHeader.mSubfileLength);
+	char* waveFileData = (char*)allocMemory(subHeader.mSubfileLength);
 	readFromBufferPointer(waveFileData, p, subHeader.mSubfileLength);
 	Buffer waveFileBuffer = makeBufferOwned(waveFileData, subHeader.mSubfileLength);
 
-	MugenSoundSample* e = allocMemory(sizeof(MugenSoundSample));
+	MugenSoundSample* e = (MugenSoundSample*)allocMemory(sizeof(MugenSoundSample));
 	e->mSoundEffectID = loadSoundEffectFromBuffer(waveFileBuffer);
 	freeBuffer(waveFileBuffer);
 
@@ -88,14 +88,14 @@ MugenSounds loadMugenSoundFile(char * tPath)
 
 static int unloadMugenSoundFileSample(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenSoundSample* e = tData;
+	MugenSoundSample* e = (MugenSoundSample*)tData;
 	unloadSoundEffect(e->mSoundEffectID);
 	return 1;
 }
 
 static int unloadMugenSoundFileGroup(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenSoundGroup* e = tData;
+	MugenSoundGroup* e = (MugenSoundGroup*)tData;
 	
 	int_map_remove_predicate(&e->mSamples, unloadMugenSoundFileSample, NULL);
 	delete_int_map(&e->mSamples);
@@ -118,10 +118,10 @@ MugenSounds createEmptyMugenSoundFile() {
 int playMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 {
 	assert(int_map_contains(&tSounds->mGroups, tGroup));
-	MugenSoundGroup* group = int_map_get(&tSounds->mGroups, tGroup);
+	MugenSoundGroup* group = (MugenSoundGroup*)int_map_get(&tSounds->mGroups, tGroup);
 
 	assert(int_map_contains(&group->mSamples, tSample));
-	MugenSoundSample* sample = int_map_get(&group->mSamples, tSample);
+	MugenSoundSample* sample = (MugenSoundSample*)int_map_get(&group->mSamples, tSample);
 
 	return playSoundEffect(sample->mSoundEffectID);
 }
@@ -140,7 +140,7 @@ int tryPlayMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 int hasMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 {
 	if(!int_map_contains(&tSounds->mGroups, tGroup)) return 0;
-	MugenSoundGroup* group = int_map_get(&tSounds->mGroups, tGroup);
+	MugenSoundGroup* group = (MugenSoundGroup*)int_map_get(&tSounds->mGroups, tGroup);
 
 	return int_map_contains(&group->mSamples, tSample);
 }

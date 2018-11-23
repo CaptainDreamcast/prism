@@ -185,7 +185,7 @@ static void getPotentialMountFromPath(char* tPotentialMount, char* tPath) {
 static rd_image_t* getRomdiskImageFromPath(char* tPath) {
 	char potentialMount[1024];
 	getPotentialMountFromPath(potentialMount, tPath);
-	return string_map_get(&gRomdiskMapping, potentialMount);
+	return (rd_image_t*)string_map_get(&gRomdiskMapping, potentialMount);
 }
 
 /* Open a file or directory */
@@ -399,7 +399,7 @@ void mountRomdiskWindowsFromBuffer(Buffer b, char * tMountPath)
 	}
 
 
-	char* img = b.mData;
+	char* img = (char*)b.mData;
 
 	const romdisk_hdr_t * hdr;
 	rd_image_t      * mnt;
@@ -454,7 +454,7 @@ void unmountRomdiskWindows(char* tMountPath) {
 
 	// mutex_lock(&fh_mutex);
 
-	n = string_map_get(&gRomdiskMapping, tMountPath);
+	n = (rd_image_t*)string_map_get(&gRomdiskMapping, tMountPath);
 
 	/* If we own the buffer, free it */
 	if (n->own_buffer) freeMemory((void *)n->image);

@@ -7,7 +7,7 @@
 SoundEffectCollection loadConsecutiveSoundEffectsToCollection(char* tPath, int tAmount) {
 	SoundEffectCollection ret;
 	ret.mAmount = tAmount;
-	ret.mSoundEffects = allocMemory(tAmount*sizeof(int));
+	ret.mSoundEffects = (int*)allocMemory(tAmount*sizeof(int));
 	loadConsecutiveSoundEffects(ret.mSoundEffects, tPath, tAmount);
 	return ret;
 }

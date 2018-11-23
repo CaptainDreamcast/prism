@@ -1,5 +1,7 @@
 #include "prism/blitzcamerahandler.h"
 
+#include <cstring>
+
 #include "prism/log.h"
 #include "prism/math.h"
 #include "prism/system.h"
@@ -23,9 +25,10 @@ static void loadBlitzCameraHandler(void* tData) {
 	gData.mIsActive = 1;
 }
 
-ActorBlueprint BlitzCameraHandler = {
-	.mLoad = loadBlitzCameraHandler,
-};
+ActorBlueprint getBlitzCameraHandler()
+{
+	return makeActorBlueprint(loadBlitzCameraHandler);
+}
 
 int isBlitzCameraHandlerEnabled()
 {

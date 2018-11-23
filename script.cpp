@@ -83,7 +83,7 @@ static ScriptRegion makeScriptRegion(Script tScript, char* tStart, char* tEnd) {
 }
 
 static ScriptRegion getWholeScriptRegion(Script tScript) {
-	return makeScriptRegion(tScript, tScript.mBuffer.mData, (char*)((uint32_t)tScript.mBuffer.mData + tScript.mBuffer.mLength - 1));
+	return makeScriptRegion(tScript, (char*)tScript.mBuffer.mData, (char*)((uint32_t)tScript.mBuffer.mData + tScript.mBuffer.mLength - 1));
 }
 
 static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, char* tWord) {

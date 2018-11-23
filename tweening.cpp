@@ -43,7 +43,7 @@ void shutdownTweening()
 
 static int updateTween(void* tCaller, void* tData) {
 	(void)tCaller;
-	Tween* e = tData;
+	Tween* e = (Tween*)tData;
 
 	int isOver = handleDurationAndCheckIfOver(&e->mNow, e->mDuration);
 
@@ -66,7 +66,7 @@ void updateTweening()
 
 int tweenDouble(double * tDst, double tStart, double tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void * tCaller)
 {
-	Tween* e = allocMemory(sizeof(Tween));
+	Tween* e = (Tween*)allocMemory(sizeof(Tween));
 	e->mDst = tDst;
 	e->mStart = tStart;
 	e->mEnd = tEnd;

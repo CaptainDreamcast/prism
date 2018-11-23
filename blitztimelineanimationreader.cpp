@@ -2,12 +2,15 @@
 
 #include <assert.h>
 #include <string.h>
+#include <algorithm>
 
 #include "prism/mugendefreader.h"
 #include "prism/memoryhandler.h"
 #include "prism/log.h"
 #include "prism/system.h"
 #include "prism/math.h"
+
+using namespace std;
 
 static BlitzTimelineAnimations makeEmptyTimelineAnimations() {
 	BlitzTimelineAnimations ret;
@@ -24,7 +27,7 @@ static int isAnimationHeaderGroup(MugenDefScriptGroup* tGroup) {
 }
 
 static BlitzTimelineAnimation* loadBlitzTimelineAnimationHeaderFromGroup(MugenDefScriptGroup* tGroup) {
-	BlitzTimelineAnimation* e = allocMemory(sizeof(BlitzTimelineAnimation));
+	BlitzTimelineAnimation* e = (BlitzTimelineAnimation*)allocMemory(sizeof(BlitzTimelineAnimation));
 	char mGroupTextString[100];
 	sscanf(tGroup->mName, "%s %d", mGroupTextString, &e->mID);
 	e->mDuration = getMugenDefIntegerOrDefaultAsGroup(tGroup, "duration", 0);
@@ -45,7 +48,7 @@ static int isNamedElement(MugenDefScriptGroupElement* tElement, char* tName) {
 }
 
 static void addStaticAnimationStep(BlitzTimelineAnimation* tAnimation, int tTime, MugenDefScriptGroupElement* tElement, BlitzTimelineAnimationStepTargetType tTargetType, BlitzTimelineAnimationStepType tStepType) {
-	BlitzTimelineAnimationStep* e = allocMemory(sizeof(BlitzTimelineAnimationStep));
+	BlitzTimelineAnimationStep* e = (BlitzTimelineAnimationStep*)allocMemory(sizeof(BlitzTimelineAnimationStep));
 
 	e->mType = tStepType;
 	e->mTargetType = tTargetType;
@@ -79,7 +82,7 @@ static void handleSingleInterpolationGroupTargetElement(BlitzTimelineAnimation* 
 	BlitzTimelineAnimationStep* previousStep = NULL;
 	int i;
 	for (i = vector_size(&tAnimation->BlitzTimelineAnimationSteps) - 1; i >= 0; i--) {
-		BlitzTimelineAnimationStep* step = vector_get(&tAnimation->BlitzTimelineAnimationSteps, i);
+		BlitzTimelineAnimationStep* step = (BlitzTimelineAnimationStep*)vector_get(&tAnimation->BlitzTimelineAnimationSteps, i);
 		if (step->mType != BLITZ_TIMELINE_ANIMATION_STEP_TYPE_INTERPOLATION && step->mType != BLITZ_TIMELINE_ANIMATION_STEP_TYPE_INTERPOLATION_END) continue;
 		if (step->mTargetType != tTargetType) continue;
 
@@ -166,7 +169,7 @@ static void handleInterpolationGroup(BlitzTimelineAnimation* tAnimation, MugenDe
 
 	ListIterator iterator = list_iterator_begin(&tGroup->mOrderedElementList);
 	while (1) {
-		MugenDefScriptGroupElement* element = list_iterator_get(iterator);
+		MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)list_iterator_get(iterator);
 		handleSingleInterpolationGroupElement(tAnimation, time, element, tStepType);
 
 		if (!list_has_next(iterator)) break;
@@ -193,8 +196,8 @@ static void handleSingleAnimationSubGroup(BlitzTimelineAnimation* tAnimation, Mu
 
 static int groupSortCB(void* tCaller, void* tData1, void* tData2) {
 	(void)tCaller;
-	MugenDefScriptGroup* group1 = tData1;
-	MugenDefScriptGroup* group2 = tData2;
+	MugenDefScriptGroup* group1 = (MugenDefScriptGroup*)tData1;
+	MugenDefScriptGroup* group2 = (MugenDefScriptGroup*)tData2;
 
 	int time1 = getMugenDefIntegerOrDefaultAsGroup(group1, "time", 0);
 	int time2 = getMugenDefIntegerOrDefaultAsGroup(group2, "time", 0);
@@ -217,7 +220,7 @@ static MugenDefScriptGroup* handleSingleAnimation(BlitzTimelineAnimations* tAnim
 
 	int i;
 	for (i = 0; i < vector_size(&groups); i++) {
-		MugenDefScriptGroup* group = vector_get(&groups, i);
+		MugenDefScriptGroup* group = (MugenDefScriptGroup*)vector_get(&groups, i);
 		handleSingleAnimationSubGroup(animation, group);
 	}
 
@@ -255,5 +258,5 @@ BlitzTimelineAnimation * getBlitzTimelineAnimation(BlitzTimelineAnimations * tAn
 		recoverFromError();
 	}
 
-	return int_map_get(&tAnimations->mAnimations, tAnimationID);
+	return (BlitzTimelineAnimation*)int_map_get(&tAnimations->mAnimations, tAnimationID);
 }

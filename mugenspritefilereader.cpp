@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <algorithm>
 
 #ifdef DREAMCAST
 #include <png/png.h>
@@ -18,6 +19,8 @@
 #include "prism/compression.h"
 
 #include "prism/lz5.h"
+
+using namespace std;
 
 typedef struct {
 	char mSignature[12];
@@ -163,7 +166,7 @@ static uint32_t get2DBufferIndex(uint32_t i, uint32_t j, uint32_t w) {
 }
 
 static TextureData loadTextureFromPalettedImageData1bppTo16ARGB(Buffer tPCXImageBuffer, Buffer tPaletteBuffer, int w, int h) {
-	uint8_t* output = allocMemory(w*h * 2);
+	uint8_t* output = (uint8_t*)allocMemory(w*h * 2);
 	uint8_t* img = (uint8_t*)tPCXImageBuffer.mData;
 	uint8_t* pal = (uint8_t*)tPaletteBuffer.mData;
 
@@ -198,7 +201,7 @@ static TextureData loadTextureFromPalettedImageData1bppTo16ARGB(Buffer tPCXImage
 }
 
 static TextureData loadTextureFromPalettedImageData1bppTo32ARGB(Buffer tPCXImageBuffer, Buffer tPaletteBuffer, int w, int h) {
-	uint8_t* output = allocMemory(w*h * 4);
+	uint8_t* output = (uint8_t*)allocMemory(w*h * 4);
 	uint8_t* img = (uint8_t*)tPCXImageBuffer.mData;
 	uint8_t* pal = (uint8_t*)tPaletteBuffer.mData;
 
@@ -249,10 +252,10 @@ typedef struct {
 } ApplyToSubImageListCaller;
 
 static void loadTextureFromSinglePalettedImageListEntry1bpp(void* tCaller, void* tData) {
-	ApplyToSubImageListCaller* caller = tCaller;
-	SubImageBuffer* buffer = tData;
+	ApplyToSubImageListCaller* caller = (ApplyToSubImageListCaller*)tCaller;
+	SubImageBuffer* buffer = (SubImageBuffer*)tData;
 
-	MugenSpriteFileSubSprite* newSprite = allocMemory(sizeof(MugenSpriteFileSubSprite));
+	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
 	newSprite->mOffset = buffer->mOffset;
 	newSprite->mTexture = loadTextureFromPalettedImageData1bpp(buffer->mBuffer, caller->mPaletteBuffer, buffer->mSize.x, buffer->mSize.y);
 
@@ -273,10 +276,10 @@ static List loadTextureFromPalettedImageList1bpp(List tBufferList, Buffer tPalet
 
 
 static void loadTextureFromSingleRawImageListEntry1bpp(void* tCaller, void* tData) {
-	ApplyToSubImageListCaller* caller = tCaller;
-	SubImageBuffer* buffer = tData;
+	ApplyToSubImageListCaller* caller = (ApplyToSubImageListCaller*)tCaller;
+	SubImageBuffer* buffer = (SubImageBuffer*)tData;
 
-	MugenSpriteFileSubSprite* newSprite = allocMemory(sizeof(MugenSpriteFileSubSprite));
+	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
 	newSprite->mOffset = buffer->mOffset;
 	if (gData.mCustomLoadPalettedTextureFrom8BitBuffer) {
 		newSprite->mTexture = gData.mCustomLoadPalettedTextureFrom8BitBuffer(buffer->mBuffer, gData.mPaletteID, buffer->mSize.x, buffer->mSize.y);
@@ -300,10 +303,10 @@ static List loadTextureFromRawImageList1bpp(List tBufferList) {
 }
 
 static void loadTextureFromSingleImageARGB32ListEntry(void* tCaller, void* tData) {
-	ApplyToSubImageListCaller* caller = tCaller;
-	SubImageBuffer* buffer = tData;
+	ApplyToSubImageListCaller* caller = (ApplyToSubImageListCaller*)tCaller;
+	SubImageBuffer* buffer = (SubImageBuffer*)tData;
 
-	MugenSpriteFileSubSprite* newSprite = allocMemory(sizeof(MugenSpriteFileSubSprite));
+	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
 	newSprite->mOffset = buffer->mOffset;
 
 	if (gData.mCustomLoadTextureFromARGB32Buffer) {
@@ -329,8 +332,8 @@ static List loadTextureFromImageARGB32List(List tBufferList) {
 
 
 static Buffer decodeRLE5BufferAndReturnOwnedBuffer(Buffer b, int tFinalSize) {
-	uint8_t* output = allocMemory(tFinalSize+10);
-	uint8_t* input = b.mData;
+	uint8_t* output = (uint8_t*)allocMemory(tFinalSize+10);
+	uint8_t* input = (uint8_t*)b.mData;
 
 	int ip;
 	int op = 0;
@@ -360,8 +363,8 @@ static Buffer decodeRLE5BufferAndReturnOwnedBuffer(Buffer b, int tFinalSize) {
 }
 
 static Buffer decodeRLE8BufferAndReturnOwnedBuffer(Buffer b, int tFinalSize) {
-	uint8_t* output = allocMemory(tFinalSize + 10);
-	uint8_t* input = b.mData;
+	uint8_t* output = (uint8_t*)allocMemory(tFinalSize + 10);
+	uint8_t* input = (uint8_t*)b.mData;
 
 	uint32_t dstpos = 0;
 	uint32_t srcpos = 0;
@@ -390,7 +393,7 @@ static Buffer decodeRLE8BufferAndReturnOwnedBuffer(Buffer b, int tFinalSize) {
 }
 
 static MugenSpriteFileSprite* makeMugenSpriteFileSprite(List tTextures, TextureSize tOriginalTextureSize, Vector3D tAxisOffset) {
-	MugenSpriteFileSprite* e = allocMemory(sizeof(MugenSpriteFileSprite));
+	MugenSpriteFileSprite* e = (MugenSpriteFileSprite*)allocMemory(sizeof(MugenSpriteFileSprite));
 	e->mTextures = tTextures;
 	e->mOriginalTextureSize = tOriginalTextureSize;
 	e->mIsLinked = 0;
@@ -400,7 +403,7 @@ static MugenSpriteFileSprite* makeMugenSpriteFileSprite(List tTextures, TextureS
 }
 
 static MugenSpriteFileSprite* makeLinkedMugenSpriteFileSprite(int tIsLinkedTo, Vector3D tAxisOffset) {
-	MugenSpriteFileSprite* e = allocMemory(sizeof(MugenSpriteFileSprite));
+	MugenSpriteFileSprite* e = (MugenSpriteFileSprite*)allocMemory(sizeof(MugenSpriteFileSprite));
 	e->mIsLinked = 1;
 	e->mIsLinkedTo = tIsLinkedTo;
 	e->mAxisOffset = tAxisOffset;
@@ -408,10 +411,10 @@ static MugenSpriteFileSprite* makeLinkedMugenSpriteFileSprite(int tIsLinkedTo, V
 }
 
 static Buffer* loadPCXPaletteToAllocatedBuffer(BufferPointer p, int tEncodedSize) {
-	Buffer* insertPal = allocMemory(sizeof(Buffer));
+	Buffer* insertPal = (Buffer*)allocMemory(sizeof(Buffer));
 	
 	int size = 256 * 3;
-	char* data = allocMemory(size);
+	char* data = (char*)allocMemory(size);
 	memcpy(data, p + tEncodedSize, size);
 	
 	*insertPal = makeBufferOwned(data, size);
@@ -420,8 +423,8 @@ static Buffer* loadPCXPaletteToAllocatedBuffer(BufferPointer p, int tEncodedSize
 
 static SubImageBuffer* getSingleAllocatedBufferFromSource(Buffer b, int x, int y, int dx, int dy, int tWidth, int tHeight, int tBytesPerPixel) {
 	int dstSize = dx*dy;
-	char* dst = allocMemory(dstSize*tBytesPerPixel);
-	char* src = b.mData;
+	char* dst = (char*)allocMemory(dstSize*tBytesPerPixel);
+	char* src = (char*)b.mData;
 
 	int j;
 	for (j = 0; j < dy; j++) {
@@ -439,7 +442,7 @@ static SubImageBuffer* getSingleAllocatedBufferFromSource(Buffer b, int x, int y
 		memset(dst + startIndexDst + rowSrcSize, 0, rowBufferSize);
 	}
 
-	SubImageBuffer* ret = allocMemory(sizeof(SubImageBuffer));
+	SubImageBuffer* ret = (SubImageBuffer*)allocMemory(sizeof(SubImageBuffer));
 	ret->mBuffer = makeBufferOwned(dst, dstSize*tBytesPerPixel);
 	ret->mOffset = makeVector3DI(x, y, 0);
 	ret->mSize = makeVector3DI(dx, dy, 0);
@@ -490,7 +493,7 @@ List breakImageBufferUpIntoMultipleBuffers(Buffer b, int tWidth, int tHeight, in
 
 static int removeSingleSubImageBufferEntryCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	SubImageBuffer* buffer = tData;
+	SubImageBuffer* buffer = (SubImageBuffer*)tData;
 	freeBuffer(buffer->mBuffer);
 
 	return 1;
@@ -513,7 +516,7 @@ static void readPNGDataFromInputStream(png_structp png_ptr, png_bytep outBytes, 
 	}
 
 
-	PNGReadCaller* caller = io_ptr;
+	PNGReadCaller* caller = (PNGReadCaller*)io_ptr;
 	if (((uint32_t)caller->p) + byteCountToRead > ((uint32_t)caller->b.mData) + caller->b.mLength) {
 		logError("Trying to read outside buffer");
 		recoverFromError();
@@ -523,10 +526,10 @@ static void readPNGDataFromInputStream(png_structp png_ptr, png_bytep outBytes, 
 
 static Buffer parseRGBAPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAlpha, int width, int height)
 {
-	uint8_t* dst = allocMemory(width*height * 4);
+	uint8_t* dst = (uint8_t*)allocMemory(width*height * 4);
 
 	const png_uint_32 bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
-	char* rowData = allocMemory(bytesPerRow);
+	char* rowData = (char*)allocMemory(bytesPerRow);
 
 	// read single row at a time
 	uint32_t rowIdx;
@@ -558,10 +561,10 @@ static png_colorp gPalette[256 * 3];
 
 static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int width, int height)
 {
-	uint8_t* dst = allocMemory(width*height * 4);
+	uint8_t* dst = (uint8_t*)allocMemory(width*height * 4);
 
 	png_uint_32 bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
-	uint8_t* rowData = allocMemory(bytesPerRow);
+	uint8_t* rowData = (uint8_t*)allocMemory(bytesPerRow);
 
 	int palAmount;
 	assert(png_get_PLTE(*png_ptr, *info_ptr, gPalette, &palAmount));
@@ -761,7 +764,7 @@ static MugenSpriteFileSprite* loadTextureFromPCXBuffer(MugenSpriteFile* tDst, in
 		return makeMugenSpriteFileSpriteFromRawBuffer(rawImageBuffer, w, h, header.mBytesPerLine, tAxisOffset);
 	}
 	else {
-		Buffer* paletteBuffer = vector_get_back(&tDst->mPalettes);
+		Buffer* paletteBuffer = (Buffer*)vector_get_back(&tDst->mPalettes);
 		return makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawImageBuffer, *paletteBuffer, w, h, header.mBytesPerLine, tAxisOffset);
 	}
 	
@@ -788,12 +791,12 @@ MugenSpriteFileSprite* loadSingleTextureFromPCXBuffer(Buffer tBuffer) {
 static void insertTextureIntoSpriteFile(MugenSpriteFile* tDst, MugenSpriteFileSprite* tTexture, int tGroup, int tSprite) {
 
 	if (!int_map_contains(&tDst->mGroups, tGroup)) {
-		MugenSpriteFileGroup* group = allocMemory(sizeof(MugenSpriteFileGroup));
+		MugenSpriteFileGroup* group = (MugenSpriteFileGroup*)allocMemory(sizeof(MugenSpriteFileGroup));
 		group->mSprites = new_int_map();
 		int_map_push_owned(&tDst->mGroups, tGroup, group);
 	}
 
-	MugenSpriteFileGroup* g = int_map_get(&tDst->mGroups, tGroup);
+	MugenSpriteFileGroup* g = (MugenSpriteFileGroup*)int_map_get(&tDst->mGroups, tGroup);
 	
 	int_map_push_owned(&g->mSprites, tSprite, tTexture);
 	vector_push_back(&tDst->mAllSprites, tTexture);
@@ -824,7 +827,7 @@ static void removeAllPalettesExceptFirst(MugenSpriteFile* tDst) {
 	assert(vector_size(&tDst->mPalettes) >= 1);
 
 	while (vector_size(&tDst->mPalettes) > 1) {
-		Buffer* b = vector_get_back(&tDst->mPalettes);
+		Buffer* b = (Buffer*)vector_get_back(&tDst->mPalettes);
 		freeBuffer(*b);
 		vector_pop_back(&tDst->mPalettes);
 	}
@@ -874,7 +877,7 @@ static MugenSpriteFile makeEmptySpriteFile() {
 static void loadMugenSpriteFilePaletteFile(MugenSpriteFile* ret, char* tPath) {
 	assert(isFile(tPath));
 
-	Buffer* b = allocMemory(sizeof(Buffer));
+	Buffer* b = (Buffer*)allocMemory(sizeof(Buffer));
 	*b = fileToBuffer(tPath);
 	Buffer src = fileToBuffer(tPath);
 
@@ -926,7 +929,7 @@ static Buffer processRawPalette2(Buffer tRaw) {
 
 	assert(n <= 256);
 	char* raw = (char*)tRaw.mData;
-	char* out = allocMemory(256 * 3);
+	char* out = (char*)allocMemory(256 * 3);
 	memset(out, 0, 256 * 3);
 
 	int i = 0;
@@ -951,7 +954,7 @@ static void loadSinglePalette2(SFFHeader2* tHeader, MugenSpriteFile* tDst) {
 	uint32_t originalPosition = gData.mReader.mGetCurrentOffset(&gData.mReader);
 	gData.mReader.mSeek(&gData.mReader, tHeader->mLDataOffset + palette.mDataOffset);
 	Buffer rawPalette = gData.mReader.mReadBufferReadOnly(&gData.mReader, palette.mDataLength);
-	Buffer* processedPalette = allocMemory(sizeof(Buffer));
+	Buffer* processedPalette = (Buffer*)allocMemory(sizeof(Buffer));
 	*processedPalette = processRawPalette2(rawPalette);
 	freeBuffer(rawPalette);
 	gData.mReader.mSeek(&gData.mReader, originalPosition);
@@ -981,8 +984,8 @@ static Buffer readRawRLE8Sprite2(uint32_t tSize) {
 }
 
 static Buffer decodeLZ5BufferAndReturnOwnedBuffer(Buffer b, uint32_t tFinalSize) {
-	uint8_t* out = allocMemory(tFinalSize + 10);
-	uint8_t* src = b.mData;
+	uint8_t* out = (uint8_t*)allocMemory(tFinalSize + 10);
+	uint8_t* src = (uint8_t*)b.mData;
 
 	decompressLZ5(out, src, b.mLength);
 
@@ -1000,7 +1003,7 @@ static Buffer readRawLZ5Sprite2(uint32_t tSize) {
 }
 
 static Buffer readRawUncompressedSprite2(uint32_t tSize) {
-	uint8_t* out = allocMemory(tSize + 10);
+	uint8_t* out = (uint8_t*)allocMemory(tSize + 10);
 
 	Buffer b = gData.mReader.mReadBufferReadOnly(&gData.mReader, tSize);
 	memcpy(out, b.mData, tSize);
@@ -1077,7 +1080,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 		if (tPreferredPalette == -1) palette = sprite.mPaletteIndex;
 		else palette = tPreferredPalette;
 
-		Buffer* paletteBuffer = vector_get(&tDst->mPalettes, palette);
+		Buffer* paletteBuffer = (Buffer*)vector_get(&tDst->mPalettes, palette);
 
 		e = makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawBuffer, *paletteBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, makePosition(sprite.mAxisX, sprite.mAxisY, 0));
 		gData.mReader.mSeek(&gData.mReader, originalPosition);
@@ -1139,7 +1142,7 @@ static Buffer loadPaddedBufferPreloaded() {
 	uint32_t size;
 	gData.mReader.mRead(&gData.mReader, &size, 4);
 
-	char* dst = allocMemory(size);
+	char* dst = (char*)allocMemory(size);
 	gData.mReader.mRead(&gData.mReader, dst, size);
 
 	char padBuffer[10];
@@ -1152,7 +1155,7 @@ static Buffer loadPaddedBufferPreloaded() {
 static void loadSinglePalettePreloaded(MugenSpriteFile* tDst) {
 
 	Buffer b = loadPaddedBufferPreloaded();
-	Buffer* insert = allocMemory(sizeof(Buffer));
+	Buffer* insert = (Buffer*)allocMemory(sizeof(Buffer));
 	*insert = b;
 
 	insertPaletteIntoMugenSpriteFile(tDst, insert);
@@ -1190,7 +1193,7 @@ static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 		data = loadTextureFromTwiddledARGB16Buffer(b, header.mTextureSize.x, header.mTextureSize.y);
 	}
 
-	MugenSpriteFileSubSprite* newSprite = allocMemory(sizeof(MugenSpriteFileSubSprite));
+	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
 	newSprite->mOffset = header.mOffset;
 	newSprite->mTexture = data;
 
@@ -1339,20 +1342,20 @@ MugenSpriteFile loadMugenSpriteFileWithoutPalette(char * tPath)
 
 static void unloadSinglePalette(void* tCaller, void* tData) {
 	(void)tCaller;
-	Buffer* b = tData;
+	Buffer* b = (Buffer*)tData;
 	freeBuffer(*b);
 }
 
 static int unloadSingleSpriteFileGroupSpriteCB(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenSpriteFileSprite* e = tData;
+	MugenSpriteFileSprite* e = (MugenSpriteFileSprite*)tData;
 	unloadMugenSpriteFileSprite(e);
 	return 1;
 }
 
 static int unloadSingleSpriteFileGroup(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenSpriteFileGroup* e = tData;
+	MugenSpriteFileGroup* e = (MugenSpriteFileGroup*)tData;
 	int_map_remove_predicate(&e->mSprites, unloadSingleSpriteFileGroupSpriteCB, NULL);
 	delete_int_map(&e->mSprites);
 
@@ -1370,7 +1373,7 @@ void unloadMugenSpriteFile(MugenSpriteFile* tFile) {
 
 static int unloadSingleMugenSpriteFileSubSprite(void* tCaller, void* tData) {
 	(void)tCaller;
-	MugenSpriteFileSubSprite* subSprite = tData;
+	MugenSpriteFileSubSprite* subSprite = (MugenSpriteFileSubSprite*)tData;
 	unloadTexture(subSprite->mTexture);
 
 	return 1;
@@ -1389,15 +1392,15 @@ MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile
 	if (!tFile) return NULL;
 	if (!int_map_contains(&tFile->mGroups, tGroup)) return NULL;
 
-	MugenSpriteFileGroup* g = int_map_get(&tFile->mGroups, tGroup);
+	MugenSpriteFileGroup* g = (MugenSpriteFileGroup*)int_map_get(&tFile->mGroups, tGroup);
 
 	if (!int_map_contains(&g->mSprites, tSprite)) return NULL;
 
-	MugenSpriteFileSprite* original = int_map_get(&g->mSprites, tSprite);
+	MugenSpriteFileSprite* original = (MugenSpriteFileSprite*)int_map_get(&g->mSprites, tSprite);
 	if (original->mIsLinked) {
 		MugenSpriteFileSprite* e = original;
 		while (e->mIsLinked) {
-			e = vector_get(&tFile->mAllSprites, e->mIsLinkedTo);
+			e = (MugenSpriteFileSprite*)vector_get(&tFile->mAllSprites, e->mIsLinkedTo);
 		}
 		original->mOriginalTextureSize = e->mOriginalTextureSize;
 		original->mTextures = e->mTextures;
@@ -1415,7 +1418,7 @@ typedef struct {
 
 
 static void initBufferReader(MugenSpriteFileReader* tReader, char* tPath) {
-	MugenSpriteFileBufferReaderData* data = allocMemory(sizeof(MugenSpriteFileBufferReaderData));
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)allocMemory(sizeof(MugenSpriteFileBufferReaderData));
 	data->b = fileToBuffer(tPath);
 	data->p = getBufferPointer(data->b);
 	data->mIsOver = 0;
@@ -1423,18 +1426,18 @@ static void initBufferReader(MugenSpriteFileReader* tReader, char* tPath) {
 }
 
 static void deleteBufferReader(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileBufferReaderData* data = tReader->mData;
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
 	freeBuffer(data->b);
 	freeMemory(data);
 }
 
 static void readBufferReader(MugenSpriteFileReader* tReader, void* tDst, uint32_t tSize) {
-	MugenSpriteFileBufferReaderData* data = tReader->mData;
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
 	readFromBufferPointer(tDst, &data->p, tSize);
 }
 
 static void seekBufferReader(MugenSpriteFileReader* tReader, uint32_t tPosition) {
-	MugenSpriteFileBufferReaderData* data = tReader->mData;
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
 	data->p = ((char*)data->b.mData) + tPosition;
 
 	if (data->p >= ((char*)data->b.mData) + data->b.mLength) {
@@ -1443,42 +1446,44 @@ static void seekBufferReader(MugenSpriteFileReader* tReader, uint32_t tPosition)
 }
 
 static Buffer readBufferReaderBuffer(MugenSpriteFileReader* tReader, uint32_t tSize) {
-	MugenSpriteFileBufferReaderData* data = tReader->mData;
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
 	return makeBuffer(data->p, tSize);
 }
 
 static uint32_t getCurrentBufferReaderOffset(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileBufferReaderData* data = tReader->mData;
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
 	return (uint32_t)(data->p - ((char*)data->b.mData));
 }
 
 
 static void setBufferReaderOver(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileBufferReaderData* data = tReader->mData;
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
 	data->p = NULL;
 	data->mIsOver = 1;
 }
 
 static int isBufferReaderOver(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileBufferReaderData* data = tReader->mData;
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
 	return data->mIsOver;
 }
 
-static MugenSpriteFileReader MugenSpriteFileBufferReader = {
-	.mType = 1,
-	.mInit = initBufferReader,
-	.mRead = readBufferReader,
-	.mReadBufferReadOnly = readBufferReaderBuffer,
-	.mSeek = seekBufferReader,
-	.mGetCurrentOffset = getCurrentBufferReaderOffset,
-	.mDelete = deleteBufferReader,
-	.mSetOver = setBufferReaderOver,
-	.mIsOver = isBufferReaderOver,
-};
+static MugenSpriteFileReader getMugenSpriteFileBufferReader() {
+	MugenSpriteFileReader ret;
+	ret.mType = 1;
+	ret.mInit = initBufferReader;
+	ret.mRead = readBufferReader;
+	ret.mReadBufferReadOnly = readBufferReaderBuffer;
+	ret.mSeek = seekBufferReader;
+	ret.mGetCurrentOffset = getCurrentBufferReaderOffset;
+	ret.mDelete = deleteBufferReader;
+	ret.mSetOver = setBufferReaderOver;
+	ret.mIsOver = isBufferReaderOver;
+	return ret;
+}
 
 void setMugenSpriteFileReaderToBuffer()
 {
-	gData.mReader = MugenSpriteFileBufferReader;
+	gData.mReader = getMugenSpriteFileBufferReader();
 }
 
 typedef struct {
@@ -1489,7 +1494,7 @@ typedef struct {
 
 
 static void initFileReader(MugenSpriteFileReader* tReader, char* tPath) {
-	MugenSpriteFileFileReaderData* data = allocMemory(sizeof(MugenSpriteFileFileReaderData));
+	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)allocMemory(sizeof(MugenSpriteFileFileReaderData));
 	data->mFile = fileOpen(tPath, O_RDONLY);
 	data->mFileSize = fileTotal(data->mFile);
 	data->mIsOver = 0;
@@ -1497,19 +1502,19 @@ static void initFileReader(MugenSpriteFileReader* tReader, char* tPath) {
 }
 
 static void deleteFileReader(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileFileReaderData* data = tReader->mData;
+	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
 	fileClose(data->mFile);
 	freeMemory(data);
 }
 
 static void readFileReader(MugenSpriteFileReader* tReader, void* tDst, uint32_t tSize) {
-	MugenSpriteFileFileReaderData* data = tReader->mData;
+	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
 
 	fileRead(data->mFile, tDst, tSize);
 }
 
 static void seekFileReader(MugenSpriteFileReader* tReader, uint32_t tPosition) {
-	MugenSpriteFileFileReaderData* data = tReader->mData;
+	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
 
 	fileSeek(data->mFile, tPosition, SEEK_SET); 
 	uint32_t position = gData.mReader.mGetCurrentOffset(&gData.mReader);
@@ -1522,7 +1527,7 @@ static void seekFileReader(MugenSpriteFileReader* tReader, uint32_t tPosition) {
 static Buffer readFileReaderBuffer(MugenSpriteFileReader* tReader, uint32_t tSize) {
 	(void)tReader;
 	uint32_t originalPosition = gData.mReader.mGetCurrentOffset(&gData.mReader);
-	char* dst = allocMemory(tSize + 10);
+	char* dst = (char*)allocMemory(tSize + 10);
 	gData.mReader.mRead(&gData.mReader, dst, tSize);
 
 	gData.mReader.mSeek(&gData.mReader, originalPosition);
@@ -1531,37 +1536,39 @@ static Buffer readFileReaderBuffer(MugenSpriteFileReader* tReader, uint32_t tSiz
 }
 
 static uint32_t getCurrentFileReaderOffset(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileFileReaderData* data = tReader->mData;
+	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
 
 	return (uint32_t)fileTell(data->mFile);
 }
 
 
 static void setFileReaderOver(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileFileReaderData* data = tReader->mData;
+	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
 	data->mIsOver = 1;
 }
 
 static int isFileReaderOver(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileFileReaderData* data = tReader->mData;
+	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
 	return data->mIsOver;
 }
 
-static MugenSpriteFileReader MugenSpriteFileFileReader = {
-	.mType = 2,
-	.mInit = initFileReader,
-	.mRead = readFileReader,
-	.mReadBufferReadOnly = readFileReaderBuffer,
-	.mSeek = seekFileReader,
-	.mGetCurrentOffset = getCurrentFileReaderOffset,
-	.mDelete = deleteFileReader,
-	.mSetOver = setFileReaderOver,
-	.mIsOver = isFileReaderOver,
-};
+static MugenSpriteFileReader getMugenSpriteFileFileReader() {
+	MugenSpriteFileReader ret;
+	ret.mType = 2;
+	ret.mInit = initFileReader;
+	ret.mRead = readFileReader;
+	ret.mReadBufferReadOnly = readFileReaderBuffer;
+	ret.mSeek = seekFileReader;
+	ret.mGetCurrentOffset = getCurrentFileReaderOffset;
+	ret.mDelete = deleteFileReader;
+	ret.mSetOver = setFileReaderOver;
+	ret.mIsOver = isFileReaderOver;
+	return ret;
+}
 
 void setMugenSpriteFileReaderToFileOperations()
 {
-	gData.mReader = MugenSpriteFileFileReader;
+	gData.mReader = getMugenSpriteFileFileReader();
 }
 
 void setMugenSpriteFileReaderToUsePalette(int tPaletteID)

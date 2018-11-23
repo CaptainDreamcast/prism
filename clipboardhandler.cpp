@@ -53,9 +53,9 @@ static void loadClipboardHandler(void* tData) {
 	setClipboardLineTexts();
 }
 
-ActorBlueprint ClipboardHandler = {
-	.mLoad = loadClipboardHandler,
-};
+ActorBlueprint getClipboardHandler() {
+	return makeActorBlueprint(loadClipboardHandler);
+}
 
 static void moveClipboardLinesDown() {
 	int i;

@@ -33,7 +33,7 @@ void setupTexturePool() {
 static void cleanSingleTexturePoolEntry(void* tCaller, char* tKey, void* tData) {
 	(void) tCaller;
 	(void) tKey;
-	TexturePoolEntry* e = tData;
+	TexturePoolEntry* e = (TexturePoolEntry*)tData;
 	unloadTexture(e->mTexture);
 }
 
@@ -45,7 +45,7 @@ void shutdownTexturePool() {
 }
 
 static TextureData increaseCounterAndFetchTexture(char* tPath) {
-	TexturePoolEntry* e = string_map_get(&gTexturePool.mPathToLoadedTexture, tPath);
+	TexturePoolEntry* e = (TexturePoolEntry*)string_map_get(&gTexturePool.mPathToLoadedTexture, tPath);
 	e->mCounter++;
 
 	return e->mTexture;
@@ -58,7 +58,7 @@ TextureData loadTextureFromPool(char* tPath) {
 		return increaseCounterAndFetchTexture(tPath);
 	}
 
-	TexturePoolEntry* e = allocMemory(sizeof(TexturePoolEntry));
+	TexturePoolEntry* e = (TexturePoolEntry*)allocMemory(sizeof(TexturePoolEntry));
 	e->mCounter = 1;
 	e->mTexture = loadTexture(tPath);
 	strcpy(e->mPath, tPath);
@@ -82,7 +82,7 @@ void unloadTextureFromPool(TextureData tTexture) {
 		recoverFromError();
 	}
 
-	TexturePoolEntry* e = string_map_get(&gTexturePool.mTextureHashToLoadedTexture, hashString);
+	TexturePoolEntry* e = (TexturePoolEntry*)string_map_get(&gTexturePool.mTextureHashToLoadedTexture, hashString);
 	e->mCounter--;
 
 	if (e->mCounter > 0) return;

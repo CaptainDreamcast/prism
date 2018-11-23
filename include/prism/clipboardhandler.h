@@ -2,7 +2,7 @@
 
 #include "actorhandler.h"
 
-extern ActorBlueprint ClipboardHandler;
+ActorBlueprint getClipboardHandler();
 
 void initClipboardForGame();
 

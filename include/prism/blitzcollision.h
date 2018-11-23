@@ -3,7 +3,7 @@
 #include <prism/actorhandler.h>
 #include <prism/collision.h>
 
-extern ActorBlueprint BlitzCollisionHandler;
+ActorBlueprint getBlitzCollisionHandler();
 
 void addBlitzCollisionComponent(int tEntityID);
 int addBlitzCollisionPassiveMugen(int tEntityID, int tList);

@@ -14,7 +14,7 @@ void setFramerate(Framerate tFramerate) {
 
 Framerate getFramerate()
 {
-	if (!gFramerate) return 60;
+	if (!gFramerate) return SIXTY_HERTZ;
 
 	return gFramerate;
 }

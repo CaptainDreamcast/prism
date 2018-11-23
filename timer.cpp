@@ -16,7 +16,7 @@ static struct {
 } gData;
 
 int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller){
-	TimerElement* e = allocMemory(sizeof(TimerElement));
+	TimerElement* e = (TimerElement*)allocMemory(sizeof(TimerElement));
 	e->mNow = 0;
 	e->mDuration = tDuration;
 	e->mCB = tCB;
@@ -36,7 +36,7 @@ void setupTimer(){
 
 static int updateCB(void* tCaller, void* tData) {
 	(void) tCaller;
-	TimerElement* cur = tData;
+	TimerElement* cur = (TimerElement*)tData;
 	int isOver = handleDurationAndCheckIfOver(&cur->mNow, cur->mDuration);
 
 	if(isOver) {
