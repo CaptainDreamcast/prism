@@ -150,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\prism\actorhandler.h" />
+    <ClInclude Include="..\..\include\prism\actorhandlerclass.h" />
     <ClInclude Include="..\..\include\prism\animation.h" />
     <ClInclude Include="..\..\include\prism\animationtree.h" />
     <ClInclude Include="..\..\include\prism\blitz.h" />
@@ -206,6 +207,7 @@
     <ClInclude Include="..\..\include\prism\sound.h" />
     <ClInclude Include="..\..\include\prism\soundeffect.h" />
     <ClInclude Include="..\..\include\prism\stagehandler.h" />
+    <ClInclude Include="..\..\include\prism\stlutil.h" />
     <ClInclude Include="..\..\include\prism\storyboard.h" />
     <ClInclude Include="..\..\include\prism\system.h" />
     <ClInclude Include="..\..\include\prism\texthandler.h" />
@@ -243,6 +245,7 @@
     <ClCompile Include="..\..\file.cpp" />
     <ClCompile Include="..\..\framerate.cpp" />
     <ClCompile Include="..\..\geometry.cpp" />
+    <ClCompile Include="..\..\include\prism\actorhandlerclass.cpp" />
     <ClCompile Include="..\..\input.cpp" />
     <ClCompile Include="..\..\loadingscreen.cpp" />
     <ClCompile Include="..\..\log.cpp" />
@@ -270,6 +273,7 @@
     <ClCompile Include="..\..\script.cpp" />
     <ClCompile Include="..\..\soundeffect.cpp" />
     <ClCompile Include="..\..\stagehandler.cpp" />
+    <ClCompile Include="..\..\stlutil.cpp" />
     <ClCompile Include="..\..\storyboard.cpp" />
     <ClCompile Include="..\..\texthandler.cpp" />
     <ClCompile Include="..\..\texture.cpp" />

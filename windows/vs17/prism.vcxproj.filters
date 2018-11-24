@@ -227,6 +227,12 @@
     <ClInclude Include="..\..\include\prism\profiling.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\stlutil.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\actorhandlerclass.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\drawing_win.cpp">
@@ -454,5 +460,9 @@
     <ClCompile Include="..\..\blitzcomponent.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\stlutil.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\prism\actorhandlerclass.cpp" />
   </ItemGroup>
 </Project>
