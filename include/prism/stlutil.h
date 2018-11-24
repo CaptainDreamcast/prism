@@ -17,13 +17,14 @@ void stl_delete_map(std::map<K, V>& tMap) {
 
 template <class T, class C>
 void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
-	auto it = tMap.begin();
+	typename std::map<int, T>::iterator it = tMap.begin();
 
 	while (it != tMap.end()) {
-		auto &val = *it;
+		std::pair<const int, T> &val = *it;
+        typename std::map<int, T>::iterator current = it;
+        it++;
 		int isDeleted = tFunc(tCaller, val.second);
-		if (isDeleted) it = tMap.erase(it);
-		else it++;
+		if (isDeleted) tMap.erase(current);
 	}
 }
 

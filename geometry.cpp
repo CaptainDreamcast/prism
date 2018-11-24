@@ -2,10 +2,12 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <algorithm>
 
 #include "prism/math.h"
 #include "prism/log.h"
 
+using namespace std;
 
 double dot3D(Vector3D p1, Vector3D p2) {
 	return p1.x*p2.x + p1.y*p2.y + p1.z*p2.z;

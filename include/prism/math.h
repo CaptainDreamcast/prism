@@ -1,6 +1,6 @@
 #pragma once
 
-#include <math.h>
+#include <cmath>
 
 #include "geometry.h"
 
@@ -8,8 +8,6 @@
 
 #include <kos.h>
 
-#define min(x, y) ((x < y) ? (x) : (y))
-#define max(x, y) ((x > y) ? (x) : (y))
 #define fmin	min
 #define fmax	max
 #define fabs 	abs

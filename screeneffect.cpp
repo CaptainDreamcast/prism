@@ -1,6 +1,6 @@
 #include "prism/screeneffect.h"
 
-#include<algorithm>
+#include <algorithm> // TODO: remove preprocessor stuff
 
 #include "prism/file.h"
 #include "prism/timer.h"
@@ -240,7 +240,7 @@ void drawColoredHorizontalLine(Position tA, Position tB, Color tColor)
 	if (tA.y != tB.y) return;
 
 	double x = min(tA.x, tB.x);
-	double w = fabs(tB.x - tA.x);
+	double w = (double)abs((double)(tB.x - tA.x));
 	drawColoredRectangle(makeGeoRectangle3D(x, tA.y, tA.z, w, 1), tColor);
 }
 

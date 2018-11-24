@@ -1,8 +1,11 @@
 #include "prism/drawing.h"
 
+#include <algorithm>
+
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+
 
 #include <kos.h>
 #include <dc/matrix3d.h>
@@ -12,6 +15,8 @@
 #include "prism/memoryhandler.h"
 #include "prism/system.h"
 #include "prism/math.h"
+
+using namespace std;
 
 static struct {
 

@@ -74,7 +74,7 @@ clean_general:
 	-rm -f assets/debug/*.pkg
 
 build_develop: $(OBJS) 
-	$(KOS_CCPLUS) $(KOS_CPPFLAGS) -DDEVELOP -I${KOS_BASE}/../extensions/include $(KOS_LDFLAGS) \
+	kos-c++ -fno-operator-names -fno-rtti -fno-exceptions -DDEVELOP -I/home/captaindc/dc/kos/../extensions/include -Wl,--gc-sections -L/home/captaindc/dc/kos/lib/dreamcast -L/home/captaindc/dc/kos/addons/lib/dreamcast -L/home/captaindc/dc/kos/../kos-ports/lib \
 	-o $(TARGET).elf $(KOS_START) \
 	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lzstd -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
 	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
