@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 
 #include <prism/memoryhandler.h>
 
@@ -53,4 +54,10 @@ template<class T>
 int stl_int_map_contains(std::map<int, T>& tMap, int tID)
 {
 	return tMap.find(tID) != tMap.end();
+}
+
+template<class T>
+int stl_set_contains(std::set<T>& tSet, T tID)
+{
+	return tSet.find(tID) != tSet.end();
 }

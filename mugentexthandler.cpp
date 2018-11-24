@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <set>
 
 #include "prism/mugendefreader.h"
 #include "prism/mugenanimationhandler.h"
@@ -10,6 +11,8 @@
 #include "prism/drawing.h"
 #include "prism/texture.h"
 #include "prism/math.h"
+#include "prism/stlutil.h"
+
 
 using namespace std;
 
@@ -612,17 +615,12 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 	caller->mBasePosition.x += rightX - leftX + 1;
 }
 
-static int hasElecbyteTextToLinebreak(char* tText, int tCurrent, Position p, MugenFont* tFont, MugenElecbyteFont* tElecbyteFont, double tRightX, double tFactor) {
-
-	if (tText[0] == ' ') return 0;
-	if (tText[0] == '\n') return 1;
-
-	char word[1024];
-	int positionsRead;
-	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
-
-	int i;
-	for (i = tCurrent; i < tCurrent + positionsRead; i++) {
+static set<int> getElecbyteTextLinebreaks(char* tText, Position tStart, MugenFont* tFont, MugenElecbyteFont* tElecbyteFont, double tRightX, double tFactor) {
+	
+	set<int> ret;
+	Position p = tStart;
+	int n = strlen(tText);
+	for (int i = 0; i < n; i++) {
 		if (int_map_contains(&tElecbyteFont->mMap, (int)tText[i])) {
 			MugenElecbyteFontMapEntry* mapEntry = (MugenElecbyteFontMapEntry*)int_map_get(&tElecbyteFont->mMap, (int)tText[i]);
 			p = vecAdd2D(p, makePosition(mapEntry->mWidth, 0, 0));
@@ -632,9 +630,16 @@ static int hasElecbyteTextToLinebreak(char* tText, int tCurrent, Position p, Mug
 			p = vecAdd2D(p, vecScale(makePosition(tFont->mSize.x, 0, 0), tFactor));
 			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
 		}
+
+		if (p.x > tRightX) {
+			p.x = tStart.x;
+			p = vecAdd2D(p, vecScale(makePosition(0, tFont->mSize.y, 0), tFactor));
+			p = vecAdd2D(p, vecScale(makePosition(0, tFont->mSpacing.y, 0), tFactor));
+			ret.insert(i);
+		}
 	}
 
-	return (p.x > tRightX);
+	return ret;
 }
 
 static void drawSingleElecbyteText(MugenText* e) {
@@ -643,11 +648,13 @@ static void drawSingleElecbyteText(MugenText* e) {
 	int textLength = strlen(e->mDisplayText);
 	double factor = 1; // TODO
 
+
 	//printf("draw %s\n", e->mText);
 	int i;
 	Position p = vecAdd2D(e->mPosition, makePosition(font->mOffset.x, font->mOffset.y, 0));
 	Position start = p;
 	double rightX = p.x + e->mTextBoxWidth;
+	set<int> breaks = getElecbyteTextLinebreaks(e->mText, start, font, elecbyteFont, rightX, factor);
 	for (i = 0; i < textLength; i++) {
 
 		if (int_map_contains(&elecbyteFont->mMap, (int)e->mDisplayText[i])) {
@@ -665,7 +672,7 @@ static void drawSingleElecbyteText(MugenText* e) {
 			p = vecAdd2D(p, makePosition(font->mSize.x, 0, 0));
 			p = vecAdd2D(p, makePosition(font->mSpacing.x, 0, 0));
 		}
-		if (hasElecbyteTextToLinebreak(e->mText, i, p, font, elecbyteFont, rightX, factor)) {
+		if (stl_set_contains(breaks, i)) {
 			p.x = start.x;
 			p = vecAdd2D(p, vecScale(makePosition(0, font->mSize.y, 0), factor));
 			p = vecAdd2D(p, vecScale(makePosition(0, font->mSpacing.y, 0), factor));
