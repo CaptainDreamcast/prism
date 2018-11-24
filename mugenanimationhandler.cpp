@@ -115,7 +115,7 @@ static struct {
 
 static void loadMugenAnimationHandler(void* tData) {
 	(void)tData;
-	gMugenAnimationHandler.mAnimations.clear();
+	stl_new_map(gMugenAnimationHandler.mAnimations);
 	gMugenAnimationHandler.mIsPaused = 0;
 }
 
@@ -359,7 +359,7 @@ void removeMugenAnimation(int tID)
 }
 
 int isRegisteredMugenAnimation(int tID) {
-	return stl_int_map_contains(gMugenAnimationHandler.mAnimations, tID);
+	return stl_map_contains(gMugenAnimationHandler.mAnimations, tID);
 }
 
 int getMugenAnimationAnimationNumber(int tID)

@@ -97,9 +97,9 @@ void string_map_empty(StringMap* tMap);
 void string_map_push_owned(StringMap* tMap, char* tKey, void* tData);
 void string_map_push(StringMap* tMap, char* tKey, void* tData);
 void string_map_remove(StringMap* tMap, char* tKey);
-void* string_map_get(StringMap* tMap, char* tKey);
+void* string_map_get(StringMap* tMap, const char* tKey);
 void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller);
-int string_map_contains(StringMap* tMap, char* tKey);
+int string_map_contains(StringMap* tMap, const char* tKey);
 int string_map_size(StringMap* tMap);
 
 

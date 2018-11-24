@@ -2,13 +2,12 @@
 
 #include <map>
 #include <set>
-
-#include <prism/memoryhandler.h>
+#include <vector>
+#include <list>
 
 template <class K, class V>
-std::map<K, V> stl_new_map() {
-	std::map<K, V> ret = std::map<K, V>();
-	return ret;
+void stl_new_map(std::map<K, V>& tMap) {
+	tMap.clear();
 }
 
 template <class K, class V>
@@ -50,8 +49,19 @@ void stl_int_map_map(std::map<int, T> &tMap, void(*tFunc)(C* tCaller, T& tData),
 	}
 }
 
-template<class T>
-int stl_int_map_contains(std::map<int, T>& tMap, int tID)
+template <class T, class C>
+void stl_string_map_map(std::map<std::string, T> &tMap, void(*tFunc)(C* tCaller, const std::string &tKey, T& tData), C* tCaller = NULL) {
+	typename std::map<std::string, T>::iterator it = tMap.begin();
+
+	while (it != tMap.end()) {
+		std::pair<const std::string, T> &val = *it;
+		it++;
+		tFunc(tCaller, val.first, val.second);
+	}
+}
+
+template<class K, class V>
+int stl_map_contains(std::map<K, V>& tMap, K tID)
 {
 	return tMap.find(tID) != tMap.end();
 }
@@ -61,3 +71,61 @@ int stl_set_contains(std::set<T>& tSet, T tID)
 {
 	return tSet.find(tID) != tSet.end();
 }
+
+template <class C>
+void stl_new_vector(std::vector<C>& tVector) {
+	tVector.clear();
+}
+
+
+template <class C>
+void stl_delete_vector(std::vector<C>& tVector) {
+	tVector.clear();
+}
+
+template <class T, class C>
+void stl_vector_map(std::vector<T> &tVector, void(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
+	typename std::vector<T>::iterator it = tVector.begin();
+
+	while (it != tVector.end()) {
+		T &val = *it;
+		it++;
+		tFunc(tCaller, val);
+	}
+}
+
+template <class C>
+void stl_new_list(std::list<C>& tList) {
+	tList.clear();
+}
+
+template <class C>
+void stl_delete_list(std::list<C>& tList) {
+	tList.clear();
+}
+
+template <class T, class C>
+void stl_list_remove_predicate(std::list<T> &tList, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
+	typename std::list<T>::iterator it = tList.begin();
+
+	while (it != tList.end()) {
+		T &val = *it;
+		typename std::list<T>::iterator current = it;
+		it++;
+		int isDeleted = tFunc(tCaller, val);
+		if (isDeleted) tList.erase(current);
+	}
+}
+
+template <class T, class C>
+void stl_list_map(std::list<T> &tList, void(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
+	typename std::list<T>::iterator it = tList.begin();
+
+	while (it != tList.end()) {
+		T &val = *it;
+		typename std::list<T>::iterator current = it;
+		it++;
+		tFunc(tCaller, val);
+	}
+}
+

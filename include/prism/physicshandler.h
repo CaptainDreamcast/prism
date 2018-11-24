@@ -14,6 +14,8 @@ Velocity* getHandledPhysicsVelocityReference(int tID);
 Acceleration* getHandledPhysicsAccelerationReference(int tID);
 void addAccelerationToHandledPhysics(int tID, Acceleration tAccel);
 void stopHandledPhysics(int tID);
+void pauseHandledPhysics(int tID);
+void resumeHandledPhysics(int tID);
 
 void setHandledPhysicsMaxVelocity(int tID, double tVelocity);
 void setHandledPhysicsDragCoefficient(int tID, Vector3D tDragCoefficient);

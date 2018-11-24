@@ -544,7 +544,7 @@ void string_map_remove(StringMap* tMap, char* tKey) {
 	}
 }
 
-void* string_map_get(StringMap* tMap, char* tKey) {
+void* string_map_get(StringMap* tMap, const char* tKey) {
 	int offset = getBucketIDFromString((uint8_t*)tKey);
 	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 
@@ -600,7 +600,7 @@ void string_map_map(StringMap* tMap, stringMapMapCB tCB, void* tCaller) {
 	}
 }
 
-int string_map_contains(StringMap* tMap, char* tKey) {
+int string_map_contains(StringMap* tMap, const char* tKey) {
 	int offset = getBucketIDFromString((uint8_t*)tKey);
 	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 
