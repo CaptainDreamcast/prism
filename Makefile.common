@@ -14,4 +14,5 @@ wrappercomponenthandler.o memorypool.o memorystack.o errorscreen.o \
 blitzentity.o blitzcamerahandler.o blitzmugenanimation.o \
 blitzphysics.o blitzmugensound.o blitztimelineanimationreader.o \
 blitztimelineanimation.o blitzcollision.o blitzparticles.o \
+stlutil.o \
 quicklz.o

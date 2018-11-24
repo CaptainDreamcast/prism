@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <list>
+#include <string>
 
 template <class K, class V>
 void stl_new_map(std::map<K, V>& tMap) {
