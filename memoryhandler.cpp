@@ -8,8 +8,10 @@
 #include <assert.h>
 
 
-#include "prism/klib/khash.h"
+#include "prism/stlutil.h"
 #include "prism/memorypool.h"
+
+using namespace std;
 
 // TODO: update to newest KOS, so no more manual memory tracking required
 extern void initMemoryHandlerHW(); 
@@ -76,13 +78,10 @@ static void freeTextureFunc(void* tData) {
 	free(tMem);
 }
 
-KHASH_MAP_INIT_INT(Bucket, void*)
-
 #define MEMORY_STACK_MAX 10
 
 typedef struct {
-	//khash_t(Bucket)* mMap;
-	void* mData;
+	set<void*> mMap;
 } MemoryHandlerMap;
 
 typedef struct {
@@ -132,16 +131,12 @@ static struct {
 
 static void initHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
 	(void)tStrategy;
-	tMap->mData = (void*)kh_init(Bucket);
+	tMap->mMap.clear();
 }
 
 static void* addAllocatedMemoryToMemoryHandlerMapHashMapStrategy(MemoryHandlerMap* tMap, void* tData) {
-	khash_t(Bucket)* map = (kh_Bucket_t*)tMap->mData;
-	khiter_t iter;
-	int ret;
-	iter = kh_put(Bucket, map, (khint32_t)tData, &ret);
-	kh_val(map, iter) = tData;
-
+	tMap->mMap.insert(tData);
+	
 	return tData;
 }
 
@@ -153,14 +148,10 @@ static void* addMemoryToMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStr
 }
 
 static int removeMemoryFromMemoryHandlerMapWithoutFreeingMemoryHashMapStrategy(MemoryHandlerMap* tMap, void* tData) {
-	khash_t(Bucket)* map = (kh_Bucket_t*)tMap->mData;
+	set<void*>::iterator it = tMap->mMap.find(tData);
+	if (it == tMap->mMap.end()) return 0;
 
-	khiter_t iter;
-	iter = kh_get(Bucket, map, (khint32_t)tData);
-	if (iter == kh_end(map)) {
-		return 0;
-	}
-	kh_del(Bucket, map, iter);
+	tMap->mMap.erase(it);
 
 	return 1;
 }
@@ -189,16 +180,15 @@ static int resizeMemoryOnMemoryHandlerMapHashMapStrategy(AllocationStrategy* tSt
 }
 
 static void emptyMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
-	khash_t(Bucket)* map = (kh_Bucket_t*)tMap->mData;
-	khiter_t iter;
-	for (iter = kh_begin(map); iter != kh_end(map); ++iter) {
-		if (kh_exist(map, iter)) {
-			void* data = kh_value(map, iter);
-			gMemoryHandler.mAllocatedMemory--;
-			tStrategy->mFreeFunc(data);
-		}
+	typename set<void*>::iterator it = tMap->mMap.begin();
+
+	while (it != tMap->mMap.end()) {
+		void* data = *it;
+		it++;
+		gMemoryHandler.mAllocatedMemory--;
+		tStrategy->mFreeFunc(data);
 	}
-	kh_destroy(Bucket, map);
+	tMap->mMap.clear();
 }
 
 static AllocationStrategy getHashMapStrategyMainMemory() {
@@ -229,54 +219,6 @@ static AllocationStrategy getHashMapStrategyTextureMemory() {
 	ret.mReallocFunc = NULL;
 	return ret;
 }
-
-static void initPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
-	(void)tStrategy;
-	tMap->mData = createMemoryPool();
-}
-
-static void* addMemoryToMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, int tSize) {
-	(void)tStrategy;
-	return allocPoolMemory(tMap->mData, tSize);
-}
-
-static int removeMemoryFromMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, void* tData) {
-	(void)tStrategy;
-	if (!isMemoryInPool(tMap->mData, tData)) return 0;
-
-	freePoolMemory(tMap->mData, tData);
-	return 1;
-}
-
-
-static int resizeMemoryOnMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap, void* tData, int tSize, void** tOutput) {
-	(void)tStrategy;
-
-	if (!isMemoryInPool(tMap->mData, tData)) return 0;
-
-	*tOutput = reallocPoolMemory(tMap->mData, tData, tSize);
-	return 1;
-}
-
-static void emptyMemoryHandlerMapPoolStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
-	(void)tStrategy;
-	destroyMemoryPool(tMap->mData);
-}
-
-static AllocationStrategy getPoolStrategyMainMemory() {
-	AllocationStrategy ret;
-	ret.mInitMemoryHandlerMap = initPoolStrategy;
-	ret.mAddMemoryToMemoryHandlerMap = addMemoryToMemoryHandlerMapPoolStrategy;
-	ret.mRemoveMemoryFromMemoryHandlerMap = removeMemoryFromMemoryHandlerMapPoolStrategy;
-	ret.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapPoolStrategy;
-	ret.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapPoolStrategy;
-
-	ret.mMalloc = malloc;
-	ret.mFreeFunc = free;
-	ret.mReallocFunc = realloc;
-	return ret;
-}
-
 
 int getAllocatedMemoryBlockAmount() {
 	return gMemoryHandler.mAllocatedMemory;
