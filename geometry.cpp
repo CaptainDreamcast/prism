@@ -1,7 +1,7 @@
 #include "prism/geometry.h"
 
-#define _USE_MATH_DEFINES
-#include <math.h>
+#define _USE_MATH_DEFINES  
+#include <cmath> 
 #include <algorithm>
 
 #include "prism/math.h"

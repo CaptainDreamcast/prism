@@ -8,6 +8,7 @@
 #include "prism/memoryhandler.h"
 #include "prism/animation.h"
 #include "prism/file.h"
+#include "prism/math.h"
 
 typedef struct {
 
