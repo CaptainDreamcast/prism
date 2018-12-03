@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "datastructures.h"
 #include "geometry.h"
 #include "file.h"
@@ -55,6 +57,7 @@ typedef struct {
 	StringMap mGroups;
 } MugenDefScript;
 
+MugenDefScript loadMugenDefScript(std::string& tPath);
 MugenDefScript loadMugenDefScript(char* tPath);
 MugenDefScript loadMugenDefScriptFromBufferAndFreeBuffer(Buffer tBuffer);
 void unloadMugenDefScript(MugenDefScript tScript);

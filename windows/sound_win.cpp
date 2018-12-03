@@ -169,11 +169,6 @@ static void streamMusicFileGeneral(char* tPath, int tLoopAmount) {
 	playMusicPath(tPath);
 	Mix_ChannelFinished(musicFinishedCB);
 
-#ifdef __EMSCRIPTEN__
-	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
-	while (SDL_GetTicks() - gData.mTimeWhenMusicPlaybackStarted < 10000);
-#endif
-
 	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, tLoopAmount);
 	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
 

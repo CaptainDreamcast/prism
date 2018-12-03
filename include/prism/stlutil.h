@@ -73,6 +73,17 @@ int stl_set_contains(std::set<T>& tSet, T tID)
 	return tSet.find(tID) != tSet.end();
 }
 
+template <class T, class C>
+void stl_set_map(std::set<T> &tSet, void(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
+	typename std::set<T>::iterator it = tSet.begin();
+
+	while (it != tSet.end()) {
+		T &val = *it;
+		it++;
+		tFunc(tCaller, val);
+	}
+}
+
 template <class C>
 void stl_new_vector(std::vector<C>& tVector) {
 	tVector.clear();

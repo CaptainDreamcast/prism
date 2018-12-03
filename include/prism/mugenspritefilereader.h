@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "datastructures.h"
 #include "texture.h"
 
@@ -35,6 +37,7 @@ MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tPreferredPalette
 
 void unloadMugenSpriteFile(MugenSpriteFile* tFile);
 void unloadMugenSpriteFileSprite(MugenSpriteFileSprite* tSprite);
+MugenSpriteFile loadMugenSpriteFileWithoutPalette(std::string& tPath);
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(char* tPath);
 MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite);
 

@@ -814,6 +814,12 @@ static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken) {
 	}
 }
 
+MugenDefScript loadMugenDefScript(string& tPath) { // TODO: refactor
+	char path[1024];
+	strcpy(path, tPath.data());
+	return loadMugenDefScript(path);
+}
+
 MugenDefScript loadMugenDefScript(char * tPath)
 {
 	debugLog("Start loading script.");

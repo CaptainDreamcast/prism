@@ -468,6 +468,12 @@ static MugenAnimations createEmptyMugenAnimationFile() {
 	return ret;
 }
 
+MugenAnimations loadMugenAnimationFile(std::string& tPath) {
+	char path[1024];
+	strcpy(path, tPath.data());
+	return loadMugenAnimationFile(path);
+}
+
 MugenAnimations loadMugenAnimationFile(char * tPath)
 {
 	MugenAnimations ret = createEmptyMugenAnimationFile();

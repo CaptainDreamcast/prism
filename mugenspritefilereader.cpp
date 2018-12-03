@@ -1335,6 +1335,14 @@ MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tPreferredPalette
 	return loadMugenSpriteFileGeneral(tPath, tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
 }
 
+MugenSpriteFile loadMugenSpriteFileWithoutPalette(std::string & tPath)
+{
+	char path[1024];
+	strcpy(path, tPath.data());
+	return loadMugenSpriteFileWithoutPalette(path);
+}
+
+
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(char * tPath)
 {
 	return loadMugenSpriteFile(tPath, -1, 0, NULL);
