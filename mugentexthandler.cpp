@@ -299,24 +299,24 @@ static void addMugenFont2(int tKey, char* tPath) {
 void addMugenFont(int tKey, char* tPath) {
 	char path[1024];
 
-	// TODO: fix when assets is dropped from Dolmexica
+    // TODO: fix when assets is dropped from Dolmexica
 	if ((isOnWindows() || isOnWeb()) && !strcmp(".", getFileSystem())) {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "%s", tPath); 
+			sprintf(path, "assets/%s", tPath); 
 		}
 		else {
-			sprintf(path, "font/%s", tPath); 
+			sprintf(path, "assets/font/%s", tPath); 
 		}
 	}
 	else {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "%s", tPath);
+			sprintf(path, "assets/%s", tPath);
 		}
 		else {
-			sprintf(path, "font/%s", tPath);
+			sprintf(path, "assets/font/%s", tPath);
 		}
 	
-	}
+    }
 	
 	char* ending = getFileExtension(path);
 
@@ -609,12 +609,12 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 
 	p.y = max(p.y, caller->mText->mRectangle.mTopLeft.y);
 
-	double factor = 3;
+	double factor = 1; // TODO: remove
 
 	setDrawingBaseColorAdvanced(caller->mText->mR, caller->mText->mG, caller->mText->mB);
-	scaleDrawing(factor, p); // TODO: remove
+	// scaleDrawing(factor, p); // TODO: remove
 	drawSprite(subSprite->mTexture, p, makeRectangle(leftX, upY, rightX - leftX, downY - upY));
-	setDrawingParametersToIdentity();
+	// setDrawingParametersToIdentity();
 
 	caller->mBasePosition.x += (rightX - leftX + 1) * factor;
 }
@@ -675,7 +675,7 @@ static void drawSingleElecbyteText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
 	int textLength = strlen(e->mDisplayText);
-	double factor = 3; // TODO
+	double factor = 1; // TODO
 
 
 	//printf("draw %s\n", e->mText);
