@@ -268,19 +268,7 @@ static void parseTextStatement(Buffer* b, BufferPointer* p) {
 	}
 }
 
-static void resetTokenReader() {
-	gTokenReader.mRoot = NULL;
-	gTokenReader.mCurrent = NULL;
-	gTokenReader.mCurrentGroupToken = NULL;
-	gTokenReader.mIsOver = 0;
-}
-
-static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken);
-
-static void parseGroup(MugenDefScript* tDst, Buffer* b, BufferPointer* p) {
-	tokensToDefScript(tDst, gTokenReader.mRoot);
-	resetTokenReader();
-	
+static void parseGroup(Buffer* b, BufferPointer* p) {
 	debugLog("Parse group.");
 	BufferPointer end = findEndOfToken(b, *p, '[', ']', 0);
 
@@ -372,7 +360,7 @@ static int isSpecialStatement(Buffer* b, BufferPointer p) {
 	return ret;
 }
 
-static void parseSingleToken(MugenDefScript* tDst, Buffer* b, BufferPointer* p) {
+static void parseSingleToken(Buffer* b, BufferPointer* p) {
 	while (isEmpty(*p) || isLinebreak(*p)) {
 		if (increaseAndCheckIfOver(b, p)) {
 			setTokenReaderOver();
@@ -381,7 +369,7 @@ static void parseSingleToken(MugenDefScript* tDst, Buffer* b, BufferPointer* p) 
 	}
 
 	if (isComment(*p)) parseComment(b, p);
-	else if (isGroup(*p)) parseGroup(tDst, b, p);
+	else if (isGroup(*p)) parseGroup(b, p);
 	else if (isTextStatement()) parseTextStatement(b, p);
 	else if(isAssignment(b, *p, '=')) parseAssignment(b, p, '=');
 	else if(isAssignment(b, *p, ':')) parseAssignment(b, p, ':');
@@ -396,12 +384,19 @@ static void parseSingleToken(MugenDefScript* tDst, Buffer* b, BufferPointer* p) 
 	}
 }
 
-static MugenDefToken* parseTokens(MugenDefScript* tDst, Buffer* b) {
+static void resetTokenReader() {
+	gTokenReader.mRoot = NULL;
+	gTokenReader.mCurrent = NULL;
+	gTokenReader.mCurrentGroupToken = NULL;
+	gTokenReader.mIsOver = 0;
+}
+
+static MugenDefToken* parseTokens(Buffer* b) {
 	BufferPointer p = getBufferPointer(*b);
 
 	resetTokenReader();
 	while (!gTokenReader.mIsOver) {
-		parseSingleToken(tDst, b, &p);
+		parseSingleToken(b, &p);
 	}
 
 	return gTokenReader.mRoot;
@@ -836,8 +831,8 @@ MugenDefScript loadMugenDefScript(char * tPath)
 }
 
 MugenDefScript loadMugenDefScriptFromBufferAndFreeBuffer(Buffer tBuffer) {
+	MugenDefToken* root = parseTokens(&tBuffer);
 	MugenDefScript d = makeEmptyMugenDefScript();
-	MugenDefToken* root = parseTokens(&d, &tBuffer);
 	freeBuffer(tBuffer);
 	tokensToDefScript(&d, root);
 
