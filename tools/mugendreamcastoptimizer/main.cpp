@@ -433,9 +433,9 @@ int main(int argc, char* argv[])
 {
 	initPrismWrapperWithMugenFlags();
 
-	//DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.preloaded");
-	//DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
-	ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
+	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.preloaded");
+	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
+	//ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
 	return 0;
 }
 
