@@ -21,6 +21,12 @@ typedef struct {
 
 static struct {
 	IntMap mStoredTextures;
+
+	uint64_t mBlockAmountPosition;
+	uint64_t mBlockHeaderPosition;
+
+	int mBlockAmount;
+	int mSpriteAmountInBlock;
 } gData;
 
 static TextureData loadTextureARGB16(Buffer b, int w, int h) {
@@ -29,7 +35,7 @@ static TextureData loadTextureARGB16(Buffer b, int w, int h) {
 	ret.mTextureSize.x = w;
 	ret.mTextureSize.y = h;
 
-	StoredTexture* e = allocMemory(sizeof(StoredTexture));
+	StoredTexture* e = (StoredTexture*)allocMemory(sizeof(StoredTexture));
 	e->mBuffer = copyBuffer(b);
 
 	ret.mTexture = (TextureMemory)e;
@@ -51,7 +57,7 @@ static TextureData loadPalettedTexture(Buffer b, int tID, int w, int h) {
 	ret.mTextureSize.x = w;
 	ret.mTextureSize.y = h;
 
-	StoredTexture* e = allocMemory(sizeof(StoredTexture));
+	StoredTexture* e = (StoredTexture*)allocMemory(sizeof(StoredTexture));
 	e->mBuffer = copyBuffer(b);
 
 	ret.mTexture = (TextureMemory)e;
@@ -84,8 +90,8 @@ static void appendBufferBufferPadded(Buffer* b, Buffer otherBuffer) {
 }
 
 static void writeSinglePalette(void* tCaller, void* tData) {
-	Buffer* b = tCaller;
-	Buffer* palette = tData;
+	Buffer* b = (Buffer*)tCaller;
+	Buffer* palette = (Buffer*)tData;
 
 	appendBufferUint32(b, palette->mLength);
 	appendBufferBufferPadded(b, *palette);
@@ -104,8 +110,8 @@ typedef struct {
 } TraversalCaller;
 
 static void traverseSpriteSubSprite(void* tCaller, void* tData) {
-	TraversalCaller* caller = tCaller;
-	MugenSpriteFileSubSprite* subsprite = tData;
+	TraversalCaller* caller = (TraversalCaller*)tCaller;
+	MugenSpriteFileSubSprite* subsprite = (MugenSpriteFileSubSprite*)tData;
 
 	StoredTexture* texture = (StoredTexture*)subsprite->mTexture.mTexture;
 	texture->group = caller->group;
@@ -115,8 +121,8 @@ static void traverseSpriteSubSprite(void* tCaller, void* tData) {
 
 
 static void traverseSprite(void* tCaller, char* tKey, void* tData) {
-	TraversalCaller* caller = tCaller;
-	MugenSpriteFileSprite* sprite = tData;
+	TraversalCaller* caller = (TraversalCaller*)tCaller;
+	MugenSpriteFileSprite* sprite = (MugenSpriteFileSprite*)tData;
 
 	int spriteNumber = atoi(tKey);
 	caller->sprite = spriteNumber;
@@ -131,7 +137,7 @@ static void traverseSprite(void* tCaller, char* tKey, void* tData) {
 }
 
 static void traverseGroup(void* tCaller, char* tKey, void* tData) {
-	MugenSpriteFileGroup* group = tData;
+	MugenSpriteFileGroup* group = (MugenSpriteFileGroup*)tData;
 
 	int groupNumber = atoi(tKey);
 	
@@ -146,8 +152,8 @@ static void traverseSpritesAndAnnotateIndices(MugenSpriteFile* tSprites) {
 }
 
 static void annotateSpriteSubSprite(void* tCaller, void* tData) {
-	TraversalCaller* caller = tCaller;
-	MugenSpriteFileSubSprite* subsprite = tData;
+	TraversalCaller* caller = (TraversalCaller*)tCaller;
+	MugenSpriteFileSubSprite* subsprite = (MugenSpriteFileSubSprite*)tData;
 
 	StoredTexture* texture = (StoredTexture*)subsprite->mTexture.mTexture;
 	caller->group = texture->group;
@@ -155,8 +161,8 @@ static void annotateSpriteSubSprite(void* tCaller, void* tData) {
 }
 
 static void writeSpriteSubSprite(void* tCaller, void* tData) {
-	TraversalCaller* caller = tCaller;
-	MugenSpriteFileSubSprite* subsprite = tData;
+	TraversalCaller* caller = (TraversalCaller*)tCaller;
+	MugenSpriteFileSubSprite* subsprite = (MugenSpriteFileSubSprite*)tData;
 
 	appendBufferInt32(caller->b, subsprite->mOffset.x);
 	appendBufferInt32(caller->b, subsprite->mOffset.y);
@@ -185,9 +191,31 @@ static void writeSpriteSubSprite(void* tCaller, void* tData) {
 	caller->sprite = texture->sprite;
 }
 
+static void appendPreloadedBlock(Buffer* b) {
+	uint64_t blockSize = (b->mLength - gData.mBlockHeaderPosition) - 8;
+	uint32_t* blockHeader = (uint32_t*)&(((char*)b->mData)[gData.mBlockHeaderPosition]);
+	*blockHeader = gData.mSpriteAmountInBlock;
+	blockHeader++;
+	*blockHeader = (uint32_t)blockSize;
+
+	gData.mBlockAmount++;
+	gData.mBlockHeaderPosition = b->mLength;
+	gData.mSpriteAmountInBlock = 0;
+	appendBufferUint32(b, (uint32_t)0);
+	appendBufferUint32(b, (uint32_t)0);
+}
+
+static void updatePreloadedBlock(Buffer* b) {
+	uint64_t blockSize = (b->mLength - gData.mBlockHeaderPosition) - 8;
+
+	if (blockSize < 1024 * 200) return;
+
+	appendPreloadedBlock(b);
+}
+
 static void writeSprite(void* tCaller, void* tData) {
-	Buffer* b = tCaller;
-	MugenSpriteFileSprite* sprite = tData;
+	Buffer* b = (Buffer*)tCaller;
+	MugenSpriteFileSprite* sprite = (MugenSpriteFileSprite*)tData;
 
 	appendBufferInt32(b, sprite->mIsLinked);
 	appendBufferInt32(b, sprite->mIsLinkedTo);
@@ -223,12 +251,32 @@ static void writeSprite(void* tCaller, void* tData) {
 	appendBufferUint32(b, (uint32_t)list_size(&sprite->mTextures));
 
 	list_map(&sprite->mTextures, writeSpriteSubSprite, &caller);
+
+	gData.mSpriteAmountInBlock++;
+	updatePreloadedBlock(b);
 }
 
 static void writeSprites(Buffer* b, MugenSpriteFile* tSprites) {
-	appendBufferUint32(b, (uint32_t)vector_size(&tSprites->mAllSprites));
+	
+	gData.mBlockAmountPosition = b->mLength;
+	gData.mBlockAmount = 0;
+	appendBufferUint32(b, (uint32_t)0);
+
+	gData.mBlockHeaderPosition = b->mLength;
+	gData.mSpriteAmountInBlock = 0;
+	appendBufferUint32(b, (uint32_t)0);
+	appendBufferUint32(b, (uint32_t)0);
 
 	vector_map(&tSprites->mAllSprites, writeSprite, b);
+
+	if (gData.mSpriteAmountInBlock) {
+		appendPreloadedBlock(b);
+	}
+
+	b->mLength -= 8;
+
+	uint32_t* blockAmount = (uint32_t*)&(((char*)b->mData)[gData.mBlockAmountPosition]);
+	*blockAmount = gData.mBlockAmount;
 }
 
 static Buffer convertMugenSpriteFileToPreloaded(MugenSpriteFile* tSprites) {
@@ -296,7 +344,7 @@ static void ConvertSFFRecursively(LPCTSTR lpFolder, LPCTSTR lpFilePattern, int t
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFindFile;
 	// first we are going to process any subdirectories
-	PathCombine(szFullPattern, lpFolder, L"*");
+	PathCombine(szFullPattern, (WCHAR*)lpFolder, L"*");
 	hFindFile = FindFirstFile(szFullPattern, &FindFileData);
 	if (hFindFile != INVALID_HANDLE_VALUE)
 	{
@@ -307,8 +355,10 @@ static void ConvertSFFRecursively(LPCTSTR lpFolder, LPCTSTR lpFilePattern, int t
 				if (!lstrcmpW(L".", FindFileData.cFileName)) continue;
 				if (!lstrcmpW(L"..", FindFileData.cFileName)) continue;
 				// found a subdirectory; recurse into it
-				PathCombine(szFullPattern, lpFolder, FindFileData.cFileName);
+				PathCombine(szFullPattern, (WCHAR*)lpFolder, FindFileData.cFileName);
 				
+				if (!lstrcmpW(L"story", FindFileData.cFileName)) continue;
+
 				int newIsCharacter = tIsCharacter | !lstrcmpW(L"chars", FindFileData.cFileName);
 				ConvertSFFRecursively(szFullPattern, lpFilePattern, newIsCharacter);
 			}
@@ -317,7 +367,7 @@ static void ConvertSFFRecursively(LPCTSTR lpFolder, LPCTSTR lpFilePattern, int t
 	}
 
 	// Now we are going to look for the matching files
-	PathCombine(szFullPattern, lpFolder, lpFilePattern);
+	PathCombine(szFullPattern, (WCHAR*)lpFolder, (WCHAR*)lpFilePattern);
 	hFindFile = FindFirstFile(szFullPattern, &FindFileData);
 	if (hFindFile != INVALID_HANDLE_VALUE)
 	{
@@ -326,7 +376,7 @@ static void ConvertSFFRecursively(LPCTSTR lpFolder, LPCTSTR lpFilePattern, int t
 			if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			{
 				// found a file; do something with it
-				PathCombine(szFullPattern, lpFolder, FindFileData.cFileName);
+				PathCombine(szFullPattern, (WCHAR*)lpFolder, FindFileData.cFileName);
 				parseSingleSFF(szFullPattern, tIsCharacter);
 			}
 		} while (FindNextFile(hFindFile, &FindFileData));
@@ -340,7 +390,7 @@ static void DeletePreloadedRecursively(LPCTSTR lpFolder, LPCTSTR lpFilePattern)
 	WIN32_FIND_DATA FindFileData;
 	HANDLE hFindFile;
 	// first we are going to process any subdirectories
-	PathCombine(szFullPattern, lpFolder, L"*");
+	PathCombine(szFullPattern, (WCHAR*)lpFolder, L"*");
 	hFindFile = FindFirstFile(szFullPattern, &FindFileData);
 	if (hFindFile != INVALID_HANDLE_VALUE)
 	{
@@ -351,7 +401,7 @@ static void DeletePreloadedRecursively(LPCTSTR lpFolder, LPCTSTR lpFilePattern)
 				if (!lstrcmpW(L".", FindFileData.cFileName)) continue;
 				if (!lstrcmpW(L"..", FindFileData.cFileName)) continue;
 				// found a subdirectory; recurse into it
-				PathCombine(szFullPattern, lpFolder, FindFileData.cFileName);
+				PathCombine(szFullPattern, (WCHAR*)lpFolder, FindFileData.cFileName);
 
 				DeletePreloadedRecursively(szFullPattern, lpFilePattern);
 			}
@@ -360,7 +410,7 @@ static void DeletePreloadedRecursively(LPCTSTR lpFolder, LPCTSTR lpFilePattern)
 	}
 
 	// Now we are going to look for the matching files
-	PathCombine(szFullPattern, lpFolder, lpFilePattern);
+	PathCombine(szFullPattern, (WCHAR*)lpFolder, (WCHAR*)lpFilePattern);
 	hFindFile = FindFirstFile(szFullPattern, &FindFileData);
 	if (hFindFile != INVALID_HANDLE_VALUE)
 	{
@@ -369,7 +419,7 @@ static void DeletePreloadedRecursively(LPCTSTR lpFolder, LPCTSTR lpFilePattern)
 			if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			{
 				// found a file; do something with it
-				PathCombine(szFullPattern, lpFolder, FindFileData.cFileName);
+				PathCombine(szFullPattern, (WCHAR*)lpFolder, FindFileData.cFileName);
 				char command[MAX_PATH];
 				sprintf(command, "del %ws", szFullPattern);
 				system(command);
@@ -383,9 +433,9 @@ int main(int argc, char* argv[])
 {
 	initPrismWrapperWithMugenFlags();
 
-	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.preloaded");
-	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
-	// ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
+	//DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.preloaded");
+	//DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
+	ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
 	return 0;
 }
 

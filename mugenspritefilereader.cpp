@@ -1201,6 +1201,11 @@ static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 }
 
 typedef struct {
+	uint32_t mBlockSpriteAmount;
+	uint32_t mBlockSize;
+} PreloadedBlock;
+
+typedef struct {
 	int32_t mIsLinked;
 	int32_t mIsLinkedTo;
 
@@ -1241,13 +1246,34 @@ static void loadSingleSpritePreloaded(MugenSpriteFile* tDst) {
 	insertTextureIntoSpriteFile(tDst, sprite, spriteHeader.mGroupNumber, spriteHeader.mSpriteNumber);
 }
 
+static void initBufferReaderReadOnlyBuffer(MugenSpriteFileReader* tReader, Buffer tBuffer);
+
+static void loadSingleBlockPreloaded(MugenSpriteFile* tDst) {
+	PreloadedBlock header;
+
+	gData.mReader.mRead(&gData.mReader, &header, sizeof(PreloadedBlock));
+	char* buf = (char*)allocMemory(header.mBlockSize + 2);
+	gData.mReader.mRead(&gData.mReader, buf, header.mBlockSize);
+	Buffer b = makeBufferOwned(buf, header.mBlockSize);
+
+	MugenSpriteFileReader originalReader = gData.mReader;
+	setMugenSpriteFileReaderToBuffer();
+	initBufferReaderReadOnlyBuffer(&gData.mReader, b);
+
+	for (uint32_t i = 0; i < header.mBlockSpriteAmount; i++) {
+		loadSingleSpritePreloaded(tDst);
+	}
+
+	gData.mReader.mDelete(&gData.mReader);
+	gData.mReader = originalReader;
+}
+
 static void loadSpritesPreloaded(MugenSpriteFile* tDst) {
 	uint32_t amount;
 	gData.mReader.mRead(&gData.mReader, &amount, 4);
-
 	uint32_t i;
 	for (i = 0; i < amount; i++) {
-		loadSingleSpritePreloaded(tDst);
+		loadSingleBlockPreloaded(tDst);
 	}
 
 }
@@ -1428,6 +1454,14 @@ typedef struct {
 static void initBufferReader(MugenSpriteFileReader* tReader, char* tPath) {
 	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)allocMemory(sizeof(MugenSpriteFileBufferReaderData));
 	data->b = fileToBuffer(tPath);
+	data->p = getBufferPointer(data->b);
+	data->mIsOver = 0;
+	tReader->mData = data;
+}
+
+static void initBufferReaderReadOnlyBuffer(MugenSpriteFileReader* tReader, Buffer tBuffer) {
+	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)allocMemory(sizeof(MugenSpriteFileBufferReaderData));
+	data->b = tBuffer;
 	data->p = getBufferPointer(data->b);
 	data->mIsOver = 0;
 	tReader->mData = data;
