@@ -1193,7 +1193,9 @@ static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 		data = loadTextureFromTwiddledARGB16Buffer(b, header.mTextureSize.x, header.mTextureSize.y);
 	}
 
-    freeBuffer(b);
+	if (isOnDreamcast()) {
+		freeBuffer(b); // TODO: fix
+	}
 
 	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
 	newSprite->mOffset = header.mOffset;

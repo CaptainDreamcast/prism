@@ -27,6 +27,8 @@ static struct {
 
 	int mBlockAmount;
 	int mSpriteAmountInBlock;
+
+	int mIsInPortraitMode;
 } gData;
 
 static TextureData loadTextureARGB16(Buffer b, int w, int h) {
@@ -174,7 +176,7 @@ static void writeSpriteSubSprite(void* tCaller, void* tData) {
 
 	StoredTexture* texture = (StoredTexture*)subsprite->mTexture.mTexture;
 	Buffer* rawBuffer = &texture->mBuffer;
-	Buffer dataBuffer = *rawBuffer;
+	Buffer dataBuffer = copyBuffer(*rawBuffer);
 	if (subsprite->mTexture.mHasPalette) {
 		compressBufferZSTD(&dataBuffer);
 		appendBufferUint32(caller->b, dataBuffer.mLength);
@@ -217,6 +219,20 @@ static void writeSprite(void* tCaller, void* tData) {
 	Buffer* b = (Buffer*)tCaller;
 	MugenSpriteFileSprite* sprite = (MugenSpriteFileSprite*)tData;
 
+	TraversalCaller caller;
+	caller.b = b;
+	caller.group = -1;
+	caller.sprite = -1;
+
+	if (sprite->mIsLinked) {
+		caller.group = sprite->mOriginalTextureSize.x;
+		caller.sprite = sprite->mOriginalTextureSize.y;
+	}
+	else {
+		list_map(&sprite->mTextures, annotateSpriteSubSprite, &caller);
+	}
+	if (gData.mIsInPortraitMode && caller.group != 9000) return;
+
 	appendBufferInt32(b, sprite->mIsLinked);
 	appendBufferInt32(b, sprite->mIsLinkedTo);
 	appendBufferFloat(b, (float)sprite->mAxisOffset.x);
@@ -234,14 +250,6 @@ static void writeSprite(void* tCaller, void* tData) {
 		gData.mSpriteAmountInBlock++;
 		return;
 	}
-
-
-
-	TraversalCaller caller;
-	caller.b = b;
-	caller.group = -1;
-	caller.sprite = -1;
-	list_map(&sprite->mTextures, annotateSpriteSubSprite, &caller);
 
 	appendBufferInt32(b, caller.group);
 	appendBufferInt32(b, caller.sprite);
@@ -280,7 +288,7 @@ static void writeSprites(Buffer* b, MugenSpriteFile* tSprites) {
 	*blockAmount = gData.mBlockAmount;
 }
 
-static Buffer convertMugenSpriteFileToPreloaded(MugenSpriteFile* tSprites) {
+static Buffer convertMugenSpriteFileToPreloadedGeneral(MugenSpriteFile* tSprites) {
 	Buffer b = makeBufferEmptyOwned();
 	writeSharedHeader(&b);
 	writePalettes(&b, tSprites);
@@ -288,6 +296,16 @@ static Buffer convertMugenSpriteFileToPreloaded(MugenSpriteFile* tSprites) {
 	writeSprites(&b, tSprites);
 
 	return b;
+}
+
+static Buffer convertMugenSpriteFileToPreloaded(MugenSpriteFile* tSprites) {
+	gData.mIsInPortraitMode = 0;
+	return convertMugenSpriteFileToPreloadedGeneral(tSprites);
+}
+
+static Buffer convertMugenSpriteFileToPreloadedPortrait(MugenSpriteFile* tSprites) {
+	gData.mIsInPortraitMode = 1;
+	return convertMugenSpriteFileToPreloadedGeneral(tSprites);
 }
 
 static void convertPlayerSFF(char* tPath) {
@@ -301,7 +319,13 @@ static void convertPlayerSFF(char* tPath) {
 	setMugenSpriteFileReaderToUsePalette(-1);
 	MugenSpriteFile sprites = loadMugenSpriteFile(tPath, 1, 1, "dummy.act");
 	setMugenSpriteFileReaderToNotUsePalette();
+	
+	
 	Buffer b = convertMugenSpriteFileToPreloaded(&sprites);
+	bufferToFile(outputPath, b);
+
+	sprintf(outputPath, "%s.portraits.preloaded", tPath);
+	b = convertMugenSpriteFileToPreloadedPortrait(&sprites);
 	bufferToFile(outputPath, b);
 
 	popMemoryStack();
