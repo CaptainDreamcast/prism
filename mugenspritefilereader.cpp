@@ -1254,20 +1254,20 @@ static void loadSingleBlockPreloaded(MugenSpriteFile* tDst) {
 	printf("%u\n", gData.mReader.mGetCurrentOffset(&gData.mReader));
 
 	gData.mReader.mRead(&gData.mReader, &header, sizeof(PreloadedBlock));
-	//char* buf = (char*)allocMemory(header.mBlockSize + 2);
-	//gData.mReader.mRead(&gData.mReader, buf, header.mBlockSize);
-	//Buffer b = makeBufferOwned(buf, header.mBlockSize);
+	char* buf = (char*)allocMemory(header.mBlockSize + 2);
+	gData.mReader.mRead(&gData.mReader, buf, header.mBlockSize);
+	Buffer b = makeBufferOwned(buf, header.mBlockSize);
 
-	//MugenSpriteFileReader originalReader = gData.mReader;
-	//setMugenSpriteFileReaderToBuffer();
-	//initBufferReaderReadOnlyBuffer(&gData.mReader, b);
+	MugenSpriteFileReader originalReader = gData.mReader;
+	setMugenSpriteFileReaderToBuffer();
+	initBufferReaderReadOnlyBuffer(&gData.mReader, b);
 
 	for (uint32_t i = 0; i < header.mBlockSpriteAmount; i++) {
 		loadSingleSpritePreloaded(tDst);
 	}
 
-	//gData.mReader.mDelete(&gData.mReader);
-	//gData.mReader = originalReader;
+	gData.mReader.mDelete(&gData.mReader);
+	gData.mReader = originalReader;
 }
 
 static void loadSpritesPreloaded(MugenSpriteFile* tDst) {
