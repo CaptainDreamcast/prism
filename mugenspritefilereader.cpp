@@ -1254,6 +1254,10 @@ static void loadSingleBlockPreloaded(MugenSpriteFile* tDst) {
 	printf("%u\n", gData.mReader.mGetCurrentOffset(&gData.mReader));
 
 	gData.mReader.mRead(&gData.mReader, &header, sizeof(PreloadedBlock));
+
+	printf("a alloc: %d\n", getAllocatedMemoryBlockAmount());
+	malloc_stats();
+
 	char* buf = (char*)allocMemory(header.mBlockSize + 2);
 	gData.mReader.mRead(&gData.mReader, buf, header.mBlockSize);
 	Buffer b = makeBufferOwned(buf, header.mBlockSize);
@@ -1268,6 +1272,10 @@ static void loadSingleBlockPreloaded(MugenSpriteFile* tDst) {
 
 	gData.mReader.mDelete(&gData.mReader);
 	gData.mReader = originalReader;
+
+	malloc_stats();
+
+	printf("b alloc: %d\n", getAllocatedMemoryBlockAmount());
 }
 
 static void loadSpritesPreloaded(MugenSpriteFile* tDst) {

@@ -208,7 +208,7 @@ static void appendPreloadedBlock(Buffer* b) {
 static void updatePreloadedBlock(Buffer* b) {
 	uint64_t blockSize = (b->mLength - gData.mBlockHeaderPosition) - 8;
 
-	if (blockSize < 1024 * 200) return;
+	if (blockSize < 1024 * 20) return;
 
 	appendPreloadedBlock(b);
 }
