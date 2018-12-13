@@ -27,6 +27,7 @@ static struct {
 
 	int mIsLoopStart;
 	int mIsReadingDefaultHitbox;
+	int mIsReadingHitbox1;
 
 	MemoryStack* mMemoryStack;
 } gMugenAnimationState;
@@ -232,11 +233,21 @@ static void handleHitboxSizeAssignment(char* tName) {
 	char name[100];
 	sscanf(tName, "%s", name);
 
-	if (!strcmp("clsn1default", name) || !strcmp("clsn2default", name)) {
+	if (!strcmp("clsn1default", name)) {
 		gMugenAnimationState.mIsReadingDefaultHitbox = 1;
+		gMugenAnimationState.mIsReadingHitbox1 = 1;
 	}
-	else if(!strcmp("clsn1", name) || !strcmp("clsn2", name)) {
+	else if(!strcmp("clsn2default", name)) {
+		gMugenAnimationState.mIsReadingDefaultHitbox = 1;
+		gMugenAnimationState.mIsReadingHitbox1 = 0;
+	}
+	else if (!strcmp("clsn1", name)) {
 		gMugenAnimationState.mIsReadingDefaultHitbox = 0;
+		gMugenAnimationState.mIsReadingHitbox1 = 1;
+	}
+	else if (!strcmp("clsn2", name)) {
+		gMugenAnimationState.mIsReadingDefaultHitbox = 0;
+		gMugenAnimationState.mIsReadingHitbox1 = 0;
 	}
 	else {
 		logError("Unrecognized collision size name.");
@@ -271,14 +282,7 @@ static void handleCollisionHitboxAssignment(List* tHitboxes, MugenDefScriptGroup
 }
 
 static void handleHitboxAssignment(MugenDefScriptGroupElement* tElement) {
-	char name[100];
-	strcpy(name, tElement->mName);
-	char* opening = strchr(name, '[');
-	assert(opening);
-	*opening = '\0';
-
-
-	if (!strcmp("clsn1", name)) {
+	if (gMugenAnimationState.mIsReadingHitbox1) {
 		if (gMugenAnimationState.mIsReadingDefaultHitbox) {
 			handleCollisionHitboxAssignment(&gMugenAnimationState.mDefaultHitboxes1, tElement);
 		}
@@ -287,7 +291,7 @@ static void handleHitboxAssignment(MugenDefScriptGroupElement* tElement) {
 			handleCollisionHitboxAssignment(&gMugenAnimationState.mOwnHitbox1, tElement);
 		}
 	}
-	else if (!strcmp("clsn2", name)) {
+	else {
 		if (gMugenAnimationState.mIsReadingDefaultHitbox) {
 			handleCollisionHitboxAssignment(&gMugenAnimationState.mDefaultHitboxes2, tElement);
 		}
@@ -296,12 +300,6 @@ static void handleHitboxAssignment(MugenDefScriptGroupElement* tElement) {
 			handleCollisionHitboxAssignment(&gMugenAnimationState.mOwnHitbox2, tElement);
 		}
 	}
-	else {
-		logError("Unable to decode assignment type.");
-		logErrorString(name);
-		recoverFromError();
-	}
-
 }
 
 static int isHitboxAssignment(char* tName) {

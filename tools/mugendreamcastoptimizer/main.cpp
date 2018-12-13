@@ -208,7 +208,7 @@ static void appendPreloadedBlock(Buffer* b) {
 static void updatePreloadedBlock(Buffer* b) {
 	uint64_t blockSize = (b->mLength - gData.mBlockHeaderPosition) - 8;
 
-	if (blockSize < 1024 * 20) return;
+	if (blockSize < 1024 * 100) return;
 
 	appendPreloadedBlock(b);
 }
@@ -434,9 +434,9 @@ int main(int argc, char* argv[])
 {
 	initPrismWrapperWithMugenFlags();
 
-	//DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.preloaded");
-	//DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
-	ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
+	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.preloaded");
+	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
+	//ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
 	return 0;
 }
 
