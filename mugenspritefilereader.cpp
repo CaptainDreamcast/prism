@@ -1193,6 +1193,8 @@ static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 		data = loadTextureFromTwiddledARGB16Buffer(b, header.mTextureSize.x, header.mTextureSize.y);
 	}
 
+    freeBuffer(b);
+
 	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
 	newSprite->mOffset = header.mOffset;
 	newSprite->mTexture = data;
@@ -1251,12 +1253,7 @@ static void initBufferReaderReadOnlyBuffer(MugenSpriteFileReader* tReader, Buffe
 static void loadSingleBlockPreloaded(MugenSpriteFile* tDst) {
 	PreloadedBlock header;
 
-	printf("%u\n", gData.mReader.mGetCurrentOffset(&gData.mReader));
-
 	gData.mReader.mRead(&gData.mReader, &header, sizeof(PreloadedBlock));
-
-	printf("a alloc: %d\n", getAllocatedMemoryBlockAmount());
-	malloc_stats();
 
 	char* buf = (char*)allocMemory(header.mBlockSize + 2);
 	gData.mReader.mRead(&gData.mReader, buf, header.mBlockSize);
@@ -1272,15 +1269,11 @@ static void loadSingleBlockPreloaded(MugenSpriteFile* tDst) {
 
 	gData.mReader.mDelete(&gData.mReader);
 	gData.mReader = originalReader;
-
-	malloc_stats();
-
-	printf("b alloc: %d\n", getAllocatedMemoryBlockAmount());
 }
 
 static void loadSpritesPreloaded(MugenSpriteFile* tDst) {
 	uint32_t amount;
-	printf("%u\n", gData.mReader.mGetCurrentOffset(&gData.mReader));
+
 	gData.mReader.mRead(&gData.mReader, &amount, 4);
 	uint32_t i;
 	for (i = 0; i < amount; i++) {
