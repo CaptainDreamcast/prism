@@ -158,7 +158,7 @@ static void handleSingleInterpolationGroupElement(BlitzTimelineAnimation* tAnima
 		handleSingleGroupElement(BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_MUGEN_POSITION_Y, tAnimation, tTime, tElement, tStepType);
 	}
 	else {
-		logWarningFormat("Unrecognized interpolation group element: %s", tElement->mName);
+		logWarningFormat("Unrecognized interpolation group element: %s", tElement->mName.data());
 	}
 }
 

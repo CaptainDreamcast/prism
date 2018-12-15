@@ -409,7 +409,7 @@ static void loadSingleAnimationElementStatement(void* tCaller, void* tData) {
 	}
 	else {
 		logWarning("Unrecognized type.");
-		logWarningString(element->mName);
+		logWarningString(element->mName.data());
 	}
 }
 
