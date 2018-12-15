@@ -67,6 +67,12 @@ int stl_map_contains(std::map<K, V>& tMap, K tID)
 	return tMap.find(tID) != tMap.end();
 }
 
+template<class V>
+int stl_string_map_contains_array(std::map<std::string, V>& tMap, const char* tID)
+{
+	return tMap.find(tID) != tMap.end();
+}
+
 template<class T>
 int stl_set_contains(std::set<T>& tSet, T tID)
 {

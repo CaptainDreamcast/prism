@@ -96,7 +96,7 @@ static MugenAnimation* makeEmptyMugenAnimation(int tID) {
 static int getAnimationID(MugenDefScriptGroup* tGroup) {
 	char text1[20], text2[20];
 	int ret;
-	sscanf(tGroup->mName, "%s %s %d", text1, text2, &ret);
+	sscanf(tGroup->mName.data(), "%s %s %d", text1, text2, &ret);
 	return ret;
 }
 
@@ -105,7 +105,7 @@ typedef struct {
 	int mGroupID;
 } AnimationLoadCaller;
 
-static int isAnimationVector(char* tVariableName) {
+static int isAnimationVector(const char* tVariableName) {
 	char text[100];
 	sscanf(tVariableName, "%s", text);
 	return !strcmp(text, "vector_statement");
@@ -229,7 +229,7 @@ static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, M
 	resetSingleAnimationState();
 }
 
-static void handleHitboxSizeAssignment(char* tName) {
+static void handleHitboxSizeAssignment(const char* tName) {
 	char name[100];
 	sscanf(tName, "%s", name);
 
@@ -256,7 +256,7 @@ static void handleHitboxSizeAssignment(char* tName) {
 	}
 }
 
-static int isHitboxSizeAssignment(char* tName) {
+static int isHitboxSizeAssignment(const char* tName) {
 	char name[100];
 	sscanf(tName, "%s", name);
 	return !strcmp("clsn2default", name) || !strcmp("clsn2", name) || !strcmp("clsn1default", name) || !strcmp("clsn1", name);
@@ -302,7 +302,7 @@ static void handleHitboxAssignment(MugenDefScriptGroupElement* tElement) {
 	}
 }
 
-static int isHitboxAssignment(char* tName) {
+static int isHitboxAssignment(const char* tName) {
 	char name[100];
 	strcpy(name, tName);
 	char* opening = strchr(name, '[');
@@ -314,7 +314,7 @@ static int isHitboxAssignment(char* tName) {
 }
 
 
-static int isLoopStart(char* tVariableName) {
+static int isLoopStart(const char* tVariableName) {
 	char text[100];
 	sscanf(tVariableName, "%s", text);
 	return !strcmp(text, "Loopstart");
@@ -324,7 +324,7 @@ static void handleLoopStart() {
 	gMugenAnimationState.mIsLoopStart = 1;
 }
 
-static int isInterpolation(char* tVariableName) {
+static int isInterpolation(const char* tVariableName) {
 	char text1[100], text2[100];
 	int items = sscanf(tVariableName, "%s %s", text1, text2);
 	if (items < 2) return 0;
@@ -366,7 +366,7 @@ static void handleAngleInterpolation(MugenAnimations* tAnimation, int tGroup) {
 
 static void handleInterpolation(MugenDefScriptGroupElement* e, MugenAnimations* tAnimation, int tGroup) {
 	char text1[100], text2[100];
-	int items = sscanf(e->mName, "%s %s", text1, text2);
+	int items = sscanf(e->mName.data(), "%s %s", text1, text2);
 	assert(items == 2);
 	assert(!strcmp("Interpolate", text1));
 
@@ -393,18 +393,18 @@ static void loadSingleAnimationElementStatement(void* tCaller, void* tData) {
 	MugenDefScriptGroupElement* element = (MugenDefScriptGroupElement*)tData;
 	AnimationLoadCaller* caller = (AnimationLoadCaller*)tCaller;
 
-	if (isAnimationVector(element->mName)) {
+	if (isAnimationVector(element->mName.data())) {
 		handleNewAnimationStep(caller->mAnimations, caller->mGroupID, element);
-	} else if (isHitboxSizeAssignment(element->mName)) {
-		handleHitboxSizeAssignment(element->mName);
+	} else if (isHitboxSizeAssignment(element->mName.data())) {
+		handleHitboxSizeAssignment(element->mName.data());
 	}
-	else if (isHitboxAssignment(element->mName)) {
+	else if (isHitboxAssignment(element->mName.data())) {
 		handleHitboxAssignment(element);
 	}
-	else if (isLoopStart(element->mName)) {
+	else if (isLoopStart(element->mName.data())) {
 		handleLoopStart();
 	}
-	else if (isInterpolation(element->mName)) {
+	else if (isInterpolation(element->mName.data())) {
 		handleInterpolation(element, caller->mAnimations, caller->mGroupID);
 	}
 	else {
@@ -416,7 +416,7 @@ static void loadSingleAnimationElementStatement(void* tCaller, void* tData) {
 static int isAnimationGroup(MugenDefScriptGroup* tGroup) {
 	char text1[100], text2[100], val[100];
 
-	int items = sscanf(tGroup->mName, "%s %s %s", text1, text2, val);
+	int items = sscanf(tGroup->mName.data(), "%s %s %s", text1, text2, val);
 
 	if (items != 3) return 0;
 

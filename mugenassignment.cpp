@@ -855,9 +855,9 @@ MugenAssignment * parseMugenAssignmentFromString(char * tText)
 
 
 int fetchMugenAssignmentFromGroupAndReturnWhetherItExists(char* tName, MugenDefScriptGroup* tGroup, MugenAssignment** tOutput) {
-	if (!string_map_contains(&tGroup->mElements, tName)) return 0;
+	if (!stl_string_map_contains_array(tGroup->mElements, tName)) return 0;
 
-	MugenDefScriptGroupElement* e = (MugenDefScriptGroupElement*)string_map_get(&tGroup->mElements, tName);
+	MugenDefScriptGroupElement* e = &tGroup->mElements[tName];
 	char* text = getAllocatedMugenDefStringVariableAsElement(e);
 	*tOutput = parseMugenAssignmentFromString(text);
 	freeMemory(text);

@@ -20,7 +20,7 @@ static BlitzTimelineAnimations makeEmptyTimelineAnimations() {
 
 static int isAnimationHeaderGroup(MugenDefScriptGroup* tGroup) {
 	char text[100];
-	strcpy(text, tGroup->mName);
+	strcpy(text, tGroup->mName.data());
 	turnStringLowercase(text);
 
 	return !strncmp(text, "animationdef", strlen("animationdef"));
@@ -29,7 +29,7 @@ static int isAnimationHeaderGroup(MugenDefScriptGroup* tGroup) {
 static BlitzTimelineAnimation* loadBlitzTimelineAnimationHeaderFromGroup(MugenDefScriptGroup* tGroup) {
 	BlitzTimelineAnimation* e = (BlitzTimelineAnimation*)allocMemory(sizeof(BlitzTimelineAnimation));
 	char mGroupTextString[100];
-	sscanf(tGroup->mName, "%s %d", mGroupTextString, &e->mID);
+	sscanf(tGroup->mName.data(), "%s %d", mGroupTextString, &e->mID);
 	e->mDuration = getMugenDefIntegerOrDefaultAsGroup(tGroup, "duration", 0);
 	e->mIsLooping = getMugenDefIntegerOrDefaultAsGroup(tGroup, "loop", 0);
 	e->BlitzTimelineAnimationSteps = new_vector();
@@ -38,13 +38,13 @@ static BlitzTimelineAnimation* loadBlitzTimelineAnimationHeaderFromGroup(MugenDe
 
 static int isInterpolationGroup(MugenDefScriptGroup* tGroup) {
 	char text[100];
-	strcpy(text, tGroup->mName);
+	strcpy(text, tGroup->mName.data());
 	turnStringLowercase(text);
 	return !strcmp("interpolation", text);
 }
 
 static int isNamedElement(MugenDefScriptGroupElement* tElement, char* tName) {
-	return !strcmp(tName, tElement->mName);
+	return !strcmp(tName, tElement->mName.data());
 }
 
 static void addStaticAnimationStep(BlitzTimelineAnimation* tAnimation, int tTime, MugenDefScriptGroupElement* tElement, BlitzTimelineAnimationStepTargetType tTargetType, BlitzTimelineAnimationStepType tStepType) {
@@ -180,7 +180,7 @@ static void handleInterpolationGroup(BlitzTimelineAnimation* tAnimation, MugenDe
 
 static int isSettingGroup(MugenDefScriptGroup* tGroup) {
 	char text[100];
-	strcpy(text, tGroup->mName);
+	strcpy(text, tGroup->mName.data());
 	turnStringLowercase(text);
 	return !strcmp("set", text);
 }

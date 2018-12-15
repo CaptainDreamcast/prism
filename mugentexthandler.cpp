@@ -164,7 +164,7 @@ static void loadMugenElecbyteFont(MugenDefScript* tScript, Buffer tTextureBuffer
 	e->mType = getMugenElecbyteFontType(tScript);
 
 	e->mMap = new_int_map();
-	MugenDefScriptGroup* group = (MugenDefScriptGroup*)string_map_get(&tScript->mGroups, "Map");
+	MugenDefScriptGroup* group = &tScript->mGroups["Map"];
 
 	ElecbyteMapParseCaller caller;
 	caller.mFont = tFont;

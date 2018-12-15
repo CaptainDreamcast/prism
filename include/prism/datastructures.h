@@ -1,7 +1,7 @@
 #pragma once
 
 void turnStringLowercase(char* tString);
-void copyStringLowercase(char* tDst, char* tSrc);
+void copyStringLowercase(char* tDst, const char* tSrc);
 char* copyToAllocatedString(char* tSrc); // TODO: remove duplicate
 
 typedef struct ListElement_internal {

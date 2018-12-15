@@ -24,7 +24,7 @@ void turnStringLowercase(char* tString) {
 	}
 }
 
-void copyStringLowercase(char* tDst, char* tSrc) {
+void copyStringLowercase(char* tDst, const char* tSrc) {
 	int n = strlen(tSrc);
 	int i;
 	for (i = 0; i <= n; i++) {
