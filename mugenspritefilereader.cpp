@@ -1048,7 +1048,7 @@ static void insertLinkedTextureIntoSpriteFile2(MugenSpriteFile* tDst, SFFSprite2
 	insertTextureIntoSpriteFile(tDst, e, tSprite->mGroupNo, tSprite->mItemNo);
 }
 
-static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tPreferredPalette) {
+static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tPreferredPalette, int tHasPalette) {
 	SFFSprite2 sprite;
 	gData.mReader.mRead(&gData.mReader, &sprite, sizeof(SFFSprite2));
 
@@ -1076,8 +1076,9 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 		Buffer rawBuffer = readRawSprite2(&sprite, tHeader);
 
 		int palette;
-		tPreferredPalette = -1; // TODO: fix
-		if (tPreferredPalette == -1) palette = sprite.mPaletteIndex;
+		int spritePaletteIndex = tHasPalette ? sprite.mPaletteIndex + 1 : sprite.mPaletteIndex;
+		tPreferredPalette = -1; // TODO
+		if (tPreferredPalette == -1) palette = spritePaletteIndex;
 		else palette = tPreferredPalette;
 
 		Buffer* paletteBuffer = (Buffer*)vector_get(&tDst->mPalettes, palette);
@@ -1105,11 +1106,11 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 	insertTextureIntoSpriteFile(tDst, e, sprite.mGroupNo, sprite.mItemNo);
 }
 
-static void loadSprites2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tPreferredPalette) {
+static void loadSprites2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tPreferredPalette, int tHasPalette) {
 	int i = 0;
 	gData.mReader.mSeek(&gData.mReader, tHeader->mSpriteOffset);
 	for (i = 0; i < (int)tHeader->mSpriteTotal; i++) {
-		loadSingleSprite2(tHeader, tDst, tPreferredPalette);
+		loadSingleSprite2(tHeader, tDst, tPreferredPalette, tHasPalette);
 		if(gData.mIsOnlyLoadingPortraits && vector_size(&tDst->mAllSprites) == 2) break;
 	}
 }
@@ -1133,7 +1134,7 @@ static MugenSpriteFile loadMugenSpriteFile2(int tPreferredPalette, int tHasPalet
 
 	loadPalettes2(&header, &ret);
 	tPreferredPalette = min(tPreferredPalette, vector_size(&ret.mPalettes) - 1);
-	loadSprites2(&header, &ret, tPreferredPalette);
+	loadSprites2(&header, &ret, tPreferredPalette, tHasPaletteFile);
 
 	return ret;
 }
