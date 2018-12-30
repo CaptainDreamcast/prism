@@ -322,7 +322,7 @@ static void convertPlayerSFF(char* tPath) {
 	
 	
 	Buffer b = convertMugenSpriteFileToPreloaded(&sprites);
-	bufferToFile(outputPath, b);
+	// bufferToFile(outputPath, b); // TODO: fix
 
 	sprintf(outputPath, "%s.portraits.preloaded", tPath);
 	b = convertMugenSpriteFileToPreloadedPortrait(&sprites);
@@ -332,6 +332,7 @@ static void convertPlayerSFF(char* tPath) {
 }
 
 static void convertNoPlayerSFF(char* tPath) {
+	return; // TODO: fix
 	pushMemoryStack();
 
 	char outputPath[1024];
@@ -460,7 +461,7 @@ int main(int argc, char* argv[])
 
 	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.preloaded");
 	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
-	//ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
+	ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
 	return 0;
 }
 

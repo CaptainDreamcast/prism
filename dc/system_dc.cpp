@@ -131,6 +131,10 @@ void setGameName(char* tName) {
 	(void) tName;
 }
 
+void updateGameName(char* tName) {
+	(void) tName;
+}
+
 int isOnDreamcast() {
 	return 1;
 }

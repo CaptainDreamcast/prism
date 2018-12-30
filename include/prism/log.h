@@ -8,7 +8,8 @@
 typedef enum {
 	LOG_TYPE_NORMAL,
 	LOG_TYPE_WARNING,
-	LOG_TYPE_ERROR
+	LOG_TYPE_ERROR,
+	LOG_TYPE_NONE
 
 } LogType;
 

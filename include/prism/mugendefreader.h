@@ -58,9 +58,9 @@ typedef struct {
 	std::map<std::string, MugenDefScriptGroup> mGroups;
 } MugenDefScript;
 
-MugenDefScript loadMugenDefScript(std::string& tPath);
-MugenDefScript loadMugenDefScript(char* tPath);
-MugenDefScript loadMugenDefScriptFromBufferAndFreeBuffer(Buffer tBuffer);
+void loadMugenDefScript(MugenDefScript* oScript, std::string& tPath);
+void loadMugenDefScript(MugenDefScript* oScript, char* tPath);
+void loadMugenDefScriptFromBufferAndFreeBuffer(MugenDefScript* oScript, Buffer tBuffer);
 void unloadMugenDefScript(MugenDefScript tScript);
 
 int isMugenDefStringVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);

@@ -133,7 +133,8 @@ void initPrismWrapperWithMugenFlags() {
 void initPrismWrapperWithConfigFile(char* tPath) {
 	initBasicSystems();
 
-	MugenDefScript configFile = loadMugenDefScript(tPath);
+	MugenDefScript configFile;
+	loadMugenDefScript(&configFile, tPath);
 	gData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "texthandler", 0);
 	gData.mIsUsingMugen = getMugenDefIntegerOrDefault(&configFile, "Modules", "mugen", 0);
 	if (gData.mIsUsingMugen) {

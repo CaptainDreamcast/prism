@@ -73,6 +73,12 @@ void setGameName(char* tName) {
 	strcpy(gData.mGameName, tName);
 }
 
+void updateGameName(char * tName)
+{
+	strcpy(gData.mGameName, tName);
+	SDL_SetWindowTitle(gSDLWindow, gData.mGameName);
+}
+
 
 #ifdef _WIN32
 #include <windows.h>

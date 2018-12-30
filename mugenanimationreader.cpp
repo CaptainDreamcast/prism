@@ -476,7 +476,8 @@ MugenAnimations loadMugenAnimationFile(char * tPath)
 {
 	MugenAnimations ret = createEmptyMugenAnimationFile();
 
-	MugenDefScript defScript = loadMugenDefScript(tPath);
+	MugenDefScript defScript; 
+	loadMugenDefScript(&defScript, tPath);
 
 	loadAnimationFileFromDefScript(&ret, &defScript);
 	unloadMugenDefScript(defScript);

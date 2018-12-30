@@ -817,29 +817,26 @@ static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken) {
 	}
 }
 
-MugenDefScript loadMugenDefScript(string& tPath) { // TODO: refactor
+void loadMugenDefScript(MugenDefScript* oScript, string& tPath) { // TODO: refactor
 	char path[1024];
 	strcpy(path, tPath.data());
-	return loadMugenDefScript(path);
+	loadMugenDefScript(oScript, path);
 }
 
-MugenDefScript loadMugenDefScript(char * tPath)
+void loadMugenDefScript(MugenDefScript* oScript, char * tPath)
 {
 	debugLog("Start loading script.");
 	debugString(tPath);
-	printf("loading file %s\n", tPath);
+	logFormat("loading file %s\n", tPath);
 	Buffer b = fileToBuffer(tPath);
-	MugenDefScript ret = loadMugenDefScriptFromBufferAndFreeBuffer(b);
-	return ret;
+	loadMugenDefScriptFromBufferAndFreeBuffer(oScript, b);
 }
 
-MugenDefScript loadMugenDefScriptFromBufferAndFreeBuffer(Buffer tBuffer) {
+void loadMugenDefScriptFromBufferAndFreeBuffer(MugenDefScript* oScript, Buffer tBuffer) {
 	MugenDefToken* root = parseTokens(&tBuffer);
-	MugenDefScript d = makeEmptyMugenDefScript();
+	*oScript = makeEmptyMugenDefScript();
 	freeBuffer(tBuffer);
-	tokensToDefScript(&d, root);
-
-	return d;
+	tokensToDefScript(oScript, root);
 }
 
 static void unloadMugenDefScriptFloatElement(MugenDefScriptFloatElement* e) {

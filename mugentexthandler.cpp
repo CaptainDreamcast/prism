@@ -34,13 +34,14 @@ typedef enum {
 } MugenElecbyteFontType;
 
 typedef struct {
+	int mExists;
 	int mStartX;
 	int mWidth;
 
 } MugenElecbyteFontMapEntry;
 
 typedef struct {
-	IntMap mMap;
+	MugenElecbyteFontMapEntry mMap[0xFF];
 	MugenSpriteFileSprite* mSprite;
 
 	MugenElecbyteFontType mType;
@@ -65,8 +66,8 @@ typedef struct {
 } MugenFont;
 
 static struct {
-	IntMap mFonts;
-} gData;
+	map<int, MugenFont> mFonts;
+} gMugenFontData;
 
 static void loadBitmapFont(MugenDefScript* tScript, MugenFont* tFont) {
 	MugenBitmapFont* e = (MugenBitmapFont*)allocMemory(sizeof(MugenBitmapFont));
@@ -100,18 +101,18 @@ static void parseSingleMapElement(void* tCaller, void* tData) {
 	assert(element->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT);
 	MugenDefScriptStringElement* e = (MugenDefScriptStringElement*)element->mData;
 
-	MugenElecbyteFontMapEntry* entry = (MugenElecbyteFontMapEntry*)allocMemory(sizeof(MugenElecbyteFontMapEntry));
+	MugenElecbyteFontMapEntry entry;
 
 	char key[100];
 	if (caller->mElecbyteFont->mType == MUGEN_ELECBYTE_FONT_TYPE_VARIABLE) {
-		int items = sscanf(e->mString, "%s %d %d", key, &entry->mStartX, &entry->mWidth);
+		int items = sscanf(e->mString, "%s %d %d", key, &entry.mStartX, &entry.mWidth);
 		assert(items == 3);
 	}
 	else if (caller->mElecbyteFont->mType == MUGEN_ELECBYTE_FONT_TYPE_FIXED) {
 		int items = sscanf(e->mString, "%s", key);
 		assert(items == 1);
-		entry->mStartX = caller->i * caller->mFont->mSize.x;
-		entry->mWidth = caller->mFont->mSize.x;
+		entry.mStartX = caller->i * caller->mFont->mSize.x;
+		entry.mWidth = caller->mFont->mSize.x;
 	}
 
 	int keyValue;
@@ -128,8 +129,8 @@ static void parseSingleMapElement(void* tCaller, void* tData) {
 		keyValue = -1;
 	}
 
-
-	int_map_push_owned(&caller->mElecbyteFont->mMap, keyValue, entry);
+	entry.mExists = 1;
+	caller->mElecbyteFont->mMap[keyValue % 0xFF] = entry;
 
 	caller->i++;
 }
@@ -163,7 +164,8 @@ static void loadMugenElecbyteFont(MugenDefScript* tScript, Buffer tTextureBuffer
 
 	e->mType = getMugenElecbyteFontType(tScript);
 
-	e->mMap = new_int_map();
+	for (int i = 0; i < 0xFF; i++) e->mMap[i].mExists = 0;
+
 	MugenDefScriptGroup* group = &tScript->mGroups["Map"];
 
 	ElecbyteMapParseCaller caller;
@@ -244,56 +246,51 @@ static void addMugenFont1(int tKey, char* tPath) {
 	Buffer textureBuffer = makeBuffer((void*)(((uint32_t)b.mData) + header.mTextureOffset), header.mTextureLength);
 	Buffer textBuffer = makeBuffer((void*)(((uint32_t)b.mData) + header.mTextOffset), header.mTextLength);
 
-	MugenDefScript script = loadMugenDefScriptFromBufferAndFreeBuffer(textBuffer);
+	MugenDefScript script; 
+	loadMugenDefScriptFromBufferAndFreeBuffer(&script, textBuffer);
 
-	MugenFont* e = (MugenFont*)allocMemory(sizeof(MugenFont));
-	e->mSize = getMugenDefVectorIOrDefault(&script, "Def", "size", makeVector3DI(1, 1, 0));
-	e->mSpacing = getMugenDefVectorIOrDefault(&script, "Def", "spacing", makeVector3DI(0, 0, 0));
-	e->mOffset = getMugenDefVectorIOrDefault(&script, "Def", "offset", makeVector3DI(0, 0, 0));
+	MugenFont& e = gMugenFontData.mFonts[tKey];
+	e.mSize = getMugenDefVectorIOrDefault(&script, "Def", "size", makeVector3DI(1, 1, 0));
+	e.mSpacing = getMugenDefVectorIOrDefault(&script, "Def", "spacing", makeVector3DI(0, 0, 0));
+	e.mOffset = getMugenDefVectorIOrDefault(&script, "Def", "offset", makeVector3DI(0, 0, 0));
 
-	e->mType = MUGEN_FONT_TYPE_ELECBYTE;
-	loadMugenElecbyteFont(&script, textureBuffer, e);
-
-	unloadElecbyteFont(e);
-	loadMugenElecbyteFont(&script, textureBuffer, e);
+	e.mType = MUGEN_FONT_TYPE_ELECBYTE;
+	loadMugenElecbyteFont(&script, textureBuffer, &e);
 
 	unloadMugenDefScript(script);
 
 	freeBuffer(b);
 	resetMugenFontDirectory();
-
-	int_map_push_owned(&gData.mFonts, tKey, e);
 }
 
 static void addMugenFont2(int tKey, char* tPath) {
-	MugenDefScript script = loadMugenDefScript(tPath);
+	MugenDefScript script; 
+	loadMugenDefScript(&script, tPath);
 
 	setMugenFontDirectory2(tPath);
 
-	MugenFont* e = (MugenFont*)allocMemory(sizeof(MugenFont));
-	e->mType = getMugenFontTypeFromScript(&script);
+	MugenFont& e = gMugenFontData.mFonts[tKey];
+	e.mType = getMugenFontTypeFromScript(&script);
 
-	e->mSize = getMugenDefVectorIOrDefault(&script, "Def", "size", makeVector3DI(1, 1, 0));
-	e->mSpacing = getMugenDefVectorIOrDefault(&script, "Def", "spacing", makeVector3DI(0, 0, 0));
-	e->mOffset = getMugenDefVectorIOrDefault(&script, "Def", "offset", makeVector3DI(0, 0, 0));
+	e.mSize = getMugenDefVectorIOrDefault(&script, "Def", "size", makeVector3DI(1, 1, 0));
+	e.mSpacing = getMugenDefVectorIOrDefault(&script, "Def", "spacing", makeVector3DI(0, 0, 0));
+	e.mOffset = getMugenDefVectorIOrDefault(&script, "Def", "offset", makeVector3DI(0, 0, 0));
 
-	if (e->mType == MUGEN_FONT_TYPE_BITMAP) {
-		loadBitmapFont(&script, e);
+	if (e.mType == MUGEN_FONT_TYPE_BITMAP) {
+		loadBitmapFont(&script, &e);
 	}
-	else if (e->mType == MUGEN_FONT_TYPE_TRUETYPE) {
-		loadMugenTruetypeFont(&script, e);
+	else if (e.mType == MUGEN_FONT_TYPE_TRUETYPE) {
+		loadMugenTruetypeFont(&script, &e);
 	}
 	else {
 		logError("Unimplemented font type.");
-		logErrorInteger(e->mType);
+		logErrorInteger(e.mType);
 		recoverFromError();
 	}
 
 	unloadMugenDefScript(script);
 
 	resetMugenFontDirectory();
-
-	int_map_push_owned(&gData.mFonts, tKey, e);
 }
 
 void addMugenFont(int tKey, char* tPath) {
@@ -358,18 +355,20 @@ static void loadMugenFonts(MugenDefScript* tScript) {
 
 void loadMugenTextHandler()
 {
-	gData.mFonts = new_int_map();
+	gMugenFontData.mFonts.clear();
 }
 
 void loadMugenSystemFonts() {
-	MugenDefScript script = loadMugenDefScript("assets/data/system.def");
+	MugenDefScript script; 
+	loadMugenDefScript(&script, "assets/data/system.def");
 	loadMugenFonts(&script);
 	unloadMugenDefScript(script);
 }
 
 void loadMugenFightFonts()
 {
-	MugenDefScript script = loadMugenDefScript("assets/data/fight.def");
+	MugenDefScript script;
+	loadMugenDefScript(&script, "assets/data/fight.def");
 	loadMugenFonts(&script);
 	unloadMugenDefScript(script);
 }
@@ -384,7 +383,6 @@ static void unloadElecbyteFont(MugenFont* tFont) {
 	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)tFont->mData;
 	unloadMugenSpriteFileSprite(elecbyteFont->mSprite);
 	freeMemory(elecbyteFont->mSprite);
-	delete_int_map(&elecbyteFont->mMap);
 	freeMemory(elecbyteFont);
 }
 
@@ -395,9 +393,9 @@ static void unloadMugenTruetypeFont(MugenFont* tFont) {
 }
 
 
-static int unloadSingleFont(void* tCaller, void* tData) {
+static int unloadSingleFont(void* tCaller, MugenFont& tData) {
 	(void)tCaller;
-	MugenFont* font = (MugenFont*)tData;
+	MugenFont* font = &tData;
 
 	if (font->mType == MUGEN_FONT_TYPE_BITMAP) {
 		unloadBitmapFont(font);
@@ -417,19 +415,19 @@ static int unloadSingleFont(void* tCaller, void* tData) {
 
 void unloadMugenFonts()
 {
-	int_map_remove_predicate(&gData.mFonts, unloadSingleFont, NULL);
+	stl_int_map_remove_predicate(gMugenFontData.mFonts, unloadSingleFont);
 }
 
 int getMugenFontSizeY(int tKey)
 {
-	MugenFont* font = (MugenFont*)int_map_get(&gData.mFonts, tKey);
-	return font->mSize.y;
+	MugenFont& font = gMugenFontData.mFonts[tKey];
+	return font.mSize.y;
 }
 
 int getMugenFontSpacingY(int tKey)
 {
-	MugenFont* font = (MugenFont*)int_map_get(&gData.mFonts, tKey);
-	return font->mSpacing.y;
+	MugenFont& font = gMugenFontData.mFonts[tKey];
+	return font.mSpacing.y;
 }
 
 
@@ -625,9 +623,9 @@ static set<int> getElecbyteTextLinebreaks(char* tText, Position tStart, MugenFon
 	Position p = tStart;
 	int n = strlen(tText);
 	for (int i = 0; i < n; i++) {
-		if (int_map_contains(&tElecbyteFont->mMap, (int)tText[i])) {
-			MugenElecbyteFontMapEntry* mapEntry = (MugenElecbyteFontMapEntry*)int_map_get(&tElecbyteFont->mMap, (int)tText[i]);
-			p = vecAdd2D(p, vecScale(makePosition(mapEntry->mWidth, 0, 0), tFactor));
+		if (tElecbyteFont->mMap[(int)tText[i]].mExists) {
+			MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(int)tText[i]];
+			p = vecAdd2D(p, vecScale(makePosition(mapEntry.mWidth, 0, 0), tFactor));
 			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
 		}
 		else {
@@ -657,9 +655,9 @@ static int hasElecbyteTextToLinebreak(char* tText, int tCurrent, Position p, Mug
 
 	int i;
 	for (i = tCurrent; i < tCurrent + positionsRead; i++) {
-		if (int_map_contains(&tElecbyteFont->mMap, (int)tText[i])) {
-			MugenElecbyteFontMapEntry* mapEntry = (MugenElecbyteFontMapEntry*)int_map_get(&tElecbyteFont->mMap, (int)tText[i]);
-			p = vecAdd2D(p, vecScale(makePosition(mapEntry->mWidth, 0, 0), tFactor));
+		if (tElecbyteFont->mMap[(int)tText[i]].mExists) {
+			MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(int)tText[i]];
+			p = vecAdd2D(p, vecScale(makePosition(mapEntry.mWidth, 0, 0), tFactor));
 			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
 		}
 		else {
@@ -686,9 +684,9 @@ static void drawSingleElecbyteText(MugenText* e) {
 	set<int> breaks = getElecbyteTextLinebreaks(e->mText, start, font, elecbyteFont, rightX, factor);
 	for (i = 0; i < textLength; i++) {
 
-		if (int_map_contains(&elecbyteFont->mMap, (int)e->mDisplayText[i])) {
+		if (elecbyteFont->mMap[(int)e->mDisplayText[i]].mExists) {
 			ElecbyteDrawCaller caller;
-			caller.mMapEntry = (MugenElecbyteFontMapEntry*)int_map_get(&elecbyteFont->mMap, (int)e->mDisplayText[i]);
+			caller.mMapEntry = &elecbyteFont->mMap[(int)e->mDisplayText[i]];
 			caller.mBasePosition = p;
 			caller.mText = e;
 			caller.mFont = font;
@@ -745,7 +743,7 @@ void drawMugenText(char* tText, Position tPosition, int tFont) {
 	strcpy(textData.mText, tText);
 	strcpy(textData.mDisplayText, tText);
 	textData.mPosition = tPosition;
-	textData.mFont = (MugenFont*)int_map_get(&gData.mFonts, tFont);
+	textData.mFont = &gMugenFontData.mFonts[tFont];
 	textData.mR = textData.mG = textData.mB = 1;
 	textData.mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
 	textData.mRectangle = makeGeoRectangle(-INF / 2, -INF / 2, INF, INF);
@@ -764,11 +762,11 @@ int addMugenText(char * tText, Position tPosition, int tFont)
 	strcpy(e->mText, tText);
 	strcpy(e->mDisplayText, tText);
 
-	if (int_map_contains(&gData.mFonts, tFont)) {
-		e->mFont = (MugenFont*)int_map_get(&gData.mFonts, tFont);
+	if (stl_map_contains(gMugenFontData.mFonts, tFont)) {
+		e->mFont = &gMugenFontData.mFonts[tFont];
 	}
 	else {
-		e->mFont = (MugenFont*)int_map_get(&gData.mFonts, 1);
+		e->mFont = &gMugenFontData.mFonts[1];
 	}
 	e->mPosition = vecSub(tPosition, makePosition(0, e->mFont->mSize.y, 0));
 	e->mR = e->mG = e->mB = 1;
@@ -803,11 +801,11 @@ void setMugenTextFont(int tID, int tFont)
 	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
 
 	e->mPosition = vecAdd2D(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
-	if (int_map_contains(&gData.mFonts, tFont)) {
-		e->mFont = (MugenFont*)int_map_get(&gData.mFonts, tFont);
+	if (stl_map_contains(gMugenFontData.mFonts, tFont)) {
+		e->mFont = &gMugenFontData.mFonts[tFont];
 	}
 	else {
-		e->mFont = (MugenFont*)int_map_get(&gData.mFonts, 1);
+		e->mFont = &gMugenFontData.mFonts[1];
 	}
 
 	e->mPosition = vecSub(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
@@ -852,9 +850,9 @@ static double getElecbyteTextSize(MugenText* e) {
 	int i;
 	double sizeX = 0;
 	for (i = 0; i < textLength; i++) {
-		if (int_map_contains(&elecbyteFont->mMap, (int)e->mText[i])) {
-			MugenElecbyteFontMapEntry* mapEntry = (MugenElecbyteFontMapEntry*)int_map_get(&elecbyteFont->mMap, (int)e->mText[i]);
-			sizeX += mapEntry->mWidth*factor;
+		if (elecbyteFont->mMap[(int)e->mText[i]].mExists) {
+			MugenElecbyteFontMapEntry& mapEntry = elecbyteFont->mMap[e->mText[i]];
+			sizeX += mapEntry.mWidth*factor;
 			sizeX += font->mSpacing.x*factor;
 		}
 		else {

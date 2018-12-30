@@ -343,11 +343,8 @@ TruetypeFont loadTruetypeFont(char * tName, double tSize)
 			abortSystem();
 		}
 	}
-
-	printf("%s\n", path);
 	
 	TTF_Font* font = TTF_OpenFont(path, (int)tSize);
-	printf("err: %s\n", TTF_GetError());
 
 	return font;
 }
