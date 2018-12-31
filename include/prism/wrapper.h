@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdio.h>
+
 typedef void (*LoadScreenFunction)();
 typedef void (*UpdateScreenFunction)();
 typedef void (*DrawScreenFunction)();
@@ -23,6 +25,7 @@ void resumeWrapper();
 int isWrapperPaused();
 int isUsingWrapper();
 
+Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate = NULL, DrawScreenFunction tDraw = NULL, UnloadScreenFunction tUnload = NULL, Screen*(*tGetNextScreen)() = NULL);
 void startScreenHandling(Screen* tScreen);
 void abortScreenHandling();
 void setNewScreen(Screen* tScreen);

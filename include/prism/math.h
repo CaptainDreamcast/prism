@@ -1,6 +1,6 @@
 #pragma once
 
-#include <math.h>
+#include <cmath>
 
 #include "geometry.h"
 
@@ -8,12 +8,13 @@
 
 #include <kos.h>
 
-#define min(x, y) ((x < y) ? (x) : (y))
-#define max(x, y) ((x > y) ? (x) : (y))
 #define fmin	min
 #define fmax	max
 #define fabs 	abs
 // TODO: sort out the math header stuff
+
+#define M_PI 3.14159265358979323846 // TODO: fix for #Dreamcast
+#define M_E 2.71828182845904523536
 
 #elif defined __EMSCRIPTEN__
 

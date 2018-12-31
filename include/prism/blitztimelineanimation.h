@@ -3,7 +3,7 @@
 #include "blitztimelineanimationreader.h"
 #include "actorhandler.h"
 
-extern ActorBlueprint BlitzTimelineAnimationHandler;
+ActorBlueprint getBlitzTimelineAnimationHandler();
 
 void addBlitzTimelineComponent(int tEntityID, BlitzTimelineAnimations* tAnimations);
 int playBlitzTimelineAnimation(int tEntityID, int tAnimation);

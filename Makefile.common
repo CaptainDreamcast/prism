@@ -11,7 +11,8 @@ mugenscriptparser.o lz5.o mugenspritefilereader.o \
 mugenassignment.o mugenassignmentevaluator.o mugentexthandler.o \
 mugensoundfilereader.o clipboardhandler.o log.o \
 wrappercomponenthandler.o memorypool.o memorystack.o errorscreen.o \
-blitzentity.o blitzcamerahandler.o blitzmugenanimation.o \
+blitzentity.o blitzcamerahandler.o blitzcomponent.o blitzmugenanimation.o \
 blitzphysics.o blitzmugensound.o blitztimelineanimationreader.o \
 blitztimelineanimation.o blitzcollision.o blitzparticles.o \
+stlutil.o \
 quicklz.o

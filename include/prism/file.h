@@ -68,7 +68,6 @@ void appendBufferFloat(Buffer* tBuffer, float tFloat);
 void appendBufferString(Buffer* tBuffer, char* tString, int tLength);
 void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer);
 
-
 void initFileSystem();
 void setFileSystem(char* path);
 void setWorkingDirectory(char* path);

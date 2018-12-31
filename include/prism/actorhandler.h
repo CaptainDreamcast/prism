@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdio>
+
 typedef void(*LoadActorFunction)(void* tOptionalData);
 typedef void(*UpdateActorFunction)(void* tOptionalData);
 typedef void(*DrawActorFunction)(void* tOptionalData);
@@ -21,6 +23,7 @@ void shutdownActorHandler();
 void updateActorHandler();
 void drawActorHandler();
 
+ActorBlueprint makeActorBlueprint(LoadActorFunction tLoad, UnloadActorFunction tUnload = NULL, UpdateActorFunction tUpdate = NULL, DrawActorFunction tDraw = NULL, IsActorActiveFunction tIsActive = NULL);
 int instantiateActor(ActorBlueprint tBP);
 int instantiateActorWithData(ActorBlueprint tBP, void* tData, int tIsOwned);
 void performOnActor(int tID, ActorInteractionFunction tFunc, void* tCaller);

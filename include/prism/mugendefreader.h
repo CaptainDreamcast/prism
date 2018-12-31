@@ -1,8 +1,11 @@
 #pragma once
 
+#include <string>
+
 #include "datastructures.h"
 #include "geometry.h"
 #include "file.h"
+#include "stlutil.h"
 
 #define MUGEN_DEF_STRING_LENGTH 500
 
@@ -37,26 +40,27 @@ typedef struct {
 } MugenDefScriptFloatElement;
 
 typedef struct {
-	char mName[100];
+	std::string mName;
 	MugenDefScriptGroupElementType mType;
 	void* mData;
 
 } MugenDefScriptGroupElement;
 
 typedef struct MugenDefScriptGroup_t{
-	char mName[100];
-	StringMap mElements;
+	std::string mName;
+	std::map<std::string, MugenDefScriptGroupElement> mElements;
 	List mOrderedElementList;
 	struct MugenDefScriptGroup_t* mNext;
 } MugenDefScriptGroup;
 
 typedef struct {
 	MugenDefScriptGroup* mFirstGroup;
-	StringMap mGroups;
+	std::map<std::string, MugenDefScriptGroup> mGroups;
 } MugenDefScript;
 
-MugenDefScript loadMugenDefScript(char* tPath);
-MugenDefScript loadMugenDefScriptFromBufferAndFreeBuffer(Buffer tBuffer);
+void loadMugenDefScript(MugenDefScript* oScript, std::string& tPath);
+void loadMugenDefScript(MugenDefScript* oScript, char* tPath);
+void loadMugenDefScriptFromBufferAndFreeBuffer(MugenDefScript* oScript, Buffer tBuffer);
 void unloadMugenDefScript(MugenDefScript tScript);
 
 int isMugenDefStringVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);

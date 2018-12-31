@@ -13,7 +13,7 @@ set target_dir=%directory%\%1
 
 xcopy /E /I /Y %source_dir% %target_dir%
 
-set cur_file=%target_dir%\main.c
+set cur_file=%target_dir%\main.cpp
 powershell -Command "(gc %cur_file%) -replace 'TEMPLATE', '%1' | Out-File %cur_file%"
 set cur_file=%target_dir%\windows\resource.h
 powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"

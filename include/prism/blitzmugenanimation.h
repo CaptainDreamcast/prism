@@ -4,7 +4,7 @@
 #include "mugenanimationhandler.h"
 #include "actorhandler.h"
 
-extern ActorBlueprint BlitzMugenAnimationHandler;
+ActorBlueprint getBlitzMugenAnimationHandler();
 
 void addBlitzMugenAnimationComponent(int tEntityID, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, int tStartAnimation);
 void addBlitzMugenAnimationComponentStatic(int tEntityID, MugenSpriteFile* tSprites, int tSpriteGroup, int tSpriteItem);

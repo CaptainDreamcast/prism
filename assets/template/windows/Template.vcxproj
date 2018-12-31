@@ -148,8 +148,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\main.c" />
-	<ClCompile Include="..\assets.c" />
+    <ClCompile Include="..\main.cpp" />
+	<ClCompile Include="..\assets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />

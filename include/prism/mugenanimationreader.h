@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "datastructures.h"
 #include "animation.h"
 
@@ -45,6 +47,7 @@ typedef struct {
 
 } MugenAnimations;
 
+MugenAnimations loadMugenAnimationFile(std::string& tPath);
 MugenAnimations loadMugenAnimationFile(char* tPath);
 MugenAnimations loadMugenAnimationFileWithMemoryStack(char* tPath, MemoryStack* tMemoryStack);
 void unloadMugenAnimationFile(MugenAnimations* tAnimations);
