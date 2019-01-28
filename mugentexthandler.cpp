@@ -299,18 +299,18 @@ void addMugenFont(int tKey, char* tPath) {
     // TODO: fix when assets is dropped from Dolmexica
 	if ((isOnWindows() || isOnWeb()) && !strcmp(".", getFileSystem())) {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "assets/%s", tPath); 
+			sprintf(path, "%s", tPath); 
 		}
 		else {
-			sprintf(path, "assets/font/%s", tPath); 
+			sprintf(path, "font/%s", tPath); 
 		}
 	}
 	else {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "assets/%s", tPath);
+			sprintf(path, "%s", tPath);
 		}
 		else {
-			sprintf(path, "assets/font/%s", tPath);
+			sprintf(path, "font/%s", tPath);
 		}
 	
     }
@@ -756,7 +756,7 @@ void drawMugenText(char* tText, Position tPosition, int tFont) {
 	drawSingleText(NULL, &textData);
 }
 
-int addMugenText(char * tText, Position tPosition, int tFont)
+int addMugenText(const char * tText, Position tPosition, int tFont)
 {
 	MugenText* e = (MugenText*)allocMemory(sizeof(MugenText));
 	strcpy(e->mText, tText);
@@ -782,7 +782,7 @@ int addMugenText(char * tText, Position tPosition, int tFont)
 	return int_map_push_back_owned(&gHandler.mHandledTexts, e);
 }
 
-int addMugenTextMugenStyle(char * tText, Position tPosition, Vector3DI tFont)
+int addMugenTextMugenStyle(const char * tText, Position tPosition, Vector3DI tFont)
 {
 	int ret = addMugenText(tText, tPosition, tFont.x);
 	setMugenTextColor(ret, getMugenTextColorFromMugenTextColorIndex(tFont.y));
@@ -980,7 +980,7 @@ double getMugenTextSizeX(int tID)
 	return getMugenTextSizeXInternal(e);
 }
 
-void changeMugenText(int tID, char * tText)
+void changeMugenText(int tID, const char * tText)
 {
 	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
 	MugenTextAlignment alignment = e->mAlignment;
@@ -1030,6 +1030,9 @@ Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 	}
 	else if (tIndex == 2) {
 		return COLOR_GREEN;
+	}
+	else if (tIndex == 3) {
+		return COLOR_BLUE;
 	}
 	else if (tIndex == 4) {
 		return COLOR_CYAN;

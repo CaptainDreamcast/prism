@@ -389,10 +389,10 @@ static void updateScreenAbort() {
 
 static void updatePausableScreen() {
 	updatePhysicsHandler();
-	updateTweening();
+	updateTweening(); // TODO: remove or optionalize
 	updateAnimationHandler();
-	updateStageHandler();
-	updateCollisionAnimationHandler();
+	updateStageHandler(); // TODO: remove or optionalize
+	updateCollisionAnimationHandler(); // TODO: remove or optionalize
 	updateCollisionHandler();
 	updateTimer();
 	updateWrapperComponentHandler();

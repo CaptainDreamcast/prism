@@ -5,6 +5,9 @@
 #include <prism/datastructures.h>
 #include <prism/memoryhandler.h>
 #include <prism/math.h>
+#include <prism/stlutil.h>
+
+using namespace std;
 
 typedef struct {
 	double* mDst;
@@ -21,29 +24,29 @@ typedef struct {
 } Tween;
 
 static struct {
-	IntMap mTweens;
+	map<int, Tween> mTweens;
 	int mIsActive;
-} gData;
+} gTweening;
 
 void setupTweening()
 {
-	if (gData.mIsActive) {
+	if (gTweening.mIsActive) {
 		shutdownTweening();
 	}
-	gData.mTweens = new_int_map();
-	gData.mIsActive = 1;
+	gTweening.mTweens.clear();
+	gTweening.mIsActive = 1;
 }
 
 void shutdownTweening()
 {
 
-	delete_int_map(&gData.mTweens);
-	gData.mIsActive = 0;
+	gTweening.mTweens.clear();
+	gTweening.mIsActive = 0;
 }
 
-static int updateTween(void* tCaller, void* tData) {
+static int updateTween(void* tCaller,Tween& tData) {
 	(void)tCaller;
-	Tween* e = (Tween*)tData;
+	Tween* e = &tData;
 
 	int isOver = handleDurationAndCheckIfOver(&e->mNow, e->mDuration);
 
@@ -61,29 +64,29 @@ static int updateTween(void* tCaller, void* tData) {
 
 void updateTweening()
 {
-	int_map_remove_predicate(&gData.mTweens, updateTween, NULL);
+	stl_int_map_remove_predicate(gTweening.mTweens, updateTween);
 }
 
 int tweenDouble(double * tDst, double tStart, double tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void * tCaller)
 {
-	Tween* e = (Tween*)allocMemory(sizeof(Tween));
-	e->mDst = tDst;
-	e->mStart = tStart;
-	e->mEnd = tEnd;
-	e->mFunc = tFunc;
-	e->mNow = 0;
-	e->mDuration = tDuration;
-	e->mCB = tCB;
-	e->mCaller = tCaller;
+	Tween e;
+	e.mDst = tDst;
+	e.mStart = tStart;
+	e.mEnd = tEnd;
+	e.mFunc = tFunc;
+	e.mNow = 0;
+	e.mDuration = tDuration;
+	e.mCB = tCB;
+	e.mCaller = tCaller;
 
 	*tDst = tStart;
 
-	return int_map_push_back_owned(&gData.mTweens, e);
+	return stl_int_map_push_back(gTweening.mTweens, e);
 }
 
 void removeTween(int tID)
 {
-	int_map_remove(&gData.mTweens, tID);
+	gTweening.mTweens.erase(tID);
 }
 
 double linearTweeningFunction(double t) {

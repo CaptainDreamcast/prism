@@ -10,6 +10,9 @@
 #include "prism/system.h"
 #include "prism/screeneffect.h"
 #include "prism/geometry.h"
+#include <prism/stlutil.h>
+
+using namespace std;
 
 typedef struct {
 	int mListID;
@@ -27,7 +30,7 @@ typedef struct {
 } CollisionListElement;
 
 typedef struct {
-	IntMap mCollisionElements;
+	map<int, CollisionListElement> mCollisionElements;
 } CollisionListData;
 
 typedef struct {
@@ -44,48 +47,44 @@ typedef struct {
 } CollisionHandlerDebugData;
 
 static struct {
-	IntMap mCollisionLists;
-	IntMap mCollisionListPairs;
+	map<int, CollisionListData> mCollisionLists;
+	map<int, CollisionListPair> mCollisionListPairs;
 
 	CollisionHandlerDebugData mDebug;
 
 	int mIsOwningColliders;
-} gData;
+} gCollisionHandler;
 
 void setupCollisionHandler() {
-	gData.mCollisionLists = new_int_map();
-	gData.mCollisionListPairs = new_int_map();
-	gData.mIsOwningColliders = 0;
+	gCollisionHandler.mCollisionLists.clear();
+	gCollisionHandler.mCollisionListPairs.clear();
+	gCollisionHandler.mIsOwningColliders = 0;
 }
 
 static void destroyCollisionElement(CollisionListElement* e) {
-	if (gData.mIsOwningColliders || e->mIsColliderOwned) {
+	if (gCollisionHandler.mIsOwningColliders || e->mIsColliderOwned) {
 		destroyCollider(&e->mCollider);
 	}
 }
 
-static void cleanSingleCollisionListElement(void* tCaller, void* tData) {
-	(void) tCaller;
-	CollisionListElement* data = (CollisionListElement*)tData;
-	destroyCollisionElement(data);
+static void cleanSingleCollisionListElement(CollisionListElement& tData) {
+	destroyCollisionElement(&tData);
 }
 
-static void cleanSingleCollisionList(void* tCaller, void* tData) {
-	(void) tCaller;
-	CollisionListData* data = (CollisionListData*)tData;
-	int_map_map(&data->mCollisionElements, cleanSingleCollisionListElement, NULL);
-	delete_int_map(&data->mCollisionElements);
+static void cleanSingleCollisionList(CollisionListData& tData) {
+	CollisionListData* data = &tData;
+	stl_int_map_map(data->mCollisionElements, cleanSingleCollisionListElement);
+	data->mCollisionElements.clear();
 }
 
 void shutdownCollisionHandler() {
-	int_map_map(&gData.mCollisionLists, cleanSingleCollisionList, NULL);
-	delete_int_map(&gData.mCollisionLists);
-	delete_int_map(&gData.mCollisionListPairs);
+	stl_int_map_map(gCollisionHandler.mCollisionLists, cleanSingleCollisionList);
+	gCollisionHandler.mCollisionLists.clear();
+	gCollisionHandler.mCollisionListPairs.clear();
 }
 
-static void checkCollisionElements(void* tCaller, void* tData) {
-	CollisionListElement* e1 = (CollisionListElement*)tCaller;
-	CollisionListElement* e2 = (CollisionListElement*)tData;
+static void checkCollisionElements(CollisionListElement* e1, CollisionListElement& tData) {
+	CollisionListElement* e2 = &tData;
 
 	if (e1->mIsScheduledForDeletion || e2->mIsScheduledForDeletion) return;
 
@@ -95,18 +94,16 @@ static void checkCollisionElements(void* tCaller, void* tData) {
 	}
 }
 
-static void checkAgainstOtherList(void* tCaller, void *tData) {
-	IntMap* list = (IntMap*)tCaller;
-	CollisionListElement* e = (CollisionListElement*)tData;
+static void checkAgainstOtherList(CollisionListData* tList, CollisionListElement& tData) {
+	CollisionListElement* e = &tData;
 
 	if (e->mIsScheduledForDeletion) return;
 
-	int_map_map(list, checkCollisionElements, e);
+	stl_int_map_map(tList->mCollisionElements, checkCollisionElements, e);
 }
 
-static int checkElementRemoval(void* tCaller, void * tData) {
-	(void) tCaller;
-	CollisionListElement* e = (CollisionListElement*)tData;
+static int checkElementRemoval(CollisionListElement& tData) {
+	CollisionListElement* e = &tData;
 	
 	if (e->mIsScheduledForDeletion) {
 		destroyCollisionElement(e);
@@ -115,30 +112,29 @@ static int checkElementRemoval(void* tCaller, void * tData) {
 	return e->mIsScheduledForDeletion;
 }
 
-static void updateSingleCollisionPair(void* tCaller, void* tData) {
-	(void) tCaller;
-	CollisionListPair* data = (CollisionListPair*)tData;
+static void updateSingleCollisionPair(CollisionListPair& tData) {
+	CollisionListPair* data = &tData;
 
-	CollisionListData* list1 = (CollisionListData*)int_map_get(&gData.mCollisionLists, data->mID1);
-	CollisionListData* list2 = (CollisionListData*)int_map_get(&gData.mCollisionLists, data->mID2);
+	CollisionListData* list1 = &gCollisionHandler.mCollisionLists[data->mID1];
+	CollisionListData* list2 = &gCollisionHandler.mCollisionLists[data->mID2];
 
-	int_map_remove_predicate(&list1->mCollisionElements, checkElementRemoval, NULL);
-	int_map_remove_predicate(&list2->mCollisionElements, checkElementRemoval, NULL);
+	stl_int_map_remove_predicate(list1->mCollisionElements, checkElementRemoval);
+	stl_int_map_remove_predicate(list2->mCollisionElements, checkElementRemoval);
 
-	int_map_map(&list1->mCollisionElements, checkAgainstOtherList, list2);
+	stl_int_map_map(list1->mCollisionElements, checkAgainstOtherList, list2);
 	
-	int_map_remove_predicate(&list1->mCollisionElements, checkElementRemoval, NULL);	
-	int_map_remove_predicate(&list2->mCollisionElements, checkElementRemoval, NULL);
+	stl_int_map_remove_predicate(list1->mCollisionElements, checkElementRemoval);	
+	stl_int_map_remove_predicate(list2->mCollisionElements, checkElementRemoval);
 
 }
 
 void updateCollisionHandler() {
-	int_map_map(&gData.mCollisionListPairs, updateSingleCollisionPair, NULL);
+	stl_int_map_map(gCollisionHandler.mCollisionListPairs, updateSingleCollisionPair);
 }
 
 static void setColliderOwned(int tListID, int tID) {
-	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
-	CollisionListElement* e = (CollisionListElement*)int_map_get(&list->mCollisionElements, tID);
+	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
+	CollisionListElement* e = &list->mCollisionElements[tID];
 
 	e->mIsColliderOwned = 1;
 }
@@ -158,50 +154,51 @@ int addCollisionCircleToCollisionHandler(int tListID, Position* tBasePosition, C
 }
 
 int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
-	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
+	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
 	
-	CollisionListElement* e = (CollisionListElement*)allocMemory(sizeof(CollisionListElement));
-	e->mListID = tListID;
+	CollisionListElement e;
+	e.mListID = tListID;
 
-	e->mCollider = tCollider;
-	setColliderBasePosition(&e->mCollider, tBasePosition);
-	e->mIsColliderOwned = 0;
+	e.mCollider = tCollider;
+	e.mIsColliderOwned = 0;
 
-	e->mCB = tCB;
-	e->mCaller = tCaller;
+	e.mCB = tCB;
+	e.mCaller = tCaller;
 
-	e->mCollisionData = tCollisionData;
+	e.mCollisionData = tCollisionData;
 
-	e->mIsScheduledForDeletion = 0;
+	e.mIsScheduledForDeletion = 0;
 
-	return int_map_push_back_owned(&list->mCollisionElements, e);
+	int id = stl_int_map_push_back(list->mCollisionElements, e);
+	setColliderBasePosition(&list->mCollisionElements[id].mCollider, tBasePosition);
+	return id;
 }
 
 
 void addCollisionHandlerCheck(int tListID1, int tListID2) {
-	CollisionListPair* e = (CollisionListPair*)allocMemory(sizeof(CollisionListPair));
-	e->mID1 = tListID1;
-	e->mID2 = tListID2;
+	CollisionListPair e;
+	e.mID1 = tListID1;
+	e.mID2 = tListID2;
 
-	int_map_push_back_owned(&gData.mCollisionListPairs, e);
+	stl_int_map_push_back(gCollisionHandler.mCollisionListPairs, e);
 }
 
 int addCollisionListToHandler() {
-	CollisionListData* e = (CollisionListData*)allocMemory(sizeof(CollisionListData));
-	e->mCollisionElements = new_int_map();
+	CollisionListData e;
+	e.mCollisionElements.clear();
 
-	return int_map_push_back_owned(&gData.mCollisionLists, e);
+	return stl_int_map_push_back(gCollisionHandler.mCollisionLists, e);
 }
 
 void removeFromCollisionHandler(int tListID, int tElementID) {
-	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
-	CollisionListElement* e = (CollisionListElement*)int_map_get(&list->mCollisionElements, tElementID);
+	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
+	CollisionListElement* e = &list->mCollisionElements[tElementID];
 	e->mIsScheduledForDeletion = 1;
 }
 
 void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider) {
-	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
-	CollisionListElement* e = (CollisionListElement*)int_map_get(&list->mCollisionElements, tElementID);
+	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
+	CollisionListElement* e = &list->mCollisionElements[tElementID];
 
 	if (e->mIsColliderOwned) {
 		destroyCollider(&e->mCollider);
@@ -211,21 +208,21 @@ void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCo
 }
 
 void setCollisionHandlerOwningColliders() {
-	gData.mIsOwningColliders = 1;
+	gCollisionHandler.mIsOwningColliders = 1;
 }
 
 static CollisionListElement* getCollisionListElement(int tListID, int tElementID) {
-	if (!int_map_contains(&gData.mCollisionLists, tListID)) {
+	if (!stl_map_contains(gCollisionHandler.mCollisionLists, tListID)) {
 		logErrorFormat("Collision handler does not contain list with id %d.", tListID);
 		recoverFromError();
 	}
-	CollisionListData* list = (CollisionListData*)int_map_get(&gData.mCollisionLists, tListID);
+	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
 
-	if (!int_map_contains(&list->mCollisionElements, tElementID)) {
+	if (!stl_map_contains(list->mCollisionElements, tElementID)) {
 		logErrorFormat("Collision handler list %d does not contain element with id %d.", tListID, tElementID);
 		recoverFromError();
 	}
-	return (CollisionListElement*)int_map_get(&list->mCollisionElements, tElementID);
+	return &list->mCollisionElements[tElementID];
 }
 
 void resolveHandledCollisionMovableStatic(int tListID1, int tElementID1, int tListID2, int tElementID2, Position* tPos1, Velocity tVel1)
@@ -261,6 +258,27 @@ int isHandledCollisionRightOfOtherCollision(int tListID1, int tElementID1, int t
 	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
 	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
 	return getColliderLeft(e1->mCollider) >= getColliderRight(e2->mCollider);
+}
+
+int isHandledCollisionValid(int tListID, int tElementID)
+{
+	if (!stl_map_contains(gCollisionHandler.mCollisionLists, tListID)) {
+		return 0;
+	}
+	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
+
+	if (!stl_map_contains(list->mCollisionElements, tElementID)) {
+		return 0;
+	}
+
+	CollisionListElement* e = &list->mCollisionElements[tElementID];
+	return !e->mIsScheduledForDeletion;
+}
+
+int isHandledCollisionScheduledForDeletion(int tListID, int tElementID)
+{
+	CollisionListElement* e = getCollisionListElement(tListID, tElementID);
+	return e->mIsScheduledForDeletion;
 }
 
 
@@ -333,37 +351,35 @@ void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPos
 	}
 }
 
-static void drawCollisionElement(void* tCaller, void* tData) {
-	(void) tCaller;
-	CollisionListElement* e = (CollisionListElement*)tData;
+static void drawCollisionElement(CollisionListElement& tData) {
+	CollisionListElement* e = &tData;
 	
 	Collider col = e->mCollider;
 
 	Position screenOffset;
-	if (gData.mDebug.mScreenPositionReference) screenOffset = *gData.mDebug.mScreenPositionReference;
+	if (gCollisionHandler.mDebug.mScreenPositionReference) screenOffset = *gCollisionHandler.mDebug.mScreenPositionReference;
 	else screenOffset = makePosition(0, 0, 0);
 
 	drawColliderSolid(col, makePosition(0, 0, 0), screenOffset, makePosition(1, 1, 1), 1);
 }
 
-static void drawCollisionList(void* tCaller, void* tData) {
-	(void) tCaller;
-	CollisionListData* list = (CollisionListData*)tData;
+static void drawCollisionList(CollisionListData& tData) {
+	CollisionListData* list = &tData;
 	
-	int_map_map(&list->mCollisionElements, drawCollisionElement, NULL);
+	stl_int_map_map(list->mCollisionElements, drawCollisionElement);
 }
 
 void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition) {
-	gData.mDebug.mScreenPositionReference = tPosition;
+	gCollisionHandler.mDebug.mScreenPositionReference = tPosition;
 }
 
 void drawHandledCollisions() {
-	if(!gData.mDebug.mIsActive) return;
+	if(!gCollisionHandler.mDebug.mIsActive) return;
 
-	int_map_map(&gData.mCollisionLists, drawCollisionList, NULL);
+	stl_int_map_map(gCollisionHandler.mCollisionLists, drawCollisionList);
 }
 
 void activateCollisionHandlerDebugMode() {
-	gData.mDebug.mIsActive = 1;
-	gData.mDebug.mScreenPositionReference = NULL;	
+	gCollisionHandler.mDebug.mIsActive = 1;
+	gCollisionHandler.mDebug.mScreenPositionReference = NULL;	
 }

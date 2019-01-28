@@ -478,7 +478,7 @@ void setMugenAnimationDrawScale(int tID, Vector3D tScale)
 void setMugenAnimationDrawSize(int tID, Vector3D tSize)
 {
 	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
-	if (e->mHasSprite) {
+	if (!e->mHasSprite) {
 		logWarning("Trying to set draw size on element without sprite. Ignoring.");
 		return;
 	}

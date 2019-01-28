@@ -120,6 +120,12 @@ void setBlitzMugenAnimationFaceDirection(int tEntityID, int tIsFacingRight) {
 	setMugenAnimationFaceDirection(e->mAnimationID, tIsFacingRight);
 }
 
+void setBlitzMugenAnimationVerticalFaceDirection(int tEntityID, int tIsFacingDown)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationVerticalFaceDirection(e->mAnimationID, tIsFacingDown);
+}
+
 void setBlitzMugenAnimationPositionX(int tEntityID, double tX)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
@@ -134,4 +140,22 @@ void setBlitzMugenAnimationPositionY(int tEntityID, double tY)
 	Position p = getMugenAnimationPosition(e->mAnimationID);
 	p.y = tY;
 	setMugenAnimationPosition(e->mAnimationID, p);
+}
+
+void setBlitzMugenAnimationVisibility(int tEntityID, int tVisibility)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationVisibility(e->mAnimationID, tVisibility);
+}
+
+void setBlitzMugenAnimationColor(int tEntityID, double tR, double tG, double tB)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationColor(e->mAnimationID, tR, tG, tB);
+}
+
+void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void *), void * tCaller)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationCallback(e->mAnimationID, tFunc, tCaller);
 }

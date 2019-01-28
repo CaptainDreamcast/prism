@@ -60,6 +60,7 @@ typedef struct {
 	double b;
 
 	Matrix4D mTransformationMatrix;
+	int mIsIdentity;
 
 	Vector mEffectStack;
 
@@ -212,6 +213,17 @@ void initDrawing() {
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
 	if (gData.mIsDisabled) return;
+	
+	if (gData.mIsIdentity) {
+		double sx = tTexture.mTextureSize.x;
+		double sy = tTexture.mTextureSize.y;
+		double maxDelta = max(sx, sy);
+		ScreenSize sz = getScreenSize(); // TODO: fix
+		if (tPos.x + maxDelta < 0) return;
+		if (tPos.x - maxDelta >= sz.x) return;
+		if (tPos.y + maxDelta < 0) return;
+		if (tPos.y - maxDelta >= sz.y) return;
+	}
 
 	debugLog("Draw Sprite");
 	debugInteger(tTexture.mTextureSize.x);
@@ -605,6 +617,7 @@ void scaleDrawing3D(Vector3D tFactor, Position tScalePosition) {
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(tScalePosition));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createScaleMatrix4D(makePosition(tFactor.x, tFactor.y, tFactor.z)));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tScalePosition, -1)));
+	gData.mIsIdentity = tFactor.x == 1 && tFactor.y == 1;
 }
 
 void setDrawingBaseColor(Color tColor) {
@@ -626,6 +639,7 @@ void setDrawingRotationZ(double tAngle, Position tPosition) {
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(tPosition));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createRotationZMatrix4D(tAngle));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tPosition, -1)));
+	gData.mIsIdentity = tAngle == 2 * M_PI;
 }
 
 void setDrawingParametersToIdentity() {
@@ -638,6 +652,7 @@ void setDrawingParametersToIdentity() {
 	gData.mTransformationMatrix = createOrthographicProjectionMatrix4D(0, realScreenSize.x, 0, realScreenSize.y, 0, 100);
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(makePosition(0, realScreenSize.y - gOpenGLData.mScreenScale.y*sz.y, 0)));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createScaleMatrix4D(makePosition(gOpenGLData.mScreenScale.x, gOpenGLData.mScreenScale.y, 1)));
+	gData.mIsIdentity = 1;
 }
 
 void setDrawingBlendType(BlendType tBlendType)

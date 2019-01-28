@@ -23,8 +23,8 @@ int getMugenFontSpacingY(int tKey);
 ActorBlueprint getMugenTextHandler();
 
 void drawMugenText(char* tText, Position tPosition, int tFont);
-int addMugenText(char* tText, Position tPosition, int tFont);
-int addMugenTextMugenStyle(char* tText, Position tPosition, Vector3DI tFont);
+int addMugenText(const char* tText, Position tPosition, int tFont);
+int addMugenTextMugenStyle(const char* tText, Position tPosition, Vector3DI tFont);
 void removeMugenText(int tID);
 void setMugenTextFont(int tID, int tFont);
 void setMugenTextAlignment(int tID, MugenTextAlignment tAlignment);
@@ -40,7 +40,7 @@ void setMugenTextVisibility(int tID, int tIsVisible);
 double getMugenTextSizeX(int tID);
 
 
-void changeMugenText(int tID, char* tText);
+void changeMugenText(int tID, const char* tText);
 
 Position getMugenTextPosition(int tID);
 Position* getMugenTextPositionReference(int tID);

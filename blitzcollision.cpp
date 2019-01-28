@@ -119,6 +119,9 @@ static int updateSingleSolidCollision(void* tCaller, void* tData) {
 	ActiveSolidCollision* e = (ActiveSolidCollision*)tData;
 	BlitzCollisionObject* selfObject = e->a;
 	BlitzCollisionObject* otherObject = e->b;
+	if (!isHandledCollisionValid(selfObject->mCollisionListID, selfObject->mCollisionHandlerID)) return 1;
+	if (!isHandledCollisionValid(otherObject->mCollisionListID, otherObject->mCollisionHandlerID)) return 1;
+
 	if (selfObject->mIsSolid && otherObject->mIsSolid) {
 		if (selfObject->mIsMovable && !otherObject->mIsMovable) {
 			resolveHandledCollisionMovableStatic(selfObject->mCollisionListID, selfObject->mCollisionHandlerID, otherObject->mCollisionListID, otherObject->mCollisionHandlerID, getBlitzEntityPositionReference(selfObject->mEntityID), getBlitzPhysicsVelocity(selfObject->mEntityID));
