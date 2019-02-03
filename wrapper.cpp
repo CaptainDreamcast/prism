@@ -45,6 +45,8 @@
 #include "prism/thread.h"
 #include "prism/loadingscreen.h"
 #include "prism/errorscreen.h"
+#include "prism/debug.h"
+
 
 typedef struct {
 	int mIsPaused;
@@ -418,6 +420,7 @@ static void updateScreen() {
 
 static void drawScreen() {
 	waitForScreen();
+
 	startDrawing();
 	drawHandledAnimations();
 	drawHandledCollisions();
@@ -434,12 +437,14 @@ static void drawScreen() {
 static void performScreenIteration() {
 	gData.mUpdateTimeCounter += gData.mGlobalTimeDilatation;
 
+
 	int updateAmount = (int)gData.mUpdateTimeCounter;
 	int i;
 	for (i = 0; i < updateAmount; i++) {
 		updateScreen();
 		gData.mUpdateTimeCounter = 0;
 	}
+
 	drawScreen();
 	if (gData.mScreen->mGetNextScreen && !gData.mNext) {
 		gData.mNext = gData.mScreen->mGetNextScreen();
