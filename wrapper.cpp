@@ -270,6 +270,10 @@ static void loadScreen(Screen* tScreen) {
 		addWrapperComponent(getBlitzTimelineAnimationHandler());
 	}
 
+	if (isInDevelopMode()) {
+		addWrapperComponent(getPrismDebug());
+	}
+
 	debugLog("Setting up input flanks");
 	resetInputForAllControllers();
 	enableDrawing();
@@ -419,8 +423,10 @@ static void updateScreen() {
 }
 
 static void drawScreen() {
+	setPrismDebugWaitingStartTime();
 	waitForScreen();
 
+	setPrismDebugDrawingStartTime();
 	startDrawing();
 	drawHandledAnimations();
 	drawHandledCollisions();
@@ -435,9 +441,9 @@ static void drawScreen() {
 }
 
 static void performScreenIteration() {
+	setPrismDebugUpdateStartTime();
+
 	gData.mUpdateTimeCounter += gData.mGlobalTimeDilatation;
-
-
 	int updateAmount = (int)gData.mUpdateTimeCounter;
 	int i;
 	for (i = 0; i < updateAmount; i++) {

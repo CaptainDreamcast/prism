@@ -233,6 +233,9 @@
     <ClInclude Include="..\..\include\prism\actorhandlerclass.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\debug.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\drawing_win.cpp">
@@ -464,5 +467,8 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\include\prism\actorhandlerclass.cpp" />
+    <ClCompile Include="..\..\debug.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

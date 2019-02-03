@@ -170,6 +170,7 @@
     <ClInclude Include="..\..\include\prism\collisionhandler.h" />
     <ClInclude Include="..\..\include\prism\compression.h" />
     <ClInclude Include="..\..\include\prism\datastructures.h" />
+    <ClInclude Include="..\..\include\prism\debug.h" />
     <ClInclude Include="..\..\include\prism\drawing.h" />
     <ClInclude Include="..\..\include\prism\errorscreen.h" />
     <ClInclude Include="..\..\include\prism\file.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="..\..\collisionhandler.cpp" />
     <ClCompile Include="..\..\compression.cpp" />
     <ClCompile Include="..\..\datastructures.cpp" />
+    <ClCompile Include="..\..\debug.cpp" />
     <ClCompile Include="..\..\drawing.cpp" />
     <ClCompile Include="..\..\errorscreen.cpp" />
     <ClCompile Include="..\..\file.cpp" />

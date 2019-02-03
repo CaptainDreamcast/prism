@@ -9,7 +9,7 @@ actorhandler.o tweening.o logoscreen.o loadingscreen.o \
 mugendefreader.o mugenanimationreader.o mugenanimationhandler.o \
 mugenscriptparser.o lz5.o mugenspritefilereader.o \
 mugenassignment.o mugenassignmentevaluator.o mugentexthandler.o \
-mugensoundfilereader.o clipboardhandler.o log.o \
+mugensoundfilereader.o clipboardhandler.o log.o debug.o \
 wrappercomponenthandler.o memorypool.o memorystack.o errorscreen.o \
 blitzentity.o blitzcamerahandler.o blitzcomponent.o blitzmugenanimation.o \
 blitzphysics.o blitzmugensound.o blitztimelineanimationreader.o \
