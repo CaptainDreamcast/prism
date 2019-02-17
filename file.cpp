@@ -6,6 +6,8 @@
 #include "prism/memoryhandler.h"
 #include "prism/system.h"
 
+using namespace std;
+
 char* getPureFileName(char* path) {
 	debugLog("Getting pure filename.");
 	char* pos = strrchr(path, '/');
@@ -114,7 +116,7 @@ Buffer copyBuffer(Buffer tBuffer) {
 	return ret;
 }
 
-Buffer fileToBuffer(char* tFileDir) {
+Buffer fileToBuffer(const char* tFileDir) {
 	debugLog("Reading file to Buffer.");
 	Buffer ret;
 
@@ -223,6 +225,43 @@ int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer) {
 	}
 	(*tPointer) += size;
 	return value;
+}
+
+double readFloatFromTextStreamBufferPointer(BufferPointer * tPointer)
+{
+	double value;
+	int size;
+	int items = sscanf(*tPointer, "%lf%n", &value, &size);
+	if (items != 1) {
+		logWarning("Unable to read float value from stream.");
+		value = 0;
+	}
+	(*tPointer) += size;
+	return value;
+}
+
+std::string readStringFromTextStreamBufferPointer(BufferPointer * tPointer)
+{
+	char value[1000];
+	int size;
+	int items = sscanf(*tPointer, "%s%n", value, &size);
+	if (items != 1) {
+		logWarning("Unable to read float value from stream.");
+		value[0] = '\0';
+	}
+	(*tPointer) += size;
+	return std::string(value);
+}
+
+string readLineFromTextStreamBufferPointer(BufferPointer * tPointer)
+{
+	string s;
+	while (**tPointer != '\n') {
+		if(**tPointer != '\r') s += **tPointer;
+		(*tPointer)++;
+	}
+	(*tPointer)++;
+	return s;
 }
 
 void appendBufferChar(Buffer* tBuffer, char tChar) {

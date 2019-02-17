@@ -299,18 +299,18 @@ void addMugenFont(int tKey, char* tPath) {
     // TODO: fix when assets is dropped from Dolmexica
 	if ((isOnWindows() || isOnWeb()) && !strcmp(".", getFileSystem())) {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "assets/%s", tPath); 
+			sprintf(path, "%s", tPath); 
 		}
 		else {
-			sprintf(path, "assets/font/%s", tPath); 
+			sprintf(path, "font/%s", tPath); 
 		}
 	}
 	else {
 		if (strchr(tPath, '/')) {
-			sprintf(path, "assets/%s", tPath);
+			sprintf(path, "%s", tPath);
 		}
 		else {
-			sprintf(path, "assets/font/%s", tPath);
+			sprintf(path, "font/%s", tPath);
 		}
 	
     }
@@ -609,7 +609,6 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 
 	double factor = 1; // TODO: remove
 
-	setDrawingBaseColorAdvanced(caller->mText->mR, caller->mText->mG, caller->mText->mB);
 	// scaleDrawing(factor, p); // TODO: remove
 	drawSprite(subSprite->mTexture, p, makeRectangle(leftX, upY, rightX - leftX, downY - upY));
 	// setDrawingParametersToIdentity();
@@ -675,6 +674,7 @@ static void drawSingleElecbyteText(MugenText* e) {
 	int textLength = strlen(e->mDisplayText);
 	double factor = 1; // TODO
 
+	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 
 	//printf("draw %s\n", e->mText);
 	int i;
@@ -705,6 +705,8 @@ static void drawSingleElecbyteText(MugenText* e) {
 			p = vecAdd2D(p, vecScale(makePosition(0, font->mSpacing.y, 0), factor));
 		}
 	}
+
+	setDrawingBaseColorAdvanced(1, 1, 1);
 }
 
 static void drawSingleText(void* tCaller, void* tData) {

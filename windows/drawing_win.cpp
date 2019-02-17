@@ -183,8 +183,6 @@ static void createEmptySDLPalette(SDL_Color* tColors) {
 }
 
 void initDrawing() {
-	setDrawingParametersToIdentity();
-
 	if (gSDLWindow == NULL) {
 		logError("Unable to init drawing without SDL window.");
 		recoverFromError();
@@ -192,6 +190,8 @@ void initDrawing() {
 
 	ScreenSize sz = getScreenSize();
 	setDrawingScreenScale((640.0 / sz.x), (480.0 / sz.y));
+	setDrawingParametersToIdentity();
+
 
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();

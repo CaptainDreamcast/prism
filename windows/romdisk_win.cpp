@@ -170,7 +170,7 @@ static uint32_t romdisk_find(rd_image_t * mnt, const char *fn, int dir) {
 	}
 }
 
-static void getPotentialMountFromPath(char* tPotentialMount, char* tPath) {
+static void getPotentialMountFromPath(char* tPotentialMount, const char* tPath) {
 	tPotentialMount[0] = '\0';
 	if (tPath[0] == '$') tPath++;
 	if (tPath[0] != '/') return;
@@ -462,7 +462,7 @@ void unmountRomdiskWindows(char* tMountPath) {
 	string_map_remove(&gRomdiskMapping, tMountPath);
 }
 
-int isRomdiskPath(char * tPath)
+int isRomdiskPath(const char * tPath)
 {
 	char mount[1024];
 	getPotentialMountFromPath(mount, tPath);

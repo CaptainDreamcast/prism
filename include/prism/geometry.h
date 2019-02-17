@@ -54,6 +54,7 @@ GeoRectangle makeGeoRectangle3D(double x, double y, double z, double w, double h
 
 Vector3DI vecAddI(Vector3DI v1, Vector3DI v2);
 int vecEqualsI(Vector3DI v1, Vector3DI v2);
+int vecEqualsI2D(Vector3DI v1, Vector3DI v2);
 
 double vecLength2D(Vector3D v);
 Vector3D vecAdd2D(Vector3D v1, Vector3D v2);
@@ -74,3 +75,10 @@ GeoRectangle scaleGeoRectangleByFactor(GeoRectangle tRect, double tFac);
 GeoRectangle scaleGeoRectangleByFactor2D(GeoRectangle tRect, Vector3D tFac);
 
 Vector3D interpolatePositionLinear(Position a, Position b, double t);
+
+Vector3D operator+(const Vector3D& a, const Vector3D& b);
+Vector3D operator-(const Vector3D& a, const Vector3D& b);
+
+
+Vector3DI operator+(const Vector3DI& a, const Vector3DI& b);
+Vector3DI operator-(const Vector3DI& a, const Vector3DI& b);

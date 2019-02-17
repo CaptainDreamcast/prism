@@ -35,7 +35,7 @@ void initFileSystem(){
 	}	
 }
 
-static void expandPath(char* tDest, char* tPath) {
+static void expandPath(char* tDest, const char* tPath) {
 	strcpy(tDest, tPath);
 	if (tDest[0] != '/') return;
 
@@ -84,11 +84,11 @@ const char* getWorkingDirectory() {
 	return gData.cwd;
 }
 
-static int isAbsoluteWindowsDirectory(char* tPath) {
+static int isAbsoluteWindowsDirectory(const char* tPath) {
 	return tPath[1] == ':';
 }
 
-void getFullPath(char* tDest, char* tPath) {
+void getFullPath(char* tDest, const char* tPath) {
 
 	if (isRomdiskPath(tPath) || isAbsoluteWindowsDirectory(tPath)) {
 		if (tPath[0] == '$') tPath++;
@@ -107,7 +107,7 @@ void getFullPath(char* tDest, char* tPath) {
 	else sprintf(tDest, "%s%s%s", gData.mFileSystem, gData.cwd, tPath);
 }
 
-FileHandler fileOpen(char* tPath, int tFlags){
+FileHandler fileOpen(const char* tPath, int tFlags){
 
 	char path[1024];
 	getFullPath(path, tPath);

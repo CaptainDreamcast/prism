@@ -164,6 +164,10 @@ int vecEqualsI(Vector3DI v1, Vector3DI v2) {
 	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
 }
 
+int vecEqualsI2D(Vector3DI v1, Vector3DI v2) {
+	return v1.x == v2.x && v1.y == v2.y;
+}
+
 double vecLength2D(Vector3D v)
 {
 	return vecLength(makePosition(v.x, v.y, 0));
@@ -311,5 +315,25 @@ Vector3D interpolatePositionLinear(Position a, Position b, double t)
 	ret.x = interpolateLinear(a.x, b.x, t);
 	ret.y = interpolateLinear(a.y, b.y, t);
 	ret.z = interpolateLinear(a.z, b.z, t);
+	return ret;
+}
+
+Vector3D operator+(const Vector3D& a, const Vector3D& b) {
+	return vecAdd(a, b);
+}
+
+Vector3D operator-(const Vector3D& a, const Vector3D& b) {
+	return vecSub(a, b);
+}
+
+Vector3DI operator+(const Vector3DI& a, const Vector3DI& b) {
+	return vecAddI(a, b);
+}
+
+Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
+	Vector3DI ret = a;
+	ret.x -= b.x;
+	ret.y -= b.y;
+	ret.z -= b.z;
 	return ret;
 }

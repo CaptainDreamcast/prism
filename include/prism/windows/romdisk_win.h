@@ -13,5 +13,5 @@ size_t fileTotalRomdisk(FileHandler tHandler);
 void mountRomdiskWindowsFromBuffer(Buffer b, char* tMountPath);
 void mountRomdiskWindows(char* tFilePath, char* tMountPath);
 void unmountRomdiskWindows(char* tMountPath);
-int isRomdiskPath(char* tPath);
+int isRomdiskPath(const char* tPath);
 int isRomdiskFileHandler(FileHandler tHandler);
