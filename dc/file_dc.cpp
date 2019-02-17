@@ -51,13 +51,13 @@ const char* getWorkingDirectory() {
 	return gData.cwd;
 }
 
-void getFullPath(char* tDest, char* tPath) {
+void getFullPath(char* tDest, const char* tPath) {
 	if(tPath[0] == '$') sprintf(tDest, "%s", tPath+1);
 	else if(tPath[0] == '/') sprintf(tDest, "%s%s", gData.fileSystem, tPath);
 	else sprintf(tDest, "%s%s%s", gData.fileSystem, gData.cwd, tPath);
 }
 
-FileHandler fileOpen(char* tPath, int tFlags){
+FileHandler fileOpen(const char* tPath, int tFlags){
 	char path[1024];
 	getFullPath(path, tPath);
 
