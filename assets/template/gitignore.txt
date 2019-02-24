@@ -11,6 +11,7 @@ dc-tool_*
 
 filesystem
 concept
+assets.cpp
 
 web/*
 *.html

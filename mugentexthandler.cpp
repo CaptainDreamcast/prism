@@ -297,23 +297,18 @@ void addMugenFont(int tKey, char* tPath) {
 	char path[1024];
 
     // TODO: fix when assets is dropped from Dolmexica
-	if ((isOnWindows() || isOnWeb()) && !strcmp(".", getFileSystem())) {
-		if (strchr(tPath, '/')) {
-			sprintf(path, "assets/%s", tPath); 
-		}
-		else {
-			sprintf(path, "assets/font/%s", tPath); 
+	if (strchr(tPath, '/')) {
+		sprintf(path, "assets/%s", tPath);
+		if (!isFile(path)) {
+			sprintf(path, "%s", tPath);
 		}
 	}
 	else {
-		if (strchr(tPath, '/')) {
-			sprintf(path, "assets/%s", tPath);
+		sprintf(path, "assets/font/%s", tPath);
+		if (!isFile(path)) {
+			sprintf(path, "font/%s", tPath);
 		}
-		else {
-			sprintf(path, "assets/font/%s", tPath);
-		}
-	
-    }
+	}
 	
 	char* ending = getFileExtension(path);
 

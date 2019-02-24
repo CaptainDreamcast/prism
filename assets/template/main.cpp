@@ -18,12 +18,18 @@ KOS_INIT_ROMDISK(romdisk);
 
 #endif
 
+#define DEVELOP
 
 void exitGame() {
 	shutdownPrismWrapper();
 
 #ifdef DEVELOP
-	abortSystem();
+	if (isOnDreamcast()) {
+		abortSystem();
+	}
+	else {
+		returnToMenu();
+	}
 #else
 	returnToMenu();
 #endif
@@ -37,6 +43,14 @@ void setMainFileSystem() {
 #endif
 }
 
+int isInDevelopMode() {
+#ifdef DEVELOP
+	return 1;
+#else
+	return 0;
+#endif
+}
+
 int main(int argc, char** argv) {
 	(void)argc;
 	(void)argv;
@@ -44,16 +58,27 @@ int main(int argc, char** argv) {
 	setGameName("TEMPLATE");
 	setScreenSize(640, 480);
 	
-	initPrismWrapperWithDefaultFlags();
-	setMainFileSystem();	
+	setMainFileSystem();
+	initPrismWrapperWithConfigFile("data/config.cfg");
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 
+	addMugenFont(-1, "font/f4x6.fnt");
+	
 	logg("Check framerate");
 	FramerateSelectReturnType framerateReturnType = selectFramerate();
 	if (framerateReturnType == FRAMERATE_SCREEN_RETURN_ABORT) {
 		exitGame();
 	}
 
+	if(isInDevelopMode()) {
+		ScreenSize sz = getScreenSize();
+		setDisplayedScreenSize(sz.x, sz.y);
+		disableWrapperErrorRecovery();	
+		setMinimumLogType(LOG_TYPE_NORMAL);
+	}
+	else {
+		setMinimumLogType(LOG_TYPE_NONE);
+	}
 
 	setScreenAfterWrapperLogoScreen(getLogoScreenFromWrapper());
 	startScreenHandling(getLogoScreenFromWrapper());

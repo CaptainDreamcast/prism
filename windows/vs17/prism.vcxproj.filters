@@ -230,9 +230,6 @@
     <ClInclude Include="..\..\include\prism\stlutil.h">
       <Filter>hdr</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\prism\actorhandlerclass.h">
-      <Filter>hdr</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\prism\debug.h">
       <Filter>hdr</Filter>
     </ClInclude>
@@ -466,7 +463,6 @@
     <ClCompile Include="..\..\stlutil.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\prism\actorhandlerclass.cpp" />
     <ClCompile Include="..\..\debug.cpp">
       <Filter>src</Filter>
     </ClCompile>

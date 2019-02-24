@@ -150,7 +150,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\prism\actorhandler.h" />
-    <ClInclude Include="..\..\include\prism\actorhandlerclass.h" />
     <ClInclude Include="..\..\include\prism\animation.h" />
     <ClInclude Include="..\..\include\prism\animationtree.h" />
     <ClInclude Include="..\..\include\prism\blitz.h" />
@@ -247,7 +246,6 @@
     <ClCompile Include="..\..\file.cpp" />
     <ClCompile Include="..\..\framerate.cpp" />
     <ClCompile Include="..\..\geometry.cpp" />
-    <ClCompile Include="..\..\include\prism\actorhandlerclass.cpp" />
     <ClCompile Include="..\..\input.cpp" />
     <ClCompile Include="..\..\loadingscreen.cpp" />
     <ClCompile Include="..\..\log.cpp" />
