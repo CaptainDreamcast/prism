@@ -7,6 +7,77 @@
 #include "geometry.h"
 #include "animation.h"
 
+typedef enum {
+	KEYBOARD_A_PRISM,
+	KEYBOARD_B_PRISM,
+	KEYBOARD_C_PRISM,
+	KEYBOARD_D_PRISM,
+	KEYBOARD_E_PRISM,
+	KEYBOARD_F_PRISM,
+	KEYBOARD_G_PRISM,
+	KEYBOARD_H_PRISM,
+	KEYBOARD_I_PRISM,
+	KEYBOARD_J_PRISM,
+	KEYBOARD_K_PRISM,
+	KEYBOARD_L_PRISM,
+	KEYBOARD_M_PRISM,
+	KEYBOARD_N_PRISM,
+	KEYBOARD_O_PRISM,
+	KEYBOARD_P_PRISM,
+	KEYBOARD_Q_PRISM,
+	KEYBOARD_R_PRISM,
+	KEYBOARD_S_PRISM,
+	KEYBOARD_T_PRISM,
+	KEYBOARD_U_PRISM,
+	KEYBOARD_V_PRISM,
+	KEYBOARD_W_PRISM,
+	KEYBOARD_X_PRISM,
+	KEYBOARD_Y_PRISM,
+	KEYBOARD_Z_PRISM,
+	KEYBOARD_0_PRISM,
+	KEYBOARD_1_PRISM,
+	KEYBOARD_2_PRISM,
+	KEYBOARD_3_PRISM,
+	KEYBOARD_4_PRISM,
+	KEYBOARD_5_PRISM,
+	KEYBOARD_6_PRISM,
+	KEYBOARD_7_PRISM,
+	KEYBOARD_8_PRISM,
+	KEYBOARD_9_PRISM,
+	KEYBOARD_SPACE_PRISM,
+	KEYBOARD_LEFT_PRISM,
+	KEYBOARD_RIGHT_PRISM,
+	KEYBOARD_UP_PRISM,
+	KEYBOARD_DOWN_PRISM,
+	KEYBOARD_F1_PRISM,
+	KEYBOARD_F2_PRISM,
+	KEYBOARD_F3_PRISM,
+	KEYBOARD_F4_PRISM,
+	KEYBOARD_F5_PRISM,
+	KEYBOARD_F6_PRISM,
+	KEYBOARD_SCROLLLOCK_PRISM,
+	KEYBOARD_PAUSE_PRISM,
+	KEYBOARD_CTRL_LEFT_PRISM,
+	KEYBOARD_SHIFT_LEFT_PRISM,
+	KEYBOARD_RETURN_PRISM,
+	KEYBOARD_AMOUNT_PRISM,
+} KeyboardKeyPrism;
+
+typedef enum {
+	CONTROLLER_A_PRISM,
+	CONTROLLER_B_PRISM,
+	CONTROLLER_X_PRISM,
+	CONTROLLER_Y_PRISM,
+	CONTROLLER_L_PRISM,
+	CONTROLLER_R_PRISM,
+	CONTROLLER_LEFT_PRISM,
+	CONTROLLER_RIGHT_PRISM,
+	CONTROLLER_UP_PRISM,
+	CONTROLLER_DOWN_PRISM,
+	CONTROLLER_START_PRISM,
+	CONTROLLER_BUTTON_AMOUNT_PRISM,
+} ControllerButtonPrism;
+
 void initInput();
 void updateInput();
 void resetInputForAllControllers();
@@ -105,27 +176,16 @@ void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double
 void turnControllerRumbleOnSingle(int i, int tFrequency, double tAmplitude);
 void turnControllerRumbleOffSingle(int i);
 
+int hasPressedRawButton(int i, ControllerButtonPrism tButton);
 
-typedef enum {
-	KEYBOARD_C_PRISM,
-	KEYBOARD_D_PRISM,
-	KEYBOARD_I_PRISM,
-	KEYBOARD_L_PRISM,
-	KEYBOARD_S_PRISM,
-	KEYBOARD_V_PRISM,
-	KEYBOARD_SPACE_PRISM,
-	KEYBOARD_F1_PRISM,
-	KEYBOARD_F2_PRISM,
-	KEYBOARD_F3_PRISM,
-	KEYBOARD_F4_PRISM,
-	KEYBOARD_F5_PRISM,
-	KEYBOARD_F6_PRISM,
-	KEYBOARD_SCROLLLOCK_PRISM,
-	KEYBOARD_PAUSE_PRISM,
-	KEYBOARD_CTRL_LEFT_PRISM,
-	KEYBOARD_SHIFT_LEFT_PRISM,
-	KEYBOARD_AMOUNT_PRISM,
-} KeyboardKeyPrism;
-
+int hasPressedRawKeyboardKey(KeyboardKeyPrism tKey);
 int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey);
 int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...);
+
+ControllerButtonPrism getButtonForController(int i, ControllerButtonPrism tTargetButton);
+void setButtonForController(int i, ControllerButtonPrism tTargetButton, ControllerButtonPrism tButtonValue);
+KeyboardKeyPrism getButtonForKeyboard(int i, ControllerButtonPrism tTargetButton);
+void setButtonForKeyboard(int i, ControllerButtonPrism tTargetButton, KeyboardKeyPrism tKeyValue);
+
+void setButtonFromUserInputForController(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*) = NULL, void* tCaller = NULL);
+void setButtonFromUserInputForKeyboard(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*) = NULL, void* tCaller = NULL);

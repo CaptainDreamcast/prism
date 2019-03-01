@@ -261,7 +261,7 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 
 		if (e->mIsLooping) {
 			e->mStep = e->mAnimation->mLoopStart;
-			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep); // TODO: test
+			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep); // TODO: test TODO: Mr. Big implies should be + 1 or at least not = 0 for loop start, either that or count loops for animelemtime
 		}
 		else {
 			unloadMugenAnimation(e);

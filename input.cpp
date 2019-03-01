@@ -19,8 +19,18 @@ typedef struct {
 	int mShotFlank;
 } InputFlanks;
 
+typedef struct {
+	int mIsActive;
+	ControllerButtonPrism mTargetButton;
+	int mIsSettingController;
+	int mFlankCheckDone;
+	void(*mOptionalCB)(void*); 
+	void* mCaller;
+} SetInputData;
+
 static struct {
 	InputFlanks mFlanks[MAXIMUM_CONTROLLER_AMOUNT];
+	SetInputData mSetInput[MAXIMUM_CONTROLLER_AMOUNT];
 
 	int mMainController;
 } gData;
@@ -41,6 +51,8 @@ void resetInputForAllControllers() {
 		hasPressedStartFlankSingle(i);
 		hasPressedAbortFlankSingle(i);
 		hasShotGunFlankSingle(i);
+
+		gData.mSetInput[i].mIsActive = 0;
 	}
 }
 
@@ -293,4 +305,76 @@ void addControllerRumbleBasicSingle(int i, Duration tDuration)
 
 void turnControllerRumbleOnSingle(int i, int tFrequency, double tAmplitude) {
 	addControllerRumbleSingle(i, INF, tFrequency, tAmplitude);
+}
+
+static void updateInputSettingController(int i) {
+	int pressedAnyButton = 0;
+	for (int j = 0; j < CONTROLLER_BUTTON_AMOUNT_PRISM; j++) {
+		if (hasPressedRawButton(i, (ControllerButtonPrism)j)) {
+			pressedAnyButton = 1;
+			if (!gData.mSetInput[i].mFlankCheckDone) continue;
+			setButtonForController(i, gData.mSetInput[i].mTargetButton, (ControllerButtonPrism)j);
+			gData.mSetInput[i].mIsActive = 0;
+			if (gData.mSetInput[i].mOptionalCB) gData.mSetInput[i].mOptionalCB(gData.mSetInput[i].mCaller);
+			break;
+		}
+	}
+
+	if (!pressedAnyButton) gData.mSetInput[i].mFlankCheckDone = 1;
+}
+
+static void updateInputSettingKeyboard(int i) {
+	int pressedAnyKey = 0;
+	for (int j = 0; j < KEYBOARD_AMOUNT_PRISM; j++) {
+		if (hasPressedRawKeyboardKey((KeyboardKeyPrism)j)) {
+			pressedAnyKey = 1;
+			if (!gData.mSetInput[i].mFlankCheckDone) continue;
+			setButtonForKeyboard(i, gData.mSetInput[i].mTargetButton, (KeyboardKeyPrism)j);
+			gData.mSetInput[i].mIsActive = 0;
+			if(gData.mSetInput[i].mOptionalCB) gData.mSetInput[i].mOptionalCB(gData.mSetInput[i].mCaller);
+			break;
+		}
+	}
+
+	if (!pressedAnyKey) gData.mSetInput[i].mFlankCheckDone = 1;
+}
+
+static void updateInputSettingSingle(int i) {
+	if (!gData.mSetInput[i].mIsActive) return;
+
+	if (gData.mSetInput[i].mIsSettingController) {
+		updateInputSettingController(i);
+	}
+	else {
+		updateInputSettingKeyboard(i);
+	}
+}
+
+static void updateInputSetting() {
+		updateInputSettingSingle(0);
+		updateInputSettingSingle(1);
+}
+
+extern void updateInputPlatform();
+
+void updateInput() {
+	updateInputPlatform();
+	updateInputSetting();
+}
+
+static void setButtonFromUserInputGeneral(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*), void* tCaller, int tIsSettingController) {
+	gData.mSetInput[i].mTargetButton = tTargetButton;
+	gData.mSetInput[i].mIsSettingController = tIsSettingController;
+	gData.mSetInput[i].mOptionalCB = tOptionalCB;
+	gData.mSetInput[i].mCaller = tCaller;
+	gData.mSetInput[i].mFlankCheckDone = 0;
+	gData.mSetInput[i].mIsActive = 1;
+}
+
+void setButtonFromUserInputForController(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*), void* tCaller) {
+	setButtonFromUserInputGeneral(i, tTargetButton, tOptionalCB, tCaller, 1);
+}
+
+void setButtonFromUserInputForKeyboard(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*), void* tCaller) {
+	setButtonFromUserInputGeneral(i, tTargetButton, tOptionalCB, tCaller, 0);
 }

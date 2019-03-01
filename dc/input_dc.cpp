@@ -69,88 +69,156 @@ static void updateSingleInput(int i) {
 
 }
 
-void updateInput() {
+void updateInputPlatform() {
 	int i;
 	for(i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
 		updateSingleInput(i);
 	}
 }
 
-int hasPressedASingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
 
-  return (gData.mControllers[i].mState->buttons & CONT_A);
+static int evaluateDreamcastButtonA(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return (gData.mControllers[i].mState->buttons & CONT_A);
 }
 
-int hasPressedBSingle(int i) {
-  if (!gData.mControllers[i].mState) 
-	return 0;
-
-  return (gData.mControllers[i].mState->buttons & CONT_B);
+static int evaluateDreamcastButtonB(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return (gData.mControllers[i].mState->buttons & CONT_B);
 }
 
-int hasPressedXSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
-
-  return (gData.mControllers[i].mState->buttons & CONT_X);
+static int evaluateDreamcastButtonX(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return (gData.mControllers[i].mState->buttons & CONT_X);
 }
 
-int hasPressedYSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
-
-  return (gData.mControllers[i].mState->buttons & CONT_Y);
+static int evaluateDreamcastButtonY(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return (gData.mControllers[i].mState->buttons & CONT_Y);
 }
 
-int hasPressedLeftSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
-
-  return ((gData.mControllers[i].mState->buttons & CONT_DPAD_LEFT) || (gData.mControllers[i].mState->joyx <= -64));
+static int evaluateDreamcastButtonL(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return (gData.mControllers[i].mState->ltrig >= 64);
 }
 
-int hasPressedRightSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
+static int evaluateDreamcastButtonR(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return (gData.mControllers[i].mState->rtrig >= 64);
+}
 
+static int evaluateDreamcastButtonLeft(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return ((gData.mControllers[i].mState->buttons & CONT_DPAD_LEFT) || (gData.mControllers[i].mState->joyx <= -64));
+}
+
+static int evaluateDreamcastButtonRight(int i) {
+  if (!gData.mControllers[i].mState) return 0;
   return ((gData.mControllers[i].mState->buttons & CONT_DPAD_RIGHT) || (gData.mControllers[i].mState->joyx >= 64));
 }
 
-int hasPressedUpSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
+static int evaluateDreamcastButtonUp(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return ((gData.mControllers[i].mState->buttons & CONT_DPAD_UP) || (gData.mControllers[i].mState->joyy <= -64));
+}
 
-  return ((gData.mControllers[i].mState->buttons & CONT_DPAD_UP) || (gData.mControllers[i].mState->joyy <= -64));
+static int evaluateDreamcastButtonDown(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return ((gData.mControllers[i].mState->buttons & CONT_DPAD_DOWN) || (gData.mControllers[i].mState->joyy >= 64));
+}
+
+static int evaluateDreamcastButtonStart(int i) {
+	if (!gData.mControllers[i].mState) return 0;
+	return (gData.mControllers[i].mState->buttons & CONT_START);
+}
+
+typedef int(*InputEvaluationFunction)(int);
+
+static InputEvaluationFunction gDreamcastButtonMapping[] = {
+	evaluateDreamcastButtonA,
+	evaluateDreamcastButtonB,
+	evaluateDreamcastButtonX,
+	evaluateDreamcastButtonY,
+	evaluateDreamcastButtonL,
+	evaluateDreamcastButtonR,
+	evaluateDreamcastButtonLeft,
+	evaluateDreamcastButtonRight,
+	evaluateDreamcastButtonUp,
+	evaluateDreamcastButtonDown,
+	evaluateDreamcastButtonStart,
+};
+
+static ControllerButtonPrism gButtonMapping[MAXIMUM_CONTROLLER_AMOUNT][CONTROLLER_BUTTON_AMOUNT_PRISM] = {
+	{
+		CONTROLLER_A_PRISM,
+		CONTROLLER_B_PRISM,
+		CONTROLLER_X_PRISM,
+		CONTROLLER_Y_PRISM,
+		CONTROLLER_L_PRISM,
+		CONTROLLER_R_PRISM,
+		CONTROLLER_LEFT_PRISM,
+		CONTROLLER_RIGHT_PRISM,
+		CONTROLLER_UP_PRISM,
+		CONTROLLER_DOWN_PRISM,
+		CONTROLLER_START_PRISM,
+	},
+	{
+		CONTROLLER_A_PRISM,
+		CONTROLLER_B_PRISM,
+		CONTROLLER_X_PRISM,
+		CONTROLLER_Y_PRISM,
+		CONTROLLER_L_PRISM,
+		CONTROLLER_R_PRISM,
+		CONTROLLER_LEFT_PRISM,
+		CONTROLLER_RIGHT_PRISM,
+		CONTROLLER_UP_PRISM,
+		CONTROLLER_DOWN_PRISM,
+		CONTROLLER_START_PRISM,
+	},
+};
+
+int hasPressedASingle(int i) {
+  return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_A_PRISM]](i);
+}
+
+int hasPressedBSingle(int i) {
+  return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_B_PRISM]](i);
+}
+
+int hasPressedXSingle(int i) {
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_X_PRISM]](i);
+}
+
+int hasPressedYSingle(int i) {
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_Y_PRISM]](i);
+}
+
+int hasPressedLeftSingle(int i) {
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_LEFT_PRISM]](i);
+}
+
+int hasPressedRightSingle(int i) {
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_RIGHT_PRISM]](i);
+}
+
+int hasPressedUpSingle(int i) {
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_UP_PRISM]](i);
 }
 
 int hasPressedDownSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
-
-  return ((gData.mControllers[i].mState->buttons & CONT_DPAD_DOWN) || (gData.mControllers[i].mState->joyy >= 64));
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_DOWN_PRISM]](i);
 }
 
 int hasPressedLSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
-
-  return (gData.mControllers[i].mState->ltrig >= 64);
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_L_PRISM]](i);
 }
 
 int hasPressedRSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
-
-  return (gData.mControllers[i].mState->rtrig >= 64);
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_R_PRISM]](i);
 }
 
 int hasPressedStartSingle(int i) {
-  if (!gData.mControllers[i].mState)
-    return 0;
-
-  return (gData.mControllers[i].mState->buttons & CONT_START);
+	return gDreamcastButtonMapping[gButtonMapping[i][CONTROLLER_START_PRISM]](i);
 }
 
 int hasPressedAbortSingle(int i) {
@@ -213,6 +281,15 @@ void turnControllerRumbleOffSingle(int i) {
 	// TODO
 }
 
+int hasPressedRawButton(int i, ControllerButtonPrism tButton) {
+	return gDreamcastButtonMapping[tButton](i);
+}
+
+int hasPressedRawKeyboardKey(KeyboardKeyPrism tKey) {
+	(void)tKey;
+	return 0; // TODO
+}
+
 int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
 	(void)tKey;
 	// TODO
@@ -224,3 +301,29 @@ int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
 	// TODO
 	return 0;
 }
+
+ControllerButtonPrism getButtonForController(int i, ControllerButtonPrism tTargetButton)
+{
+	return gButtonMapping[i][tTargetButton];
+}
+
+void setButtonForController(int i, ControllerButtonPrism tTargetButton, ControllerButtonPrism tButtonValue)
+{
+	gButtonMapping[i][tTargetButton] = tButtonValue;
+}
+
+KeyboardKeyPrism getButtonForKeyboard(int i, ControllerButtonPrism tTargetButton)
+{
+	(void)i;
+	(void)tTargetButton;
+	return 0; // TODO
+}
+
+void setButtonForKeyboard(int i, ControllerButtonPrism tTargetButton, KeyboardKeyPrism tKeyValue)
+{
+	(void)i;
+	(void)tTargetButton;
+	(void)tKeyValue;
+	// TODO
+}
+
