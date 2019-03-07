@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3572E463-893D-4815-8ECC-E65F3B8C6D90}</ProjectGuid>
     <RootNamespace>libtari</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>prism</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -74,11 +74,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2-2.0.7\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_image-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_mixer-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_ttf-2.0.14;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\lpng1632;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\glew-2.1.0\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\zstd\lib;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\zlib-1.2.11;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\prism\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2-2.0.7\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_image-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_mixer-2.0.1;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\SDL2_ttf-2.0.14;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\lpng1632;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\glew-2.1.0\include;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\zstd\lib;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\SDL2\zlib-1.2.11;C:\Users\Legion\Desktop\DEV\MICROSOFT\WINDOWS\LIBTARIPORT\addons\prism\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

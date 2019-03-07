@@ -1,8 +1,8 @@
 .c.o:
-	emcc $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -g -s SAFE_HEAP=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)\..\..\..\SDL2\lpng1632 -I$(PRISM_PATH)\..\..\..\SDL2\zstd\lib -o $@	
+	emcc $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -g -s SAFE_HEAP=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\lpng1632 -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\zstd\lib -o $@	
 	
 .cpp.o:
-	em++ $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -fpermissive -g -s SAFE_HEAP=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)\..\..\..\SDL2\lpng1632 -I$(PRISM_PATH)\..\..\..\SDL2\zstd\lib -o $@	
+	em++ $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -fpermissive -g -s SAFE_HEAP=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\lpng1632 -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\zstd\lib -o $@	
 	
 build_develop: $(OBJS) 
 	em++ $(OBJS) -O3 \
@@ -11,7 +11,7 @@ build_develop: $(OBJS)
 	-s SDL2_IMAGE_FORMATS="[""png""]" \
 	--use-preload-plugins \
 	-L$(PRISM_PATH)/bin -lprism \
-	-L$(PRISM_PATH)\..\..\..\SDL2\zstd-emscripten\lib -lzstd \
+	-L$(PRISM_PATH)\..\..\..\PLATFORMS\WEB\LIBS\zstd-emscripten\lib -lzstd \
     $(ADDITIONAL_PRELOADS) --preload-file $(PRISM_PATH)\assets\effects@effects --preload-file $(PRISM_PATH)\assets\logo@logo --preload-file $(PRISM_PATH)\assets\fonts@fonts --preload-file $(PRISM_PATH)\assets\debug@debug -o web\game.html
 	-del web\game.html
 	-copy $(PRISM_PATH)\web\assets\index.html web\index.html
