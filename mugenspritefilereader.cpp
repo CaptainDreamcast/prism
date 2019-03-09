@@ -741,7 +741,9 @@ static MugenSpriteFileSprite* loadTextureFromPCXBuffer(MugenSpriteFile* tDst, in
 	
 	assert(header.mBitsPerPixel == 8);
 	assert(header.mEncoding == 1);
-	assert(header.mPlaneAmount == 1);
+	if (header.mPlaneAmount != 1) {
+		logWarningFormat("Unsupported pcx plane amount: %d", header.mPlaneAmount);
+	}
 
 	int encodedSize;
 	if (mIsUsingOwnPalette) {
