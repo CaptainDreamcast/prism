@@ -3,8 +3,11 @@
 #include <prism/mugentexthandler.h>
 #include <prism/system.h>
 
+
+#define PREVIOUS_FPS_AMOUNT 5
 static struct {
-	
+	    
+    double mPreviousFPS[PREVIOUS_FPS_AMOUNT];
 	uint64_t mPrevTime;
 	int mFPSCounterTextID;
 
@@ -62,11 +65,18 @@ static void updatePrismDebug(void* tData) {
 	double ds = dt / 1000.0;
 	double fps = 1 / ds;
 
+	double fpsSum = fps + gPrismDebug.mPreviousFPS[PREVIOUS_FPS_AMOUNT - 1];
+    for(int i = 1; i < PREVIOUS_FPS_AMOUNT; i++){
+		fpsSum += gPrismDebug.mPreviousFPS[i - 1];
+		gPrismDebug.mPreviousFPS[i - 1] = gPrismDebug.mPreviousFPS[i];
+    }
+	gPrismDebug.mPreviousFPS[PREVIOUS_FPS_AMOUNT - 1] = fps;
+    fpsSum /= PREVIOUS_FPS_AMOUNT + 1;
+
 	char text[200];
-	sprintf(text, "%.1f", fps);
+	sprintf(text, "%.1f", fpsSum);
 	changeMugenText(gPrismDebug.mFPSCounterTextID, text);
 	gPrismDebug.mPrevTime = currentTime;
-
 
 	sprintf(text, "%lu", (unsigned long)(gPrismDebug.mEndDrawingTime - gPrismDebug.mStartDrawingTime));
 	changeMugenText(gPrismDebug.mDrawingTimeCounterTextID, text);
