@@ -181,7 +181,7 @@ TextureData loadTexturePKG(char* tFileDir) {
 }
 
 TextureData loadTexture(char* tFileDir) {
-	char* fileExt = getFileExtension(tFileDir);
+	const char* fileExt = getFileExtension(tFileDir);
 
 	if (!strcmp("pkg", fileExt)) {
 		return loadTexturePKG(tFileDir);
@@ -205,7 +205,7 @@ int getTextureHash(TextureData tTexture) {
 }
 
 int canLoadTexture(char* tPath) {
-	char* fileExt = getFileExtension(tPath);
+	const char* fileExt = getFileExtension(tPath);
 
 	if (!strcmp("pkg", fileExt)) {
 		char path[1024];

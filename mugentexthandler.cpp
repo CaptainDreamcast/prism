@@ -310,7 +310,7 @@ void addMugenFont(int tKey, char* tPath) {
 		}
 	}
 	
-	char* ending = getFileExtension(path);
+	const char* ending = getFileExtension(path);
 
 	if (!strcmp("def", ending)) {
 		addMugenFont2(tKey, path);

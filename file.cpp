@@ -17,6 +17,18 @@ char* getPureFileName(char* path) {
 }
 
 
+const char* getFileExtension(const char* tPath) {
+	const char* pos = strrchr(tPath, '.');
+
+	if (pos == NULL) {
+		logError("Unable to find file ending.");
+		logErrorString(tPath);
+		recoverFromError();
+	}
+
+	return pos + 1;
+}
+
 char* getFileExtension(char* tPath) {
 	char* pos = strrchr(tPath, '.');
 

@@ -22,9 +22,12 @@ typedef struct {
 typedef struct {
 	int mIsActive;
 	ControllerButtonPrism mTargetButton;
+	int mIsSetting;
 	int mIsSettingController;
 	int mFlankCheckDone;
-	void(*mOptionalCB)(void*); 
+	void(*mSettingOptionalCB)(void*); 
+	void(*mKeyboardWaitingCB)(void*, KeyboardKeyPrism);
+	void(*mControllerWaitingCB)(void*, ControllerButtonPrism);
 	void* mCaller;
 } SetInputData;
 
@@ -315,7 +318,7 @@ static void updateInputSettingController(int i) {
 			if (!gData.mSetInput[i].mFlankCheckDone) continue;
 			setButtonForController(i, gData.mSetInput[i].mTargetButton, (ControllerButtonPrism)j);
 			gData.mSetInput[i].mIsActive = 0;
-			if (gData.mSetInput[i].mOptionalCB) gData.mSetInput[i].mOptionalCB(gData.mSetInput[i].mCaller);
+			if (gData.mSetInput[i].mSettingOptionalCB) gData.mSetInput[i].mSettingOptionalCB(gData.mSetInput[i].mCaller);
 			break;
 		}
 	}
@@ -331,7 +334,7 @@ static void updateInputSettingKeyboard(int i) {
 			if (!gData.mSetInput[i].mFlankCheckDone) continue;
 			setButtonForKeyboard(i, gData.mSetInput[i].mTargetButton, (KeyboardKeyPrism)j);
 			gData.mSetInput[i].mIsActive = 0;
-			if(gData.mSetInput[i].mOptionalCB) gData.mSetInput[i].mOptionalCB(gData.mSetInput[i].mCaller);
+			if(gData.mSetInput[i].mSettingOptionalCB) gData.mSetInput[i].mSettingOptionalCB(gData.mSetInput[i].mCaller);
 			break;
 		}
 	}
@@ -339,14 +342,49 @@ static void updateInputSettingKeyboard(int i) {
 	if (!pressedAnyKey) gData.mSetInput[i].mFlankCheckDone = 1;
 }
 
+static void updateInputGettingController(int i) {
+	int pressedAnyButton = 0;
+	for (int j = 0; j < CONTROLLER_BUTTON_AMOUNT_PRISM; j++) {
+		if (hasPressedRawButton(i, (ControllerButtonPrism)j)) {
+			pressedAnyButton = 1;
+			if (!gData.mSetInput[i].mFlankCheckDone) continue;
+			gData.mSetInput[i].mIsActive = 0;
+			gData.mSetInput[i].mControllerWaitingCB(gData.mSetInput[i].mCaller, (ControllerButtonPrism)j);
+			break;
+		}
+	}
+
+	if (!pressedAnyButton) gData.mSetInput[i].mFlankCheckDone = 1;
+}
+
+static void updateInputGettingKeyboard(int i) {
+	for (int j = 0; j < KEYBOARD_AMOUNT_PRISM; j++) {
+		if (hasPressedKeyboardKeyFlank((KeyboardKeyPrism)j)) {
+			gData.mSetInput[i].mIsActive = 0;
+			gData.mSetInput[i].mKeyboardWaitingCB(gData.mSetInput[i].mCaller, (KeyboardKeyPrism)j);
+			break;
+		}
+	}
+}
+
 static void updateInputSettingSingle(int i) {
 	if (!gData.mSetInput[i].mIsActive) return;
 
-	if (gData.mSetInput[i].mIsSettingController) {
-		updateInputSettingController(i);
+	if (gData.mSetInput[i].mIsSetting) {
+		if (gData.mSetInput[i].mIsSettingController) {
+			updateInputSettingController(i);
+		}
+		else {
+			updateInputSettingKeyboard(i);
+		}
 	}
 	else {
-		updateInputSettingKeyboard(i);
+		if (gData.mSetInput[i].mIsSettingController) {
+			updateInputGettingController(i);
+		}
+		else {
+			updateInputGettingKeyboard(i);
+		}
 	}
 }
 
@@ -362,19 +400,36 @@ void updateInput() {
 	updateInputSetting();
 }
 
-static void setButtonFromUserInputGeneral(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*), void* tCaller, int tIsSettingController) {
+static void setButtonFromUserInputGeneral(int i, ControllerButtonPrism tTargetButton, void(*tSettingOptionalCB)(void*), void(*tControllerWaitingCB)(void*, ControllerButtonPrism), void(*tKeyboardWaitingCB)(void*, KeyboardKeyPrism), void* tCaller, int tIsSetting, int tIsSettingController) {
 	gData.mSetInput[i].mTargetButton = tTargetButton;
+	gData.mSetInput[i].mIsSetting = tIsSetting;
 	gData.mSetInput[i].mIsSettingController = tIsSettingController;
-	gData.mSetInput[i].mOptionalCB = tOptionalCB;
+	gData.mSetInput[i].mSettingOptionalCB = tSettingOptionalCB;
+	gData.mSetInput[i].mControllerWaitingCB = tControllerWaitingCB;
+	gData.mSetInput[i].mKeyboardWaitingCB = tKeyboardWaitingCB;
 	gData.mSetInput[i].mCaller = tCaller;
 	gData.mSetInput[i].mFlankCheckDone = 0;
 	gData.mSetInput[i].mIsActive = 1;
 }
 
 void setButtonFromUserInputForController(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*), void* tCaller) {
-	setButtonFromUserInputGeneral(i, tTargetButton, tOptionalCB, tCaller, 1);
+	setButtonFromUserInputGeneral(i, tTargetButton, tOptionalCB, NULL, NULL, tCaller, 1, 1);
 }
 
 void setButtonFromUserInputForKeyboard(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*), void* tCaller) {
-	setButtonFromUserInputGeneral(i, tTargetButton, tOptionalCB, tCaller, 0);
+	setButtonFromUserInputGeneral(i, tTargetButton, tOptionalCB, NULL, NULL, tCaller, 1, 0);
+}
+
+void waitForButtonFromUserInputForController(int i, void(*tCB)(void *, ControllerButtonPrism), void * tCaller)
+{
+	setButtonFromUserInputGeneral(i, CONTROLLER_A_PRISM, NULL, tCB, NULL, tCaller, 0, 0);
+}
+
+void waitForButtonFromUserInputForKeyboard(int i, void(*tCB)(void*, KeyboardKeyPrism), void* tCaller) {
+	setButtonFromUserInputGeneral(i, CONTROLLER_A_PRISM, NULL, NULL, tCB, tCaller, 0, 0);
+}
+
+void cancelWaitingForButtonFromUserInput(int i)
+{
+	gData.mSetInput[i].mIsActive = 0;
 }

@@ -57,9 +57,14 @@ typedef enum {
 	KEYBOARD_F6_PRISM,
 	KEYBOARD_SCROLLLOCK_PRISM,
 	KEYBOARD_PAUSE_PRISM,
+	KEYBOARD_CARET_PRISM,
 	KEYBOARD_CTRL_LEFT_PRISM,
 	KEYBOARD_SHIFT_LEFT_PRISM,
 	KEYBOARD_RETURN_PRISM,
+	KEYBOARD_BACKSPACE_PRISM,
+	KEYBOARD_DELETE_PRISM,
+	KEYBOARD_PERIOD_PRISM,
+	KEYBOARD_SLASH_PRISM,
 	KEYBOARD_AMOUNT_PRISM,
 } KeyboardKeyPrism;
 
@@ -189,3 +194,6 @@ void setButtonForKeyboard(int i, ControllerButtonPrism tTargetButton, KeyboardKe
 
 void setButtonFromUserInputForController(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*) = NULL, void* tCaller = NULL);
 void setButtonFromUserInputForKeyboard(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*) = NULL, void* tCaller = NULL);
+void waitForButtonFromUserInputForController(int i, void(*tCB)(void*, ControllerButtonPrism), void* tCaller = NULL);
+void waitForButtonFromUserInputForKeyboard(int i, void(*tCB)(void*, KeyboardKeyPrism), void* tCaller = NULL);
+void cancelWaitingForButtonFromUserInput(int i);

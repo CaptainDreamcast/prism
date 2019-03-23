@@ -83,6 +83,7 @@ void mountRomdisk(char* tFilePath, char* tMountPath);
 void unmountRomdisk(char* tMountPath);
 
 char* getPureFileName(char* path);
+const char* getFileExtension(const char* tPath);
 char* getFileExtension(char* tPath);
 void getPathWithoutFileExtension(char* tDest, char* tPath);
 void  getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i);

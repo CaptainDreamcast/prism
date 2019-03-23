@@ -111,6 +111,11 @@ static void initBasicSystems() {
 	initThreading();
 	debugLog("Initiating input.");
 	initInput();
+	if (isInDevelopMode()) {
+		debugLog("Initiating debug.");
+		initDebug();
+	}
+
 
 	gData.mGlobalTimeDilatation = 1;
 	gData.mIsActive = 1;

@@ -9,6 +9,8 @@
 #include "prism/math.h"
 #include "prism/clipboardhandler.h"
 
+using namespace std;
+
 typedef struct {
 	int mIsUsingController;
 	SDL_GameController* mController;
@@ -144,60 +146,66 @@ static ControllerButtonPrism gButtonMapping[MAXIMUM_CONTROLLER_AMOUNT][CONTROLLE
 	},
 };
 
-static SDL_Scancode const gPrismToSDLKeyboardMapping[] = {
-	SDL_SCANCODE_A,
-	SDL_SCANCODE_B,
-	SDL_SCANCODE_C,
-	SDL_SCANCODE_D,
-	SDL_SCANCODE_E,
-	SDL_SCANCODE_F,
-	SDL_SCANCODE_G,
-	SDL_SCANCODE_H,
-	SDL_SCANCODE_I,
-	SDL_SCANCODE_J,
-	SDL_SCANCODE_K,
-	SDL_SCANCODE_L,
-	SDL_SCANCODE_M ,
-	SDL_SCANCODE_N,
-	SDL_SCANCODE_O,
-	SDL_SCANCODE_P,
-	SDL_SCANCODE_Q,
-	SDL_SCANCODE_R,
-	SDL_SCANCODE_S,
-	SDL_SCANCODE_T,
-	SDL_SCANCODE_U,
-	SDL_SCANCODE_V,
-	SDL_SCANCODE_W,
-	SDL_SCANCODE_X,
-	SDL_SCANCODE_Y,
-	SDL_SCANCODE_Z,
-	SDL_SCANCODE_0,
-	SDL_SCANCODE_1,
-	SDL_SCANCODE_2,
-	SDL_SCANCODE_3,
-	SDL_SCANCODE_4,
-	SDL_SCANCODE_5,
-	SDL_SCANCODE_6,
-	SDL_SCANCODE_7,
-	SDL_SCANCODE_8,
-	SDL_SCANCODE_9,
-	SDL_SCANCODE_SPACE,
-	SDL_SCANCODE_LEFT,
-	SDL_SCANCODE_RIGHT,
-	SDL_SCANCODE_UP,
-	SDL_SCANCODE_DOWN,
-	SDL_SCANCODE_F1,
-	SDL_SCANCODE_F2,
-	SDL_SCANCODE_F3,
-	SDL_SCANCODE_F4,
-	SDL_SCANCODE_F5,
-	SDL_SCANCODE_F6,
-	SDL_SCANCODE_SCROLLLOCK,
-	SDL_SCANCODE_PAUSE,
-	SDL_SCANCODE_LCTRL,
-	SDL_SCANCODE_LSHIFT,
-	SDL_SCANCODE_RETURN,
-	SDL_NUM_SCANCODES,
+
+
+static std::pair<SDL_Keycode, SDL_Scancode> gPrismToSDLKeyboardMapping[] = {
+	make_pair(SDLK_a, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_b, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_c, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_d, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_e, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_f, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_g, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_h, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_i, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_j, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_k, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_l, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_m , SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_n, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_o, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_p, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_q, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_r, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_s, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_t, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_u, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_v, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_w, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_x, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_y, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_z, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_0, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_1, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_2, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_3, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_4, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_5, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_6, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_7, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_8, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_9, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_SPACE, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_LEFT, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_RIGHT, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_UP, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_DOWN, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_F1, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_F2, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_F3, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_F4, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_F5, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_F6, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_SCROLLLOCK, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_PAUSE, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_CARET, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_LCTRL, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_LSHIFT, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_RETURN, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_BACKSPACE, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_DELETE, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_PERIOD, SDL_SCANCODE_UNKNOWN),
+	make_pair(SDLK_SLASH, SDL_SCANCODE_SLASH),
 };
 
 static KeyboardKeyPrism gKeys[MAXIMUM_CONTROLLER_AMOUNT][KEYBOARD_AMOUNT_PRISM] = {
@@ -229,10 +237,18 @@ static KeyboardKeyPrism gKeys[MAXIMUM_CONTROLLER_AMOUNT][KEYBOARD_AMOUNT_PRISM] 
 	},
 };
 
+static void initKeyboardScancodes() {
+	for (int i = 0; i < KEYBOARD_AMOUNT_PRISM; i++) {
+		auto scancode = SDL_GetScancodeFromKey(gPrismToSDLKeyboardMapping[i].first);
+		if (scancode != SDL_SCANCODE_UNKNOWN) gPrismToSDLKeyboardMapping[i].second = scancode;
+	}
+}
+
 void initInput() {
 	gData.mPreviousKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
 	gData.mCurrentKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
 	gData.mKeyStatePointer = SDL_GetKeyboardState(NULL);
+	initKeyboardScancodes();
 }
 
 static void loadController(int i) {
@@ -287,77 +303,77 @@ void updateInputPlatform() {
 
 int hasPressedASingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_A_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_A_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_A_PRISM]](i);
 	return state;
 }
 
 int hasPressedBSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_B_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_B_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_B_PRISM]](i);
 	return state;
 }
 
 int hasPressedXSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_X_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_X_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_X_PRISM]](i);
 	return state;
 }
 
 int hasPressedYSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_Y_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_Y_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_Y_PRISM]](i);
 	return state;
 }
 
 int hasPressedLeftSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_LEFT_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_LEFT_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_LEFT_PRISM]](i);
 	return state;
 }
 
 int hasPressedRightSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_RIGHT_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_RIGHT_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_RIGHT_PRISM]](i);
 	return state;
 }
 
 int hasPressedUpSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_UP_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_UP_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_UP_PRISM]](i);
 	return state;
 }
 
 int hasPressedDownSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_DOWN_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_DOWN_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_DOWN_PRISM]](i);
 	return state;
 }
 
 int hasPressedLSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_L_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_L_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_L_PRISM]](i);
 	return state;
 }
 
 int hasPressedRSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_R_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_R_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_R_PRISM]](i);
 	return state;
 }
 
 int hasPressedStartSingle(int i) {
 	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_START_PRISM]]];
+	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_START_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_START_PRISM]](i);
 	return state;
 }
@@ -492,12 +508,12 @@ int hasPressedRawButton(int i, ControllerButtonPrism tButton) {
 }
 
 int hasPressedRawKeyboardKey(KeyboardKeyPrism tKey) {
-	int id = gPrismToSDLKeyboardMapping[tKey];
+	int id = gPrismToSDLKeyboardMapping[tKey].second;
 	return gData.mCurrentKeyStates[id];
 }
 
 int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
-	int id = gPrismToSDLKeyboardMapping[tKey];
+	int id = gPrismToSDLKeyboardMapping[tKey].second;
 	return !gData.mPreviousKeyStates[id] && gData.mCurrentKeyStates[id];
 }
 
@@ -512,7 +528,7 @@ int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
 	for (i = 0; i < tKeyAmount; i++)
 	{
 		KeyboardKeyPrism singleKey = va_arg(vl, KeyboardKeyPrism);
-		int id = gPrismToSDLKeyboardMapping[singleKey];
+		int id = gPrismToSDLKeyboardMapping[singleKey].second;
 		previousKeyPressed = previousKeyPressed && gData.mPreviousKeyStates[id];
 		currentKeyPressed = currentKeyPressed && gData.mCurrentKeyStates[id];
 	}
