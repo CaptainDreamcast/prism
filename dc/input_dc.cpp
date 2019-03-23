@@ -11,6 +11,15 @@ typedef struct {
 } Controller;
 
 typedef struct {
+	uint8_t mPreviousStates[256];	
+	uint8_t mCurrentStates[256];
+	int mPreviousModifiers;
+	int mCurrentModifiers;
+
+	int mIsActive;
+} Keyboard;
+
+typedef struct {
 	int mIsActive;
 	int mHasPolledGun;
 	int mGunIsFired;
@@ -20,6 +29,7 @@ typedef struct {
 static struct {
 	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
 	LightGun mLightGuns[MAXIMUM_CONTROLLER_AMOUNT];
+	Keyboard mKeyboards[MAXIMUM_CONTROLLER_AMOUNT];
 } gData;
 
 void initInput() {}
@@ -55,6 +65,20 @@ static void disableSingleLightGun(int i) {
 		unsetScreenColor();
 }
 
+static void updateSingleKeyboard(int i) {
+	kbd_state_t* kbd = (kbd_state_t*)gData.mControllers[i].mState;
+	memcpy(gData.mKeyboards[i].mPreviousStates, gData.mKeyboards[i].mCurrentStates, 256);	
+	memcpy(gData.mKeyboards[i].mCurrentStates, kbd->matrix, 256);
+	gData.mKeyboards[i].mPreviousModifiers = gData.mKeyboards[i].mCurrentModifiers;
+	gData.mKeyboards[i].mCurrentModifiers = kbd->shift_keys;
+
+	gData.mKeyboards[i].mIsActive = 1;
+}
+
+static void disableSingleKeyboard(int i) {
+	gData.mKeyboards[i].mIsActive = 0;
+}
+
 static void updateSingleInput(int i) {
 	  if ((gData.mControllers[i].mCont = maple_enum_dev(i, 0)) != NULL) {
 	    gData.mControllers[i].mState = (cont_state_t *) maple_dev_status(gData.mControllers[i].mCont);
@@ -62,7 +86,14 @@ static void updateSingleInput(int i) {
 		updateSingleLightGun(i);
 	    } else if(gData.mLightGuns[i].mIsActive) {
 		disableSingleLightGun(i);
-            }
+        }
+
+		if(gData.mControllers[i].mCont->info.functions & MAPLE_FUNC_KEYBOARD)  {
+			updateSingleKeyboard(i);
+	    } else if(gData.mKeyboards[i].mIsActive) {
+			disableSingleKeyboard(i);
+		}
+		
 	  } else {
 	    gData.mControllers[i].mState = (cont_state_t*)0;
 	  }
@@ -285,21 +316,112 @@ int hasPressedRawButton(int i, ControllerButtonPrism tButton) {
 	return gDreamcastButtonMapping[tButton](i);
 }
 
+static int gKOSKeyMapping[] = {
+	KBD_KEY_A,
+	KBD_KEY_B,
+	KBD_KEY_C,
+	KBD_KEY_D,
+	KBD_KEY_E,
+	KBD_KEY_F,
+	KBD_KEY_G,
+	KBD_KEY_H,
+	KBD_KEY_I,
+	KBD_KEY_J,
+	KBD_KEY_K,
+	KBD_KEY_L,
+	KBD_KEY_M,
+	KBD_KEY_N,
+	KBD_KEY_O,
+	KBD_KEY_P,
+	KBD_KEY_Q,
+	KBD_KEY_R,
+	KBD_KEY_S,
+	KBD_KEY_T,
+	KBD_KEY_U,
+	KBD_KEY_V,
+	KBD_KEY_W,
+	KBD_KEY_X,
+	KBD_KEY_Y,
+	KBD_KEY_Z,
+	KBD_KEY_0,
+	KBD_KEY_1,
+	KBD_KEY_2,
+	KBD_KEY_3,
+	KBD_KEY_4,
+	KBD_KEY_5,
+	KBD_KEY_6,
+	KBD_KEY_7,
+	KBD_KEY_8,
+	KBD_KEY_9,
+	KBD_KEY_SPACE,
+	KBD_KEY_LEFT,
+	KBD_KEY_RIGHT,
+	KBD_KEY_UP,
+	KBD_KEY_DOWN,
+	KBD_KEY_F1,
+	KBD_KEY_F2,
+	KBD_KEY_F3,
+	KBD_KEY_F4,
+	KBD_KEY_F5,
+	KBD_KEY_F6,
+	KBD_KEY_SCRLOCK,
+	KBD_KEY_PAUSE,
+	53,
+	KBD_MOD_LCTRL, // CTRL LEFT with modifier keys
+	KBD_MOD_LSHIFT,
+	KBD_KEY_ENTER,
+	KBD_KEY_BACKSPACE,
+	KBD_KEY_DEL,
+	KBD_KEY_PERIOD,
+	KBD_KEY_SLASH,
+};
+
+static int hasPressedKeyboardKeyInternal(KeyboardKeyPrism tKey, uint8_t* tStates, int tModifiers) {
+	switch(tKey) {
+		case KEYBOARD_CTRL_LEFT_PRISM:
+		case KEYBOARD_SHIFT_LEFT_PRISM:
+			return tModifiers & gKOSKeyMapping[tKey];
+		default:
+			return tStates[gKOSKeyMapping[tKey]];
+	}
+}
+
 int hasPressedRawKeyboardKey(KeyboardKeyPrism tKey) {
-	(void)tKey;
-	return 0; // TODO
+	if(!gData.mKeyboards[1].mIsActive) return 0;
+
+	return hasPressedKeyboardKeyInternal(tKey, gData.mKeyboards[1].mCurrentStates, gData.mKeyboards[1].mCurrentModifiers);
 }
 
 int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
-	(void)tKey;
-	// TODO
-	return 0;
+	if(!gData.mKeyboards[1].mIsActive) return 0;
+
+	int previous = hasPressedKeyboardKeyInternal(tKey, gData.mKeyboards[1].mPreviousStates, gData.mKeyboards[1].mPreviousModifiers);
+	int current = hasPressedKeyboardKeyInternal(tKey, gData.mKeyboards[1].mCurrentStates, gData.mKeyboards[1].mCurrentModifiers);
+
+	return !previous && current;
 }
 
 int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
-	(void)tKeyAmount;
-	// TODO
-	return 0;
+	if (!tKeyAmount) return 0;
+	if(!gData.mKeyboards[1].mIsActive) return 0;
+
+	int i;
+	va_list vl;
+	va_start(vl, tKeyAmount);
+
+	int previousKeyPressed = 1, currentKeyPressed = 1;
+	for (i = 0; i < tKeyAmount; i++)
+	{
+		KeyboardKeyPrism singleKey = (KeyboardKeyPrism)va_arg(vl, int);
+		int previousSingle = hasPressedKeyboardKeyInternal(singleKey, gData.mKeyboards[1].mPreviousStates, gData.mKeyboards[1].mPreviousModifiers);
+		int currentSingle = hasPressedKeyboardKeyInternal(singleKey, gData.mKeyboards[1].mCurrentStates, gData.mKeyboards[1].mCurrentModifiers);
+
+		previousKeyPressed = previousKeyPressed && previousSingle;
+		currentKeyPressed = currentKeyPressed && currentSingle;
+	}
+	va_end(vl);
+
+	return !previousKeyPressed && currentKeyPressed;
 }
 
 ControllerButtonPrism getButtonForController(int i, ControllerButtonPrism tTargetButton)
