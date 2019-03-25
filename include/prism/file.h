@@ -63,6 +63,8 @@ int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer);
 double readFloatFromTextStreamBufferPointer(BufferPointer* tPointer);
 std::string readStringFromTextStreamBufferPointer(BufferPointer* tPointer);
 std::string readLineFromTextStreamBufferPointer(BufferPointer* tPointer);
+std::string readLineOrEOFFromTextStreamBufferPointer(BufferPointer* tPointer, Buffer tBuffer);
+int isBufferPointerOver(BufferPointer tPointer, Buffer tBuffer);
 
 void appendBufferChar(Buffer* tBuffer, char tChar);
 void appendBufferUint32(Buffer* tBuffer, uint32_t tInteger);

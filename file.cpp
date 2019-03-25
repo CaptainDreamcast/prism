@@ -276,6 +276,22 @@ string readLineFromTextStreamBufferPointer(BufferPointer * tPointer)
 	return s;
 }
 
+std::string readLineOrEOFFromTextStreamBufferPointer(BufferPointer * tPointer, Buffer tBuffer)
+{
+	string s;
+	while (!isBufferPointerOver(*tPointer, tBuffer) && **tPointer != '\n') {
+		if (**tPointer != '\r') s += **tPointer;
+		(*tPointer)++;
+	}
+	(*tPointer)++;
+	return s;
+}
+
+int isBufferPointerOver(BufferPointer tPointer, Buffer tBuffer)
+{
+	return tPointer >= ((char*)tBuffer.mData + tBuffer.mLength);
+}
+
 void appendBufferChar(Buffer* tBuffer, char tChar) {
 	appendBufferString(tBuffer, &tChar, 1);
 }

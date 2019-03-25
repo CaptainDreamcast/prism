@@ -50,6 +50,10 @@ typedef struct {
 
 	map<string, ConsoleCommand> mConsoleCommands;
 
+	int mHasUserScript;
+	Buffer mUserScript;
+	BufferPointer mUserScriptPointer;
+
 	int mIsVisible;
 } Console;
 
@@ -62,9 +66,18 @@ static struct {
 
 } gPrismDebug;
 
+static void initDebugScript() {
+	gPrismDebug.mConsole.mHasUserScript = isFile("assets/debug/user.cfg");
+	if (!gPrismDebug.mConsole.mHasUserScript) return;
+
+	gPrismDebug.mConsole.mUserScript = fileToBuffer("assets/debug/user.cfg");
+	gPrismDebug.mConsole.mUserScriptPointer = getBufferPointer(gPrismDebug.mConsole.mUserScript);
+}
+
 void initDebug()
 {
 	addMugenFont(-2, "f6x9.fnt");
+	initDebugScript();
 }
 
 static void loadPrismDebug(void* tData) {
@@ -133,8 +146,10 @@ static void addConsoleText(string text) {
 	}
 	gPrismDebug.mConsole.mConsoleArchiveText[0] = text;
 
-	for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++) {
-		changeMugenText(gPrismDebug.mConsole.mConsoleArchiveTextID[i], gPrismDebug.mConsole.mConsoleArchiveText[i].data());
+	if (gPrismDebug.mConsole.mIsVisible) {
+		for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++) {
+			changeMugenText(gPrismDebug.mConsole.mConsoleArchiveTextID[i], gPrismDebug.mConsole.mConsoleArchiveText[i].data());
+		}
 	}
 }
 
@@ -157,7 +172,9 @@ static void clearConsoleInput() {
 	gPrismDebug.mConsole.mArchivePointer = -1;
 	gPrismDebug.mConsole.mPointerPosition = 0;
 	gPrismDebug.mConsole.mConsoleText.clear();
-	updateConsoleText();
+	if (gPrismDebug.mConsole.mIsVisible) {
+		updateConsoleText();
+	}
 }
 
 static void parseConsoleText() {
@@ -331,12 +348,24 @@ static void updatePrismDebugConsole() {
 	}
 }
 
+static void updatePrismUserScript() {
+	if (!gPrismDebug.mConsole.mHasUserScript) return;
+
+	gPrismDebug.mConsole.mConsoleText = readLineOrEOFFromTextStreamBufferPointer(&gPrismDebug.mConsole.mUserScriptPointer, gPrismDebug.mConsole.mUserScript);
+	if (isBufferPointerOver(gPrismDebug.mConsole.mUserScriptPointer, gPrismDebug.mConsole.mUserScript)) {
+		freeBuffer(gPrismDebug.mConsole.mUserScript);
+		gPrismDebug.mConsole.mHasUserScript = 0;
+	}
+
+	submitConsoleText();
+}
+
 static void updatePrismDebug(void* tData) {
 	(void)tData;
 
 	updatePrismDebugSideDisplay();
 	updatePrismDebugConsole();
-
+	updatePrismUserScript();
 }
 
 ActorBlueprint getPrismDebug()
