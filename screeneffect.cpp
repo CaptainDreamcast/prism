@@ -11,6 +11,7 @@
 #include "prism/system.h"
 #include "prism/log.h"
 #include "prism/math.h"
+#include "prism/stlutil.h"
 
 using namespace std;
 
@@ -43,6 +44,8 @@ typedef struct {
 
 } FadeColor;
 
+using namespace std;
+
 static struct {
 	TextureData mWhiteTexture;
 	int mIsActive;
@@ -53,23 +56,35 @@ static struct {
 	int mScreenFillID;
 
 	FadeColor mFadeColor;
-} gData;
+
+	map<int, FadeIn> mFadeIns;
+} gScreenEffect;
 
 void initScreenEffects() {
-	gData.mWhiteTexture = createWhiteTexture();
-	gData.mFullLineSize = 10;
-	gData.mZ = 80;
-	gData.mScreenFillID = -1;
-	gData.mFadeColor.mR = gData.mFadeColor.mG = gData.mFadeColor.mB = 0;
+	gScreenEffect.mWhiteTexture = createWhiteTexture();
+	gScreenEffect.mFullLineSize = 10;
+	gScreenEffect.mZ = 80;
+	gScreenEffect.mScreenFillID = -1;
+	gScreenEffect.mFadeColor.mR = gScreenEffect.mFadeColor.mG = gScreenEffect.mFadeColor.mB = 0;
 
-	gData.mIsActive = 1;
+	gScreenEffect.mIsActive = 1;
 }
 
 void shutdownScreenEffects() {
-	if (!gData.mIsActive) return;
+	if (!gScreenEffect.mIsActive) return;
 
-	unloadTexture(gData.mWhiteTexture);
-	gData.mIsActive = 0;
+	unloadTexture(gScreenEffect.mWhiteTexture);
+	gScreenEffect.mIsActive = 0;
+}
+
+static void loadScreenEffectHandler(void* tData) {
+	(void)tData;
+	gScreenEffect.mFadeIns.clear();
+}
+
+static void unloadScreenEffectHandler(void* tData) {
+	(void)tData;
+	gScreenEffect.mFadeIns.clear();
 }
 
 static void unloadedBehaviour(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
@@ -92,7 +107,6 @@ static void removeFadeIn(FadeIn* e) {
 	}
 
 	freeMemory(e->mAnimationIDs);
-	freeMemory(e);
 }
 
 static void updateSingleFadeInAnimation(FadeIn* e, int i) {
@@ -100,58 +114,62 @@ static void updateSingleFadeInAnimation(FadeIn* e, int i) {
 	setAnimationTransparency(e->mAnimationIDs[i], *e->mAlpha);
 }
 
-static void updateFadeIn(void* tCaller) {
-	FadeIn* e = (FadeIn*)tCaller;
+static int updateFadeIn(FadeIn& e) {
 
-	if (e->mIsOverFunction(e)) {
-		if (e->mCB) e->mCB(e->mCaller);
-		removeFadeIn(e);
-		return;
+	if (e.mIsOverFunction(&e)) {
+		if (e.mCB) e.mCB(e.mCaller);
+		removeFadeIn(&e);
+		return 1;
 	}
 
 	int i;
-	for (i = 0; i < e->mAnimationAmount; i++) {
-		updateSingleFadeInAnimation(e, i);
+	for (i = 0; i < e.mAnimationAmount; i++) {
+		updateSingleFadeInAnimation(&e, i);
 	}
 
-	addTimerCB(0, updateFadeIn, e);
+	return 0;
+}
+
+static void updateScreenEffectHandler(void* tData) {
+	(void)tData;
+	stl_int_map_remove_predicate(gScreenEffect.mFadeIns, updateFadeIn);
 }
 
 static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller, Vector3D tStartPatchSize, Vector3D tFullPatchSize, Vector3D tSizeDelta, double tStartAlpha, double tAlphaDelta, IsScreenEffectOverFunction tIsOverFunc) {
-	if (!gData.mIsActive) {
+	if (!gScreenEffect.mIsActive) {
 		unloadedBehaviour(tDuration, tOptionalCB, tCaller);
 		return;
 	}
 
 	ScreenSize screen = getScreenSize();
 
-	FadeIn* e = (FadeIn*)allocMemory(sizeof(FadeIn));
-	e->mDuration = tDuration;
-	e->mCB = tOptionalCB;
-	e->mCaller = tCaller;
-	e->mDuration = tDuration;
+	FadeIn e;
+	e.mDuration = tDuration;
+	e.mCB = tOptionalCB;
+	e.mCaller = tCaller;
+	e.mDuration = tDuration;
 
-	e->mPhysicsID = addToPhysicsHandler(tStartPatchSize);
-	addAccelerationToHandledPhysics(e->mPhysicsID, tSizeDelta);
-	e->mSize = &getPhysicsFromHandler(e->mPhysicsID)->mPosition;
+	e.mPhysicsID = addToPhysicsHandler(tStartPatchSize);
+	addAccelerationToHandledPhysics(e.mPhysicsID, tSizeDelta);
+	e.mSize = &getPhysicsFromHandler(e.mPhysicsID)->mPosition;
 
-	e->mAlphaPhysicsID = addToPhysicsHandler(makePosition(tStartAlpha, 0, 0));
-	addAccelerationToHandledPhysics(e->mAlphaPhysicsID, makePosition(tAlphaDelta, 0, 0));
-	e->mAlpha = &getPhysicsFromHandler(e->mAlphaPhysicsID)->mPosition.x;
+	e.mAlphaPhysicsID = addToPhysicsHandler(makePosition(tStartAlpha, 0, 0));
+	addAccelerationToHandledPhysics(e.mAlphaPhysicsID, makePosition(tAlphaDelta, 0, 0));
+	e.mAlpha = &getPhysicsFromHandler(e.mAlphaPhysicsID)->mPosition.x;
 
-	e->mIsOverFunction = tIsOverFunc;
+	e.mIsOverFunction = tIsOverFunc;
 
 	int amountX = (int)((screen.x + (tFullPatchSize.x - 1)) / tFullPatchSize.x);
 	int amountY = (int)((screen.y + (tFullPatchSize.y - 1)) / tFullPatchSize.y);
-	e->mAnimationAmount = amountX*amountY;
+	e.mAnimationAmount = amountX*amountY;
 
-	e->mAnimationIDs = (int*)allocMemory(e->mAnimationAmount*sizeof(int));
-	Position p = makePosition(0, 0, gData.mZ);
+	e.mAnimationIDs = (int*)allocMemory(e.mAnimationAmount*sizeof(int));
+	Position p = makePosition(0, 0, gScreenEffect.mZ);
 	int i;
-	for (i = 0; i < e->mAnimationAmount; i++) {
-		e->mAnimationIDs[i] = playAnimationLoop(p, &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
-		updateSingleFadeInAnimation(e, i);
-		setAnimationColor(e->mAnimationIDs[i], gData.mFadeColor.mR, gData.mFadeColor.mG, gData.mFadeColor.mB);
+	for (i = 0; i < e.mAnimationAmount; i++) {
+		e.mAnimationIDs[i] = playAnimationLoop(p, &gScreenEffect.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gScreenEffect.mWhiteTexture));
+		updateSingleFadeInAnimation(&e, i);
+		setAnimationColor(e.mAnimationIDs[i], gScreenEffect.mFadeColor.mR, gScreenEffect.mFadeColor.mG, gScreenEffect.mFadeColor.mB);
 
 		p = vecAdd(p, makePosition(tFullPatchSize.x, 0, 0));
 		if (p.x >= screen.x) {
@@ -160,7 +178,7 @@ static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptio
 		}
 	}
 
-	addTimerCB(0, updateFadeIn, e);
+	stl_int_map_push_back(gScreenEffect.mFadeIns, e);
 }
 
 static int isFadeInOver(FadeIn* e) {
@@ -174,8 +192,21 @@ void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCa
 }
 
 void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
-	double dy = -gData.mFullLineSize / (double)tDuration;
-	addFadeIn_internal(tDuration, tOptionalCB, tCaller, makePosition(getScreenSize().x, gData.mFullLineSize+1, 1), makePosition(getScreenSize().x, gData.mFullLineSize, 1), makePosition(0, dy, 0), 1, 0, isVerticalLineFadeInOver);
+	double dy = -gScreenEffect.mFullLineSize / (double)tDuration;
+	addFadeIn_internal(tDuration, tOptionalCB, tCaller, makePosition(getScreenSize().x, gScreenEffect.mFullLineSize+1, 1), makePosition(getScreenSize().x, gScreenEffect.mFullLineSize, 1), makePosition(0, dy, 0), 1, 0, isVerticalLineFadeInOver);
+}
+
+static int skipSingleFadeInCB(FadeIn& e) {
+	if (e.mCB) e.mCB(e.mCaller);
+	removeFadeIn(&e);
+	return 1;
+
+}
+
+void skipFadeIn()
+{
+	if (!gScreenEffect.mIsActive) return;
+	stl_int_map_remove_predicate(gScreenEffect.mFadeIns, skipSingleFadeInCB);
 }
 
 typedef struct {
@@ -207,31 +238,31 @@ void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tC
 }
 
 void setFadeColor(Color tColor) {
-	getRGBFromColor(tColor, &gData.mFadeColor.mR, &gData.mFadeColor.mG, &gData.mFadeColor.mB);
+	getRGBFromColor(tColor, &gScreenEffect.mFadeColor.mR, &gScreenEffect.mFadeColor.mG, &gScreenEffect.mFadeColor.mB);
 }
 
 void setFadeColorRGB(double r, double g, double b) {
-	gData.mFadeColor.mR = r;
-	gData.mFadeColor.mG = g;
-	gData.mFadeColor.mB = b;
+	gScreenEffect.mFadeColor.mR = r;
+	gScreenEffect.mFadeColor.mG = g;
+	gScreenEffect.mFadeColor.mB = b;
 }
 
 void setScreenEffectZ(double tZ)
 {
-	gData.mZ = tZ;
+	gScreenEffect.mZ = tZ;
 }
 
 void drawColoredRectangle(GeoRectangle tRect, Color tColor) {
-	if (!gData.mIsActive) return;
+	if (!gScreenEffect.mIsActive) return;
 
 	double dx = (tRect.mBottomRight.x - tRect.mTopLeft.x);
 	double dy = (tRect.mBottomRight.y - tRect.mTopLeft.y);
-	dx /= gData.mWhiteTexture.mTextureSize.x;
-	dy /= gData.mWhiteTexture.mTextureSize.y;
+	dx /= gScreenEffect.mWhiteTexture.mTextureSize.x;
+	dy /= gScreenEffect.mWhiteTexture.mTextureSize.y;
 
 	scaleDrawing3D(makePosition(dx, dy, 1), tRect.mTopLeft);
 	setDrawingBaseColor(tColor);
-	drawSprite(gData.mWhiteTexture, tRect.mTopLeft, makeRectangleFromTexture(gData.mWhiteTexture));
+	drawSprite(gScreenEffect.mWhiteTexture, tRect.mTopLeft, makeRectangleFromTexture(gScreenEffect.mWhiteTexture));
 	setDrawingParametersToIdentity();
 }
 
@@ -249,28 +280,28 @@ void drawColoredPoint(Position tPoint, Color tColor) {
 }
 
 void setScreenBlack() {
-	if (!gData.mIsActive) return;
+	if (!gScreenEffect.mIsActive) return;
 
 	setScreenColor(COLOR_BLACK);
 	return;
 
-	gData.mScreenFillID = playAnimationLoop(makePosition(0,0,gData.mZ), &gData.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gData.mWhiteTexture));
-	setAnimationSize(gData.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));
-	setAnimationColor(gData.mScreenFillID, gData.mFadeColor.mR, gData.mFadeColor.mG, gData.mFadeColor.mB);
+	gScreenEffect.mScreenFillID = playAnimationLoop(makePosition(0,0,gScreenEffect.mZ), &gScreenEffect.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gScreenEffect.mWhiteTexture));
+	setAnimationSize(gScreenEffect.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));
+	setAnimationColor(gScreenEffect.mScreenFillID, gScreenEffect.mFadeColor.mR, gScreenEffect.mFadeColor.mG, gScreenEffect.mFadeColor.mB);
 }
 
 void unsetScreenBlack() {
-	if (!gData.mIsActive) return;
+	if (!gScreenEffect.mIsActive) return;
 
 	unsetScreenColor();
 	return;
 
-	if (gData.mScreenFillID == -1) {
+	if (gScreenEffect.mScreenFillID == -1) {
 		logError("Screen not set to black, unable to reset");
 		recoverFromError();
 	}
 
-	removeHandledAnimation(gData.mScreenFillID);
+	removeHandledAnimation(gScreenEffect.mScreenFillID);
 }
 
 void setScreenWhite() {
@@ -283,5 +314,11 @@ void unsetScreenWhite() {
 
 TextureData getEmptyWhiteTexture()
 {
-	return gData.mWhiteTexture;
+	return gScreenEffect.mWhiteTexture;
 }
+
+ActorBlueprint getScreenEffectHandler()
+{
+	return makeActorBlueprint(loadScreenEffectHandler, unloadScreenEffectHandler, updateScreenEffectHandler);
+}
+

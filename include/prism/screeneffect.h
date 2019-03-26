@@ -2,13 +2,18 @@
 
 #include "animation.h"
 #include "texture.h"
+#include "actorhandler.h"
 
 typedef void(*ScreenEffectFinishedCB)(void* tCaller);
 
 void initScreenEffects();
 void shutdownScreenEffects();
+
+ActorBlueprint getScreenEffectHandler();
+
 void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
 void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
+void skipFadeIn();
 void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
 void setFadeColor(Color tColor);
 void setFadeColorRGB(double r, double g, double b);

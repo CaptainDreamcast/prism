@@ -4,7 +4,7 @@
 #include <prism/system.h>
 #include <prism/input.h>
 #include <prism/stlutil.h>
-
+#include <prism/wrapper.h>
 
 #define PREVIOUS_FPS_AMOUNT 5
 #define CONSOLE_Z 90
@@ -66,12 +66,45 @@ static struct {
 
 } gPrismDebug;
 
+static void toggleVisibility();
+
+static string showConsoleCB(void* tCaller, string tCommand) {
+	(void)tCaller;
+	(void)tCommand;
+	toggleVisibility();
+	return "";
+}
+
+static void unloadUserScript() {
+	freeBuffer(gPrismDebug.mConsole.mUserScript);
+	gPrismDebug.mConsole.mHasUserScript = 0;
+}
+
+static string abortscriptCB(void* tCaller, string tCommand) {
+	(void)tCaller;
+	(void)tCommand;
+	if (gPrismDebug.mConsole.mHasUserScript) {
+		unloadUserScript();
+	}
+	return "";
+}
+
+static string exitCB(void* tCaller, string tCommand) {
+	(void)tCaller;
+	(void)tCommand;
+	abortScreenHandling();
+	return "";
+}
+
 static void initDebugScript() {
 	gPrismDebug.mConsole.mHasUserScript = isFile("assets/debug/user.cfg");
 	if (!gPrismDebug.mConsole.mHasUserScript) return;
 
 	gPrismDebug.mConsole.mUserScript = fileToBuffer("assets/debug/user.cfg");
 	gPrismDebug.mConsole.mUserScriptPointer = getBufferPointer(gPrismDebug.mConsole.mUserScript);
+	addPrismDebugConsoleCommand("showconsole", showConsoleCB);
+	addPrismDebugConsoleCommand("abortscript", abortscriptCB);
+	addPrismDebugConsoleCommand("exit", exitCB);
 }
 
 void initDebug()
@@ -353,8 +386,7 @@ static void updatePrismUserScript() {
 
 	gPrismDebug.mConsole.mConsoleText = readLineOrEOFFromTextStreamBufferPointer(&gPrismDebug.mConsole.mUserScriptPointer, gPrismDebug.mConsole.mUserScript);
 	if (isBufferPointerOver(gPrismDebug.mConsole.mUserScriptPointer, gPrismDebug.mConsole.mUserScript)) {
-		freeBuffer(gPrismDebug.mConsole.mUserScript);
-		gPrismDebug.mConsole.mHasUserScript = 0;
+		unloadUserScript();
 	}
 
 	submitConsoleText();

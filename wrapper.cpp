@@ -245,7 +245,8 @@ static void loadScreen(Screen* tScreen) {
 	setupSoundEffectHandler();
 	debugLog("Setting up Actorhandling");
 	setupActorHandler();
-
+	debugLog("Setting up Screen effects");
+	addWrapperComponent(getScreenEffectHandler());
 	
 
 	if (gData.mIsUsingBasicTextHandler) {
