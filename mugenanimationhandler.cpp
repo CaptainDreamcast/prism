@@ -253,6 +253,8 @@ static void updateStepSpriteAndSpriteValidity(MugenAnimationHandlerElement* e) {
 }
 
 static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* e) {
+	e->mStepTime = 0;
+	
 	e->mStep++;
 	if (e->mStep == vector_size(&e->mAnimation->mSteps)) {
 		if (e->mHasAnimationFinishedCallback) {
@@ -261,15 +263,14 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 
 		if (e->mIsLooping) {
 			e->mStep = e->mAnimation->mLoopStart;
-			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep); // TODO: test TODO: Mr. Big implies should be + 1 or at least not = 0 for loop start, either that or count loops for animelemtime
+			e->mStepTime = 1;
+			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep) + 1; // TODO: test TODO: Mr. Big and Felicia imply this should be + 1 or at least not = 0 for loop start, either that or count loops for animelemtime
 		}
 		else {
 			unloadMugenAnimation(e);
 			return 1;
 		}
 	}
-
-	e->mStepTime = 0;
 
 	updateStepSpriteAndSpriteValidity(e);
 
