@@ -18,7 +18,7 @@ typedef struct {
 	LogType mType;
 } LogEntry;
 
-void logprintf(char* tFormatString, ...);
+void logprintf(const char* tFormatString, ...);
 void logCommit(LogType tType);
 #define logBegin() {logprintf("[%s::%s, line %d] ", __FILE__, __FUNCTION__, __LINE__);}	
 #define logGeneral(type, x)	{logBegin(); logprintf(x); logprintf("\n"); logCommit(type);}
@@ -29,7 +29,7 @@ void logCommit(LogType tType);
 #define logHexGeneral(type, x) {logBegin(); logprintf("Value of %s: %X\n", #x, (unsigned int)x); logCommit(type);}
 #define logPointerGeneral(type, x) {logBegin(); logprintf("Value of %s: %p\n", #x, (char*)x); logCommit(type);}
 #define logFormatGeneral(type, x, ...) {logBegin(); logFormatFunc(x,  __VA_ARGS__); logprintf("\n"); logCommit(type);}
-void logFormatFunc(char* tFormatString, ...);
+void logFormatFunc(const char* tFormatString, ...);
 
 #define logg(x)	logGeneral(LOG_TYPE_NORMAL, x)
 #define logInteger(x) logIntegerGeneral(LOG_TYPE_NORMAL, x)

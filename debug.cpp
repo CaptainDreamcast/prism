@@ -243,7 +243,13 @@ static void keyboardInputReceived(void* tCaller, KeyboardKeyPrism tKey) {
 		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, 1, c);
 		gPrismDebug.mConsole.mPointerPosition++;
 		updateConsoleText();
-	} else if (tKey == KEYBOARD_SPACE_PRISM) {
+	} 	if (tKey >= KEYBOARD_0_PRISM && tKey <= KEYBOARD_9_PRISM) {
+		char c = '0' + (tKey - KEYBOARD_0_PRISM);
+		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, 1, c);
+		gPrismDebug.mConsole.mPointerPosition++;
+		updateConsoleText();
+	}
+	else if (tKey == KEYBOARD_SPACE_PRISM) {
 		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, 1, ' ');
 		gPrismDebug.mConsole.mPointerPosition++;
 		updateConsoleText();
@@ -433,4 +439,8 @@ void addPrismDebugConsoleCommand(std::string tCommand, std::string(*tCB)(void *t
 	e.mCaller = tCaller;
 	e.mCB = tCB;
 	gPrismDebug.mConsole.mConsoleCommands[tCommand] = e;
+}
+
+void submitToPrismDebugConsole(std::string tText) {
+	addConsoleText(tText);
 }

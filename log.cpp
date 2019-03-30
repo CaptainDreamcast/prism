@@ -19,7 +19,7 @@ static struct {
 	LogEntry mLog[MAX_LOG_ENTRY_AMOUNT];
 } gData;
 
-void logprintf(char* tFormatString, ...) {
+void logprintf(const char* tFormatString, ...) {
 	char* logEntry = gData.mLog[gData.mPointer].mText;
 	char* writePoint = gData.mLog[gData.mPointer].mText + strlen(logEntry);
 	va_list args;
@@ -40,7 +40,7 @@ void logCommit(LogType tType) {
 	*gData.mLog[gData.mPointer].mText = '\0';
 }
 
-void logFormatFunc(char* tFormatString, ...) {
+void logFormatFunc(const char* tFormatString, ...) {
 	char text[1024];
 	va_list args;
 	va_start(args, tFormatString);

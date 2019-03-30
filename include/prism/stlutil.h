@@ -91,6 +91,22 @@ int stl_map_contains(std::map<K, V>& tMap, K tID)
 	return tMap.find(tID) != tMap.end();
 }
 
+template<class K, class V>
+std::pair<const K, V>* stl_map_get_pair_by_index(std::map<K, V>& tMap, int tIndex)
+{
+	if (tIndex >= (int)tMap.size()) return NULL;
+
+	auto it = tMap.begin();
+	while (tIndex && it != tMap.end()) {
+		auto &val = *it;
+		it++;
+		tIndex--;
+	}
+	if (it == tMap.end()) return NULL;
+
+	return &(*it);
+}
+
 template<class V>
 int stl_string_map_contains_array(std::map<std::string, V>& tMap, const char* tID)
 {
