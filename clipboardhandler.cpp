@@ -91,7 +91,7 @@ static void getArgumentTextAndAdvanceParams(char* tArgumentText, char** tParams)
 	*tParams = nextComma + 1;
 }
 
-static void parseParameterInput(char* tFormatString, int* i, char** tDst, char** tParams) {
+static void parseParameterInput(const char* tFormatString, int* i, char** tDst, char** tParams) {
 
 	(*i)++;
 	char identifier = tFormatString[*i];
@@ -160,7 +160,7 @@ static void parseTab(char** tDst) {
 	}
 }
 
-static void parseFormatInput(char* tFormatString, int* i, char** tDst, char* tTextBuffer) {
+static void parseFormatInput(const char* tFormatString, int* i, char** tDst, char* tTextBuffer) {
 	(*i)++;
 	char identifier = tFormatString[*i];
 
@@ -181,7 +181,7 @@ static void parseFormatInput(char* tFormatString, int* i, char** tDst, char* tTe
 	}
 }
 
-void addClipboardLineFormatString(char * tFormatString, char * tParameterString)
+void addClipboardLineFormatString(const char * tFormatString, const char * tParameterString)
 {
 	// TODO: parse properly
 	char text[1024];
