@@ -42,6 +42,8 @@ TextureData textureFromSurface(SDL_Surface* tSurface) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 	glBindTexture(GL_TEXTURE_2D, last_texture);
 
+	SDL_FreeSurface(surface);
+
 	return returnData;
 }
 
