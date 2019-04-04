@@ -28,7 +28,7 @@ TextureData textureFromSurface(SDL_Surface* tSurface) {
 	returnData.mHasPalette = 0;
 	Texture texture = (Texture)returnData.mTexture->mData;
 	
-	texture->mSurface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
+	auto surface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
 	SDL_FreeSurface(tSurface);
 
 	GLint last_texture;
@@ -39,7 +39,7 @@ TextureData textureFromSurface(SDL_Surface* tSurface) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->mSurface->w, texture->mSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->mSurface->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 	glBindTexture(GL_TEXTURE_2D, last_texture);
 
 	return returnData;

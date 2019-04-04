@@ -12,7 +12,6 @@ typedef pvr_ptr_t Texture;
 #include <GL/glew.h>
 
 typedef struct {
-	SDL_Surface* mSurface;
 	GLuint mTexture;
 } SDLTextureData;
 

@@ -36,7 +36,6 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 void freeSDLTexture(void* tData) {
 	SDLTextureData* e = (SDLTextureData*)tData;
 	glDeleteTextures(1, &e->mTexture);
-	SDL_FreeSurface(e->mSurface);
 	free(tData);
 }
 

@@ -367,13 +367,13 @@ static void drawSDLSurface(SDL_Surface* tSurface, GeoRectangle tSrcRect, GeoRect
 }
 
 
-static void drawPalettedSDLSurface(SDL_Surface* tSurface, int tPaletteID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
-
-	SDL_SetPaletteColors(tSurface->format->palette, gData.mPalettes[tPaletteID], 0, 256);
-
-	SDL_Surface* surface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
-	drawSDLSurface(surface, tSrcRect, tDstRect, tData);
-	SDL_FreeSurface(surface);
+static void drawPalettedOpenGLTexture(int tTextureID, int tPaletteID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
+	(void)tTextureID;
+	(void)tPaletteID;
+	(void)tSrcRect;
+	(void)tDstRect;
+	(void)tData;
+	// TODO: implement as proper shader
 }
 
 static void drawSortedSprite(DrawListSpriteElement* e) {
@@ -425,7 +425,7 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	}
 
 	if (e->mTexture.mHasPalette) {
-		drawPalettedSDLSurface(texture->mSurface, e->mTexture.mPaletteID, srcRect, dstRect, &e->mData);
+		drawPalettedOpenGLTexture(texture->mTexture, e->mTexture.mPaletteID, srcRect, dstRect, &e->mData);
 	}
 	else {
 		drawOpenGLTexture(texture->mTexture, srcRect, dstRect, &e->mData);
@@ -715,36 +715,10 @@ static uint32_t* getPixelFromSurface(SDL_Surface* tSurface, int x, int y) {
 uint32_t gPixelBuffer[PIXEL_BUFFER_SIZE];
 
 void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget) {
-	Texture dst = (Texture)tDst.mTexture->mData;
-
-	double rd, gd, bd;
-	getRGBFromColor(tColor, &rd, &gd, &bd);
-	uint8_t r = (uint8_t)(rd * 255);
-	uint8_t g = (uint8_t)(gd * 255);
-	uint8_t b = (uint8_t)(bd * 255);
-
-	int w = tTarget.bottomRight.x - tTarget.topLeft.x + 1;
-	int h = tTarget.bottomRight.y - tTarget.topLeft.y + 1;
-	if (w * h >= PIXEL_BUFFER_SIZE) {
-		logError("Over pixel buffer limit.");
-		logErrorInteger(w);
-		logErrorInteger(h);
-		recoverFromError();
-	}
-
-	uint32_t val = SDL_MapRGB(dst->mSurface->format, r, g, b);
-	int i;
-	for (i = 0; i < w*h; i++) {
-		gPixelBuffer[i] = val;
-	}
-
-
-	SDL_Rect rect;
-	rect.x = tTarget.topLeft.x;
-	rect.y = tTarget.topLeft.y;
-	rect.w = w;
-	rect.h = h;
-	// SDL_UpdateTexture(dst->mTexture, &rect, gPixelBuffer, w*sizeof(uint32_t)); // TODO
+	(void)tDst;
+	(void)tColor;
+	(void)tTarget;
+	// TODO: readd
 }
 
 
