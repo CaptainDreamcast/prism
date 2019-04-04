@@ -171,6 +171,7 @@ static void addSingleHitbox(void* tCaller, void* tData) {
 
 	CollisionRect scaledRectangle = *rect;
 	scaledRectangle = scaleGeoRectangleByFactor(scaledRectangle, caller->mElement->mDrawScale);
+	scaledRectangle = scaleGeoRectangleByFactor2D(scaledRectangle, caller->mElement->mBaseDrawScale);
 	if (!caller->mElement->mIsFacingRight) {
 		double xBuffer = scaledRectangle.mTopLeft.x;
 		scaledRectangle.mTopLeft.x = -scaledRectangle.mBottomRight.x;

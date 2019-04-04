@@ -330,6 +330,15 @@ Vector3DI operator+(const Vector3DI& a, const Vector3DI& b) {
 	return vecAddI(a, b);
 }
 
+Vector3D operator*(const Vector3D& a, const Vector3D& b) {
+	Vector3D ret;
+	ret.x = a.x * b.x;
+	ret.y = a.y * b.y;
+	ret.z = a.z * b.z;
+	return ret;
+}
+
+
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
 	Vector3DI ret = a;
 	ret.x -= b.x;
