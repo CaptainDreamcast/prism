@@ -617,7 +617,7 @@ void scaleDrawing3D(Vector3D tFactor, Position tScalePosition) {
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(tScalePosition));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createScaleMatrix4D(makePosition(tFactor.x, tFactor.y, tFactor.z)));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tScalePosition, -1)));
-	gData.mIsIdentity = tFactor.x == 1 && tFactor.y == 1;
+	gData.mIsIdentity = gData.mIsIdentity && tFactor.x == 1 && tFactor.y == 1;
 }
 
 void setDrawingBaseColor(Color tColor) {
@@ -639,7 +639,7 @@ void setDrawingRotationZ(double tAngle, Position tPosition) {
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(tPosition));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createRotationZMatrix4D(tAngle));
 	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tPosition, -1)));
-	gData.mIsIdentity = tAngle == 2 * M_PI;
+	gData.mIsIdentity = gData.mIsIdentity && tAngle == 2 * M_PI;
 }
 
 void setDrawingParametersToIdentity() {
