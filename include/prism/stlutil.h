@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <vector>
 #include <list>
@@ -85,8 +86,25 @@ void stl_string_map_map(std::map<std::string, T> &tMap, void(*tFunc)(C* tCaller,
 	}
 }
 
+template <class T, class C>
+void stl_string_map_map(std::unordered_map<std::string, T> &tMap, void(*tFunc)(C* tCaller, const std::string &tKey, T& tData), C* tCaller = NULL) {
+	typename std::unordered_map<std::string, T>::iterator it = tMap.begin();
+
+	while (it != tMap.end()) {
+		std::pair<const std::string, T> &val = *it;
+		it++;
+		tFunc(tCaller, val.first, val.second);
+	}
+}
+
 template<class K, class V>
 int stl_map_contains(std::map<K, V>& tMap, K tID)
+{
+	return tMap.find(tID) != tMap.end();
+}
+
+template<class K, class V>
+int stl_map_contains(std::unordered_map<K, V>& tMap, K tID)
 {
 	return tMap.find(tID) != tMap.end();
 }

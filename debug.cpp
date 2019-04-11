@@ -5,6 +5,7 @@
 #include <prism/input.h>
 #include <prism/stlutil.h>
 #include <prism/wrapper.h>
+#include <prism/system.h>
 
 #define PREVIOUS_FPS_AMOUNT 5
 #define CONSOLE_Z 90
