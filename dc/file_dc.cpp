@@ -6,6 +6,7 @@
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
 #include "prism/system.h"
+#include "prism/debug.h"
 
 
 static struct {
@@ -57,6 +58,46 @@ void getFullPath(char* tDest, const char* tPath) {
 	else sprintf(tDest, "%s%s%s", gData.fileSystem, gData.cwd, tPath);
 }
 
+static FileHandler fileOpenCaseInsensitive(char* path, int tFlags) {
+    DIR* d;	
+    char directory[1024];
+    char* folder = strrchr(path, '/');
+    char* file;
+    if(!folder) {
+        strcpy(directory, ".");
+        file = path;
+    } else {
+        *folder = '\0';
+        strcpy(directory, path);
+        *folder = '/';
+        file = folder + 1;        
+    }
+
+    turnStringLowercase(file);
+
+    FileHandler ret = FILEHND_INVALID;
+	d = opendir(directory);
+	if (d)
+	{
+		struct dirent *dir;
+		while ((dir = readdir(d)) != NULL)
+		{
+            char testName[1024];
+            strcpy(testName, dir->d_name);
+			turnStringLowercase(testName);
+            if(!strcmp(file, testName)) {
+                sprintf(testName, "%s/%s", directory, dir->d_name);
+                ret = fs_open(testName, tFlags);
+                break;
+            }
+		}
+
+		closedir(d);
+	}
+
+    return ret;
+}
+
 FileHandler fileOpen(const char* tPath, int tFlags){
 	char path[1024];
 	getFullPath(path, tPath);
@@ -66,7 +107,13 @@ FileHandler fileOpen(const char* tPath, int tFlags){
 	debugString(gData.fileSystem);
 	debugString(gData.cwd);
 
-	return fs_open(path, tFlags);
+    FileHandler ret = fs_open(path, tFlags);
+    
+    if(isInDevelopMode() && ret == FILEHND_INVALID) {
+	    return fileOpenCaseInsensitive(path, tFlags);
+    } else {
+        return ret;
+    }
 }
 
 int fileClose(FileHandler tHandler) {
