@@ -5,6 +5,7 @@
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
 #include "prism/system.h"
+#include "prism/debug.h"
 #include "prism/datastructures.h"
 #include "prism/windows/romdisk_win.h"
 
@@ -132,6 +133,11 @@ FileHandler fileOpen(const char* tPath, int tFlags){
 		logError("Unrecognized read mode");
 		logErrorInteger(tFlags)
 			recoverFromError();
+	}
+
+	if (isInDevelopMode() && strchr(path, '-')) {
+		logErrorFormat("Illegal character '-' in path %s. Aborting.", path);
+		recoverFromError();
 	}
 
 	return fopen(path, flags);
