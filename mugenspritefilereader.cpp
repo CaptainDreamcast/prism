@@ -474,7 +474,7 @@ List breakImageBufferUpIntoMultipleBuffers(Buffer b, int tWidth, int tHeight, in
 	List ret = new_list();
 
 	int y = 0;
-	while (y < tHeight) {
+	while (y < tHeight) { // INFO: Need power of 2 split for paletted images on Dreamcast, they need to be twiddled and twiddling only works with power of 2
 		int heightLeft = tHeight - y;
 		int dy = getMaximumSizeFit(heightLeft);
 		int x = 0;
