@@ -74,7 +74,12 @@ clean_general:
 	-rm -f assets/debug/*.pkg
 
 build_develop: $(OBJS) 
-	kos-c++ -fno-operator-names -fno-rtti -fno-exceptions -std=c++11 -DDEVELOP -I/home/captaindc/dc/kos/../extensions/include -D_arch_dreamcast -D_arch_sub_pristine -Wall -g -fno-builtin -fno-strict-aliasing  -ml -m4-single-only -O2 -Wl,--gc-sections -L/home/captaindc/dc/kos/lib/dreamcast -L/home/captaindc/dc/kos/addons/lib/dreamcast -L/home/captaindc/dc/kos/../kos-ports/lib \
+	kos-c++ -fno-operator-names -fno-rtti -fno-exceptions -std=c++11 \
+	-DDEVELOP -I/home/captaindc/dc/kos/../extensions/include -D_arch_dreamcast \
+	-DNDEBUG \
+	-D_arch_sub_pristine -Wall -g -fno-builtin -fno-strict-aliasing  -ml -m4-single-only \
+	-O2 -Wl,--gc-sections -L/home/captaindc/dc/kos/lib/dreamcast \
+	-L/home/captaindc/dc/kos/addons/lib/dreamcast -L/home/captaindc/dc/kos/../kos-ports/lib \
 	-o $(TARGET).elf $(KOS_START) \
 	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lzstd -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
 	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN

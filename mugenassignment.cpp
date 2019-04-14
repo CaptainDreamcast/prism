@@ -667,7 +667,7 @@ static int isVector(char* tText) {
 
 static MugenAssignment* parseMugenContextFreeVectorFromString(char* tText) {
 	int position;
-	assert(hasContextFreeComma(tText, &position));
+	hasContextFreeComma(tText, &position);
 
 	// TODO: handle when second element is gone
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, MUGEN_ASSIGNMENT_TYPE_VECTOR, ",", position);
@@ -720,7 +720,7 @@ static int isOperatorArgument(char* tText) {
 static MugenAssignment* parseMugenOperatorArgumentFromString(char* tText) {
 	char dst[10];
 	char text[200];
-	assert(isOperatorAndReturnType(tText, dst));
+	isOperatorAndReturnType(tText, dst);
 
 	sprintf(text, "%s $$ %s", dst, tText + strlen(dst));
 	return parseTwoElementMugenAssignmentFromString(text, MUGEN_ASSIGNMENT_TYPE_OPERATOR_ARGUMENT, "$$");

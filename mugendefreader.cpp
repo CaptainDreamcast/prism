@@ -112,7 +112,7 @@ static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char
 
 static BufferPointer getNextDefCharPosition(Buffer* b, BufferPointer p, char tChar) {
 	while (*p != tChar) {
-		assert(!increaseAndCheckIfOver(b, &p));
+		increaseAndCheckIfOver(b, &p);
 	}
 
 	return p;
@@ -138,7 +138,7 @@ static void destroyMugenDefString(char* tVal) {
 
 static void moveBufferPointerForward(Buffer* b, BufferPointer* p) {
 	while (isEmpty(*p) && !isLinebreak(*p)) {
-		assert(!increaseAndCheckIfOver(b, p));
+		increaseAndCheckIfOver(b, p);
 	}
 }
 

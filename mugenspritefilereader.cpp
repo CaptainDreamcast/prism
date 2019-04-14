@@ -567,7 +567,7 @@ static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int wi
 	uint8_t* rowData = (uint8_t*)allocMemory(bytesPerRow);
 
 	int palAmount;
-	assert(png_get_PLTE(*png_ptr, *info_ptr, gPalette, &palAmount));
+	png_get_PLTE(*png_ptr, *info_ptr, gPalette, &palAmount);
 	assert(palAmount <= 256 * 3);
 
 	uint32_t rowIdx;
