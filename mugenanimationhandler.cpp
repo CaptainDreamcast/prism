@@ -1025,6 +1025,13 @@ static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement
 	if (e->mIsCollisionDebugActive) {
 		drawSingleAnimationDebugCollisionHitboxes(e);
 	}
+	
+	if (e->mHasBasePositionReference) {
+		e->mPlayerPositionReference = *e->mBasePositionReference + e->mOffset;
+	}
+	else {
+		e->mPlayerPositionReference = e->mOffset;
+	}
 
 	if (e->mIsInvisible) {
 		return;
@@ -1043,16 +1050,7 @@ static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement
 		drawScale.y *= e->mScaleReference->y;
 	}
 	drawScale.z = 1;
-
-
-	if (e->mHasBasePositionReference) {
-		e->mPlayerPositionReference = *e->mBasePositionReference;
-	}
-	else {
-		e->mPlayerPositionReference = makePosition(0, 0, 0);
-	}
 	
-	e->mPlayerPositionReference = vecAdd(e->mPlayerPositionReference, e->mOffset);
 	Position p = e->mPlayerPositionReference;
 
 	if (e->mHasCameraPositionReference) {
