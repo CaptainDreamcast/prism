@@ -1029,6 +1029,9 @@ static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement
 	if (e->mHasBasePositionReference) {
 		e->mPlayerPositionReference = *e->mBasePositionReference + e->mOffset;
 	}
+	else {
+		e->mPlayerPositionReference = e->mOffset;
+	}
 
 	if (e->mIsInvisible) {
 		return;
