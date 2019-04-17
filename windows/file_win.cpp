@@ -52,7 +52,7 @@ static void expandPath(char* tDest, const char* tPath) {
 	}
 }
 
-void setFileSystem(char* path){
+void setFileSystem(const char* path){
 	(void)path;
 }
 
@@ -61,7 +61,7 @@ const char* getFileSystem() {
 }
 
 
-void setWorkingDirectory(char* path) {
+void setWorkingDirectory(const char* path) {
 	char expandedPath[1024], absolutePath[1024];
 	if (path[0] != '/') {
 		sprintf(absolutePath, "%s%s", gData.cwd, path);
@@ -181,7 +181,7 @@ size_t fileTotal(FileHandler tHandler){
 
 	return size;
 }
-int fileUnlink(char* tPath) {
+int fileUnlink(const char* tPath) {
 	return remove(tPath);
 }
 
@@ -191,7 +191,7 @@ void* fileMemoryMap(FileHandler tHandler) {
 }
 
 
-void mountRomdiskFromBuffer(Buffer b, char * tMountPath)
+void mountRomdiskFromBuffer(Buffer b, const char * tMountPath)
 {
 	mountRomdiskWindowsFromBuffer(b, tMountPath);
 }
@@ -213,7 +213,7 @@ void unmountRomdisk(char* tMountPath) {
 
 #endif
 
-void printDirectory(char* tPath) {
+void printDirectory(const char* tPath) {
 #ifdef _WIN32
 	char path[1024];
 	wchar_t wpath[1024];

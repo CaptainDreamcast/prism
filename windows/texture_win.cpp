@@ -150,7 +150,7 @@ static KMGHeader untwiddleKMGBufferAndReturnHeader(Buffer* tBuffer) {
 	return hdr;
 }
 
-static TextureData loadTexturePKGWindows(char* tFileDir) {
+static TextureData loadTexturePKGWindows(const char* tFileDir) {
 	Buffer b = fileToBuffer(tFileDir);
 	decompressBuffer(&b);
 	KMGHeader hdr = untwiddleKMGBufferAndReturnHeader(&b);
@@ -158,7 +158,7 @@ static TextureData loadTexturePKGWindows(char* tFileDir) {
 	return textureFromSurface(s);
 }
 
-TextureData loadTexturePKG(char* tFileDir) {
+TextureData loadTexturePKG(const char* tFileDir) {
 	char pngPath[1024];
 
 	strcpy(pngPath, tFileDir);
@@ -171,7 +171,6 @@ TextureData loadTexturePKG(char* tFileDir) {
 	getFullPath(fullFileName, tFileDir);
 	getFullPath(fullFileNamePNG, pngPath);
 
-	// TODO: Properly decode PKG files; currently assume we have PNG instead
 	if (isFile(pngPath)) {
 		return loadTexturePNG(fullFileNamePNG);
 	}
@@ -182,7 +181,7 @@ TextureData loadTexturePKG(char* tFileDir) {
 
 }
 
-TextureData loadTexture(char* tFileDir) {
+TextureData loadTexture(const char* tFileDir) {
 	const char* fileExt = getFileExtension(tFileDir);
 
 	if (!strcmp("pkg", fileExt)) {
@@ -206,7 +205,7 @@ int getTextureHash(TextureData tTexture) {
 	return (int)tTexture.mTexture;
 }
 
-int canLoadTexture(char* tPath) {
+int canLoadTexture(const char* tPath) {
 	const char* fileExt = getFileExtension(tPath);
 
 	if (!strcmp("pkg", fileExt)) {
@@ -329,7 +328,7 @@ TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWid
 	*/
 }
 
-TruetypeFont loadTruetypeFont(char * tName, double tSize)
+TruetypeFont loadTruetypeFont(const char * tName, double tSize)
 {
 
 	char path[1024];

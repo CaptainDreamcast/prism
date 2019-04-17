@@ -25,8 +25,8 @@ typedef struct {  // TODO: refactor completely from Dolmexica
 
 typedef void* TruetypeFont;
 
-TextureData loadTexturePKG(char tFileDir[]);
-TextureData loadTexture(char tFileDir[]);
+TextureData loadTexturePKG(const char* tFileDir);
+TextureData loadTexture(const char* tFileDir);
 TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight);
 TextureData loadTextureFromTwiddledARGB16Buffer(Buffer b, int tWidth, int tHeight);
 TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight);
@@ -34,15 +34,15 @@ TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight);
 TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight);
 void unloadTexture(TextureData tTexture);
 
-void loadConsecutiveTextures(TextureData* tDst, char* tBaseFileDir, int tAmount);
+void loadConsecutiveTextures(TextureData* tDst, const char* tBaseFileDir, int tAmount);
 TextureData getFontTexture();
 FontCharacterData getFontCharacterData(char tChar);
-void setFont(char tFileDirHeader[], char tFileDirTexture[]);
-TruetypeFont loadTruetypeFont(char* tName, double tSize);
+void setFont(const char* tFileDirHeader, const char* tFileDirTexture);
+TruetypeFont loadTruetypeFont(const char* tName, double tSize);
 void unloadTruetypeFont(TruetypeFont tFont);
 
 int getTextureHash(TextureData tTexture); 
-int canLoadTexture(char* tPath);
+int canLoadTexture(const char* tPath);
 
 TextureSize makeTextureSize(int x, int y);
 TextureData createWhiteTexture();

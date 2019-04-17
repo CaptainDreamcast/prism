@@ -20,7 +20,7 @@
 
 extern semaphore_t gPVRAccessSemaphore;
 
-TextureData loadTexturePKG(char* tFileDir) {
+TextureData loadTexturePKG(const char* tFileDir) {
 
   TextureData returnData;
   returnData.mHasPalette = 0;
@@ -60,7 +60,7 @@ TextureData loadTexturePKG(char* tFileDir) {
   return returnData;
 }
 
-TextureData loadTexture(char* tFileDir) {
+TextureData loadTexture(const char* tFileDir) {
 	char* fileExt = getFileExtension(tFileDir);
 
 	if(!strcmp("pkg", fileExt)) {
@@ -141,13 +141,13 @@ int getTextureHash(TextureData tTexture) {
 	return (int)tTexture.mTexture;
 }
 
-int canLoadTexture(char* tPath) {
-	char* fileExt = getFileExtension(tPath);
+int canLoadTexture(const char* tPath) {
+	const char* fileExt = getFileExtension(tPath);
 
 	return (!strcmp("pkg", fileExt) && isFile(tPath));
 }
 
-TruetypeFont loadTruetypeFont(char* tName, double tSize) {
+TruetypeFont loadTruetypeFont(const char* tName, double tSize) {
 	(void) tName;
 	(void) tSize;
 

@@ -65,7 +65,7 @@ void getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i)
 
 }
 
-void getPathToFile(char * tDest, char * tPath)
+void getPathToFile(char * tDest, const char * tPath)
 {
 	strcpy(tDest, tPath);
 	char* pathEnd = strrchr(tDest, '/');
@@ -77,7 +77,7 @@ static int isFileMemoryMapped(FileHandler tFile) {
 	return data != NULL;
 }
 
-int isFile(char* tPath) {
+int isFile(const char* tPath) {
 	if(isDirectory(tPath)) return 0;
 
 	FileHandler file = fileOpen(tPath, O_RDONLY);
@@ -86,7 +86,7 @@ int isFile(char* tPath) {
 	return 1;
 }
 
-int isDirectory(char* tPath) {
+int isDirectory(const char* tPath) {
 	struct stat sb;
 	char path[1024];
 	getFullPath(path, tPath);
@@ -167,7 +167,7 @@ Buffer fileToBuffer(const char* tFileDir) {
 	return ret;
 }
 
-void bufferToFile(char* tFileDir, Buffer tBuffer) {
+void bufferToFile(const char* tFileDir, Buffer tBuffer) {
 	FileHandler file = fileOpen(tFileDir, O_WRONLY);
 	fileWrite(file, tBuffer.mData, tBuffer.mLength);
 	fileClose(file);
@@ -202,7 +202,7 @@ void appendTerminationSymbolToBuffer(Buffer* tBuffer) {
 	tBuffer->mLength++;
 }
 
-void fileToMemory(void* tDst, int tSize, char* tPath) {
+void fileToMemory(void* tDst, int tSize, const char* tPath) {
 	Buffer b = fileToBuffer(tPath);
 	if (b.mLength != (unsigned int)tSize) {
 		logError("File and memory struct have different sizes!");
@@ -313,7 +313,7 @@ void appendBufferFloat(Buffer* tBuffer, float tFloat) {
 	appendBufferString(tBuffer, (char*)(&tFloat), sizeof(float));
 }
 
-void appendBufferString(Buffer* tBuffer, char* tString, int tLength) {
+void appendBufferString(Buffer* tBuffer, const char* tString, int tLength) {
 	tBuffer->mLength += tLength;
 	tBuffer->mData = reallocMemory(tBuffer->mData, tBuffer->mLength + 2);
 

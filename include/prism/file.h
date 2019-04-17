@@ -42,21 +42,21 @@ size_t fileWrite(FileHandler tHandler, const void* tBuffer, size_t tCount);
 size_t fileSeek(FileHandler tHandler, size_t tOffset, int tWhence);
 size_t fileTell(FileHandler tHandler);
 size_t fileTotal(FileHandler tHandler);
-int fileUnlink(char* tPath);
+int fileUnlink(const char* tPath);
 void* fileMemoryMap(FileHandler tHandler);
 
-int isFile(char* tPath);
-int isDirectory(char* tPath);
+int isFile(const char* tPath);
+int isDirectory(const char* tPath);
 
 Buffer makeBuffer(void* tData, uint32_t tLength);
 Buffer makeBufferOwned(void* tData, uint32_t tLength);
 Buffer makeBufferEmptyOwned();
 Buffer copyBuffer(Buffer tBuffer);
 Buffer fileToBuffer(const char* path);
-void bufferToFile(char* tPath, Buffer tBuffer);
+void bufferToFile(const char* tPath, Buffer tBuffer);
 void freeBuffer(Buffer buffer);
 void appendTerminationSymbolToBuffer(Buffer* tBuffer);
-void fileToMemory(void* tDst, int tSize, char* tPath);
+void fileToMemory(void* tDst, int tSize, const char* tPath);
 BufferPointer getBufferPointer(Buffer tBuffer);
 void readFromBufferPointer(void* tDst, BufferPointer* tPointer, uint32_t tSize);
 int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer);
@@ -71,16 +71,16 @@ void appendBufferUint32(Buffer* tBuffer, uint32_t tInteger);
 void appendBufferInt32(Buffer* tBuffer, int32_t tInteger);
 void appendBufferInteger(Buffer* tBuffer, int tInteger);
 void appendBufferFloat(Buffer* tBuffer, float tFloat);
-void appendBufferString(Buffer* tBuffer, char* tString, int tLength);
+void appendBufferString(Buffer* tBuffer, const char* tString, int tLength);
 void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer);
 
 void initFileSystem();
-void setFileSystem(char* path);
-void setWorkingDirectory(char* path);
+void setFileSystem(const char* path);
+void setWorkingDirectory(const char* path);
 const char* getFileSystem();
 const char* getWorkingDirectory();
 
-void mountRomdiskFromBuffer(Buffer b, char* tMountPath);
+void mountRomdiskFromBuffer(Buffer b, const char* tMountPath);
 void mountRomdisk(char* tFilePath, char* tMountPath);
 void unmountRomdisk(char* tMountPath);
 
@@ -90,7 +90,7 @@ char* getFileExtension(char* tPath);
 void getPathWithoutFileExtension(char* tDest, char* tPath);
 void  getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i);
 void getFullPath(char* tDest, const char* tPath);
-void getPathToFile(char* tDest, char* tPath);
+void getPathToFile(char* tDest, const char* tPath);
 
-void printDirectory(char* tPath);
+void printDirectory(const char* tPath);
 

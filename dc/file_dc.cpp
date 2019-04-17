@@ -20,7 +20,7 @@ void initFileSystem(){
 	debugString(gData.cwd);
 }
 
-void setFileSystem(char* path){
+void setFileSystem(const char* path){
 	logg("Setting file system.");
 	if(path[0] != '/'){
 		logError("Invalid filesystem!");	
@@ -36,7 +36,7 @@ const char* getFileSystem() {
 	return gData.fileSystem;
 }
 
-void setWorkingDirectory(char* path) {
+void setWorkingDirectory(const char* path) {
 
 	sprintf(gData.cwd, "%s", path);
 	debugString(gData.cwd);
@@ -134,14 +134,14 @@ size_t fileTell(FileHandler tHandler) {
 size_t fileTotal(FileHandler tHandler){
 	return fs_total(tHandler);
 }
-int fileUnlink(char* tPath) {
+int fileUnlink(const char* tPath) {
 	return fs_unlink(tPath);
 }
 void* fileMemoryMap(FileHandler tHandler) {
 	return fs_mmap(tHandler);
 }
 
-void fixMountPath(char* tDst, char* tSrc) {
+void fixMountPath(char* tDst, const char* tSrc) {
 	if(tSrc[0] != '/') {
 		sprintf(tDst, "/%s", tSrc);	
 	} else {
@@ -150,7 +150,7 @@ void fixMountPath(char* tDst, char* tSrc) {
 }
 
 
-void mountRomdisk(char* tFilePath, char* tMountPath) {
+void mountRomdisk(const char* tFilePath, const char* tMountPath) {
 	char mountPath[200];
 	fixMountPath(mountPath, tMountPath);
 
@@ -168,14 +168,14 @@ void mountRomdisk(char* tFilePath, char* tMountPath) {
 	fileClose(romDiskFile);
 }
 
-void unmountRomdisk(char* tMountPath) {
+void unmountRomdisk(const char* tMountPath) {
 	char mountPath[200];
 	fixMountPath(mountPath, tMountPath);
 
 	fs_romdisk_unmount(mountPath);
 }
 
-void printDirectory(char* tPath) {
+void printDirectory(const char* tPath) {
 	char path[1024];
 	getFullPath(path, tPath);
 

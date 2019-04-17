@@ -494,7 +494,7 @@ static int getBucketIDFromString(uint8_t* tKey) {
 	return offset;
 }
 
-static void string_map_push_internal(StringMap* tMap, char* tKey, void* tData, int tIsOwned) {
+static void string_map_push_internal(StringMap* tMap, const char* tKey, void* tData, int tIsOwned) {
 	int offset = getBucketIDFromString((uint8_t*)tKey);
 	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 
@@ -507,15 +507,15 @@ static void string_map_push_internal(StringMap* tMap, char* tKey, void* tData, i
 	tMap->mSize++;
 }
 
-void string_map_push_owned(StringMap* tMap, char* tKey, void* tData) {
+void string_map_push_owned(StringMap* tMap, const char* tKey, void* tData) {
 	string_map_push_internal(tMap, tKey, tData, 1);
 }
 
-void string_map_push(StringMap* tMap, char* tKey, void* tData) {
+void string_map_push(StringMap* tMap, const char* tKey, void* tData) {
 	string_map_push_internal(tMap, tKey, tData, 0);
 }
 
-void string_map_remove(StringMap* tMap, char* tKey) {
+void string_map_remove(StringMap* tMap, const char* tKey) {
 	int offset = getBucketIDFromString((uint8_t*)tKey);
 	StringMapBucket* bucket = &((StringMapBucket*)tMap->mBuckets)[offset];
 

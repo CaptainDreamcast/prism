@@ -25,7 +25,7 @@ void unloadFont() {
 	isFontDataLoaded = 0;
 }
 
-void loadFontHeader(char tFileDir[]) {
+static void loadFontHeader(const char* tFileDir) {
 	FileHandler file;
 
 	file = fileOpen(tFileDir, O_RDONLY);
@@ -45,11 +45,11 @@ void loadFontHeader(char tFileDir[]) {
 	fileClose(file);
 }
 
-void loadFontTexture(char tFileDir[]) {
+static void loadFontTexture(const char* tFileDir) {
 	gFont = loadTexturePKG(tFileDir);
 }
 
-void setFont(char tFileDirHeader[], char tFileDirTexture[]) {
+void setFont(const char* tFileDirHeader, const char* tFileDirTexture) {
 	if (isFontDataLoaded) {
 		unloadFont();
 	}
@@ -64,7 +64,7 @@ void setFont(char tFileDirHeader[], char tFileDirTexture[]) {
 	isFontDataLoaded = 1;
 }
 
-void loadConsecutiveTextures(TextureData * tDst, char * tBaseFileDir, int tAmount)
+void loadConsecutiveTextures(TextureData * tDst, const char * tBaseFileDir, int tAmount)
 {
 	int i;
 	for (i = 0; i < tAmount; i++) {

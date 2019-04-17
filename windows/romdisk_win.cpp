@@ -389,7 +389,7 @@ void initRomdisks() {
 	gInitted = 1;
 }
 
-void mountRomdiskWindowsFromBuffer(Buffer b, char * tMountPath)
+void mountRomdiskWindowsFromBuffer(Buffer b, const char * tMountPath)
 {
 	int isAlreadyMounted = string_map_contains(&gRomdiskMapping, tMountPath);
 	if (isAlreadyMounted) {
@@ -441,7 +441,7 @@ Also note that we do _not_ take ownership of the image data if
 own_buffer is 0, so if you alloc'd that buffer, you must
 also free it after the unmount. If own_buffer is non-zero, then
 we free the buffer when it is unmounted. */
-void mountRomdiskWindows(char* tFilePath, char* tMountPath) {
+void mountRomdiskWindows(const char* tFilePath, const char* tMountPath) {
 	Buffer b = fileToBuffer(tFilePath);
 	mountRomdiskWindowsFromBuffer(b, tMountPath);
 }
@@ -449,7 +449,7 @@ void mountRomdiskWindows(char* tFilePath, char* tMountPath) {
 
 
 /* Unmount a romdisk image */
-void unmountRomdiskWindows(char* tMountPath) {
+void unmountRomdiskWindows(const char* tMountPath) {
 	rd_image_t  * n;
 
 	// mutex_lock(&fh_mutex);
