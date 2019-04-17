@@ -93,24 +93,28 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
 
   pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, format, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
 
+    cxt.blend.src_enable = PVR_BLEND_DISABLE;
+    cxt.blend.dst_enable = PVR_BLEND_DISABLE;
 
-  cxt.blend.src_enable = PVR_BLEND_DISABLE;
-   cxt.blend.dst_enable = PVR_BLEND_DISABLE;
-
-  if(gData.mBlendType == BLEND_TYPE_NORMAL) {
-	cxt.blend.src = PVR_BLEND_SRCALPHA; 
-	cxt.blend.dst = PVR_BLEND_INVSRCALPHA;
-  } else if(gData.mBlendType == BLEND_TYPE_ADDITION) {
-	cxt.blend.src = PVR_BLEND_SRCALPHA; 
-	cxt.blend.dst = PVR_BLEND_ONE;
-  }  else if(gData.mBlendType == BLEND_TYPE_SUBTRACTION) {
-	cxt.blend.src = PVR_BLEND_SRCALPHA; 
-	cxt.blend.dst = PVR_BLEND_ONE;
-  }  else {	
-	logError("Unrecognized blend type.");
-	logErrorInteger(gData.mBlendType);
-	abortSystem();
-  }
+	switch(gData.mBlendType) {
+		case BLEND_TYPE_NORMAL:
+			cxt.blend.src = PVR_BLEND_SRCALPHA; 
+			cxt.blend.dst = PVR_BLEND_INVSRCALPHA;
+			break;
+		case BLEND_TYPE_ADDITION:
+			cxt.blend.src = PVR_BLEND_SRCALPHA; 
+			cxt.blend.dst = PVR_BLEND_ONE;
+			break;
+		case BLEND_TYPE_SUBTRACTION:
+			cxt.blend.src = PVR_BLEND_SRCALPHA; 
+			cxt.blend.dst = PVR_BLEND_ONE;
+			break;
+		default:
+			logError("Unrecognized blend type.");
+			logErrorInteger(gData.mBlendType);
+			abortSystem();
+			break;
+	}
 
   pvr_poly_compile(&hdr, &cxt);
   pvr_prim(&hdr, sizeof(hdr));

@@ -338,6 +338,14 @@ Vector3D operator*(const Vector3D& a, const Vector3D& b) {
 	return ret;
 }
 
+int operator==(const Vector3D& a, const Vector3D& b) {
+	return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
+int operator!=(const Vector3D& a, const Vector3D& b) {
+	return a.x != b.x || a.y != b.y || a.z != b.z;
+}
+
 
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
 	Vector3DI ret = a;
@@ -345,4 +353,12 @@ Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
 	ret.y -= b.y;
 	ret.z -= b.z;
 	return ret;
+}
+
+int operator==(const Vector3DI& a, const Vector3DI& b) {
+	return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
+int operator!=(const Vector3DI& a, const Vector3DI& b) {
+	return a.x != b.x || a.y != b.y || a.z != b.z;
 }

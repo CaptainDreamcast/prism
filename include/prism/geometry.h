@@ -80,7 +80,11 @@ Vector3D operator+(const Vector3D& a, const Vector3D& b);
 Vector3D operator-(const Vector3D& a, const Vector3D& b);
 // pairwise multiplication
 Vector3D operator*(const Vector3D& a, const Vector3D& b); 
+int operator==(const Vector3D& a, const Vector3D& b);
+int operator!=(const Vector3D& a, const Vector3D& b);
 
 
 Vector3DI operator+(const Vector3DI& a, const Vector3DI& b);
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b);
+int operator==(const Vector3DI& a, const Vector3DI& b);
+int operator!=(const Vector3DI& a, const Vector3DI& b);
