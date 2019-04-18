@@ -127,11 +127,11 @@ void setVGA() {
 }
 
 
-void setGameName(char* tName) {
+void setGameName(const char* tName) {
 	(void) tName;
 }
 
-void updateGameName(char* tName) {
+void updateGameName(const char* tName) {
 	(void) tName;
 }
 
