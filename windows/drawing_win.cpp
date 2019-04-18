@@ -19,6 +19,7 @@
 #include "prism/datastructures.h"
 #include "prism/memoryhandler.h"
 #include "prism/math.h"
+#include "prism/stlutil.h"
 
 
 
@@ -52,6 +53,8 @@ static const GLchar* fragment_shader =
 
 using namespace std;
 
+
+
 typedef struct {
 
 	double a;
@@ -71,16 +74,16 @@ typedef struct {
 	SDL_Color mPalettes[4][256];
 } DrawingData;
 
-typedef struct {
+struct DrawListSpriteElement{
 	TextureData mTexture;
 	Position mPos;
 	Rectangle mTexturePosition;
 
 	DrawingData mData;
+	double mZ;
+} ;
 
-} DrawListSpriteElement;
-
-typedef struct {
+struct DrawListTruetypeElement{
 	char mText[1024];
 	TTF_Font* mFont;
 	Position mPos;
@@ -89,20 +92,62 @@ typedef struct {
 	double mTextBoxWidth;
 
 	DrawingData mData;
-} DrawListTruetypeElement;
-
-typedef enum {
-	DRAW_LIST_ELEMENT_TYPE_SPRITE,
-	DRAW_LIST_ELEMENT_TYPE_TRUETYPE,
-
-} DrawListElementType;
-
-typedef struct {
-	DrawListElementType mType;
-	void* mData;
 	double mZ;
-} DrawListElement;
 
+};
+
+class DrawListElement {
+public:
+	enum Type {
+		DRAW_LIST_ELEMENT_TYPE_SPRITE,
+		DRAW_LIST_ELEMENT_TYPE_TRUETYPE,
+	};
+
+	DrawListElement(DrawListSpriteElement e) {
+		impl_.mSprite = e;
+		mType = Type::DRAW_LIST_ELEMENT_TYPE_SPRITE;
+	}
+
+	DrawListElement(DrawListTruetypeElement e) {
+		impl_.mTrueType = e;
+		mType = Type::DRAW_LIST_ELEMENT_TYPE_TRUETYPE;
+	}
+
+	~DrawListElement() {
+		if (mType == DRAW_LIST_ELEMENT_TYPE_SPRITE) {
+			impl_.mSprite.~DrawListSpriteElement();
+		}
+		else {
+			impl_.mTrueType.~DrawListTruetypeElement();
+		}
+	}
+
+	double getZ() const {
+		if (mType == DRAW_LIST_ELEMENT_TYPE_SPRITE) {
+			return impl_.mSprite.mZ;
+		}
+		else {
+			return impl_.mTrueType.mZ;
+		}
+	}
+
+	operator DrawListSpriteElement() const {
+		return impl_.mSprite;
+	}
+
+	operator DrawListTruetypeElement() const {
+		return impl_.mTrueType;
+	}
+
+	Type mType;
+
+private:
+	union Impl {
+		DrawListSpriteElement mSprite;
+		DrawListTruetypeElement mTrueType;
+		Impl() {}
+	} impl_;
+};
 
 static struct {
 	int          mShaderHandle, mVertHandle, mFragHandle;
@@ -118,7 +163,7 @@ static struct {
 	double mRealFramerate;
 } gBookkeepingData;
 
-static Vector gDrawVector;
+static vector<DrawListElement> gDrawVector;
 static DrawingData gData;
 
 extern SDL_Window* gSDLWindow;
@@ -196,7 +241,7 @@ void initDrawing() {
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
 
-	gDrawVector = new_vector();
+	gDrawVector.clear();
 	gBookkeepingData.mFrameStartTime = 0;
 
 	gData.mEffectStack = new_vector();
@@ -238,28 +283,17 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
 	}
 
 
-	DrawListSpriteElement* e = (DrawListSpriteElement*)allocMemory(sizeof(DrawListSpriteElement));
-	e->mTexture = tTexture;
-	e->mPos = tPos;
-	e->mTexturePosition = tTexturePosition;
-	e->mData = gData;
-
-	DrawListElement* listElement = (DrawListElement*)allocMemory(sizeof(DrawListElement));
-	listElement->mType = DRAW_LIST_ELEMENT_TYPE_SPRITE;
-	listElement->mData = e;
-	listElement->mZ = tPos.z;
-	vector_push_back_owned(&gDrawVector, listElement);
-}
-
-static void clearSingleDrawElement(void* tCaller, void* tData) {
-	(void)tCaller;
-	DrawListElement* e = (DrawListElement*)tData;
-	freeMemory(e->mData);
+	DrawListSpriteElement e;
+	e.mTexture = tTexture;
+	e.mPos = tPos;
+	e.mTexturePosition = tTexturePosition;
+	e.mData = gData;
+	e.mZ = tPos.z;
+	gDrawVector.push_back(DrawListElement(e));
 }
 
 static void clearDrawVector() {
-	vector_map(&gDrawVector, clearSingleDrawElement, NULL);
-	vector_empty(&gDrawVector);
+	gDrawVector.clear();
 }
 
 void startDrawing() {
@@ -268,13 +302,12 @@ void startDrawing() {
 	clearDrawVector();
 }
 
-static int cmpZ(void* tCaller, void* tData1, void* tData2) {
-	(void)tCaller;
-	DrawListElement* e1 = (DrawListElement*)tData1;
-	DrawListElement* e2 = (DrawListElement*)tData2;
+static int cmpZ(const DrawListElement& tData1, const DrawListElement& tData2) {
+	double z1 = tData1.getZ();
+	double z2 = tData2.getZ();
 
-	if (e1->mZ < e2->mZ) return -1;
-	if (e1->mZ > e2->mZ) return 1;
+	if (z1 < z2) return -1;
+	if (z1 > z2) return 1;
 	else return 0;
 }
 
@@ -496,15 +529,15 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 	}
 }
 
-static void drawSorted(void* tCaller, void* tData) {
+static void drawSorted(void* tCaller, DrawListElement& tData) {
 	(void)tCaller;
-	DrawListElement* e = (DrawListElement*)tData;
+	DrawListElement* e = &tData;
 
-	if (e->mType == DRAW_LIST_ELEMENT_TYPE_SPRITE) {
-		drawSortedSprite((DrawListSpriteElement*)e->mData);
+	if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_SPRITE) {
+		drawSortedSprite(&((DrawListSpriteElement)*e));
 	}
-	else if (e->mType == DRAW_LIST_ELEMENT_TYPE_TRUETYPE) {
-		drawSortedTruetype((DrawListTruetypeElement*)e->mData);
+	else if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_TRUETYPE) {
+		drawSortedTruetype(&((DrawListTruetypeElement)*e));
 	}
 	else {
 		logError("Unrecognized draw type");
@@ -515,8 +548,8 @@ static void drawSorted(void* tCaller, void* tData) {
 }
 
 void stopDrawing() {
-	vector_sort(&gDrawVector, cmpZ, NULL);
-	vector_map(&gDrawVector, drawSorted, NULL);
+	sort(gDrawVector.begin(), gDrawVector.end(), cmpZ);
+	stl_vector_map(gDrawVector, drawSorted);
 	clearDrawVector();
 	SDL_GL_SwapWindow(gSDLWindow);
 }
@@ -593,20 +626,17 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
 
 void drawTruetypeText(char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth)
 {
-	DrawListTruetypeElement* e = (DrawListTruetypeElement*)allocMemory(sizeof(DrawListTruetypeElement));
-	strcpy(e->mText, tText);
-	e->mFont = (TTF_Font*)tFont;
-	e->mPos = tPosition;
-	e->mTextSize = tTextSize;
-	e->mColor = tColor;
-	e->mTextBoxWidth = tTextBoxWidth;
-	e->mData = gData;
+	DrawListTruetypeElement e;
+	strcpy(e.mText, tText);
+	e.mFont = (TTF_Font*)tFont;
+	e.mPos = tPosition;
+	e.mTextSize = tTextSize;
+	e.mColor = tColor;
+	e.mTextBoxWidth = tTextBoxWidth;
+	e.mData = gData;
+	e.mZ = tPosition.z;
 
-	DrawListElement* listElement = (DrawListElement*)allocMemory(sizeof(DrawListElement));
-	listElement->mType = DRAW_LIST_ELEMENT_TYPE_TRUETYPE;
-	listElement->mData = e;
-	listElement->mZ = tPosition.z;
-	vector_push_back_owned(&gDrawVector, listElement);
+	gDrawVector.push_back(DrawListElement(e));
 }
 
 void scaleDrawing(double tFactor, Position tScalePosition) {
