@@ -30,7 +30,7 @@ void shutdownThreading()
 }
 
 void* threadFunction(void* tCaller) {
-	ThreadData* e = tCaller;
+	ThreadData* e = (ThreadData*)tCaller;
 
 	e->mFunc(e->mCaller);
 
@@ -43,7 +43,7 @@ void* threadFunction(void* tCaller) {
 
 int startThread(void(tFunc)(void *), void* tCaller)
 {
-	ThreadData* e = allocMemory(sizeof(ThreadData));
+	ThreadData* e = (ThreadData*)allocMemory(sizeof(ThreadData));
 	e->mFunc = tFunc;
 	e->mCaller = tCaller;
 

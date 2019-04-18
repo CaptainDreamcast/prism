@@ -563,11 +563,10 @@ static int isArray(char* tText) {
 }
 
 static MugenAssignment* parseArrayFromString(char* tText) {
-	int posOpen = -1, posClose = -1;
+	int posOpen = -1;
 	posOpen = strchr(tText, '(') - tText;
-	posClose = strrchr(tText, ')') - tText;
 	assert(posOpen >= 0);
-	assert(posClose >= 0);
+	assert(int(strrchr(tText, ')') - tText) >= 0);
 
 	char text1[MUGEN_DEF_STRING_LENGTH];
 	char text2[MUGEN_DEF_STRING_LENGTH];

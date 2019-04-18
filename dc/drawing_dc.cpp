@@ -405,7 +405,7 @@ void setDrawingParametersToIdentity(){
 }
 
 static void pushMatrixInternal() {
-	matrix_t* mat = allocMemory(sizeof(matrix_t));
+	matrix_t* mat = (matrix_t*)allocMemory(sizeof(matrix_t));
 	mat_store(mat);
 	vector_push_back_owned(&gData.mMatrixStack, mat);
 }
