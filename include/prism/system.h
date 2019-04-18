@@ -27,8 +27,8 @@ void abortSystem();
 void recoverFromError();
 void returnToMenu();
 
-void setGameName(char* tName);
-void updateGameName(char* tName);
+void setGameName(const char* tName);
+void updateGameName(const char* tName);
 
 void setScreen(int tX, int tY, int tFramerate, int tIsVGA);
 void setScreenSize(int tX, int tY);

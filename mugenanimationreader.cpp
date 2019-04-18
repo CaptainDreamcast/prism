@@ -468,12 +468,10 @@ static MugenAnimations createEmptyMugenAnimationFile() {
 }
 
 MugenAnimations loadMugenAnimationFile(std::string& tPath) {
-	char path[1024];
-	strcpy(path, tPath.data());
-	return loadMugenAnimationFile(path);
+	return loadMugenAnimationFile(tPath.data());
 }
 
-MugenAnimations loadMugenAnimationFile(char * tPath)
+MugenAnimations loadMugenAnimationFile(const char * tPath)
 {
 	MugenAnimations ret = createEmptyMugenAnimationFile();
 
@@ -486,7 +484,7 @@ MugenAnimations loadMugenAnimationFile(char * tPath)
 	return ret;
 }
 
-MugenAnimations loadMugenAnimationFileWithMemoryStack(char* tPath, MemoryStack* tMemoryStack) 
+MugenAnimations loadMugenAnimationFileWithMemoryStack(const char* tPath, MemoryStack* tMemoryStack) 
 {
 	gMugenAnimationState.mMemoryStack = tMemoryStack;
 	MugenAnimations ret = loadMugenAnimationFile(tPath);

@@ -116,7 +116,6 @@ std::pair<const K, V>* stl_map_get_pair_by_index(std::map<K, V>& tMap, int tInde
 
 	auto it = tMap.begin();
 	while (tIndex && it != tMap.end()) {
-		auto &val = *it;
 		it++;
 		tIndex--;
 	}

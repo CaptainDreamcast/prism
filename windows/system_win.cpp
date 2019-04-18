@@ -69,11 +69,11 @@ static void initScreenDefault() {
 	gData.mIsFullscreen = 0;
 }
 
-void setGameName(char* tName) {
+void setGameName(const char* tName) {
 	strcpy(gData.mGameName, tName);
 }
 
-void updateGameName(char * tName)
+void updateGameName(const char * tName)
 {
 	strcpy(gData.mGameName, tName);
 	SDL_SetWindowTitle(gSDLWindow, gData.mGameName);
