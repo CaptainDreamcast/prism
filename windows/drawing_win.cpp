@@ -302,13 +302,11 @@ void startDrawing() {
 	clearDrawVector();
 }
 
-static int cmpZ(const DrawListElement& tData1, const DrawListElement& tData2) {
+static bool cmpZ(const DrawListElement& tData1, const DrawListElement& tData2) {
 	double z1 = tData1.getZ();
 	double z2 = tData2.getZ();
 
-	if (z1 < z2) return -1;
-	if (z1 > z2) return 1;
-	else return 0;
+	return z1 < z2;
 }
 
 static SDL_Rect makeSDLRectFromRectangle(Rectangle tRect) {
