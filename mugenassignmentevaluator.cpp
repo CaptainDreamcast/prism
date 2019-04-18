@@ -457,6 +457,7 @@ static AssignmentReturnValue evaluateAdditionSparkFile(AssignmentReturnValue a, 
 	int val1;
 
 	int items = sscanf(a.mValue, "%s %d", firstW, &val1);
+	(void)items;
 	assert(items == 2);
 
 	int val2 = evaluateAssignmentReturnAsNumber(b);

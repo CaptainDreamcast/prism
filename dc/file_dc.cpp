@@ -161,7 +161,7 @@ void mountRomdisk(const char* tFilePath, const char* tMountPath) {
 	romDiskFile = fileOpen(tFilePath, O_RDONLY);
 	romDiskSize = fileTotal(romDiskFile);
 
-	romDiskBuffer = malloc(romDiskSize);
+	romDiskBuffer = (uint8*)malloc(romDiskSize);
 	fileRead(romDiskFile, romDiskBuffer, romDiskSize);
 	fs_romdisk_mount(mountPath, romDiskBuffer, 1);
 

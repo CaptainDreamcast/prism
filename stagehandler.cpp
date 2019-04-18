@@ -243,7 +243,7 @@ int addScrollingBackgroundWithMovementIn2D(double tDeltaX, double tDeltaY, doubl
 	return list_push_front_owned(&gData.mList, data);
 }
 
-int addBackgroundElementInternal(int tBackgroundID, Position tPosition, char* tPath, TextureData* tTextureData, Animation tAnimation, int tCanBeUnloaded) {
+int addBackgroundElementInternal(int tBackgroundID, Position tPosition, const char* tPath, TextureData* tTextureData, Animation tAnimation, int tCanBeUnloaded) {
 	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tBackgroundID);
 
 	BackgroundPatchData* pData = (BackgroundPatchData*)allocMemory(sizeof(BackgroundPatchData));

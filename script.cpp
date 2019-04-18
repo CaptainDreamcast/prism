@@ -86,7 +86,7 @@ static ScriptRegion getWholeScriptRegion(Script tScript) {
 	return makeScriptRegion(tScript, (char*)tScript.mBuffer.mData, (char*)((uint32_t)tScript.mBuffer.mData + tScript.mBuffer.mLength - 1));
 }
 
-static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, char* tWord) {
+static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, const char* tWord) {
 	char w[100];
 
 	int isInside = 0;
@@ -150,7 +150,7 @@ static ScriptPosition findScriptRegionEnd(ScriptPosition tPos) {
 	return tPos;
 }
 
-static ScriptPosition findScriptRegionStart(ScriptPosition tPos, char* tName) {
+static ScriptPosition findScriptRegionStart(ScriptPosition tPos, const char* tName) {
 	char w1[100];
 	char w2[100];
 
@@ -180,7 +180,7 @@ static ScriptPosition findScriptRegionStart(ScriptPosition tPos, char* tName) {
 	#endif
 }
 
-ScriptRegion getScriptRegion(Script tScript, char* tName) {
+ScriptRegion getScriptRegion(Script tScript, const char* tName) {
 	ScriptRegion r = getWholeScriptRegion(tScript);
 	ScriptPosition p0 = getScriptRegionStart(r);
 	ScriptPosition p1 = findScriptRegionStart(p0, tName);

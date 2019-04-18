@@ -438,7 +438,7 @@ KeyboardKeyPrism getButtonForKeyboard(int i, ControllerButtonPrism tTargetButton
 {
 	(void)i;
 	(void)tTargetButton;
-	return 0; // TODO
+	return (KeyboardKeyPrism)0; // TODO
 }
 
 void setButtonForKeyboard(int i, ControllerButtonPrism tTargetButton, KeyboardKeyPrism tKeyValue)

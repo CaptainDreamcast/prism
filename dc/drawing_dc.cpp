@@ -411,7 +411,7 @@ static void pushMatrixInternal() {
 }
 
 static void popMatrixInternal() {
-	matrix_t* mat = vector_get_back(&gData.mMatrixStack);
+	matrix_t* mat = (matrix_t*)vector_get_back(&gData.mMatrixStack);
 	mat_load(mat);
 	vector_pop_back(&gData.mMatrixStack);
 }
@@ -452,7 +452,7 @@ void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
 	assert(tBuffer.mLength >= 256*4);
 	//sem_wait(&gPVRAccessSemaphore);
 
-	uint8_t* src = tBuffer.mData;
+	uint8_t* src = (uint8_t*)tBuffer.mData;
 	
 	int start = tPaletteID * 256;
 	int i;
@@ -472,7 +472,7 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer 
 	assert(tBuffer.mLength >= 256*3);
 	//sem_wait(&gPVRAccessSemaphore);
 
-	uint8_t* src = tBuffer.mData;
+	uint8_t* src = (uint8_t*)tBuffer.mData;
 	
 	int start = tPaletteID * 256;
 	pvr_set_pal_entry(start, 0);

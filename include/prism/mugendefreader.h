@@ -59,73 +59,73 @@ typedef struct {
 } MugenDefScript;
 
 void loadMugenDefScript(MugenDefScript* oScript, std::string& tPath);
-void loadMugenDefScript(MugenDefScript* oScript, char* tPath);
+void loadMugenDefScript(MugenDefScript* oScript, const char* tPath);
 void loadMugenDefScriptFromBufferAndFreeBuffer(MugenDefScript* oScript, Buffer tBuffer);
 void unloadMugenDefScript(MugenDefScript tScript);
 
-int isMugenDefStringVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-int isMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
-char* getAllocatedMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+int isMugenDefStringVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+int isMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+char* getAllocatedMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
 char* getAllocatedMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement* tElement);
 char* getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
 
-int isMugenDefVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
+int isMugenDefVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 
-int isMugenDefFloatVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-double getMugenDefFloatVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-int isMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
-double getMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+int isMugenDefFloatVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+double getMugenDefFloatVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+int isMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+double getMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefFloatVariableAsElement(MugenDefScriptGroupElement* tElement);
 double getMugenDefFloatVariableAsElement(MugenDefScriptGroupElement* tElement);
 
 
-int isMugenDefNumberVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-int getMugenDefNumberVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-int isMugenDefNumberVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
-int getMugenDefNumberVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+int isMugenDefNumberVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+int getMugenDefNumberVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+int isMugenDefNumberVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+int getMugenDefNumberVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefNumberVariableAsElement(MugenDefScriptGroupElement* tElement);
 int getMugenDefNumberVariableAsElement(MugenDefScriptGroupElement* tElement);
 
-int isMugenDefVectorVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-Vector3D getMugenDefVectorVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-int isMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
-Vector3D getMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+int isMugenDefVectorVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+Vector3D getMugenDefVectorVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+int isMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+Vector3D getMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 Vector3D getMugenDefVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 
-int isMugenDefVectorIVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-int isMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
-Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
-Vector3DI getMugenDefVectorIVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
+int isMugenDefVectorIVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+int isMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+Vector3DI getMugenDefVectorIVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 
-int isMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+int isMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
-MugenStringVector getMugenDefStringVectorVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-MugenStringVector getMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+MugenStringVector getMugenDefStringVectorVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+MugenStringVector getMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 MugenStringVector getMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement* tElement);
 MugenStringVector copyMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElement);
 
-int isMugenDefGeoRectangleVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-int isMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+int isMugenDefGeoRectangleVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+int isMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement);
-GeoRectangle getMugenDefGeoRectangleVariable(MugenDefScript* tScript, char* tGroupName, char* tVariableName);
-GeoRectangle getMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, char* tVariableName);
+GeoRectangle getMugenDefGeoRectangleVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+GeoRectangle getMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 GeoRectangle getMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement);
 
-void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, char* tGroup, char* tVariable, char* tDefault);
-char* getAllocatedMugenDefStringOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, char* tDefault);
-char* getAllocatedMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, char* tDefault);
+void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, const char* tGroup, const char* tVariable, const char* tDefault);
+char* getAllocatedMugenDefStringOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const char* tDefault);
+char* getAllocatedMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const char* tDefault);
 
-double getMugenDefFloatOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, double tDefault);
-double getMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, double tDefault);
-int getMugenDefIntegerOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, int tDefault);
-int getMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, int tDefault);
-Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, Vector3D tDefault);
-Vector3D getMugenDefVectorOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, Vector3D tDefault);
-Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, Vector3DI tDefault);
-Vector3DI getMugenDefVectorIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, Vector3DI tDefault);
+double getMugenDefFloatOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, double tDefault);
+double getMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, double tDefault);
+int getMugenDefIntegerOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, int tDefault);
+int getMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, int tDefault);
+Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, Vector3D tDefault);
+Vector3D getMugenDefVectorOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, Vector3D tDefault);
+Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, Vector3DI tDefault);
+Vector3DI getMugenDefVectorIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, Vector3DI tDefault);
 
-GeoRectangle getMugenDefGeoRectangleOrDefault(MugenDefScript* s, char* tGroup, char* tVariable, GeoRectangle tDefault);
-GeoRectangle getMugenDefGeoRectangleOrDefaultAsGroup(MugenDefScriptGroup* tGroup, char* tVariable, GeoRectangle tDefault);
+GeoRectangle getMugenDefGeoRectangleOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, GeoRectangle tDefault);
+GeoRectangle getMugenDefGeoRectangleOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, GeoRectangle tDefault);

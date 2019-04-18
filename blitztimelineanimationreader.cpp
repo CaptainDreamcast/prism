@@ -43,7 +43,7 @@ static int isInterpolationGroup(MugenDefScriptGroup* tGroup) {
 	return !strcmp("interpolation", text);
 }
 
-static int isNamedElement(MugenDefScriptGroupElement* tElement, char* tName) {
+static int isNamedElement(MugenDefScriptGroupElement* tElement, const char* tName) {
 	return !strcmp(tName, tElement->mName.data());
 }
 

@@ -92,6 +92,6 @@ MugenAssignment* makeOrMugenAssignment(MugenAssignment* a, MugenAssignment* b);
 
 MugenAssignment*  parseMugenAssignmentFromString(char* tText);
 
-int doMugenAssignmentStringsBeginsWithPattern(char* tPattern, char* tText);
+int doMugenAssignmentStringsBeginsWithPattern(const char* tPattern, const char* tText);
 int fetchMugenAssignmentFromGroupAndReturnWhetherItExists(char* tName, MugenDefScriptGroup* tGroup, MugenAssignment** tOutput);
 void fetchMugenAssignmentFromGroupAndReturnWhetherItExistsDefaultString(char* tName, MugenDefScriptGroup* tGroup, MugenAssignment** tDst, char* tDefault);

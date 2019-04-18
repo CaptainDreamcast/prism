@@ -32,13 +32,13 @@ TextureData loadTexturePKG(const char* tFileDir) {
 
   pkgBuffer = fileToBuffer(tFileDir);
 
-  bufferLength = qlz_size_decompressed(pkgBuffer.mData);
+  bufferLength = qlz_size_decompressed((const char*)pkgBuffer.mData);
   debugInteger(bufferLength);
 
   kmgData = (char*) allocMemory(bufferLength);
 
   // decompress and write result
-  bufferLength = qlz_decompress(pkgBuffer.mData, kmgData, state_decompress);
+  bufferLength = qlz_decompress((const char*)pkgBuffer.mData, kmgData, state_decompress);
   debugInteger(bufferLength);
 
   freeBuffer(pkgBuffer);
@@ -61,7 +61,7 @@ TextureData loadTexturePKG(const char* tFileDir) {
 }
 
 TextureData loadTexture(const char* tFileDir) {
-	char* fileExt = getFileExtension(tFileDir);
+	const char* fileExt = getFileExtension(tFileDir);
 
 	if(!strcmp("pkg", fileExt)) {
 		return loadTexturePKG(tFileDir);

@@ -196,14 +196,14 @@ void mountRomdiskFromBuffer(Buffer b, const char * tMountPath)
 	mountRomdiskWindowsFromBuffer(b, tMountPath);
 }
 
-void mountRomdisk(char* tFilePath, char* tMountPath) {
+void mountRomdisk(const char* tFilePath, const char* tMountPath) {
 	
 	char fullPath[1024];
 	expandPath(fullPath, tFilePath);
 	mountRomdiskWindows(fullPath, tMountPath);
 }
 
-void unmountRomdisk(char* tMountPath) {
+void unmountRomdisk(const char* tMountPath) {
 	unmountRomdiskWindows(tMountPath);
 }
 

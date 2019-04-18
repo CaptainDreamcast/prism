@@ -106,10 +106,12 @@ static void parseSingleMapElement(void* tCaller, void* tData) {
 	char key[100];
 	if (caller->mElecbyteFont->mType == MUGEN_ELECBYTE_FONT_TYPE_VARIABLE) {
 		int items = sscanf(e->mString, "%s %d %d", key, &entry.mStartX, &entry.mWidth);
+		(void)items;
 		assert(items == 3);
 	}
 	else if (caller->mElecbyteFont->mType == MUGEN_ELECBYTE_FONT_TYPE_FIXED) {
 		int items = sscanf(e->mString, "%s", key);
+		(void)items;
 		assert(items == 1);
 		entry.mStartX = caller->i * caller->mFont->mSize.x;
 		entry.mWidth = caller->mFont->mSize.x;
@@ -293,7 +295,7 @@ static void addMugenFont2(int tKey, char* tPath) {
 	resetMugenFontDirectory();
 }
 
-void addMugenFont(int tKey, char* tPath) {
+void addMugenFont(int tKey, const char* tPath) {
 	char path[1024];
 
     // TODO: fix when assets is dropped from Dolmexica
@@ -848,7 +850,7 @@ static double getElecbyteTextSize(MugenText* e) {
 	double sizeX = 0;
 	for (i = 0; i < textLength; i++) {
 		if (elecbyteFont->mMap[(int)e->mText[i]].mExists) {
-			MugenElecbyteFontMapEntry& mapEntry = elecbyteFont->mMap[e->mText[i]];
+			MugenElecbyteFontMapEntry& mapEntry = elecbyteFont->mMap[(int)e->mText[i]];
 			sizeX += mapEntry.mWidth*factor;
 			sizeX += font->mSpacing.x*factor;
 		}

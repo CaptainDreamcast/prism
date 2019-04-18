@@ -125,11 +125,11 @@ static void insertAnimationStepIntoAnimations(MugenAnimations* tAnimations, int 
 	insertAnimationStepIntoAnimation(e, tElement);
 }
 
-static void handleNewAnimationStepBlendFlags(MugenAnimationStep* e, char* blendFlags) {
+static void handleNewAnimationStepBlendFlags(MugenAnimationStep* e, const char* blendFlags) {
 	e->mIsAddition = blendFlags[0] == 'A';
 	e->mIsSubtraction = blendFlags[0] == 'S';
 	if (e->mIsAddition || e->mIsSubtraction) {
-		char* sourcePos = strchr(blendFlags + 1, 'S');
+		const char* sourcePos = strchr(blendFlags + 1, 'S');
 		if (sourcePos == NULL) {
 			if (blendFlags[1] == '1') {
 				e->mSrcBlendValue = 256;
@@ -141,7 +141,7 @@ static void handleNewAnimationStepBlendFlags(MugenAnimationStep* e, char* blendF
 			}
 		}
 		else {
-			char* dstPos = strchr(blendFlags + 1, 'D');
+			const char* dstPos = strchr(blendFlags + 1, 'D');
 			assert(dstPos != NULL);
 
 			char text1[20];
@@ -206,7 +206,7 @@ static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, M
 
 	if (vectorElement->mVector.mSize >= 6) {
 		e->mIsFlippingHorizontally = strchr(vectorElement->mVector.mElement[5], 'H') != NULL;
-		e->mIsFlippingVertically = strchr(vectorElement->mVector.mElement[5], 'V') != NULL;
+		e->mIsFlippingVertically = strchr(vectorElement->mVector.mElement[5], 'V') != NULL; // TODO: handle lowercase
 	}
 	else {
 		e->mIsFlippingHorizontally = 0;
@@ -367,6 +367,7 @@ static void handleAngleInterpolation(MugenAnimations* tAnimation, int tGroup) {
 static void handleInterpolation(MugenDefScriptGroupElement* e, MugenAnimations* tAnimation, int tGroup) {
 	char text1[100], text2[100];
 	int items = sscanf(e->mName.data(), "%s %s", text1, text2);
+	(void)items;
 	assert(items == 2);
 	assert(!strcmp("Interpolate", text1));
 

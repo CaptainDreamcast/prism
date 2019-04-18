@@ -81,13 +81,13 @@ const char* getFileSystem();
 const char* getWorkingDirectory();
 
 void mountRomdiskFromBuffer(Buffer b, const char* tMountPath);
-void mountRomdisk(char* tFilePath, char* tMountPath);
-void unmountRomdisk(char* tMountPath);
+void mountRomdisk(const char* tFilePath, const char* tMountPath);
+void unmountRomdisk(const char* tMountPath);
 
-char* getPureFileName(char* path);
+const char* getPureFileName(const char* path);
 const char* getFileExtension(const char* tPath);
 char* getFileExtension(char* tPath);
-void getPathWithoutFileExtension(char* tDest, char* tPath);
+void getPathWithoutFileExtension(char* tDest, const char* tPath);
 void  getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i);
 void getFullPath(char* tDest, const char* tPath);
 void getPathToFile(char* tDest, const char* tPath);

@@ -60,7 +60,7 @@ int startThread(void(tFunc)(void *), void* tCaller)
 
 Semaphore createSemaphore(int tInitialAccessesAllowed)
 {
-	semaphore_t* ret = malloc(sizeof(semaphore_t)); // TODO
+	semaphore_t* ret = (semaphore_t*)malloc(sizeof(semaphore_t)); // TODO
 	ret->count = 0; // TODO: propose KOS fix
 	sem_init(ret, tInitialAccessesAllowed);
 	return ret;
@@ -68,19 +68,19 @@ Semaphore createSemaphore(int tInitialAccessesAllowed)
 
 void destroySemaphore(Semaphore tSemaphore)
 {
-	semaphore_t* sem = tSemaphore; 
+	semaphore_t* sem = (semaphore_t*)tSemaphore; 
 	sem_destroy(sem);
 	free(sem);
 }
 
 void lockSemaphore(Semaphore tSemaphore)
 {
-	semaphore_t* sem = tSemaphore; 
+	semaphore_t* sem = (semaphore_t*)tSemaphore; 
 	sem_wait(sem);
 }
 
 void releaseSemaphore(Semaphore tSemaphore)
 {
-	semaphore_t* sem = tSemaphore; 
+	semaphore_t* sem = (semaphore_t*)tSemaphore; 
 	sem_signal(sem);
 }

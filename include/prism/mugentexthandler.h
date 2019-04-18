@@ -11,7 +11,7 @@ typedef enum {
 	MUGEN_TEXT_ALIGNMENT_RIGHT,
 } MugenTextAlignment;
 
-void addMugenFont(int tKey, char* tPath);
+void addMugenFont(int tKey, const char* tPath);
 void loadMugenTextHandler();
 void loadMugenSystemFonts();
 void loadMugenFightFonts();

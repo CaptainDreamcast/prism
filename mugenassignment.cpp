@@ -106,7 +106,7 @@ MugenAssignment * makeOrMugenAssignment(MugenAssignment * a, MugenAssignment * b
 	return makeMugenTwoElementAssignment(MUGEN_ASSIGNMENT_TYPE_OR, a, b);
 }
 
-static int isOnHighestLevelWithStartPosition(char* tText, char* tPattern, int* tOptionalPosition, int tStart) {
+static int isOnHighestLevelWithStartPosition(char* tText, const char* tPattern, int* tOptionalPosition, int tStart) {
 	int n = strlen(tText);
 	int m = strlen(tPattern);
 
@@ -141,7 +141,7 @@ static int isOnHighestLevelWithStartPosition(char* tText, char* tPattern, int* t
 	return 0;
 }
 
-static int isOnHighestLevel(char* tText, char* tPattern, int* tOptionalPosition) {
+static int isOnHighestLevel(char* tText, const char* tPattern, int* tOptionalPosition) {
 	return isOnHighestLevelWithStartPosition(tText, tPattern, tOptionalPosition, 0);
 }
 
@@ -152,13 +152,12 @@ static MugenAssignment* parseOneElementMugenAssignmentFromString(char* tText, Mu
 	return makeMugenOneElementAssignment(tType, a);
 }
 
-static MugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPosition(char* tText, MugenAssignmentType tType, char* tPattern, int tPosition) {
-	int n = strlen(tText);
+static MugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPosition(char* tText, MugenAssignmentType tType, const char* tPattern, int tPosition) {
 	int m = strlen(tPattern);
 
 	assert(tPosition != -1);
 	assert(tPosition > 0);
-	assert(tPosition < n - m);
+	assert(tPosition < int(strlen(tText)) - m);
 
 	int start = tPosition;
 	int end = tPosition + m;
@@ -177,7 +176,7 @@ static MugenAssignment* parseTwoElementMugenAssignmentFromStringWithFixedPositio
 	return makeMugenTwoElementAssignment(tType, a, b);
 }
 
-static MugenAssignment* parseTwoElementMugenAssignmentFromString(char* tText, MugenAssignmentType tType, char* tPattern) {
+static MugenAssignment* parseTwoElementMugenAssignmentFromString(char* tText, MugenAssignmentType tType, const char* tPattern) {
 	int pos = -1;
 	isOnHighestLevel(tText, tPattern, &pos);
 	return parseTwoElementMugenAssignmentFromStringWithFixedPosition(tText, tType, tPattern, pos);
@@ -529,7 +528,7 @@ static MugenAssignment* parseStringConstantFromString(char* tText) {
 	return makeMugenAssignment(MUGEN_ASSIGNMENT_TYPE_STRING, s);
 }
 
-int doMugenAssignmentStringsBeginsWithPattern(char* tPattern, char* tText) {
+int doMugenAssignmentStringsBeginsWithPattern(const char* tPattern, const char* tText) {
 	int n = strlen(tPattern);
 	int m = strlen(tText);
 	if (m < n) return 0;

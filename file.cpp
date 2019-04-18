@@ -8,9 +8,9 @@
 
 using namespace std;
 
-char* getPureFileName(char* path) {
+const char* getPureFileName(const char* path) {
 	debugLog("Getting pure filename.");
-	char* pos = strrchr(path, '/');
+	const char* pos = strrchr(path, '/');
 
 	if (pos == NULL) return path;
 	else return pos + 1;
@@ -41,7 +41,7 @@ char* getFileExtension(char* tPath) {
 	return pos + 1;
 }
 
-void getPathWithoutFileExtension(char* tDest, char* tPath) {
+void getPathWithoutFileExtension(char* tDest, const char* tPath) {
 	strcpy(tDest, tPath);
 	if (!strcmp("", tPath)) return;
 

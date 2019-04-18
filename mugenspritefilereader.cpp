@@ -648,7 +648,9 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(Buffer tRawPNGBuffer, int tWidth,
 		&bitDepth,
 		&colorType,
 		NULL, NULL, NULL);
+	(void)tWidth;
 	assert((int)width == tWidth);
+	(void)tHeight;
 	assert((int)height == tHeight);
 
 	if (retval != 1) {
@@ -1289,6 +1291,7 @@ static void loadSpritesPreloaded(MugenSpriteFile* tDst) {
 
 
 static MugenSpriteFile loadMugenSpriteFilePreloaded(int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile) {
+	(void)tPreferredPalette; // TODO: implement preferred palette
 	MugenSpriteFile ret = makeEmptySpriteFile();
 
 	if (tHasPaletteFile) {
