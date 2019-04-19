@@ -53,7 +53,7 @@ typedef struct {
 	int mAttackCollisionList;
 	void* mAttackCollisionData;
 
-	List mActiveHitboxes;
+	list<MugenAnimationHandlerHitboxElement> mActiveHitboxes;
 
 	Position mPlayerPositionReference;
 
@@ -167,7 +167,6 @@ static void addSingleHitbox(void* tCaller, void* tData) {
 	HitboxAdditionCaller* caller = (HitboxAdditionCaller*)tCaller;
 	CollisionRect* rect = (CollisionRect*)tData;
 
-	MugenAnimationHandlerHitboxElement* e = (MugenAnimationHandlerHitboxElement*)allocMemory(sizeof(MugenAnimationHandlerHitboxElement));
 
 	CollisionRect scaledRectangle = *rect;
 	scaledRectangle = scaleGeoRectangleByFactor(scaledRectangle, caller->mElement->mDrawScale);
@@ -183,12 +182,15 @@ static void addSingleHitbox(void* tCaller, void* tData) {
 		scaledRectangle.mBottomRight.y = -yBuffer;
 	}
 
-	e->mCollider = makeColliderFromRect(scaledRectangle);
+	caller->mElement->mActiveHitboxes.push_back(MugenAnimationHandlerHitboxElement());
+	MugenAnimationHandlerHitboxElement& e = caller->mElement->mActiveHitboxes.back();
 
-	e->mList = caller->mList;
-	e->mID = addColliderToCollisionHandler(caller->mList, &caller->mElement->mPlayerPositionReference, e->mCollider, caller->mCB, caller->mElement, caller->mCollisionData);
+	e.mCollider = makeColliderFromRect(scaledRectangle);
 
-	list_push_back_owned(&caller->mElement->mActiveHitboxes, e);
+	e.mList = caller->mList;
+	e.mID = addColliderToCollisionHandler(caller->mList, &caller->mElement->mPlayerPositionReference, e.mCollider, caller->mCB, caller->mElement, caller->mCollisionData);
+
+	
 }
 
 static void addNewSingleHitboxType(MugenAnimationHandlerElement* e, List* tHitboxes, int tList, CollisionCallback tCB, void* tCollisionData) {
@@ -212,9 +214,9 @@ static void addNewHitboxes(MugenAnimationHandlerElement* e, MugenAnimationStep* 
 	}
 }
 
-static int removeSingleHitbox(void* tCaller, void* tData) {
+static int removeSingleHitbox(void* tCaller, MugenAnimationHandlerHitboxElement& tData) {
 	(void)tCaller;
-	MugenAnimationHandlerHitboxElement* hitbox = (MugenAnimationHandlerHitboxElement*)tData;
+	MugenAnimationHandlerHitboxElement* hitbox = &tData;
 
 	removeFromCollisionHandler(hitbox->mList, hitbox->mID);
 	destroyCollider(&hitbox->mCollider);
@@ -222,7 +224,7 @@ static int removeSingleHitbox(void* tCaller, void* tData) {
 }
 
 static void removeOldHitboxes(MugenAnimationHandlerElement* e) {
-	list_remove_predicate(&e->mActiveHitboxes, removeSingleHitbox, NULL);
+	stl_list_remove_predicate(e->mActiveHitboxes, removeSingleHitbox);
 }
 
 static void updateHitboxes(MugenAnimationHandlerElement* e) {
@@ -244,7 +246,7 @@ static MugenDuration getTimeWhenStepStarts(MugenAnimationHandlerElement* e, int 
 
 static void unloadMugenAnimation(MugenAnimationHandlerElement* e) {
 	removeOldHitboxes(e);
-	delete_list(&e->mActiveHitboxes);
+	e->mActiveHitboxes.clear();
 }
 
 static void updateStepSpriteAndSpriteValidity(MugenAnimationHandlerElement* e) {
@@ -318,7 +320,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 
 	e.mHasPassiveHitboxes = 0;
 	e.mHasAttackHitboxes = 0;
-	e.mActiveHitboxes = new_list();
+	e.mActiveHitboxes.clear();
 
 	e.mPlayerPositionReference = tPosition;
 	e.mDrawScale = 1;
@@ -986,20 +988,19 @@ typedef struct {
 
 } DebugCollisionHitboxDrawCaller;
 
-static void drawSingleAnimationSingleDebugCollisionHitbox(void* tCaller, void* tData) {
-	DebugCollisionHitboxDrawCaller* caller = (DebugCollisionHitboxDrawCaller*)tCaller;
-	MugenAnimationHandlerHitboxElement* element = (MugenAnimationHandlerHitboxElement*)tData;
+static void drawSingleAnimationSingleDebugCollisionHitbox(DebugCollisionHitboxDrawCaller* tCaller, MugenAnimationHandlerHitboxElement& tData) {
+	MugenAnimationHandlerHitboxElement* element = &tData;
 
 	Position cameraOffset;
-	if (caller->e->mHasCameraPositionReference) {
-		cameraOffset = *caller->e->mCameraPositionReference;
+	if (tCaller->e->mHasCameraPositionReference) {
+		cameraOffset = *tCaller->e->mCameraPositionReference;
 	}
 	else {
 		cameraOffset = makePosition(0, 0, 0);
 	}
 
 	Vector3D color;
-	if (element->mList == caller->e->mPassiveCollisionList) {
+	if (element->mList == tCaller->e->mPassiveCollisionList) {
 		color = makePosition(0, 0, 1);
 	}
 	else {
@@ -1009,17 +1010,14 @@ static void drawSingleAnimationSingleDebugCollisionHitbox(void* tCaller, void* t
 	double alpha = 0.3;
 
 
-	drawColliderSolid(element->mCollider, caller->e->mPlayerPositionReference, cameraOffset, color, alpha);
+	drawColliderSolid(element->mCollider, tCaller->e->mPlayerPositionReference, cameraOffset, color, alpha);
 }
 
 static void drawSingleAnimationDebugCollisionHitboxes(MugenAnimationHandlerElement* e) {
 
-
-
-
 	DebugCollisionHitboxDrawCaller caller;
 	caller.e = e;
-	list_map(&e->mActiveHitboxes, drawSingleAnimationSingleDebugCollisionHitbox, &caller);
+	stl_list_map(e->mActiveHitboxes, drawSingleAnimationSingleDebugCollisionHitbox, &caller);
 }
 
 static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement& tData) {
