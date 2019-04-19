@@ -304,8 +304,10 @@ GeoRectangle scaleGeoRectangleByFactor(GeoRectangle tRect, double tFac)
 
 GeoRectangle scaleGeoRectangleByFactor2D(GeoRectangle tRect, Vector3D tFac)
 {
-	tRect.mTopLeft = vecScale(tRect.mTopLeft, tFac.x);
-	tRect.mBottomRight = vecScale(tRect.mBottomRight, tFac.y);
+	tRect.mTopLeft.x *= tFac.x;
+	tRect.mTopLeft.y *= tFac.y;
+	tRect.mBottomRight.x *= tFac.x;
+	tRect.mBottomRight.y *= tFac.y;
 	return tRect;
 }
 
