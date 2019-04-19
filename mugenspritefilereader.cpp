@@ -450,8 +450,8 @@ static SubImageBuffer* getSingleAllocatedBufferFromSource(Buffer b, int x, int y
 }
 
 static int getMaximumSizeFit(int tVal) {
-	int mini = 32;
-	int maxi = 512;
+	int mini = 64;
+	int maxi = 64;
 
 	if (tVal <= mini) return mini;
 

@@ -33,6 +33,7 @@ static struct {
 	uint64_t mPreviousFrameTime;
 	uint64_t mCurrentFrameTime;
 
+    Vector3DI mInverted;
 	
 } gData;
 
@@ -141,27 +142,33 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
   vert[0].flags = PVR_CMD_VERTEX;
   vert[0].u = left;
   vert[0].v = up;
-  pvr_prim(&vert[0], sizeof(pvr_vertex_t));
 
   vert[1].argb = vert[0].argb;
   vert[1].oargb = 0;
   vert[1].flags = PVR_CMD_VERTEX;
   vert[1].u = right;
   vert[1].v = up;
-  pvr_prim(&vert[1], sizeof(pvr_vertex_t));
 
   vert[2].argb = vert[0].argb;
   vert[2].oargb = 0;
   vert[2].flags = PVR_CMD_VERTEX;
   vert[2].u = left;
   vert[2].v = down;
-  pvr_prim(&vert[2], sizeof(pvr_vertex_t));
 
  vert[3].argb = vert[0].argb;
   vert[3].oargb = 0;
   vert[3].flags = PVR_CMD_VERTEX_EOL;
   vert[3].u = right;
   vert[3].v = down;
+
+  pvr_prim(&vert[0], sizeof(pvr_vertex_t));
+  if(gData.mInverted.x ^ gData.mInverted.y) {
+      pvr_prim(&vert[2], sizeof(pvr_vertex_t));
+      pvr_prim(&vert[1], sizeof(pvr_vertex_t));
+  } else {
+      pvr_prim(&vert[1], sizeof(pvr_vertex_t));
+      pvr_prim(&vert[2], sizeof(pvr_vertex_t));
+  } 
   pvr_prim(&vert[3], sizeof(pvr_vertex_t));
 
   //sem_signal(&gPVRAccessSemaphore);
@@ -187,7 +194,6 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
 
   pvr_vertex_t vert[4];
   
-
   vert[0].x = tPos.x;
   vert[0].y = tPos.y;
   vert[0].z = tPos.z;
@@ -212,7 +218,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
   vert[3].z = tPos.z;
   applyDrawingMatrix(&vert[3]);
   forceToInteger(&vert[3]);
-  
+
   double minX = min(vert[0].x, min(vert[1].x, min(vert[2].x, vert[3].x)));
   double maxX = max(vert[0].x, max(vert[1].x, max(vert[2].x, vert[3].x)));
   double minY = min(vert[0].y, min(vert[1].y, min(vert[2].y, vert[3].y)));
@@ -363,12 +369,16 @@ void scaleDrawing(double tFactor, Position tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor, tFactor, 1);
 	mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
+    gData.mInverted.x ^= tFactor < 0;
+    gData.mInverted.y ^= tFactor < 0;
 }
 
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor.x, tFactor.y, tFactor.z);
 	mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
+    gData.mInverted.x ^= tFactor.x < 0;
+    gData.mInverted.y ^= tFactor.y < 0;
 }
 
 void setDrawingBaseColor(Color tColor){
@@ -402,6 +412,7 @@ void setDrawingParametersToIdentity(){
 	setDrawingBaseColor(COLOR_WHITE);
 	setDrawingTransparency(1.0);
 	gData.mBlendType = BLEND_TYPE_NORMAL;
+    gData.mInverted.x = gData.mInverted.y = 0;
 }
 
 static void pushMatrixInternal() {
