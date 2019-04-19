@@ -448,18 +448,18 @@ typedef struct {
 } MugenText;
 
 static struct {
-	IntMap mHandledTexts;
+	map<int, MugenText> mHandledTexts;
 
-} gHandler;
+} gMugenTextHandler;
 
 static void loadMugenTextHandlerActor(void* tData) {
 	(void) tData;
-	gHandler.mHandledTexts = new_int_map();
+	gMugenTextHandler.mHandledTexts.clear();
 }
 
 static void unloadMugenTextHandlerActor(void* tData) {
 	(void)tData;
-	delete_int_map(&gHandler.mHandledTexts);
+	gMugenTextHandler.mHandledTexts.clear();
 }
 
 static void updateSingleTextBuildup(MugenText* e) {
@@ -476,16 +476,16 @@ static void updateSingleTextBuildup(MugenText* e) {
 	}
 }
 
-static void updateSingleText(void* tCaller, void* tData) {
+static void updateSingleText(void* tCaller, MugenText& tData) {
 	(void)tCaller;
 	(void)tData;
-	MugenText* e = (MugenText*)tData;
+	MugenText* e = &tData;
 	updateSingleTextBuildup(e);
 }
 
 static void updateMugenTextHandler(void* tData) {
 	(void)tData;
-	int_map_map(&gHandler.mHandledTexts, updateSingleText, NULL);
+	stl_int_map_map(gMugenTextHandler.mHandledTexts, updateSingleText);
 }
 
 typedef struct {
@@ -706,10 +706,10 @@ static void drawSingleElecbyteText(MugenText* e) {
 	setDrawingBaseColorAdvanced(1, 1, 1);
 }
 
-static void drawSingleText(void* tCaller, void* tData) {
+static void drawSingleText(void* tCaller, MugenText& tData) {
 	(void)tCaller;
 
-	MugenText* e = (MugenText*)tData;
+	MugenText* e = &tData;
 	if (!e->mIsVisible) return;
 
 	if (e->mFont->mType == MUGEN_FONT_TYPE_BITMAP) {
@@ -730,7 +730,7 @@ static void drawSingleText(void* tCaller, void* tData) {
 
 static void drawMugenTextHandler(void* tData) {
 	(void)tData;
-	int_map_map(&gHandler.mHandledTexts, drawSingleText, NULL);
+	stl_int_map_map(gMugenTextHandler.mHandledTexts, drawSingleText);
 }
 
 ActorBlueprint getMugenTextHandler() {
@@ -752,33 +752,35 @@ void drawMugenText(char* tText, Position tPosition, int tFont) {
 	textData.mBuildupNow = 0;
 
 	textData.mIsVisible = 1;
-	drawSingleText(NULL, &textData);
+	drawSingleText(NULL, textData);
 }
 
 int addMugenText(const char * tText, Position tPosition, int tFont)
 {
-	MugenText* e = (MugenText*)allocMemory(sizeof(MugenText));
-	strcpy(e->mText, tText);
-	strcpy(e->mDisplayText, tText);
+	int id = stl_int_map_push_back(gMugenTextHandler.mHandledTexts, MugenText());
+
+	MugenText& e = gMugenTextHandler.mHandledTexts[id];
+	strcpy(e.mText, tText);
+	strcpy(e.mDisplayText, tText);
 
 	if (stl_map_contains(gMugenFontData.mFonts, tFont)) {
-		e->mFont = &gMugenFontData.mFonts[tFont];
+		e.mFont = &gMugenFontData.mFonts[tFont];
 	}
 	else {
-		e->mFont = &gMugenFontData.mFonts[1];
+		e.mFont = &gMugenFontData.mFonts[1];
 	}
-	e->mPosition = vecSub(tPosition, makePosition(0, e->mFont->mSize.y, 0));
-	e->mR = e->mG = e->mB = 1;
-	e->mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
-	e->mRectangle = makeGeoRectangle(-INF / 2, -INF / 2, INF, INF);
-	e->mTextBoxWidth = INF;
+	e.mPosition = vecSub(tPosition, makePosition(0, e.mFont->mSize.y, 0));
+	e.mR = e.mG = e.mB = 1;
+	e.mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
+	e.mRectangle = makeGeoRectangle(-INF / 2, -INF / 2, INF, INF);
+	e.mTextBoxWidth = INF;
 
-	e->mBuildupDurationPerLetter = INF;
-	e->mBuildupNow = 0;
+	e.mBuildupDurationPerLetter = INF;
+	e.mBuildupNow = 0;
 
-	e->mIsVisible = 1;
+	e.mIsVisible = 1;
 
-	return int_map_push_back_owned(&gHandler.mHandledTexts, e);
+	return id;
 }
 
 int addMugenTextMugenStyle(const char * tText, Position tPosition, Vector3DI tFont)
@@ -792,12 +794,12 @@ int addMugenTextMugenStyle(const char * tText, Position tPosition, Vector3DI tFo
 
 void removeMugenText(int tID)
 {
-	int_map_remove(&gHandler.mHandledTexts, tID);
+	gMugenTextHandler.mHandledTexts.erase(tID);
 }
 
 void setMugenTextFont(int tID, int tFont)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 
 	e->mPosition = vecAdd2D(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
 	if (stl_map_contains(gMugenFontData.mFonts, tFont)) {
@@ -905,20 +907,20 @@ static double getMugenTextAlignmentOffsetX(MugenText* e, MugenTextAlignment tAli
 
 void setMugenTextAlignment(int tID, MugenTextAlignment tAlignment)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mPosition.x += getMugenTextAlignmentOffsetX(e, tAlignment);
 	e->mAlignment = tAlignment;
 }
 
 void setMugenTextColor(int tID, Color tColor)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	getRGBFromColor(tColor, &e->mR,&e->mG, &e->mB);
 }
 
 void setMugenTextColorRGB(int tID, double tR, double tG, double tB)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mR = tR;
 	e->mG = tG;
 	e->mB = tB;
@@ -926,14 +928,14 @@ void setMugenTextColorRGB(int tID, double tR, double tG, double tB)
 
 void setMugenTextRectangle(int tID, GeoRectangle tRectangle)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mRectangle = tRectangle;
 		
 }
 
 void setMugenTextPosition(int tID, Position tPosition)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mPosition = tPosition;
 	e->mPosition = vecSub(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
 	MugenTextAlignment alignment = e->mAlignment;
@@ -943,13 +945,13 @@ void setMugenTextPosition(int tID, Position tPosition)
 
 void setMugenTextTextBoxWidth(int tID, double tWidth)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mTextBoxWidth = tWidth; // TODO: implement for all types
 }
 
 void setMugenTextBuildup(int tID, Duration mBuildUpDurationPerLetter)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mDisplayText[0] = '\0';
 	e->mBuildupNow = 0;
 	e->mBuildupDurationPerLetter = mBuildUpDurationPerLetter;
@@ -957,31 +959,31 @@ void setMugenTextBuildup(int tID, Duration mBuildUpDurationPerLetter)
 
 void setMugenTextBuiltUp(int tID)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	strcpy(e->mDisplayText, e->mText);
 }
 
 int isMugenTextBuiltUp(int tID)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	return !strcmp(e->mText, e->mDisplayText);
 }
 
 void setMugenTextVisibility(int tID, int tIsVisible)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mIsVisible = tIsVisible;
 }
 
 double getMugenTextSizeX(int tID)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	return getMugenTextSizeXInternal(e);
 }
 
 void changeMugenText(int tID, const char * tText)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	MugenTextAlignment alignment = e->mAlignment;
 	setMugenTextAlignment(tID, MUGEN_TEXT_ALIGNMENT_LEFT);
 	strcpy(e->mText, tText);
@@ -990,7 +992,7 @@ void changeMugenText(int tID, const char * tText)
 }
 
 Position getMugenTextPosition(int tID) {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	
 	MugenTextAlignment alignment = e->mAlignment;
 	setMugenTextAlignment(tID, MUGEN_TEXT_ALIGNMENT_LEFT);
@@ -1002,12 +1004,12 @@ Position getMugenTextPosition(int tID) {
 
 Position * getMugenTextPositionReference(int tID)
 {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tID);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	return &e->mPosition;
 }
 
 Vector3D getMugenTextColor(int tIndex) {
-	MugenText* e = (MugenText*)int_map_get(&gHandler.mHandledTexts, tIndex);
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tIndex];
 	return makePosition(e->mR, e->mG, e->mB);
 }
 
