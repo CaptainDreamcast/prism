@@ -1,6 +1,9 @@
 #pragma once
 
+#include <string>
+
 void turnStringLowercase(char* tString);
+void turnStringLowercase(std::string& tString);
 void copyStringLowercase(char* tDst, const char* tSrc);
 char* copyToAllocatedString(char* tSrc); // TODO: remove duplicate
 

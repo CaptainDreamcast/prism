@@ -337,11 +337,11 @@ void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPos
 	basePosition = vecAdd(basePosition, tOffset);
 
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider.mData;
+		CollisionRect* rect = (CollisionRect*)tCollider;
 		drawCollisionRect(*rect, basePosition, tScreenPositionOffset, tColor, tAlpha);
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider.mData;
+		CollisionCirc* circ = (CollisionCirc*)tCollider;
 		drawCollisionCirc(*circ, basePosition, tScreenPositionOffset, tColor, tAlpha);
 	}
 	else {

@@ -209,22 +209,22 @@ static void adjustCircByPosition(CollisionCirc* tCirc, Position tPos) {
 
 int checkCollisionCollider(Collider tCollider1, Collider tCollider2) {
 	if(tCollider1.mType == COLLISION_RECT && tCollider2.mType == COLLISION_RECT) {
-		CollisionRect r1 = *((CollisionRect*)tCollider1.mData);
-		CollisionRect r2 = *((CollisionRect*)tCollider2.mData);
+		CollisionRect r1 = *((CollisionRect*)tCollider1);
+		CollisionRect r2 = *((CollisionRect*)tCollider2);
 		adjustRectByPosition(&r1, *tCollider1.mBasePosition);
 		adjustRectByPosition(&r2, *tCollider2.mBasePosition);
 		return checkCollision(r1, r2);
 	} else if(tCollider1.mType == COLLISION_CIRC && tCollider2.mType == COLLISION_RECT) {
-		CollisionCirc c1 = *((CollisionCirc*)tCollider1.mData);
-		CollisionRect r2 = *((CollisionRect*)tCollider2.mData);
+		CollisionCirc c1 = *((CollisionCirc*)tCollider1);
+		CollisionRect r2 = *((CollisionRect*)tCollider2);
 		adjustCircByPosition(&c1, *tCollider1.mBasePosition);
 		adjustRectByPosition(&r2, *tCollider2.mBasePosition);
 		return checkCollisionCircRect(c1, r2);
 	} else if(tCollider1.mType == COLLISION_RECT && tCollider2.mType == COLLISION_CIRC) {
 		return checkCollisionCollider(tCollider2, tCollider1);
 	}  else if(tCollider1.mType == COLLISION_CIRC && tCollider2.mType == COLLISION_CIRC) {
-		CollisionCirc c1 = *((CollisionCirc*)tCollider1.mData);
-		CollisionCirc c2 = *((CollisionCirc*)tCollider2.mData);
+		CollisionCirc c1 = *((CollisionCirc*)tCollider1);
+		CollisionCirc c2 = *((CollisionCirc*)tCollider2);
 		adjustCircByPosition(&c1, *tCollider1.mBasePosition);
 		adjustCircByPosition(&c2, *tCollider2.mBasePosition);
 		return checkCollisionCirc(c1, c2);
@@ -238,21 +238,20 @@ int checkCollisionCollider(Collider tCollider1, Collider tCollider2) {
 
 }
 
-static Collider makeCollider_internal(int tType, void* tData, int tDataSize) {
-	Collider ret;
-	ret.mType = (CollisionType)tType;
-	ret.mData = allocMemory(tDataSize);
-	memcpy(ret.mData, tData, tDataSize);
-	ret.mBasePosition = NULL;
-	return ret;
-}
-
 Collider makeColliderFromRect(CollisionRect tRect) {
-	return makeCollider_internal(COLLISION_RECT, &tRect, sizeof(CollisionRect));
+	Collider c;
+	c.mType = COLLISION_RECT;
+	c.mBasePosition = NULL;
+	c.mImpl.mRect = tRect;
+	return c;
 }
 
 Collider makeColliderFromCirc(CollisionCirc tCirc) {
-	return makeCollider_internal(COLLISION_CIRC, &tCirc, sizeof(CollisionCirc));
+	Collider c;
+	c.mType = COLLISION_CIRC;
+	c.mBasePosition = NULL;
+	c.mImpl.mCirc = tCirc;
+	return c;
 }
 
 void setColliderBasePosition(Collider* tCollider, Position* tBasePosition) {
@@ -260,18 +259,18 @@ void setColliderBasePosition(Collider* tCollider, Position* tBasePosition) {
 }
 
 void destroyCollider(Collider* tCollider) {
-	freeMemory(tCollider->mData);
+	(void)tCollider;
 }
 
 double getColliderUp(Collider tCollider)
 {
 	Position pos = *tCollider.mBasePosition;
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider.mData;
+		CollisionRect* rect = (CollisionRect*)tCollider;
 		pos = vecAdd(pos, rect->mTopLeft);
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider.mData;
+		CollisionCirc* circ = (CollisionCirc*)tCollider;
 		pos = vecAdd(pos, circ->mCenter);
 		pos.y -= circ->mRadius;
 	}
@@ -287,11 +286,11 @@ double getColliderDown(Collider tCollider)
 {
 	Position pos = *tCollider.mBasePosition;
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider.mData;
+		CollisionRect* rect = (CollisionRect*)tCollider;
 		pos = vecAdd(pos, rect->mBottomRight);
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider.mData;
+		CollisionCirc* circ = (CollisionCirc*)tCollider;
 		pos = vecAdd(pos, circ->mCenter);
 		pos.y += circ->mRadius;
 	}
@@ -307,11 +306,11 @@ double getColliderRight(Collider tCollider)
 {
 	Position pos = *tCollider.mBasePosition;
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider.mData;
+		CollisionRect* rect = (CollisionRect*)tCollider;
 		pos = vecAdd(pos, rect->mBottomRight);
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider.mData;
+		CollisionCirc* circ = (CollisionCirc*)tCollider;
 		pos = vecAdd(pos, circ->mCenter);
 		pos.x += circ->mRadius;
 	}
@@ -327,11 +326,11 @@ double getColliderLeft(Collider tCollider)
 {
 	Position pos = *tCollider.mBasePosition;
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider.mData;
+		CollisionRect* rect = (CollisionRect*)tCollider;
 		pos = vecAdd(pos, rect->mTopLeft);
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider.mData;
+		CollisionCirc* circ = (CollisionCirc*)tCollider;
 		pos = vecAdd(pos, circ->mCenter);
 		pos.x -= circ->mRadius;
 	}

@@ -24,6 +24,11 @@ void turnStringLowercase(char* tString) {
 	}
 }
 
+void turnStringLowercase(string& tString)
+{
+	transform(tString.begin(), tString.end(), tString.begin(), ::tolower);
+}
+
 void copyStringLowercase(char* tDst, const char* tSrc) {
 	int n = strlen(tSrc);
 	int i;

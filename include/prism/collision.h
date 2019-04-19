@@ -25,8 +25,21 @@ typedef struct {
 
 typedef struct {
 	CollisionType mType;
-	void* mData; 
 	Position* mBasePosition;
+
+	operator CollisionCirc*() {
+		return &mImpl.mCirc;
+	}
+
+	operator CollisionRect*() {
+		return &mImpl.mRect;
+	}
+
+	union Impl{
+		CollisionCirc mCirc;
+		CollisionRect mRect;
+		Impl() {}
+	} mImpl;
 } Collider;
 
 void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVel1, Collider tCollider1, Collider tCollider2);

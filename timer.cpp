@@ -3,6 +3,10 @@
 #include "prism/memoryhandler.h"
 #include "prism/datastructures.h"
 
+#include "prism/stlutil.h"
+
+using namespace std;
+
 typedef struct TimerElement_internal{
 	Duration mNow;
 	Duration mDuration;
@@ -12,31 +16,31 @@ typedef struct TimerElement_internal{
 } TimerElement;
 
 static struct {
-	List mList;
-} gData;
+	 map<int, TimerElement> mList;
+} gTimerData;
 
 int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller){
-	TimerElement* e = (TimerElement*)allocMemory(sizeof(TimerElement));
-	e->mNow = 0;
-	e->mDuration = tDuration;
-	e->mCB = tCB;
-	e->mCaller = tCaller;
+	TimerElement e;
+	e.mNow = 0;
+	e.mDuration = tDuration;
+	e.mCB = tCB;
+	e.mCaller = tCaller;
 
-	return list_push_front_owned(&gData.mList, (void*)e);
+	return stl_int_map_push_back(gTimerData.mList, e);
 }
 
 void removeTimer(int tID)
 {
-	list_remove(&gData.mList, tID);
+	gTimerData.mList.erase(tID);
 }
 
 void setupTimer(){
-	gData.mList = new_list();
+	gTimerData.mList.clear();
 }
 
-static int updateCB(void* tCaller, void* tData) {
+static int updateCB(void* tCaller, TimerElement& tData) {
 	(void) tCaller;
-	TimerElement* cur = (TimerElement*)tData;
+	TimerElement* cur = &tData;
 	int isOver = handleDurationAndCheckIfOver(&cur->mNow, cur->mDuration);
 
 	if(isOver) {
@@ -48,11 +52,11 @@ static int updateCB(void* tCaller, void* tData) {
 }
 
 void updateTimer(){
-	list_remove_predicate(&gData.mList, updateCB, NULL);
+	stl_int_map_remove_predicate(gTimerData.mList, updateCB);
 }
 
 void clearTimer(){
-	list_empty(&gData.mList);
+	gTimerData.mList.clear();
 }
 
 void shutdownTimer(){

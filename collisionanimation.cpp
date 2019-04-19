@@ -96,7 +96,7 @@ static void invertPosition(HandledCollisionAnimation* tData) {
 	Collider col = getCollisionAnimationCollider(&tData->mAnimation);
 	
 	if(col.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)col.mData;
+		CollisionRect* rect = (CollisionRect*)col;
 		invertPositionRect(tData, *rect);
 	} else {
 		logError("Unsupported collision type");
