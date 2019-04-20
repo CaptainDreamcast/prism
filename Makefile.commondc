@@ -18,7 +18,7 @@ code: build_develop
 
 rd_code: build_romdisk
 
-build_images: copy_debug make_filesystem copy_assets copy_logo copy_effects convert_assets actions_user
+build_images: copy_debug make_filesystem copy_assets copy_debugfolder copy_logo copy_effects convert_assets actions_user
 
 copy_debug:
 	-$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/debug/*.png)
@@ -38,15 +38,20 @@ make_filesystem:
 	mkdir filesystem/assets
 	mkdir filesystem/logo
 	mkdir filesystem/effects
+	mkdir filesystem/debug
 
 copy_assets:
 	cp -r assets/* filesystem/assets
+
+copy_debugfolder:
+	cp -r debug/* filesystem/debug
 
 copy_logo:
 	cp -r $(KOS_BASE)/addons/prism/assets/logo/LOGO_DC.png filesystem/logo/LOGO_DC.png
 
 copy_effects:
 	cp -r $(KOS_BASE)/addons/prism/assets/effects/* filesystem/effects		
+
 
 convert_assets:
 	find filesystem/ -name '*.png' | xargs $(KOS_BASE)/utils/kmgenc/kmgenc -a4 
@@ -64,6 +69,7 @@ clean: clean_user clean_filesystem clean_general
 	
 clean_filesystem:
 	-rm -r -f filesystem/assets
+	-rm -r -f filesystem/debug
 	-rm -r -f filesystem/logo
 	-rm -r -f filesystem/effects
 	-rm -r -f romdisk_boot
