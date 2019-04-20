@@ -527,7 +527,7 @@ int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
 	int previousKeyPressed = 1, currentKeyPressed = 1;
 	for (i = 0; i < tKeyAmount; i++)
 	{
-		KeyboardKeyPrism singleKey = va_arg(vl, KeyboardKeyPrism);
+		KeyboardKeyPrism singleKey = (KeyboardKeyPrism)va_arg(vl, int);
 		int id = gPrismToSDLKeyboardMapping[singleKey].second;
 		previousKeyPressed = previousKeyPressed && gData.mPreviousKeyStates[id];
 		currentKeyPressed = currentKeyPressed && gData.mCurrentKeyStates[id];

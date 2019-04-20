@@ -73,7 +73,7 @@ static uint64_t getCurrentTimeInMilliseconds() {
     return getSystemTicks();
 }
 
-static void streamMusicFileGeneral(char* tPath, int tLoop) {
+static void streamMusicFileGeneral(const char* tPath, int tLoop) {
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);	
 	sndoggvorbis_start(fullPath, tLoop);
@@ -83,11 +83,11 @@ static void streamMusicFileGeneral(char* tPath, int tLoop) {
 	gData.mIsStreamingSoundFile = 1;
 }
 
-void streamMusicFile(char* tPath) {
+void streamMusicFile(const char* tPath) {
     streamMusicFileGeneral(tPath, 1);
 }
 
-void streamMusicFileOnce(char* tPath) {
+void streamMusicFileOnce(const char* tPath) {
 	streamMusicFileGeneral(tPath, 0);
 }
 

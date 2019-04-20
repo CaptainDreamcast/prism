@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <algorithm>
+#include <thread>
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -532,10 +533,12 @@ static void drawSorted(void* tCaller, DrawListElement& tData) {
 	DrawListElement* e = &tData;
 
 	if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_SPRITE) {
-		drawSortedSprite(&((DrawListSpriteElement)*e));
+		auto sprite = (DrawListSpriteElement)*e;
+		drawSortedSprite(&sprite);
 	}
 	else if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_TRUETYPE) {
-		drawSortedTruetype(&((DrawListTruetypeElement)*e));
+		auto sprite = (DrawListTruetypeElement)*e;
+		drawSortedTruetype(&sprite);
 	}
 	else {
 		logError("Unrecognized draw type");
@@ -558,7 +561,7 @@ void waitForScreen() {
 	int waitTime = frameEndTime - SDL_GetTicks();
 	if (waitTime > 0) {
 #ifndef __EMSCRIPTEN__
-		SDL_Delay(waitTime);
+		std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
 #endif
 	}
 

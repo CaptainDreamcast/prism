@@ -45,7 +45,7 @@ static struct {
 	int mHasLoadedTrack;
 	int mIsPlayingTrack;
 	int mIsPaused;
-	Mix_Chunk* mTrackChunk;
+	Mix_Music* mTrackChunk;
 	int mTrackChannel;	
 	uint64_t mTimeWhenMusicPlaybackStarted;
 
@@ -55,15 +55,14 @@ static struct {
 void initSound() {
 	gData.mPanning = 128;
 	Mix_Init(MIX_INIT_OGG);
-
-	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
 	Mix_AllocateChannels(1024);
 
 	gData.mTrackChannel = -1;
 	gData.mHasLoadedTrack = 0;
 	gData.mIsPlayingTrack = 0;
-
-	setVolume(0.1);
+	
+	setVolume(0.2);
 	gData.mMicrophone.mIsMicrophoneActive = 0;
 }
 
@@ -84,14 +83,11 @@ double getPanningValue() {
 	return (gData.mPanning / 128.0) - 1.0;
 }
 
-static void playMusicPath(char* tPath) {
+static void playMusicPath(const char* tPath) {
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);
 
-	Buffer b = fileToBuffer(fullPath);
-	SDL_RWops* rwOps = SDL_RWFromConstMem(b.mData, b.mLength);
-	gData.mTrackChunk = Mix_LoadWAV_RW(rwOps, 0);
-	freeBuffer(b);
+	gData.mTrackChunk = Mix_LoadMUS(fullPath);
 	gData.mHasLoadedTrack = 1;
 }
 
@@ -106,11 +102,11 @@ static void loadTrack(int tTrack) {
 static void unloadTrack() {
 	assert(gData.mHasLoadedTrack);
 
-	Mix_FreeChunk(gData.mTrackChunk);
+	Mix_FreeMusic(gData.mTrackChunk);
 	gData.mHasLoadedTrack = 0;
 }
 
-static void streamMusicFileGeneral(char* tPath, int tLoopAmount);
+static void streamMusicFileGeneral(const char* tPath, int tLoopAmount);
 
 static void playTrackGeneral(int tTrack, int tLoopAmount) {
 #ifdef __EMSCRIPTEN__
@@ -133,7 +129,7 @@ void stopTrack()
 {
 	if (!gData.mIsPlayingTrack) return;
 
-	Mix_HaltChannel(gData.mTrackChannel);
+	Mix_HaltMusic();
 }
 
 void pauseTrack()
@@ -156,32 +152,31 @@ void playTrackOnce(int tTrack)
 	playTrackGeneral(tTrack, 0);
 }
 
-static void musicFinishedCB(int tChannel) {
-	if (tChannel != gData.mTrackChannel) return;
+static void musicFinishedCB() {
 	gData.mTrackChannel = -1;
 	gData.mIsPlayingTrack = 0;
 
-	Mix_FreeChunk(gData.mTrackChunk);
+	Mix_FreeMusic(gData.mTrackChunk);
 	gData.mHasLoadedTrack = 0;
 }
 
-static void streamMusicFileGeneral(char* tPath, int tLoopAmount) {
+static void streamMusicFileGeneral(const char* tPath, int tLoopAmount) {
 	playMusicPath(tPath);
-	Mix_ChannelFinished(musicFinishedCB);
+	Mix_HookMusicFinished(musicFinishedCB);
 
-	gData.mTrackChannel = Mix_PlayChannel(-1, gData.mTrackChunk, tLoopAmount);
+	gData.mTrackChannel = Mix_PlayMusic(gData.mTrackChunk, tLoopAmount);
 	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
 
 	gData.mIsPaused = 0;
 	gData.mIsPlayingTrack = 1;
 }
 
-void streamMusicFile(char * tPath)
+void streamMusicFile(const char * tPath)
 {
 	streamMusicFileGeneral(tPath, -1);
 }
 
-void streamMusicFileOnce(char * tPath)
+void streamMusicFileOnce(const char * tPath)
 {
 	streamMusicFileGeneral(tPath, 0);
 }

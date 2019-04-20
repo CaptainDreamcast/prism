@@ -202,7 +202,7 @@ FileHandler fileOpenRomdisk(char* tPath, int tFlags) {
 		return NULL;
 	}
 
-	char* romdiskPath = strchr(tPath+1, '/');
+	const char* romdiskPath = strchr(tPath+1, '/');
 	if (romdiskPath == NULL) romdiskPath = tPath;
 
 	/* No blank filenames */
