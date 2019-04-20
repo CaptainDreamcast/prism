@@ -53,7 +53,6 @@ static struct {
 } gData;
 
 void initSound() {
-	gData.mVolume = 255;
 	gData.mPanning = 128;
 	Mix_Init(MIX_INIT_OGG);
 
@@ -64,6 +63,7 @@ void initSound() {
 	gData.mHasLoadedTrack = 0;
 	gData.mIsPlayingTrack = 0;
 
+	setVolume(0.1);
 	gData.mMicrophone.mIsMicrophoneActive = 0;
 }
 
