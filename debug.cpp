@@ -98,10 +98,10 @@ static string exitCB(void* tCaller, string tCommand) {
 }
 
 static void initDebugScript() {
-	gPrismDebug.mConsole.mHasUserScript = isFile("assets/debug/user.cfg");
+	gPrismDebug.mConsole.mHasUserScript = isFile("debug/user.cfg");
 	if (!gPrismDebug.mConsole.mHasUserScript) return;
 
-	gPrismDebug.mConsole.mUserScript = fileToBuffer("assets/debug/user.cfg");
+	gPrismDebug.mConsole.mUserScript = fileToBuffer("debug/user.cfg");
 	gPrismDebug.mConsole.mUserScriptPointer = getBufferPointer(gPrismDebug.mConsole.mUserScript);
 	addPrismDebugConsoleCommand("showconsole", showConsoleCB);
 	addPrismDebugConsoleCommand("abortscript", abortscriptCB);
