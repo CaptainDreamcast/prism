@@ -87,7 +87,15 @@ static void playMusicPath(const char* tPath) {
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);
 
+	// emscripten does not like loading music from files directly
+#ifdef __EMSCRIPTEN__
+	Buffer tBuffer = fileToBuffer(fullPath);
+	SDL_RWops* rwOps = SDL_RWFromConstMem(tBuffer.mData, tBuffer.mLength);
+	gData.mTrackChunk = Mix_LoadMUS_RW(rwOps);
+	freeBuffer(tBuffer); // only works because emscripten preloads everything
+#else
 	gData.mTrackChunk = Mix_LoadMUS(fullPath);
+#endif
 	gData.mHasLoadedTrack = 1;
 }
 
@@ -110,7 +118,7 @@ static void streamMusicFileGeneral(const char* tPath, int tLoopAmount);
 
 static void playTrackGeneral(int tTrack, int tLoopAmount) {
 #ifdef __EMSCRIPTEN__
-	//return;
+	return;
 #endif
 
 	if (gData.mIsPlayingTrack) stopTrack();
