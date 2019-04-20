@@ -108,6 +108,17 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libogg-0.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbis-0.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbisfile-3.dll">
+      <FileType>Document</FileType>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\addons\prism\windows\vs17\prism.vcxproj">
       <Project>{3572e463-893d-4815-8ecc-e65f3b8c6d90}</Project>
     </ProjectReference>

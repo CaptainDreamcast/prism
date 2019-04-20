@@ -25,6 +25,7 @@ windows/Release/*
 windows/Debug/*
 *.aps
 *.exe
+*.dll
 *.exp
 *.iobj
 *.ipdb
