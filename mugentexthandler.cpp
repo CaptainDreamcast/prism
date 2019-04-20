@@ -586,14 +586,14 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 	ElecbyteDrawCaller* caller = (ElecbyteDrawCaller*)tCaller;
 	MugenSpriteFileSubSprite* subSprite = (MugenSpriteFileSubSprite*)tData;
 
+	if (caller->mMapEntry->mStartX >= subSprite->mOffset.x + subSprite->mTexture.mTextureSize.x) return;
+	if (caller->mMapEntry->mStartX + caller->mMapEntry->mWidth - 1 < subSprite->mOffset.x) return;
+
 	int minWidth = 0;
 	int maxWidth = subSprite->mTexture.mTextureSize.x - 1;
 	int leftX = max(minWidth, min(maxWidth, caller->mMapEntry->mStartX - subSprite->mOffset.x));
 	int rightX = max(minWidth, min(maxWidth, (caller->mMapEntry->mStartX + caller->mMapEntry->mWidth - 1) - subSprite->mOffset.x));
 
-	if (caller->mMapEntry->mWidth > 1 && leftX == rightX) return;
-	if (caller->mMapEntry->mWidth == 1 && (caller->mMapEntry->mStartX < subSprite->mOffset.x || caller->mMapEntry->mStartX >= subSprite->mOffset.x + subSprite->mTexture.mTextureSize.x)) return;
-	
 	Position p = caller->mBasePosition;
 
 	int minHeight = 0;
