@@ -46,7 +46,6 @@ static struct {
 	int mIsPlayingTrack;
 	int mIsPaused;
 	Mix_Music* mTrackChunk;
-	int mTrackChannel;	
 	uint64_t mTimeWhenMusicPlaybackStarted;
 
 	Microphone mMicrophone;
@@ -55,10 +54,9 @@ static struct {
 void initSound() {
 	gData.mPanning = 128;
 	Mix_Init(MIX_INIT_OGG);
-	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
 	Mix_AllocateChannels(1024);
 
-	gData.mTrackChannel = -1;
 	gData.mHasLoadedTrack = 0;
 	gData.mIsPlayingTrack = 0;
 	
@@ -76,7 +74,7 @@ double getVolume() {
 
 void setVolume(double tVolume) {
 	gData.mVolume = (int)(tVolume * 128);
-	Mix_Volume(-1, gData.mVolume);
+	Mix_VolumeMusic(gData.mVolume);
 }
 
 double getPanningValue() {
@@ -143,7 +141,7 @@ void stopTrack()
 void pauseTrack()
 {
 	if (!gData.mIsPlayingTrack || gData.mIsPaused) return;
-	Mix_Pause(gData.mTrackChannel);
+	Mix_PauseMusic();
 	gData.mIsPaused = 1;
 }
 
@@ -151,7 +149,7 @@ void resumeTrack()
 {
 	if (!gData.mIsPlayingTrack || !gData.mIsPaused) return;
 
-	Mix_Resume(gData.mTrackChannel);
+	Mix_ResumeMusic();
 	gData.mIsPaused = 0;
 }
 
@@ -161,7 +159,6 @@ void playTrackOnce(int tTrack)
 }
 
 static void musicFinishedCB() {
-	gData.mTrackChannel = -1;
 	gData.mIsPlayingTrack = 0;
 
 	Mix_FreeMusic(gData.mTrackChunk);
@@ -172,7 +169,7 @@ static void streamMusicFileGeneral(const char* tPath, int tLoopAmount) {
 	playMusicPath(tPath);
 	Mix_HookMusicFinished(musicFinishedCB);
 
-	gData.mTrackChannel = Mix_PlayMusic(gData.mTrackChunk, tLoopAmount);
+	Mix_PlayMusic(gData.mTrackChunk, tLoopAmount);
 	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
 
 	gData.mIsPaused = 0;
@@ -211,6 +208,16 @@ int isPlayingStreamingMusic()
 void stopMusic()
 {
 	stopTrack();
+}
+
+void pauseMusic()
+{
+	pauseTrack();
+}
+
+void resumeMusic()
+{
+	resumeTrack();
 }
 
 

@@ -20,7 +20,7 @@ typedef struct {
 } SoundEffectEntry;
 
 static struct {
-	double mVolume;
+	int mVolume;
 	List mAllocatedChunks;
 } gData;
 
@@ -90,6 +90,6 @@ double getSoundEffectVolume() {
 }
 
 void setSoundEffectVolume(double tVolume) {
-	gData.mVolume = tVolume;
-	// TODO
+	gData.mVolume = (int)(tVolume * 128);
+	Mix_Volume(-1, gData.mVolume);
 }

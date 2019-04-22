@@ -23,6 +23,8 @@ void stopStreamingMusicFile();
 uint64_t getStreamingSoundTimeElapsedInMilliseconds();
 int isPlayingStreamingMusic();
 void stopMusic();
+void pauseMusic();
+void resumeMusic();
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint();
 double getMicrophoneVolume();
