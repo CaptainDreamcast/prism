@@ -21,6 +21,7 @@
 #include "prism/memoryhandler.h"
 #include "prism/math.h"
 #include "prism/stlutil.h"
+#include "prism/compression.h"
 
 
 
@@ -344,7 +345,7 @@ static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double
 	tDst[8] = (GLfloat)tAlpha;
 }
 
-static void drawOpenGLTexture(GLuint tTextureID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
+static void drawOpenGLTexture(const void* tPixels, TextureSize tSize, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
 	Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
 	float matrix[4][4];
@@ -373,13 +374,6 @@ static void drawOpenGLTexture(GLuint tTextureID, GeoRectangle tSrcRect, GeoRecta
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STREAM_DRAW);
 
-	glBindTexture(GL_TEXTURE_2D, tTextureID);
-	glDrawElements(GL_TRIANGLES, (GLsizei)6, GL_UNSIGNED_INT, 0);
-
-
-}
-
-static void drawSDLSurface(SDL_Surface* tSurface, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
 	GLuint textureID;
 	GLint last_texture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
@@ -390,17 +384,20 @@ static void drawSDLSurface(SDL_Surface* tSurface, GeoRectangle tSrcRect, GeoRect
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tSurface->w, tSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tSurface->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tSize.x, tSize.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, tPixels);
+	glDrawElements(GL_TRIANGLES, (GLsizei)6, GL_UNSIGNED_INT, 0);
+
 	glBindTexture(GL_TEXTURE_2D, last_texture);
-
-	drawOpenGLTexture(textureID, tSrcRect, tDstRect, tData);
-
 	glDeleteTextures(1, &textureID);
 }
 
+static void drawSDLSurface(SDL_Surface* tSurface, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
+	drawOpenGLTexture(tSurface->pixels, makeTextureSize(tSurface->w, tSurface->h), tSrcRect, tDstRect, tData);
+}
 
-static void drawPalettedOpenGLTexture(int tTextureID, int tPaletteID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
-	(void)tTextureID;
+
+static void drawPalettedOpenGLTexture(TextureData tTexture, int tPaletteID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
+	(void)tTexture;
 	(void)tPaletteID;
 	(void)tSrcRect;
 	(void)tDstRect;
@@ -436,7 +433,7 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	dstRect.mTopLeft = e->mPos;
 	dstRect.mBottomRight = vecAdd(e->mPos, makePosition(sizeX, sizeY, 0));
 
-	Texture texture = (Texture)e->mTexture.mTexture->mData;
+	TextureData texture = e->mTexture;
 
 	if (e->mData.mBlendType == BLEND_TYPE_ADDITION) {
 		glBlendEquation(GL_FUNC_ADD);
@@ -457,10 +454,14 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	}
 
 	if (e->mTexture.mHasPalette) {
-		drawPalettedOpenGLTexture(texture->mTexture, e->mTexture.mPaletteID, srcRect, dstRect, &e->mData);
+		drawPalettedOpenGLTexture(texture, e->mTexture.mPaletteID, srcRect, dstRect, &e->mData);
 	}
 	else {
-		drawOpenGLTexture(texture->mTexture, srcRect, dstRect, &e->mData);
+		SDLTexture_internal* internalTexture = (SDLTexture_internal*)texture.mTexture->mData;
+		Buffer compressionBuffer = copyBuffer(makeBuffer(internalTexture->mData, internalTexture->mSize));
+		decompressBufferZSTD(&compressionBuffer);
+		drawOpenGLTexture(compressionBuffer.mData, e->mTexture.mTextureSize, srcRect, dstRect, &e->mData);
+		freeBuffer(compressionBuffer);
 	}
 }
 

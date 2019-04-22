@@ -33,13 +33,21 @@ extern void decreaseAvailableTextureMemoryHW(size_t tSize);
 #include <GL/glew.h>
 #include "prism/texture.h"
 
+void* allocSDLTexture(uint32_t tSize) {
+	(void)tSize;
+	SDLTexture_internal* e = (SDLTexture_internal*)malloc(sizeof(SDLTexture_internal));
+	e->mData = NULL;
+	e->mSize = tSize;
+	return e;
+}
+
 void freeSDLTexture(void* tData) {
-	SDLTextureData* e = (SDLTextureData*)tData;
-	glDeleteTextures(1, &e->mTexture);
+	SDLTexture_internal* e = (SDLTexture_internal*)tData;
+	free(e->mData);
 	free(tData);
 }
 
-#define allocTextureHW malloc
+#define allocTextureHW allocSDLTexture
 #define freeTextureHW freeSDLTexture
 
 #endif

@@ -21,26 +21,24 @@
 
 
 TextureData textureFromSurface(SDL_Surface* tSurface) {
-	TextureData returnData;
-	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
-	returnData.mTextureSize.x = tSurface->w;
-	returnData.mTextureSize.y = tSurface->h;
-	returnData.mHasPalette = 0;
-	Texture texture = (Texture)returnData.mTexture->mData;
-	
 	auto surface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
 	SDL_FreeSurface(tSurface);
 
-	GLint last_texture;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-	glGenTextures(1, &texture->mTexture);
-	glBindTexture(GL_TEXTURE_2D, texture->mTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
-	glBindTexture(GL_TEXTURE_2D, last_texture);
+	TextureData returnData;
+	returnData.mTextureSize.x = tSurface->w;
+	returnData.mTextureSize.y = tSurface->h;
+	uint32_t len = returnData.mTextureSize.x * returnData.mTextureSize.y * 4;
+	returnData.mTexture = allocTextureMemory(len);
+	returnData.mHasPalette = 0;
+	Texture texture = (Texture)returnData.mTexture->mData;
+
+	Buffer pixelBuffer = makeBuffer(surface->pixels, len);
+	Buffer b = copyBuffer(pixelBuffer);
+	compressBufferZSTD(&b);
+	texture->mData = (char*)malloc(b.mLength);
+	memcpy(texture->mData, b.mData, b.mLength);
+	texture->mSize = b.mLength;
+	freeBuffer(b);
 
 	SDL_FreeSurface(surface);
 

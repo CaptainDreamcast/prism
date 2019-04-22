@@ -12,10 +12,11 @@ typedef pvr_ptr_t Texture;
 #include <GL/glew.h>
 
 typedef struct {
-	GLuint mTexture;
-} SDLTextureData;
+	char* mData;
+	uint32_t mSize;
+} SDLTexture_internal;
 
-typedef SDLTextureData* Texture;
+typedef SDLTexture_internal* Texture;
 
 #define malloc_stats()  {}
 
