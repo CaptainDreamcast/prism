@@ -113,6 +113,16 @@ void stopMusic() {
 	stopStreamingMusicFile();
 }
 
+void pauseMusic() {
+    pauseTrack(); 
+    // TODO: pause streaming
+}
+
+void resumeMusic() {
+    resumeTrack(); 
+    // TODO: resume streaming
+}
+
 static ActorBlueprint MicrophoneHandler; // TODO: implement microphone
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint()
