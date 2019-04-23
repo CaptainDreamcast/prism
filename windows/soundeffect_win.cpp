@@ -96,7 +96,6 @@ int playSoundEffect(int tID) {
 	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
 	SDL_RWops* rwOps = SDL_RWFromConstMem(e->mBuffer.mData, e->mBuffer.mLength);
 	Mix_Chunk* chunk = Mix_LoadWAV_RW(rwOps, 0);
-	printf(Mix_GetError());
 	int channel = Mix_PlayChannel(-1, chunk, 0);
 	tryEraseChannelChunk(channel);
 
