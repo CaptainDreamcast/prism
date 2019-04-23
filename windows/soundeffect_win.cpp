@@ -12,84 +12,108 @@
 #include "prism/sound.h"
 #include "prism/datastructures.h"
 #include "prism/memoryhandler.h"
+#include "prism/stlutil.h"
+
+using namespace std;
 
 typedef struct {
-
-	Mix_Chunk* mChunk;
-
+	Buffer mBuffer;
 } SoundEffectEntry;
 
 static struct {
 	int mVolume;
-	List mAllocatedChunks;
-} gData;
+	map<int, SoundEffectEntry> mAllocatedChunks;
+	map<int, Mix_Chunk*> mChunks;
+} gSoundEffectData;
 
 void initSoundEffects() {
 	
 }
 
 void setupSoundEffectHandler() {
-	gData.mAllocatedChunks = new_list();
-	
+	gSoundEffectData.mAllocatedChunks.clear();
+	gSoundEffectData.mChunks.clear();
 }
 
 static void unloadSoundEffectEntry(SoundEffectEntry* e) {
-	Mix_FreeChunk(e->mChunk);
+	freeBuffer(e->mBuffer);
 }
 
-static int unloadSingleSoundEffect(void* tCaller, void* tData) {
+static int unloadSingleSoundEffect(void* tCaller, SoundEffectEntry& tData) {
 	(void)tCaller;
-	SoundEffectEntry* e = (SoundEffectEntry*)tData;
+	SoundEffectEntry* e = &tData;
 	unloadSoundEffectEntry(e);
 	return 1;
 }
 
-
-void shutdownSoundEffectHandler() {
-	list_remove_predicate(&gData.mAllocatedChunks, unloadSingleSoundEffect, NULL);
+static int unloadSingleChunkEntry(void* tCaller, Mix_Chunk*& tData) {
+	(void)tCaller;
+	Mix_FreeChunk(tData);
+	return 1;
 }
 
-static int addChunkToSoundEffectHandler(Mix_Chunk* tChunk) {
-	SoundEffectEntry* e = (SoundEffectEntry*)allocMemory(sizeof(SoundEffectEntry));
-	e->mChunk = tChunk;
-	return list_push_back_owned(&gData.mAllocatedChunks, e);
+void shutdownSoundEffectHandler() {
+	stl_int_map_remove_predicate(gSoundEffectData.mAllocatedChunks, unloadSingleSoundEffect);
+	gSoundEffectData.mAllocatedChunks.clear();
+
+	stl_int_map_remove_predicate(gSoundEffectData.mChunks, unloadSingleChunkEntry);
+	gSoundEffectData.mChunks.clear();
+}
+
+static int addBufferToSoundEffectHandler(Buffer tBuffer) {
+	SoundEffectEntry e;
+	e.mBuffer = tBuffer;
+	return stl_int_map_push_back(gSoundEffectData.mAllocatedChunks, e);
 }
 
 int loadSoundEffect(char* tPath) {
-	char fullPath[1024];
-	getFullPath(fullPath, tPath);
-	Mix_Chunk* chunk = Mix_LoadWAV(fullPath);
-	return addChunkToSoundEffectHandler(chunk);
+	Buffer b = fileToBuffer(tPath);
+	return addBufferToSoundEffectHandler(b);
 }
 
 static int gDummy;
 
 int loadSoundEffectFromBuffer(Buffer tBuffer) {
-	SDL_RWops* rwOps = SDL_RWFromConstMem(tBuffer.mData, tBuffer.mLength);
-	Mix_Chunk* chunk = Mix_LoadWAV_RW(rwOps, 0);
-	return addChunkToSoundEffectHandler(chunk);
+
+	Buffer ownedBuffer = copyBuffer(tBuffer);
+	return addBufferToSoundEffectHandler(ownedBuffer);
 }
 
 void unloadSoundEffect(int tID) {
-	SoundEffectEntry* e = (SoundEffectEntry*)list_get(&gData.mAllocatedChunks, tID);
+	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
 	unloadSoundEffectEntry(e);
-	list_remove(&gData.mAllocatedChunks, tID);
+	gSoundEffectData.mAllocatedChunks.erase(tID);
+}
+
+static void tryEraseChannelChunk(int tChannel) {
+	if (stl_map_contains(gSoundEffectData.mChunks, tChannel)) {
+		Mix_FreeChunk(gSoundEffectData.mChunks[tChannel]);
+		gSoundEffectData.mChunks.erase(tChannel);
+	}
 }
 
 int playSoundEffect(int tID) {
-	SoundEffectEntry* e = (SoundEffectEntry*)list_get(&gData.mAllocatedChunks, tID);
-	return Mix_PlayChannel(-1, e->mChunk, 0);
+	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
+	SDL_RWops* rwOps = SDL_RWFromConstMem(e->mBuffer.mData, e->mBuffer.mLength);
+	Mix_Chunk* chunk = Mix_LoadWAV_RW(rwOps, 0);
+	printf(Mix_GetError());
+	int channel = Mix_PlayChannel(-1, chunk, 0);
+	tryEraseChannelChunk(channel);
+
+	gSoundEffectData.mChunks[channel] = chunk;
+	return channel;
 }
 
 void stopSoundEffect(int tSFX) {
 	Mix_HaltChannel(tSFX);
+	tryEraseChannelChunk(tSFX);
 }
 
 double getSoundEffectVolume() {
-	return gData.mVolume;
+	return gSoundEffectData.mVolume;
 }
 
 void setSoundEffectVolume(double tVolume) {
-	gData.mVolume = (int)(tVolume * 128);
-	Mix_Volume(-1, gData.mVolume);
+	gSoundEffectData.mVolume = (int)(tVolume * 128);
+	Mix_Volume(-1, gSoundEffectData.mVolume);
 }
