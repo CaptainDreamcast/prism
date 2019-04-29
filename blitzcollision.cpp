@@ -234,6 +234,12 @@ int addBlitzCollisionRect(int tEntityID, int tList, CollisionRect tRectangle)
 	return collisionObjectID;
 }
 
+void changeBlitzCollisionRect(int tEntityID, int tCollisionID, CollisionRect tRectangle) {
+	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
+	BlitzCollisionObject* object = (BlitzCollisionObject*)int_map_get(&e->mCollisionObjects, tCollisionID);
+	changeCollisionRectangleInCollisionHandler(object->mCollisionListID, object->mCollisionHandlerID, tRectangle);
+}
+
 int addBlitzCollisionCirc(int tEntityID, int tList, CollisionCirc tCircle)
 {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);

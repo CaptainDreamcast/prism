@@ -17,13 +17,10 @@
 #define M_E 2.71828182845904523536
 
 #elif defined __EMSCRIPTEN__
-
-#define min(x, y) ((x < y) ? (x) : (y))
-#define max(x, y) ((x > y) ? (x) : (y))
-
 #endif
 
 #define fclamp(val, mini, maxi) (fmin(fmax(val, mini), maxi))
+#define clamp(val, mini, maxi) (std::min(std::max(val, mini), maxi))
 #define INF 1000000000
 
 typedef struct {

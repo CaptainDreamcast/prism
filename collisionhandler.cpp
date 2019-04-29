@@ -146,6 +146,13 @@ int addCollisionRectangleToCollisionHandler(int tListID, Position* tBasePosition
 	return id;
 }
 
+void changeCollisionRectangleInCollisionHandler(int tListID, int tElementID, CollisionRect tRect)
+{
+	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
+	auto e = &list->mCollisionElements[tElementID];
+	e->mCollider.mImpl.mRect = tRect;
+}
+
 int addCollisionCircleToCollisionHandler(int tListID, Position* tBasePosition, CollisionCirc tCirc, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
 	Collider collider = makeColliderFromCirc(tCirc);
 	int id = addColliderToCollisionHandler(tListID, tBasePosition, collider, tCB, tCaller, tCollisionData);

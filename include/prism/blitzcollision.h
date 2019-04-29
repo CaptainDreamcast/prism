@@ -9,6 +9,7 @@ void addBlitzCollisionComponent(int tEntityID);
 int addBlitzCollisionPassiveMugen(int tEntityID, int tList);
 int addBlitzCollisionAttackMugen(int tEntityID, int tList);
 int addBlitzCollisionRect(int tEntityID, int tList, CollisionRect tRectangle);
+void changeBlitzCollisionRect(int tEntityID, int tCollisionID, CollisionRect tRectangle);
 int addBlitzCollisionCirc(int tEntityID, int tList, CollisionCirc tCircle);
 void addBlitzCollisionCB(int tEntityID, int tCollisionID, void(*tCB)(void *, void*), void* tCaller);
 void setBlitzCollisionCollisionData(int tEntityID, int tCollisionID, void* tCollisionData);
