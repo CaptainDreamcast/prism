@@ -65,11 +65,15 @@ void unloadMugenDefScript(MugenDefScript tScript);
 
 int isMugenDefStringVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+std::string getSTLMugenDefStringVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 int isMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 char* getAllocatedMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+std::string getSTLMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
 char* getAllocatedMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement* tElement);
+std::string getSTLMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement* tElement);
 char* getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
+std::string getSTLMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
 
 int isMugenDefVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 
@@ -117,6 +121,8 @@ GeoRectangle getMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement
 void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, const char* tGroup, const char* tVariable, const char* tDefault);
 char* getAllocatedMugenDefStringOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const char* tDefault);
 char* getAllocatedMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const char* tDefault);
+std::string getSTLMugenDefStringOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const char* tDefault);
+std::string getSTLMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const char* tDefault);
 
 double getMugenDefFloatOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, double tDefault);
 double getMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, double tDefault);

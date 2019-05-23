@@ -964,11 +964,11 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 	setDrawingTransparency(e->mAlpha);
 	if (caller->mScale != makePosition(1, 1, 1)) {
-		scaleDrawing3D(caller->mScale, caller->mScalePosition);
+		scaleDrawing3D(caller->mScale, caller->mScalePosition + makePosition(0.5, 0.5, 0));
 	}
 
 	if (caller->mAngle) {
-		setDrawingRotationZ(caller->mAngle, caller->mScalePosition);
+		setDrawingRotationZ(caller->mAngle, caller->mScalePosition + makePosition(0.5, 0.5, 0));
 	}
 
 	if (e->mHasCameraScaleReference && *e->mCameraScaleReference != makePosition(1, 1, 1)) {

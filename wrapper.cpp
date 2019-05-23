@@ -361,6 +361,8 @@ static void unloadScreen(Screen* tScreen) {
 }
 
 static void updateScreenDebug() {
+	if (!isInDevelopMode()) return;
+
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_PAUSE_PRISM)) {
 		gData.mDebug.mIsPaused = gData.mDebug.mIsPaused ? 0 : 2;
 	}
@@ -370,6 +372,9 @@ static void updateScreenDebug() {
 		gData.mDebug.mIsPaused = 1;
 	}
 
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_R_PRISM)) {
+		setNewScreen(gData.mScreen);
+	}
 }
 
 static void updateExhibitionMode() {
@@ -396,7 +401,6 @@ static void updateScreenAbort() {
 			setNewScreen(gData.mTitleScreen);
 		}
 	}
-
 }
 
 static void updatePausableScreen() {

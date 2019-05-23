@@ -154,6 +154,12 @@ void setBlitzMugenAnimationColor(int tEntityID, double tR, double tG, double tB)
 	setMugenAnimationColor(e->mAnimationID, tR, tG, tB);
 }
 
+void setBlitzMugenAnimationBaseDrawScale(int tEntityID, double tScale)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationBaseDrawScale(e->mAnimationID, tScale);
+}
+
 void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void *), void * tCaller)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);

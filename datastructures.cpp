@@ -47,6 +47,29 @@ char* copyToAllocatedString(char* tSrc) {
 	return ret;
 }
 
+int stringBeginsWithSubstring(const char * tString, const char * tSubstring)
+{
+	int n = strlen(tSubstring);
+	int m = strlen(tString);
+	if (m < n) return 0;
+
+	int i;
+	for (i = 0; i < n; i++) {
+		if (tString[i] != tSubstring[i]) return 0;
+	}
+
+	return 1;
+}
+
+int stringBeginsWithSubstringCaseIndependent(const char * tString, const char * tSubstring)
+{
+	string s(tString);
+	string substring(tSubstring);
+	transform(s.begin(), s.end(), s.begin(), ::tolower);
+	transform(substring.begin(), substring.end(), substring.begin(), ::tolower);
+	return stringBeginsWithSubstring(s.data(), substring.data());
+}
+
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
 	ListElement* e = (ListElement*)allocMemory(sizeof(ListElement));
 	e->mID = tList->mIDs++;

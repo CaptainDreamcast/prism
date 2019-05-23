@@ -438,6 +438,8 @@ typedef struct {
 	double mG;
 	double mB;
 
+	double mScale;
+
 	MugenTextAlignment mAlignment;
 	GeoRectangle mRectangle;
 	double mTextBoxWidth;
@@ -491,6 +493,7 @@ static void updateMugenTextHandler(void* tData) {
 typedef struct {
 	MugenSpriteFileSprite* mSprite;
 	Position mBasePosition;
+	MugenText* mText;
 } BitmapDrawCaller;
 
 // TODO: rectangle + color
@@ -498,7 +501,8 @@ static void drawSingleBitmapSubSprite(void* tCaller, void* tData) {
 	BitmapDrawCaller* caller = (BitmapDrawCaller*)tCaller;
 	MugenSpriteFileSubSprite* subSprite = (MugenSpriteFileSubSprite*)tData;
 
-	double factor = 0.5; // TODO: 640p
+	setDrawingBaseColorAdvanced(caller->mText->mR, caller->mText->mG, caller->mText->mB);
+	double factor = 1 * caller->mText->mScale; // TODO: 640p
 	Position p = vecAdd2D(caller->mBasePosition, vecScale(makePosition(subSprite->mOffset.x, subSprite->mOffset.y, subSprite->mOffset.z), factor));
 	scaleDrawing(factor, p);
 	drawSprite(subSprite->mTexture, p, makeRectangleFromTexture(subSprite->mTexture));
@@ -535,7 +539,7 @@ static void drawSingleBitmapText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)font->mData;
 	int textLength = strlen(e->mDisplayText);
-	double factor = 0.5; // TODO: 640p
+	double factor = 1 * e->mScale; // TODO: 640p
 
 	MugenSpriteFileGroup* spriteGroup = (MugenSpriteFileGroup*)int_map_get(&bitmapFont->mSprites.mGroups, 0);
 
@@ -549,6 +553,7 @@ static void drawSingleBitmapText(MugenText* e) {
 			BitmapDrawCaller caller;
 			caller.mSprite = (MugenSpriteFileSprite*)int_map_get(&spriteGroup->mSprites, (int)e->mDisplayText[i]);
 			caller.mBasePosition = p;
+			caller.mText = e;
 			list_map(&caller.mSprite->mTextures, drawSingleBitmapSubSprite, &caller);
 
 			p = vecAdd2D(p, vecScale(makePosition(caller.mSprite->mOriginalTextureSize.x, 0, 0), factor));
@@ -604,7 +609,7 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 
 	p.y = max(p.y, caller->mText->mRectangle.mTopLeft.y);
 
-	double factor = 1; // TODO: remove
+	double factor = caller->mText->mScale; // TODO: remove
 
 	// scaleDrawing(factor, p); // TODO: remove
 	drawSprite(subSprite->mTexture, p, makeRectangle(leftX, upY, rightX - leftX, downY - upY));
@@ -669,7 +674,7 @@ static void drawSingleElecbyteText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
 	int textLength = strlen(e->mDisplayText);
-	double factor = 1; // TODO
+	double factor = e->mScale; // TODO
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 
@@ -744,10 +749,10 @@ void drawMugenText(char* tText, Position tPosition, int tFont) {
 	textData.mPosition = tPosition;
 	textData.mFont = &gMugenFontData.mFonts[tFont];
 	textData.mR = textData.mG = textData.mB = 1;
+	textData.mScale = 1;
 	textData.mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
 	textData.mRectangle = makeGeoRectangle(-INF / 2, -INF / 2, INF, INF);
 	textData.mTextBoxWidth = INF;
-
 	textData.mBuildupDurationPerLetter = INF;
 	textData.mBuildupNow = 0;
 
@@ -769,7 +774,8 @@ int addMugenText(const char * tText, Position tPosition, int tFont)
 	else {
 		e.mFont = &gMugenFontData.mFonts[1];
 	}
-	e.mPosition = vecSub(tPosition, makePosition(0, e.mFont->mSize.y, 0));
+	e.mScale = 1;
+	e.mPosition = vecSub(tPosition, makePosition(0, e.mFont->mSize.y * e.mScale, 0));
 	e.mR = e.mG = e.mB = 1;
 	e.mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
 	e.mRectangle = makeGeoRectangle(-INF / 2, -INF / 2, INF, INF);
@@ -801,7 +807,7 @@ void setMugenTextFont(int tID, int tFont)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 
-	e->mPosition = vecAdd2D(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
+	e->mPosition = vecAdd2D(e->mPosition, makePosition(0, e->mFont->mSize.y * e->mScale, 0));
 	if (stl_map_contains(gMugenFontData.mFonts, tFont)) {
 		e->mFont = &gMugenFontData.mFonts[tFont];
 	}
@@ -809,14 +815,14 @@ void setMugenTextFont(int tID, int tFont)
 		e->mFont = &gMugenFontData.mFonts[1];
 	}
 
-	e->mPosition = vecSub(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
+	e->mPosition = vecSub(e->mPosition, makePosition(0, e->mFont->mSize.y * e->mScale, 0));
 }
 
 static double getBitmapTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)font->mData;
 	int textLength = strlen(e->mText);
-	double factor = 0.5; // TODO: 640p
+	double factor = e->mScale; // TODO: 640p
 
 	MugenSpriteFileGroup* spriteGroup = (MugenSpriteFileGroup*)int_map_get(&bitmapFont->mSprites.mGroups, 0);
 
@@ -846,7 +852,7 @@ static double getElecbyteTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
 	int textLength = strlen(e->mText);
-	double factor = 1; // TODO: 640p
+	double factor = e->mScale; // TODO: 640p
 
 	int i;
 	double sizeX = 0;
@@ -937,7 +943,7 @@ void setMugenTextPosition(int tID, Position tPosition)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mPosition = tPosition;
-	e->mPosition = vecSub(e->mPosition, makePosition(0, e->mFont->mSize.y, 0));
+	e->mPosition = vecSub(e->mPosition, makePosition(0, e->mFont->mSize.y * e->mScale, 0));
 	MugenTextAlignment alignment = e->mAlignment;
 	e->mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
 	setMugenTextAlignment(tID, alignment);
@@ -981,6 +987,14 @@ double getMugenTextSizeX(int tID)
 	return getMugenTextSizeXInternal(e);
 }
 
+void setMugenTextScale(int tID, double tScale)
+{
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
+	Position p = getMugenTextPosition(tID);
+	e->mScale = tScale;
+	setMugenTextPosition(tID, p);
+}
+
 void changeMugenText(int tID, const char * tText)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
@@ -997,7 +1011,7 @@ Position getMugenTextPosition(int tID) {
 	MugenTextAlignment alignment = e->mAlignment;
 	setMugenTextAlignment(tID, MUGEN_TEXT_ALIGNMENT_LEFT);
 	Position ret = e->mPosition;
-	ret = vecAdd(ret, makePosition(0, e->mFont->mSize.y, 0));
+	ret = vecAdd(ret, makePosition(0, e->mFont->mSize.y * e->mScale, 0));
 	setMugenTextAlignment(tID, alignment);
 	return ret;
 }

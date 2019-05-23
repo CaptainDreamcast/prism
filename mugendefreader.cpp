@@ -916,6 +916,14 @@ char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, const char * t
 	return 	getAllocatedMugenDefStringVariableAsGroup(e, tVariableName);
 }
 
+string getSTLMugenDefStringVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
+{
+	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
+	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
+
+	return 	getSTLMugenDefStringVariableAsGroup(e, tVariableName);
+}
+
 int isMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName) {
 	if (!stl_string_map_contains_array(tGroup->mElements, tVariableName)) {
 		return 0;
@@ -930,6 +938,14 @@ char * getAllocatedMugenDefStringVariableAsGroup(MugenDefScriptGroup * tGroup, c
 	MugenDefScriptGroupElement* element = &tGroup->mElements[tVariableName];
 
 	return getAllocatedMugenDefStringVariableAsElement(element);
+}
+
+string getSTLMugenDefStringVariableAsGroup(MugenDefScriptGroup * tGroup, const char * tVariableName)
+{
+	assert(stl_string_map_contains_array(tGroup->mElements, tVariableName));
+	MugenDefScriptGroupElement* element = &tGroup->mElements[tVariableName];
+
+	return getSTLMugenDefStringVariableAsElement(element);
 }
 
 int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
@@ -961,35 +977,45 @@ static void checkStringElementForQuotesAndReturnRaw(char* tRet, MugenDefScriptSt
 		strcpy(tRet, tStringElement->mString);
 	}
 }
-
-
-char * getAllocatedMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
+void getMugenDefStringVariableAsElementGeneral(char* tDst, MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
 {
-	char* ret = (char*)allocMemory(1024);
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
 		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)tElement->mData;
-		if (tDoesReturnStringsRaw) strcpy(ret, stringElement->mString);
-		else checkStringElementForQuotesAndReturnRaw(ret, stringElement);
+		if (tDoesReturnStringsRaw) strcpy(tDst, stringElement->mString);
+		else checkStringElementForQuotesAndReturnRaw(tDst, stringElement);
 
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
 		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)tElement->mData;
-		sprintf(ret, "%d", numberElement->mValue);
+		sprintf(tDst, "%d", numberElement->mValue);
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
 		MugenDefScriptFloatElement* floatElement = (MugenDefScriptFloatElement*)tElement->mData;
-		sprintf(ret, "%f", floatElement->mValue);
+		sprintf(tDst, "%f", floatElement->mValue);
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
 		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
-		turnMugenDefVectorToString(ret, vectorElement);
+		turnMugenDefVectorToString(tDst, vectorElement);
 	}
 	else {
 		logError("Unknown type.");
 		logErrorInteger(tElement->mType);
 		recoverFromError();
 	}
+}
+
+char * getAllocatedMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
+{
+	char* ret = (char*)allocMemory(1024);
+	getMugenDefStringVariableAsElementGeneral(ret, tElement, tDoesReturnStringsRaw);
 	return ret;
+}
+
+std::string getSTLMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
+{
+	char ret[1024];
+	getMugenDefStringVariableAsElementGeneral(ret, tElement, tDoesReturnStringsRaw);
+	return std::string(ret);
 }
 
 char * getAllocatedMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement * tElement)
@@ -997,9 +1023,19 @@ char * getAllocatedMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGr
 	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 1);
 }
 
+std::string getSTLMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement * tElement)
+{
+	return getSTLMugenDefStringVariableAsElementGeneral(tElement, 1);
+}
+
 char * getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
 	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 0);
+}
+
+std::string getSTLMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
+{
+	return getSTLMugenDefStringVariableAsElementGeneral(tElement, 0);
 }
 
 int isMugenDefVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
@@ -1388,6 +1424,26 @@ char* getAllocatedMugenDefStringOrDefault(MugenDefScript* tScript, const char* t
 char* getAllocatedMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const char* tDefault) {
 	if (isMugenDefStringVariableAsGroup(tGroup, tVariable)) return getAllocatedMugenDefStringVariableAsGroup(tGroup, tVariable);
 	else return createAllocatedString(tDefault);
+}
+
+std::string getSTLMugenDefStringOrDefault(MugenDefScript * s, const char * tGroup, const char * tVariable, const char * tDefault)
+{
+	if (isMugenDefStringVariable(s, tGroup, tVariable)) {
+		return getSTLMugenDefStringVariable(s, tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+std::string getSTLMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup * tGroup, const char * tVariable, const char * tDefault)
+{
+	if (isMugenDefStringVariableAsGroup(tGroup, tVariable)) {
+		return getSTLMugenDefStringVariableAsGroup(tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
 }
 
 double getMugenDefFloatOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, double tDefault) {

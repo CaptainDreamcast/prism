@@ -21,4 +21,5 @@ void setBlitzMugenAnimationPositionX(int tEntityID, double tX);
 void setBlitzMugenAnimationPositionY(int tEntityID, double tX);
 void setBlitzMugenAnimationVisibility(int tEntityID, int tVisibility);
 void setBlitzMugenAnimationColor(int tEntityID, double tR, double tG, double tB);
+void setBlitzMugenAnimationBaseDrawScale(int tEntityID, double tScale);
 void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void*), void* tCaller);

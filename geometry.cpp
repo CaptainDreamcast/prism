@@ -328,6 +328,14 @@ Vector3D operator-(const Vector3D& a, const Vector3D& b) {
 	return vecSub(a, b);
 }
 
+Vector3D operator*(const double & a, const Vector3D & b) {
+	return makePosition(b.x * a, b.y * a, b.z * a);
+}
+
+Vector3D operator*(const Vector3D& a, const double& b) {
+	return makePosition(a.x * b, a.y * b, a.z * b);
+}
+
 Vector3DI operator+(const Vector3DI& a, const Vector3DI& b) {
 	return vecAddI(a, b);
 }
@@ -348,6 +356,10 @@ int operator!=(const Vector3D& a, const Vector3D& b) {
 	return a.x != b.x || a.y != b.y || a.z != b.z;
 }
 
+Vector3D& operator+=(Vector3D& a, const Vector3D& b) {
+	a = a + b;
+	return a;
+}
 
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
 	Vector3DI ret = a;

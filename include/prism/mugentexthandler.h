@@ -38,6 +38,7 @@ void setMugenTextBuiltUp(int tID);
 int isMugenTextBuiltUp(int tID);
 void setMugenTextVisibility(int tID, int tIsVisible);
 double getMugenTextSizeX(int tID);
+void setMugenTextScale(int tID, double tScale); // only for bitmap fonts for now
 
 
 void changeMugenText(int tID, const char* tText);

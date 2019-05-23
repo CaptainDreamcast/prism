@@ -6,6 +6,8 @@
 #include <vector>
 #include <list>
 #include <string>
+#include <sstream>
+#include <memory>
 
 template <class K, class V>
 void stl_new_map(std::map<K, V>& tMap) {
@@ -19,8 +21,13 @@ void stl_delete_map(std::map<K, V>& tMap) {
 
 extern int gSTLCounter;
 
+inline int stl_int_map_get_id() {
+	int id = gSTLCounter++;
+	return id;
+}
+
 template <class T>
-int stl_int_map_push_back(std::map<int, T> &tMap, T tElement) {
+int stl_int_map_push_back(std::map<int, T> &tMap, T& tElement) {
 	int id = gSTLCounter++;
 
 	tMap[id] = tElement;
@@ -49,6 +56,19 @@ void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(T& tData))
 		typename std::map<int, T>::iterator current = it;
 		it++;
 		int isDeleted = tFunc(val.second);
+		if (isDeleted) tMap.erase(current);
+	}
+}
+
+template <class T>
+void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*tFunc)(T& tData)) { // TODO: rewrite with lambdas
+	typename std::map<int, std::unique_ptr<T>>::iterator it = tMap.begin();
+
+	while (it != tMap.end()) {
+		std::pair<const int, std::unique_ptr<T>> &val = *it;
+		typename std::map<int, std::unique_ptr<T>>::iterator current = it;
+		it++;
+		int isDeleted = tFunc(*val.second);
 		if (isDeleted) tMap.erase(current);
 	}
 }
@@ -144,6 +164,19 @@ void stl_set_map(std::set<T> &tSet, void(*tFunc)(C* tCaller, T& tData), C* tCall
 		T &val = *it;
 		it++;
 		tFunc(tCaller, val);
+	}
+}
+
+template <class T, class C>
+void stl_set_remove_predicate(std::set<T> &tSet, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
+	typename std::set<T>::iterator it = tSet.begin();
+
+	while (it != tSet.end()) {
+		T &val = *it;
+		typename std::set<T>::iterator current = it;
+		it++;
+		int isDeleted = tFunc(tCaller, val);
+		if (isDeleted) tSet.erase(current);
 	}
 }
 

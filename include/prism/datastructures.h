@@ -7,6 +7,9 @@ void turnStringLowercase(std::string& tString);
 void copyStringLowercase(char* tDst, const char* tSrc);
 char* copyToAllocatedString(char* tSrc); // TODO: remove duplicate
 
+int stringBeginsWithSubstring(const char* tString, const char* tSubstring);
+int stringBeginsWithSubstringCaseIndependent(const char* tString, const char* tSubstring);
+
 typedef struct ListElement_internal {
 
 	int mID;
