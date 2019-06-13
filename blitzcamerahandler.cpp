@@ -12,6 +12,7 @@ static struct {
 	Position mCameraPosition;
 	Vector3D mScale;
 	double mAngle;
+	Position mEffectOffset;
 
 	GeoRectangle mCameraRange;
 } gData;
@@ -21,6 +22,8 @@ static void loadBlitzCameraHandler(void* tData) {
 	gData.mCameraPosition = makePosition(0, 0, 0); 
 	gData.mScale = makePosition(1, 1, 1);
 	gData.mAngle = 0;
+	ScreenSize sz = getScreenSize();
+	gData.mEffectOffset = makePosition(sz.x / 2, sz.y / 2, 0);
 	gData.mCameraRange = makeGeoRectangle(-INF / 2, - INF / 2, INF, INF);
 	gData.mIsActive = 1;
 }
@@ -103,6 +106,16 @@ double getBlitzCameraHandlerRotationZ()
 void setBlitzCameraHandlerRotationZ(double tAngle)
 {
 	gData.mAngle = tAngle;
+}
+
+Position * getBlitzCameraHandlerEffectPositionReference()
+{
+	return &gData.mEffectOffset;
+}
+
+void setBlitzCameraHandlerEffectPositionOffset(Position tPosition)
+{
+	gData.mEffectOffset = tPosition;
 }
 
 int getBlitzCameraHandlerEntityID()

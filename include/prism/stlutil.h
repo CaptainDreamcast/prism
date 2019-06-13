@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <memory>
+#include <functional>
 
 template <class K, class V>
 void stl_new_map(std::map<K, V>& tMap) {
@@ -31,6 +32,14 @@ int stl_int_map_push_back(std::map<int, T> &tMap, T& tElement) {
 	int id = gSTLCounter++;
 
 	tMap[id] = tElement;
+	return id;
+}
+
+template <class T>
+int stl_int_map_push_back(std::map<int, T> &tMap, T&& tElement) {
+	int id = gSTLCounter++;
+
+	tMap[id] = std::move(tElement);
 	return id;
 }
 
@@ -73,6 +82,19 @@ void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*
 	}
 }
 
+template <class T, class C>
+void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) { // TODO: rewrite with lambdas
+	typename std::map<int, std::unique_ptr<T>>::iterator it = tMap.begin();
+
+	while (it != tMap.end()) {
+		std::pair<const int, std::unique_ptr<T>> &val = *it;
+		typename std::map<int, std::unique_ptr<T>>::iterator current = it;
+		it++;
+		int isDeleted = tFunc(tCaller, *val.second);
+		if (isDeleted) tMap.erase(current);
+	}
+}
+
 template <class O, class T>
 void stl_int_map_remove_predicate(O& tClass, std::map<int, std::unique_ptr<T>> &tMap, int(O::*tFunc)(T& tData)) { // TODO: rewrite with lambdas
 	typename std::map<int, std::unique_ptr<T>>::iterator it = tMap.begin();
@@ -82,6 +104,19 @@ void stl_int_map_remove_predicate(O& tClass, std::map<int, std::unique_ptr<T>> &
 		typename std::map<int, std::unique_ptr<T>>::iterator current = it;
 		it++;
 		int isDeleted = (tClass.*tFunc)(*val.second);
+		if (isDeleted) tMap.erase(current);
+	}
+}
+
+template <class T>
+void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(T::*tFunc)()) { // TODO: rewrite with lambdas
+	typename std::map<int, std::unique_ptr<T>>::iterator it = tMap.begin();
+
+	while (it != tMap.end()) {
+		std::pair<const int, std::unique_ptr<T>> &val = *it;
+		typename std::map<int, std::unique_ptr<T>>::iterator current = it;
+		it++;
+		int isDeleted = (*val.second.*tFunc)();
 		if (isDeleted) tMap.erase(current);
 	}
 }

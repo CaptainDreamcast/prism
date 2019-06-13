@@ -36,6 +36,7 @@ void setMugenAnimationRectangleHeight(int tID, int tHeight);
 void setMugenAnimationCameraPositionReference(int tID, Position* tCameraPosition);
 void setMugenAnimationCameraScaleReference(int tID, Position* tCameraScale);
 void setMugenAnimationCameraAngleReference(int tID, double* tCameraAngle);
+void setMugenAnimationCameraEffectPositionReference(int tID, Position* tCameraEffectPosition);
 
 void setMugenAnimationInvisible(int tID);
 void setMugenAnimationVisibility(int tID, int tIsVisible);

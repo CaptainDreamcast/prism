@@ -78,6 +78,9 @@ typedef struct {
 	int mHasCameraAngleReference;
 	double* mCameraAngleReference;
 
+	int mHasCameraEffectPositionReference;
+	Position* mCameraEffectPositionReference;
+
 	int mIsInvisible;
 
 	double mBaseDrawAngle;
@@ -333,6 +336,7 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 	e.mHasCameraPositionReference = 0;
 	e.mHasCameraScaleReference = 0;
 	e.mHasCameraAngleReference = 0;
+	e.mHasCameraEffectPositionReference = 0;
 
 	e.mIsInvisible = 0;
 	e.mBaseDrawAngle = 0;
@@ -460,6 +464,13 @@ void setMugenAnimationCameraAngleReference(int tID, double * tCameraAngle)
 	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasCameraAngleReference = 1;
 	e->mCameraAngleReference = tCameraAngle;
+}
+
+void setMugenAnimationCameraEffectPositionReference(int tID, Position * tCameraEffectPosition)
+{
+	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+	e->mHasCameraEffectPositionReference = 1;
+	e->mCameraEffectPositionReference = tCameraEffectPosition;
 }
 
 void setMugenAnimationInvisible(int tID)
@@ -975,7 +986,9 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		scaleDrawing3D(*e->mCameraScaleReference, caller->mCameraCenter);
 	}
 	if (e->mHasCameraAngleReference && *e->mCameraAngleReference) {
-		setDrawingRotationZ(*e->mCameraAngleReference, caller->mCameraCenter);
+		//if (caller->mScale != makePosition(1, 1, 1)) scaleDrawing3D(1 / caller->mScale, caller->mScalePosition + makePosition(0.5, 0.5, 0));
+		//setDrawingRotationZ(*e->mCameraAngleReference, caller->mCameraCenter);
+		//if (caller->mScale != makePosition(1, 1, 1)) scaleDrawing3D(caller->mScale, caller->mScalePosition + makePosition(0.5, 0.5, 0));
 	}
 
 	drawSprite(sprite->mTexture, p, texturePos);
@@ -1061,17 +1074,24 @@ static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement
 
 	Position scalePosition = p;
 	p = vecSub(p, e->mSprite->mAxisOffset);
-	ScreenSize sz = getScreenSize();
 	Vector3D cameraCenter;
-	if (e->mHasCameraPositionReference) {
-		p = vecAdd(p, *e->mCameraPositionReference);
-		cameraCenter = vecAdd(*e->mCameraPositionReference, makePosition(sz.x / 2, sz.y / 2, 0));
+
+	Position effectPosition;
+	if (!e->mHasCameraEffectPositionReference) {
+		ScreenSize sz = getScreenSize();
+		effectPosition = makePosition(sz.x / 2, sz.y / 2, 0);
 	}
 	else {
-		cameraCenter = makePosition(sz.x / 2, sz.y / 2, 0);
+		effectPosition = *e->mCameraEffectPositionReference;
 	}
 
-
+	if (e->mHasCameraPositionReference) {
+		p = vecAdd(p, *e->mCameraPositionReference);
+		cameraCenter = vecAdd(*e->mCameraPositionReference, effectPosition);
+	}
+	else {
+		cameraCenter = effectPosition;
+	}
 
 	double angle = e->mBaseDrawAngle;
 	if (e->mHasAngleReference) {

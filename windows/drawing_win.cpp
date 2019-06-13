@@ -22,11 +22,9 @@
 #include "prism/math.h"
 #include "prism/stlutil.h"
 
-
-
 static const GLchar *vertex_shader =
 "uniform mat4 ProjMtx;\n"
-"attribute vec3 Position;\n"
+"attribute vec2 Position;\n"
 "attribute vec2 UV;\n"
 "attribute vec4 Color;\n"
 "varying vec2 Frag_UV;\n"
@@ -35,7 +33,7 @@ static const GLchar *vertex_shader =
 "{\n"
 "	Frag_UV = UV;\n"
 "	Frag_Color = Color;\n"
-"	gl_Position = ProjMtx * vec4(Position.xyz,1);\n"
+"	gl_Position = ProjMtx * vec4(Position.xy, 0, 1);\n"
 "}\n";
 
 static const GLchar* fragment_shader =
@@ -136,8 +134,16 @@ public:
 		return impl_.mSprite;
 	}
 
+	DrawListSpriteElement* asSpriteElement() {
+		return &impl_.mSprite;
+	}
+
 	operator DrawListTruetypeElement() const {
 		return impl_.mTrueType;
+	}
+
+	DrawListTruetypeElement* asTruetypeElement() {
+		return &impl_.mTrueType;
 	}
 
 	Type mType;
@@ -160,8 +166,8 @@ static struct {
 } gOpenGLData;
 
 static struct {
-	int mFrameStartTime;
-	double mRealFramerate;
+	double mFrameStartTime;
+	double mRealFramerate = 60;
 } gBookkeepingData;
 
 static vector<DrawListElement> gDrawVector;
@@ -199,10 +205,10 @@ static void initOpenGL() {
 	glEnableVertexAttribArray(gOpenGLData.mAttribLocationPosition);
 	glEnableVertexAttribArray(gOpenGLData.mAttribLocationUV);
 	glEnableVertexAttribArray(gOpenGLData.mAttribLocationColor);
-	int stride = sizeof(GLfloat) * 9;
-	glVertexAttribPointer(gOpenGLData.mAttribLocationPosition, 3, GL_FLOAT, GL_FALSE, stride, 0);
-	glVertexAttribPointer(gOpenGLData.mAttribLocationUV, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 3));
-	glVertexAttribPointer(gOpenGLData.mAttribLocationColor, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 5));
+	int stride = sizeof(GLfloat) * 8;
+	glVertexAttribPointer(gOpenGLData.mAttribLocationPosition, 2, GL_FLOAT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(gOpenGLData.mAttribLocationUV, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 2));
+	glVertexAttribPointer(gOpenGLData.mAttribLocationColor, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 4));
 	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gOpenGLData.mElementsHandle);
 
@@ -213,6 +219,12 @@ static void initOpenGL() {
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
 	glActiveTexture(GL_TEXTURE0);
+
+	GLuint elements[] = {
+	0, 1, 2,
+	2, 3, 0
+	};
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STREAM_DRAW);
 
 	glViewport(0, 0, 640, 480);
 	glClearColor(0, 0, 0, 1);
@@ -335,16 +347,15 @@ static Rectangle makeRectangleFromSDLRect(SDL_Rect tRect) {
 static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double tV, Position tColor, double tAlpha) {
 	tDst[0] = (GLfloat)tPosition.x;
 	tDst[1] = (GLfloat)tPosition.y;
-	tDst[2] = (GLfloat)0;
-	tDst[3] = (GLfloat)tU;
-	tDst[4] = (GLfloat)tV;
-	tDst[5] = (GLfloat)tColor.x;
-	tDst[6] = (GLfloat)tColor.y;
-	tDst[7] = (GLfloat)tColor.z;
-	tDst[8] = (GLfloat)tAlpha;
+	tDst[2] = (GLfloat)tU;
+	tDst[3] = (GLfloat)tV;
+	tDst[4] = (GLfloat)tColor.x;
+	tDst[5] = (GLfloat)tColor.y;
+	tDst[6] = (GLfloat)tColor.z;
+	tDst[7] = (GLfloat)tAlpha;
 }
 
-static void drawOpenGLTexture(GLuint tTextureID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
+static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle& tSrcRect, const GeoRectangle& tDstRect, DrawingData* tData) {
 	Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
 	float matrix[4][4];
@@ -356,27 +367,17 @@ static void drawOpenGLTexture(GLuint tTextureID, GeoRectangle tSrcRect, GeoRecta
 
 	glUniformMatrix4fv(gOpenGLData.mAttribLocationProjMtx, 1, GL_FALSE, &matrix[0][0]);
 
-	GLfloat vertices[4 * 9];
-	setSingleVertex(&vertices[0 * 9], tDstRect.mTopLeft, tSrcRect.mTopLeft.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a);
-	setSingleVertex(&vertices[1 * 9], makePosition(tDstRect.mBottomRight.x, tDstRect.mTopLeft.y, tDstRect.mTopLeft.z), tSrcRect.mBottomRight.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a);
-	setSingleVertex(&vertices[2 * 9], tDstRect.mBottomRight, tSrcRect.mBottomRight.x, tSrcRect.mBottomRight.y, makePosition(tData->r, tData->g, tData->b), tData->a);
-	setSingleVertex(&vertices[3 * 9], makePosition(tDstRect.mTopLeft.x, tDstRect.mBottomRight.y, tDstRect.mTopLeft.z), tSrcRect.mTopLeft.x, tSrcRect.mBottomRight.y, makePosition(tData->r, tData->g, tData->b), tData->a);
+	GLfloat vertices[4 * 8];
+	setSingleVertex(&vertices[0 * 8], tDstRect.mTopLeft, tSrcRect.mTopLeft.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a);
+	setSingleVertex(&vertices[1 * 8], makePosition(tDstRect.mBottomRight.x, tDstRect.mTopLeft.y, tDstRect.mTopLeft.z), tSrcRect.mBottomRight.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a);
+	setSingleVertex(&vertices[2 * 8], tDstRect.mBottomRight, tSrcRect.mBottomRight.x, tSrcRect.mBottomRight.y, makePosition(tData->r, tData->g, tData->b), tData->a);
+	setSingleVertex(&vertices[3 * 8], makePosition(tDstRect.mTopLeft.x, tDstRect.mBottomRight.y, tDstRect.mTopLeft.z), tSrcRect.mTopLeft.x, tSrcRect.mBottomRight.y, makePosition(tData->r, tData->g, tData->b), tData->a);
 
-	int stride = sizeof(GLfloat) * 9;
+	int stride = sizeof(GLfloat) * 8;
 	glBufferData(GL_ARRAY_BUFFER, 4 * stride, vertices, GL_STREAM_DRAW);
-
-	GLuint elements[] = {
-		0, 1, 2,
-		2, 3, 0
-	};
-
-
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STREAM_DRAW);
 
 	glBindTexture(GL_TEXTURE_2D, tTextureID);
 	glDrawElements(GL_TRIANGLES, (GLsizei)6, GL_UNSIGNED_INT, 0);
-
-
 }
 
 static void drawSDLSurface(SDL_Surface* tSurface, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
@@ -533,12 +534,12 @@ static void drawSorted(void* tCaller, DrawListElement& tData) {
 	DrawListElement* e = &tData;
 
 	if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_SPRITE) {
-		auto sprite = (DrawListSpriteElement)*e;
-		drawSortedSprite(&sprite);
+		auto sprite = e->asSpriteElement();
+		drawSortedSprite(sprite);
 	}
 	else if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_TRUETYPE) {
-		auto sprite = (DrawListTruetypeElement)*e;
-		drawSortedTruetype(&sprite);
+		auto sprite = e->asTruetypeElement();
+		drawSortedTruetype(sprite);
 	}
 	else {
 		logError("Unrecognized draw type");
@@ -555,19 +556,35 @@ void stopDrawing() {
 	SDL_GL_SwapWindow(gSDLWindow);
 }
 
-void waitForScreen() {
-	double frameMS = (1.0 / 60) * 1000;
-	int frameEndTime = (int)(gBookkeepingData.mFrameStartTime + ceil(frameMS));
-	int waitTime = frameEndTime - SDL_GetTicks();
-	if (waitTime > 0) {
 #ifndef __EMSCRIPTEN__
-		std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+#define Rectangle Rectangle2
+#include <Windows.h>
+#undef Rectangle
 #endif
+
+void waitForScreen() {
+#ifndef __EMSCRIPTEN__
+	LARGE_INTEGER counter;
+
+	QueryPerformanceFrequency(&counter);
+	double freq = counter.QuadPart / 1000.0;
+	auto time = counter.QuadPart / freq;
+	double frameMS = (1.0 / 60) * 1000;
+	double frameEndTime = gBookkeepingData.mFrameStartTime + frameMS;
+	QueryPerformanceCounter(&counter);
+	double waitTime = frameEndTime - (counter.QuadPart / freq);
+	while (waitTime > 0) {
+		QueryPerformanceCounter(&counter);
+		waitTime = frameEndTime - (counter.QuadPart / freq);
 	}
 
-	int now = SDL_GetTicks();
+	QueryPerformanceCounter(&counter);
+	double now = (counter.QuadPart / freq);
 	gBookkeepingData.mRealFramerate = 1000.0 / (now - gBookkeepingData.mFrameStartTime);
 	gBookkeepingData.mFrameStartTime = now;
+#else
+	gBookkeepingData.mRealFramerate = 60;
+#endif
 }
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);

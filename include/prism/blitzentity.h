@@ -28,6 +28,7 @@ double getBlitzEntityPositionX(int tID);
 double getBlitzEntityPositionY(int tID);
 Vector3D getBlitzEntityScale(int tID);
 double getBlitzEntityRotationZ(int tID);
+double getBlitzEntityDistance2D(int tID1, int tID2);
 
 Position* getBlitzEntityPositionReference(int tID);
 Vector3D* getBlitzEntityScaleReference(int tID);

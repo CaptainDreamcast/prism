@@ -266,6 +266,11 @@ double getBlitzEntityRotationZ(int tID)
 	return e->mAngle;
 }
 
+double getBlitzEntityDistance2D(int tID1, int tID2)
+{
+	return vecLength2D(getBlitzEntityPosition(tID1) - getBlitzEntityPosition(tID2));
+}
+
 Position * getBlitzEntityPositionReference(int tID)
 {
 	if (tID == getBlitzCameraHandlerEntityID()) {

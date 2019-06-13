@@ -137,6 +137,12 @@ void setBlitzPhysicsVelocityX(int tEntityID, double tX)
 	e->mVelocity.x = tX;
 }
 
+void addBlitzPhysicsVelocity(int tEntityID, Velocity tVelocity)
+{
+	PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
+	e->mVelocity += tVelocity;
+}
+
 void addBlitzPhysicsVelocityX(int tEntityID, double tX)
 {
 	PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);

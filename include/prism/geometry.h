@@ -33,6 +33,7 @@ typedef struct{
 double dot3D(Vector3D p1, Vector3D p2);
 
 Vector3DI makeVector3DI(int x, int y, int z);
+Position makePosition(Vector3DI tOtherVector);
 Position makePosition(double x, double y, double z);
 Position variatePosition(Position tBase);
 void printPosition(char* tName, Position tPosition);
@@ -80,6 +81,8 @@ Vector3D operator+(const Vector3D& a, const Vector3D& b);
 Vector3D operator-(const Vector3D& a, const Vector3D& b);
 Vector3D operator*(const double& a, const Vector3D& b);
 Vector3D operator*(const Vector3D& a, const double& b);
+Vector3D operator/(const Vector3D& a, const double& b);
+Vector3D operator/(const double& a, const Vector3D& b);
 // pairwise multiplication
 Vector3D operator*(const Vector3D& a, const Vector3D& b); 
 int operator==(const Vector3D& a, const Vector3D& b);
@@ -88,6 +91,10 @@ Vector3D& operator+=(Vector3D& a, const Vector3D& b);
 
 
 Vector3DI operator+(const Vector3DI& a, const Vector3DI& b);
+Vector3D operator+(const Vector3DI& a, const Vector3D& b);
+Vector3D operator+(const Vector3D& a, const Vector3DI& b);
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b);
+Vector3D operator/(const Vector3DI& a, const double& b);
+Vector3DI operator/(const Vector3DI& a, const int& b);
 int operator==(const Vector3DI& a, const Vector3DI& b);
 int operator!=(const Vector3DI& a, const Vector3DI& b);

@@ -22,6 +22,9 @@ double* getBlitzCameraHandlerRotationZReference();
 double getBlitzCameraHandlerRotationZ();
 void setBlitzCameraHandlerRotationZ(double tAngle);
 
+Position* getBlitzCameraHandlerEffectPositionReference();
+void setBlitzCameraHandlerEffectPositionOffset(Position tPosition);
+
 int getBlitzCameraHandlerEntityID();
 
 void setBlitzCameraHandlerRange(GeoRectangle tRectangle);

@@ -70,6 +70,15 @@ int stringBeginsWithSubstringCaseIndependent(const char * tString, const char * 
 	return stringBeginsWithSubstring(s.data(), substring.data());
 }
 
+int stringEqualCaseIndependent(const char * tString, const char * tOtherString)
+{
+	string s(tString);
+	string otherString(tOtherString);
+	transform(s.begin(), s.end(), s.begin(), ::tolower);
+	transform(otherString.begin(), otherString.end(), otherString.begin(), ::tolower);
+	return s == otherString;
+}
+
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
 	ListElement* e = (ListElement*)allocMemory(sizeof(ListElement));
 	e->mID = tList->mIDs++;

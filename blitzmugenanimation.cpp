@@ -59,6 +59,7 @@ void addBlitzMugenAnimationComponentGeneral(int tEntityID, MugenSpriteFile * tSp
 		setMugenAnimationCameraPositionReference(e->mAnimationID, getBlitzCameraHandlerPositionReference());
 		setMugenAnimationCameraScaleReference(e->mAnimationID, getBlitzCameraHandlerScaleReference());
 		setMugenAnimationCameraAngleReference(e->mAnimationID, getBlitzCameraHandlerRotationZReference());
+		setMugenAnimationCameraEffectPositionReference(e->mAnimationID, getBlitzCameraHandlerEffectPositionReference());
 	}
 	
 	registerBlitzComponent(tEntityID, getBlitzMugenAnimationComponent());
@@ -158,6 +159,12 @@ void setBlitzMugenAnimationBaseDrawScale(int tEntityID, double tScale)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 	setMugenAnimationBaseDrawScale(e->mAnimationID, tScale);
+}
+
+void setBlitzMugenAnimationAngle(int tEntityID, double tRotation)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationDrawAngle(e->mAnimationID, tRotation);
 }
 
 void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void *), void * tCaller)
