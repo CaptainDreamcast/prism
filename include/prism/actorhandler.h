@@ -27,6 +27,7 @@ ActorBlueprint makeActorBlueprint(LoadActorFunction tLoad, UnloadActorFunction t
 int instantiateActor(ActorBlueprint tBP);
 int instantiateActorWithData(ActorBlueprint tBP, void* tData, int tIsOwned);
 void performOnActor(int tID, ActorInteractionFunction tFunc, void* tCaller);
+void setActorUnpausable(int tID);
 void removeActor(int tID);
 void* getActorData(int tID);
 

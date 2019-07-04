@@ -467,7 +467,7 @@ static MugenAnimations createEmptyMugenAnimationFile() {
 	return ret;
 }
 
-MugenAnimations loadMugenAnimationFile(std::string& tPath) {
+MugenAnimations loadMugenAnimationFile(std::string tPath) {
 	return loadMugenAnimationFile(tPath.data());
 }
 

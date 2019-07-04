@@ -8,7 +8,9 @@
 #include "prism/collisionhandler.h"
 #include "prism/blitzmugenanimation.h"
 #include "prism/blitzphysics.h"
+#include "prism/stlutil.h"
 
+using namespace std;
 
 typedef struct {
 	void(*mFunc)(void*, void*);
@@ -44,19 +46,25 @@ typedef struct {
 	int mIsLeftCollided;
 	int mIsRightCollided;
 
-	IntMap mCollisionObjects; // contains BlitzCollisionObjects
+	map<int, BlitzCollisionObject> mCollisionObjects;
 	int mIsEmpty;
 } CollisionEntry;
 
 static struct {
-	IntMap mEntries;
-	List mActiveSolidCollisions;
-} gData;
+	map<int, CollisionEntry> mEntries;
+	list<ActiveSolidCollision> mActiveSolidCollisions;
+} gBlitzCollisionData;
 
 static void loadBlitzCollisionHandler(void* tData) {
 	(void)tData;
-	gData.mEntries = new_int_map();
-	gData.mActiveSolidCollisions = new_list();
+	gBlitzCollisionData.mEntries.clear();
+	gBlitzCollisionData.mActiveSolidCollisions.clear();
+}
+
+static void unloadBlitzCollisionHandler(void* tData) {
+	(void)tData;
+	gBlitzCollisionData.mEntries.clear();
+	gBlitzCollisionData.mActiveSolidCollisions.clear();
 }
 
 // TODO: fix after proper sequential actor handler is implemented
@@ -64,9 +72,8 @@ static void updateSingleBlitzCollidedValue(int* tValue) {
 	*tValue = 0;
 }
 
-static void updateSingleBlitzCollisionEntry(void* tCaller, void* tData) {
-	(void)tCaller;
-	CollisionEntry* e = (CollisionEntry*)tData;
+static void updateSingleBlitzCollisionEntry(void* , CollisionEntry& tData) {
+	CollisionEntry* e = &tData;
 	updateSingleBlitzCollidedValue(&e->mIsTopCollided);
 	updateSingleBlitzCollidedValue(&e->mIsBottomCollided);
 	updateSingleBlitzCollidedValue(&e->mIsLeftCollided);
@@ -74,23 +81,23 @@ static void updateSingleBlitzCollisionEntry(void* tCaller, void* tData) {
 }
 
 static CollisionEntry* getBlitzCollisionEntry(int tEntityID) {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) {
+	if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have collision component.", tEntityID);
 		recoverFromError();
 	}
 
-	return (CollisionEntry*)int_map_get(&gData.mEntries, tEntityID);
+	return &gBlitzCollisionData.mEntries[tEntityID];
 }
 
 static BlitzCollisionObject* getBlitzCollisionObject(int tEntityID, int tCollisionID) {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
 
-	if (!int_map_contains(&e->mCollisionObjects, tCollisionID)) {
+	if (!stl_map_contains(e->mCollisionObjects, tCollisionID)) {
 		logErrorFormat("Entity with ID %d does not have collision with id %d.", tEntityID, tCollisionID);
 		recoverFromError();
 	}
 
-	return (BlitzCollisionObject*)int_map_get(&e->mCollisionObjects, tCollisionID);
+	return &e->mCollisionObjects[tCollisionID];
 }
 
 static void setBlitzCollisionTopCollided(int tEntityID, int tIsCollided) {
@@ -114,9 +121,8 @@ static void setBlitzCollisionRightCollided(int tEntityID, int tIsCollided) {
 }
 
 
-static int updateSingleSolidCollision(void* tCaller, void* tData) {
-	(void)tCaller;
-	ActiveSolidCollision* e = (ActiveSolidCollision*)tData;
+static int updateSingleSolidCollision(void* , ActiveSolidCollision& tData) {
+	ActiveSolidCollision* e = &tData;
 	BlitzCollisionObject* selfObject = e->a;
 	BlitzCollisionObject* otherObject = e->b;
 	if (!isHandledCollisionValid(selfObject->mCollisionListID, selfObject->mCollisionHandlerID)) return 1;
@@ -137,8 +143,8 @@ static int updateSingleSolidCollision(void* tCaller, void* tData) {
 static void updateBlitzCollisionHandler(void* tData) {
 	(void)tData;
 	
-	int_map_map(&gData.mEntries, updateSingleBlitzCollisionEntry, NULL);
-	list_remove_predicate(&gData.mActiveSolidCollisions, updateSingleSolidCollision, NULL);
+	stl_int_map_map(gBlitzCollisionData.mEntries, updateSingleBlitzCollisionEntry);
+	stl_list_remove_predicate(gBlitzCollisionData.mActiveSolidCollisions, updateSingleSolidCollision);
 }
 
 static void unregisterEntity(int tEntityID);
@@ -164,10 +170,10 @@ static void internalCollisionCB(void* tCaller, void* tCollisionData) {
 
 	if (selfObject->mIsSolid && otherObject->mIsSolid) {
 		if (selfObject->mIsMovable && !otherObject->mIsMovable) {
-			ActiveSolidCollision* solidCollision = (ActiveSolidCollision*)allocMemory(sizeof(ActiveSolidCollision));
-			solidCollision->a = selfObject;
-			solidCollision->b = otherObject;
-			list_push_back_owned(&gData.mActiveSolidCollisions, solidCollision);
+			ActiveSolidCollision solidCollision;
+			solidCollision.a = selfObject;
+			solidCollision.b = otherObject;
+			gBlitzCollisionData.mActiveSolidCollisions.push_back(solidCollision);
 		}
 	}
 
@@ -176,13 +182,10 @@ static void internalCollisionCB(void* tCaller, void* tCollisionData) {
 
 void addBlitzCollisionComponent(int tEntityID)
 {
-	CollisionEntry* e = (CollisionEntry*)allocMemory(sizeof(CollisionEntry));
-	e->mEntityID = tEntityID;
-	
-	e->mCollisionObjects = new_int_map();
-
+	CollisionEntry e;
+	e.mEntityID = tEntityID;
 	registerBlitzComponent(tEntityID, getBlitzCollisionComponent());
-	int_map_push_owned(&gData.mEntries, tEntityID, e);
+	gBlitzCollisionData.mEntries[tEntityID] = e;
 }
 
 void removeBlitzCollisionComponent(int tEntityID)
@@ -191,7 +194,8 @@ void removeBlitzCollisionComponent(int tEntityID)
 }
 
 static int addEmptyCollisionObject(CollisionEntry* tEntry, int tList, int tOwnsCollisionHandlerObject) {
-	BlitzCollisionObject* e = (BlitzCollisionObject*)allocMemory(sizeof(BlitzCollisionObject));
+	int id = stl_int_map_push_back(tEntry->mCollisionObjects, BlitzCollisionObject());
+	BlitzCollisionObject* e = &tEntry->mCollisionObjects[id];
 	e->mEntityID = tEntry->mEntityID;
 	e->mCollisionListID = tList;
 	e->mOwnsCollisionHandlerObject = tOwnsCollisionHandlerObject;
@@ -199,8 +203,7 @@ static int addEmptyCollisionObject(CollisionEntry* tEntry, int tList, int tOwnsC
 	e->mCollisionData = NULL;
 	e->mIsSolid = 0;
 	e->mCollisionCallbacks = new_list();
-	
-	return int_map_push_back_owned(&tEntry->mCollisionObjects, e);
+	return id;
 }
 
 int addBlitzCollisionPassiveMugen(int tEntityID, int tList)
@@ -208,7 +211,7 @@ int addBlitzCollisionPassiveMugen(int tEntityID, int tList)
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
 	int mugenAnimationID = getBlitzMugenAnimationID(tEntityID);
 	int collisionID = addEmptyCollisionObject(e, tList, 0);
-	BlitzCollisionObject* object = (BlitzCollisionObject*)int_map_get(&e->mCollisionObjects, collisionID);
+	BlitzCollisionObject* object = &e->mCollisionObjects[collisionID];
 	setMugenAnimationPassiveCollisionActive(mugenAnimationID, tList, internalCollisionCB, object, object);
 
 	return collisionID;
@@ -218,7 +221,7 @@ int addBlitzCollisionAttackMugen(int tEntityID, int tList) {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
 	int mugenAnimationID = getBlitzMugenAnimationID(tEntityID);
 	int collisionID = addEmptyCollisionObject(e, tList, 0);
-	BlitzCollisionObject* object = (BlitzCollisionObject*)int_map_get(&e->mCollisionObjects, collisionID);
+	BlitzCollisionObject* object = &e->mCollisionObjects[collisionID];
 	setMugenAnimationAttackCollisionActive(mugenAnimationID, tList, internalCollisionCB, object, object);
 	
 	return collisionID;
@@ -228,7 +231,7 @@ int addBlitzCollisionRect(int tEntityID, int tList, CollisionRect tRectangle)
 {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
 	int collisionObjectID = addEmptyCollisionObject(e, tList, 1);
-	BlitzCollisionObject* object = (BlitzCollisionObject*)int_map_get(&e->mCollisionObjects, collisionObjectID);
+	BlitzCollisionObject* object = &e->mCollisionObjects[collisionObjectID];
 	object->mCollisionHandlerID = addCollisionRectangleToCollisionHandler(tList, getBlitzEntityPositionReference(tEntityID), tRectangle, internalCollisionCB, object, object);
 
 	return collisionObjectID;
@@ -236,7 +239,7 @@ int addBlitzCollisionRect(int tEntityID, int tList, CollisionRect tRectangle)
 
 void changeBlitzCollisionRect(int tEntityID, int tCollisionID, CollisionRect tRectangle) {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
-	BlitzCollisionObject* object = (BlitzCollisionObject*)int_map_get(&e->mCollisionObjects, tCollisionID);
+	BlitzCollisionObject* object = &e->mCollisionObjects[tCollisionID];
 	changeCollisionRectangleInCollisionHandler(object->mCollisionListID, object->mCollisionHandlerID, tRectangle);
 }
 
@@ -244,7 +247,7 @@ int addBlitzCollisionCirc(int tEntityID, int tList, CollisionCirc tCircle)
 {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
 	int collisionObjectID = addEmptyCollisionObject(e, tList, 1);
-	BlitzCollisionObject* object = (BlitzCollisionObject*)int_map_get(&e->mCollisionObjects, collisionObjectID);
+	BlitzCollisionObject* object = &e->mCollisionObjects[collisionObjectID];
 	object->mCollisionHandlerID = addCollisionCircleToCollisionHandler(tList, getBlitzEntityPositionReference(tEntityID), tCircle, internalCollisionCB, object, object);
 
 	return collisionObjectID;
@@ -278,41 +281,40 @@ void setBlitzCollisionSolid(int tEntityID, int tCollisionID, int tIsMovable)
 
 int hasBlitzCollidedTop(int tEntityID)
 {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) return 0;
+	if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) return 0;
 
-	CollisionEntry* e = (CollisionEntry*)int_map_get(&gData.mEntries, tEntityID);
+	CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
 	return e->mIsTopCollided;
 }
 
 int hasBlitzCollidedBottom(int tEntityID)
 {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) return 0;
+	if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) return 0;
 
-	CollisionEntry* e = (CollisionEntry*)int_map_get(&gData.mEntries, tEntityID);
+	CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
 	return e->mIsBottomCollided;
 }
 
 int hasBlitzCollidedLeft(int tEntityID)
 {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) return 0;
+	if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) return 0;
 
-	CollisionEntry* e = (CollisionEntry*)int_map_get(&gData.mEntries, tEntityID);
+	CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
 	return e->mIsLeftCollided;
 }
 
 int hasBlitzCollidedRight(int tEntityID)
 {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) return 0;
+	if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) return 0;
 
-	CollisionEntry* e = (CollisionEntry*)int_map_get(&gData.mEntries, tEntityID);
+	CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
 	return e->mIsRightCollided;
 }
 
 
 
-static int removeSingleCollisionObject(void* tCaller, void* tData) {
-	(void)tCaller;
-	BlitzCollisionObject* e = (BlitzCollisionObject*)tData;
+static int removeSingleCollisionObject(void* , BlitzCollisionObject& tData) {
+	BlitzCollisionObject* e = &tData;
 	if (e->mOwnsCollisionHandlerObject) {
 		removeFromCollisionHandler(e->mCollisionListID, e->mCollisionHandlerID);
 	}
@@ -322,14 +324,13 @@ static int removeSingleCollisionObject(void* tCaller, void* tData) {
 }
 
 static void unregisterEntity(int tEntityID) {
-	CollisionEntry* e = (CollisionEntry*)int_map_get(&gData.mEntries, tEntityID);
-	int_map_remove_predicate(&e->mCollisionObjects, removeSingleCollisionObject, NULL);
-	delete_int_map(&e->mCollisionObjects);
-	int_map_remove(&gData.mEntries, tEntityID);
+	CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
+	stl_int_map_remove_predicate(e->mCollisionObjects, removeSingleCollisionObject);
+	gBlitzCollisionData.mEntries.erase(tEntityID);
 }
 
 void removeAllBlitzCollisions(int tEntityID)
 {
-	CollisionEntry* e = (CollisionEntry*)int_map_get(&gData.mEntries, tEntityID);
-	int_map_remove_predicate(&e->mCollisionObjects, removeSingleCollisionObject, NULL);
+	CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
+	stl_int_map_remove_predicate(e->mCollisionObjects, removeSingleCollisionObject);
 }

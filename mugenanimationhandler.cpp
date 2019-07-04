@@ -985,10 +985,14 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	if (e->mHasCameraScaleReference && *e->mCameraScaleReference != makePosition(1, 1, 1)) {
 		scaleDrawing3D(*e->mCameraScaleReference, caller->mCameraCenter);
 	}
-	if (e->mHasCameraAngleReference && *e->mCameraAngleReference) {
-		//if (caller->mScale != makePosition(1, 1, 1)) scaleDrawing3D(1 / caller->mScale, caller->mScalePosition + makePosition(0.5, 0.5, 0));
-		//setDrawingRotationZ(*e->mCameraAngleReference, caller->mCameraCenter);
-		//if (caller->mScale != makePosition(1, 1, 1)) scaleDrawing3D(caller->mScale, caller->mScalePosition + makePosition(0.5, 0.5, 0));
+	if (e->mHasCameraAngleReference && *e->mCameraAngleReference > 1e-5) {
+		if (caller->mAngle) { // TODO
+			setDrawingRotationZ(-caller->mAngle, caller->mScalePosition + makePosition(0.5, 0.5, 0));
+		}
+	
+		if (caller->mScale != makePosition(1, 1, 1)) scaleDrawing3D(1 / caller->mScale, caller->mScalePosition + makePosition(0.5, 0.5, 0));
+		setDrawingRotationZ(*e->mCameraAngleReference, caller->mCameraCenter);
+		if (caller->mScale != makePosition(1, 1, 1)) scaleDrawing3D(caller->mScale, caller->mScalePosition + makePosition(0.5, 0.5, 0));
 	}
 
 	drawSprite(sprite->mTexture, p, texturePos);
