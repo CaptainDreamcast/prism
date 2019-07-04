@@ -154,7 +154,7 @@ static BlitzComponent getBlitzCollisionComponent() {
 }
 
 ActorBlueprint getBlitzCollisionHandler(){
-	return makeActorBlueprint(loadBlitzCollisionHandler, NULL, updateBlitzCollisionHandler);
+	return makeActorBlueprint(loadBlitzCollisionHandler, unloadBlitzCollisionHandler, updateBlitzCollisionHandler);
 }
 
 static void internalCollisionHandleSingleCB(void* tCaller, void* tData) {
