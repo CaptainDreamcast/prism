@@ -47,7 +47,7 @@ typedef struct {
 
 } MugenAnimations;
 
-MugenAnimations loadMugenAnimationFile(std::string& tPath);
+MugenAnimations loadMugenAnimationFile(std::string tPath);
 MugenAnimations loadMugenAnimationFile(const char* tPath);
 MugenAnimations loadMugenAnimationFileWithMemoryStack(const char* tPath, MemoryStack* tMemoryStack);
 void unloadMugenAnimationFile(MugenAnimations* tAnimations);

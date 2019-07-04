@@ -11,10 +11,10 @@ void shutdownScreenEffects();
 
 ActorBlueprint getScreenEffectHandler();
 
-void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
-void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
+void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller = nullptr);
+void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller = nullptr);
 void skipFadeIn();
-void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller);
+void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller = nullptr);
 void setFadeColor(Color tColor);
 void setFadeColorRGB(double r, double g, double b);
 void setScreenEffectZ(double tZ);

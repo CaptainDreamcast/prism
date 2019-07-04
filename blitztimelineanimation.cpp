@@ -241,9 +241,14 @@ int playBlitzTimelineAnimation(int tEntityID, int tAnimation) {
 
 void stopBlitzTimelineAnimation(int tEntityID, int tAnimationID)
 {
-	(void)tEntityID;
-	(void)tAnimationID;
-	// TODO
+	BlitzTimelineAnimationEntry* e = getBlitzTimelineAnimationEntry(tEntityID);
+	int_map_remove(&e->mActiveAnimations, tAnimationID);
+}
+
+void stopAllBlitzTimelineAnimations(int tEntityID)
+{
+	BlitzTimelineAnimationEntry* e = getBlitzTimelineAnimationEntry(tEntityID);
+	int_map_empty(&e->mActiveAnimations);
 }
 
 void setBlitzTimelineAnimationCB(int tEntityID, int tAnimationID, int tCBID, void (*tCB)(void*), void * tCaller)

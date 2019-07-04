@@ -5,6 +5,9 @@
 #include "prism/log.h"
 #include "prism/system.h"
 #include "prism/blitzcamerahandler.h"
+#include "prism/stlutil.h"
+
+using namespace std;
 
 typedef struct BlitzEntity_t{
 	int mID;
@@ -16,30 +19,34 @@ typedef struct BlitzEntity_t{
 
 	struct BlitzEntity_t* mParent;
 	Position mPreviousParentPosition;
-	Vector mComponents; // contains owned BlitzComponent copy
+	vector<BlitzComponent> mComponents; // contains owned BlitzComponent copy
 
 	int mIsMarkedForDeletion;
 } BlitzEntity;
 
 static struct {
-	IntMap mEntities; // contains BlitzEntity
-} gData;
+	map<int, BlitzEntity> mEntities; // contains BlitzEntity
+} gBlitzEntityData;
 
 static void loadBlitzMugenAnimationHandler(void* tData) {
 	(void)tData;
-	gData.mEntities = new_int_map();
+	gBlitzEntityData.mEntities.clear();
 }
 
-static void unregisterSingleEntityComponent(void* tCaller, void* tData) {
-	BlitzEntity* entity = (BlitzEntity*)tCaller;
-	BlitzComponent* component = (BlitzComponent*)tData;
+static void unloadBlitzMugenAnimationHandler(void* tData) {
+	(void)tData;
+	gBlitzEntityData.mEntities.clear();
+}
 
-	component->mUnregisterEntity(entity->mID);
+static void unregisterSingleEntityComponent(BlitzEntity* tCaller, BlitzComponent& tData) {
+	BlitzComponent* component = &tData;
+
+	component->mUnregisterEntity(tCaller->mID);
 }
 
 static void unloadBlitzEntity(BlitzEntity* e)
 {
-	vector_map(&e->mComponents, unregisterSingleEntityComponent, e);
+	stl_vector_map(e->mComponents, unregisterSingleEntityComponent, e);
 }
 
 static void updateEntityParentReferencePosition(BlitzEntity* e) {
@@ -52,9 +59,9 @@ static void updateEntityParentReferencePosition(BlitzEntity* e) {
 	e->mPreviousParentPosition = parentPos;
 }
 
-static int updateSingleEntity(void* tCaller, void* tData) {
+static int updateSingleEntity(void* tCaller, BlitzEntity& tData) {
 	(void)tCaller;
-	BlitzEntity* e = (BlitzEntity*)tData;
+	BlitzEntity* e = &tData;
 
 	if (e->mIsMarkedForDeletion) {
 		unloadBlitzEntity(e);
@@ -68,34 +75,33 @@ static int updateSingleEntity(void* tCaller, void* tData) {
 
 static void updateBlitzMugenAnimationHandler(void* tData) {
 	(void)tData;
-	int_map_remove_predicate(&gData.mEntities, updateSingleEntity, NULL);
+	stl_int_map_remove_predicate(gBlitzEntityData.mEntities, updateSingleEntity);
 }
 
-// TODO: unload
 ActorBlueprint getBlitzEntityHandler() {
-	return makeActorBlueprint(loadBlitzMugenAnimationHandler, NULL, updateBlitzMugenAnimationHandler);
+	return makeActorBlueprint(loadBlitzMugenAnimationHandler, unloadBlitzMugenAnimationHandler, updateBlitzMugenAnimationHandler);
 }
 
 int addBlitzEntity(Position tPos)
 {
-	BlitzEntity* e = (BlitzEntity*)allocMemory(sizeof(BlitzEntity));
-	e->mPosition = tPos;
-	e->mScale = makePosition(1, 1, 1);
-	e->mAngle = 0;
-	e->mComponents = new_vector();
-	e->mIsMarkedForDeletion = 0;
-	e->mHasParent = 0;
-	e->mID = int_map_push_back_owned(&gData.mEntities, e);
-	return e->mID;
+	int id = stl_int_map_push_back(gBlitzEntityData.mEntities, BlitzEntity());
+	BlitzEntity& e = gBlitzEntityData.mEntities[id];
+	e.mPosition = tPos;
+	e.mScale = makePosition(1, 1, 1);
+	e.mAngle = 0;
+	e.mIsMarkedForDeletion = 0;
+	e.mHasParent = 0;
+	e.mID = id;
+	return e.mID;
 }
 
 static BlitzEntity* getBlitzEntity(int tID) {
-	if (!int_map_contains(&gData.mEntities, tID)) {
+	if (!stl_map_contains(gBlitzEntityData.mEntities, tID)) {
 		logErrorFormat("Unable to find entity %d", tID);
 		recoverFromError();
 	}
 
-	return (BlitzEntity*)int_map_get(&gData.mEntities, tID);
+	return &gBlitzEntityData.mEntities[tID];
 }
 
 void removeBlitzEntity(int tID)
@@ -114,10 +120,7 @@ void registerBlitzComponent(int tID, BlitzComponent tComponent)
 	if (tID == getBlitzCameraHandlerEntityID()) return;
 
 	BlitzEntity* e = getBlitzEntity(tID);
-	BlitzComponent* component = (BlitzComponent*)allocMemory(sizeof(BlitzComponent));
-	*component = tComponent;
-
-	vector_push_back_owned(&e->mComponents, component);
+	e->mComponents.push_back(tComponent);
 }
 
 void setBlitzEntityPosition(int tID, Position tPos)
@@ -264,6 +267,11 @@ double getBlitzEntityRotationZ(int tID)
 	}
 	BlitzEntity* e = getBlitzEntity(tID);
 	return e->mAngle;
+}
+
+double getBlitzEntityDistance2D(int tID1, int tID2)
+{
+	return vecLength2D(getBlitzEntityPosition(tID1) - getBlitzEntityPosition(tID2));
 }
 
 Position * getBlitzEntityPositionReference(int tID)

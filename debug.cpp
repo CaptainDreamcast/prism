@@ -15,7 +15,6 @@ using namespace std;
 
 typedef struct {
 	double mPreviousFPS[PREVIOUS_FPS_AMOUNT];
-	uint64_t mPrevTime;
 	int mFPSCounterTextID;
 
 	uint64_t mStartDrawingTime;
@@ -121,7 +120,6 @@ static void loadPrismDebug(void* tData) {
 	double offset = (sz.y / 480.0) * 20;
 	int dy = 10;
 
-	gPrismDebug.mSideDisplay.mPrevTime = getSystemTicks();
 	gPrismDebug.mSideDisplay.mFPSCounterTextID = addMugenTextMugenStyle("00.0", makePosition(sz.x - offset, offset, 95), makeVector3DI(-1, 1, -1));
 
 	gPrismDebug.mSideDisplay.mStartDrawingTime = gPrismDebug.mSideDisplay.mEndDrawingTime = getSystemTicks();
@@ -145,12 +143,7 @@ static void unloadPrismDebug(void* tData) {
 }
 
 static void updatePrismDebugSideDisplay() {
-	uint64_t currentTime = getSystemTicks();
-
-	uint64_t dt = currentTime - gPrismDebug.mSideDisplay.mPrevTime;
-	double ds = dt / 1000.0;
-	double fps = 1 / ds;
-
+	double fps = getRealFramerate();
 	double fpsSum = fps + gPrismDebug.mSideDisplay.mPreviousFPS[PREVIOUS_FPS_AMOUNT - 1];
 	for (int i = 1; i < PREVIOUS_FPS_AMOUNT; i++) {
 		fpsSum += gPrismDebug.mSideDisplay.mPreviousFPS[i - 1];
@@ -162,7 +155,6 @@ static void updatePrismDebugSideDisplay() {
 	char text[200];
 	sprintf(text, "%.1f", fpsSum);
 	changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, text);
-	gPrismDebug.mSideDisplay.mPrevTime = currentTime;
 
 	sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
 	changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, text);

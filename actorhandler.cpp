@@ -3,6 +3,7 @@
 #include "prism/datastructures.h"
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
+#include "prism/wrapper.h"
 
 typedef struct {
 	ActorBlueprint mBP;
@@ -11,6 +12,7 @@ typedef struct {
 	int mID;
 	void* mData;
 	int mIsOwned;
+	int mIsPausable;
 } Actor;
 
 static struct {
@@ -69,6 +71,7 @@ void shutdownActorHandler()
 static int updateSingleActor(void* tCaller, void* tData) {
 	(void)tCaller;
 	Actor* e = (Actor*)tData;
+	if (isWrapperPaused() && e->mIsPausable) return 0;
 
 	int isActive = e->mBP.mIsActive == NULL || e->mBP.mIsActive(e->mData);
 	if (!isActive) {
@@ -108,6 +111,7 @@ int instantiateActorWithData(ActorBlueprint tBP, void * tData, int tIsOwned)
 	e->mBP = tBP;
 	e->mData = tData;
 	e->mIsOwned = tIsOwned;
+	e->mIsPausable = 1;
 	
 	if (e->mBP.mLoad) e->mBP.mLoad(e->mData);
 
@@ -122,6 +126,12 @@ void performOnActor(int tID, ActorInteractionFunction tFunc, void * tCaller)
 {
 	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
 	tFunc(tCaller, e->mData);
+}
+
+void setActorUnpausable(int tID)
+{
+	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
+	e->mIsPausable = 0;
 }
 
 void removeActor(int tID)

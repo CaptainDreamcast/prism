@@ -79,6 +79,14 @@ Vector3D vecScaleToSize(Vector3D v, double tSize)
 	return v;
 }
 
+Position makePosition(Vector3DI tOtherVector) {
+	Position pos;
+	pos.x = double(tOtherVector.x);
+	pos.y = double(tOtherVector.y);
+	pos.z = double(tOtherVector.z);
+	return pos;
+}
+
 Position makePosition(double x, double y, double z) {
 	Position pos;
 	pos.x = x;
@@ -336,8 +344,24 @@ Vector3D operator*(const Vector3D& a, const double& b) {
 	return makePosition(a.x * b, a.y * b, a.z * b);
 }
 
+Vector3D operator/(const Vector3D& a, const double& b) {
+	return makePosition(a.x / b, a.y / b, a.z / b);
+}
+
+Vector3D operator/(const double& a, const Vector3D& b) {
+	return makePosition(a / b.x, a / b.y, a / b.z);
+}
+
 Vector3DI operator+(const Vector3DI& a, const Vector3DI& b) {
 	return vecAddI(a, b);
+}
+
+Vector3D operator+(const Vector3DI& a, const Vector3D& b) {
+	return makePosition(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+Vector3D operator+(const Vector3D& a, const Vector3DI& b) {
+	return makePosition(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
 Vector3D operator*(const Vector3D& a, const Vector3D& b) {
@@ -367,6 +391,14 @@ Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
 	ret.y -= b.y;
 	ret.z -= b.z;
 	return ret;
+}
+
+Vector3D operator/(const Vector3DI& a, const double& b) {
+	return makePosition(a.x / b, a.y / b, a.z / b);
+}
+
+Vector3DI operator/(const Vector3DI& a, const int& b) {
+	return makeVector3DI(a.x / b, a.y / b, a.z / b);
 }
 
 int operator==(const Vector3DI& a, const Vector3DI& b) {

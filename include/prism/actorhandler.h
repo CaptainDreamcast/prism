@@ -27,5 +27,29 @@ ActorBlueprint makeActorBlueprint(LoadActorFunction tLoad, UnloadActorFunction t
 int instantiateActor(ActorBlueprint tBP);
 int instantiateActorWithData(ActorBlueprint tBP, void* tData, int tIsOwned);
 void performOnActor(int tID, ActorInteractionFunction tFunc, void* tCaller);
+void setActorUnpausable(int tID);
 void removeActor(int tID);
 void* getActorData(int tID);
+
+#define EXPORT_ACTOR_CLASS(tClassName) \
+static std::unique_ptr<tClassName> g##tClassName; \
+ \
+static void loadActorInternal##tClassName(void* tData) { \
+	(void)tData; \
+	g##tClassName = std::make_unique<tClassName>(); \
+} \
+ \
+static void updateActorInternal##tClassName(void* tData) { \
+	(void)tData; \
+	g##tClassName->update(); \
+} \
+ \
+static void unloadActorInternal##tClassName(void* tData) { \
+	(void)tData; \
+	g##tClassName = nullptr; \
+} \
+ \
+ActorBlueprint get##tClassName() \
+{ \
+	return makeActorBlueprint(loadActorInternal##tClassName, unloadActorInternal##tClassName, updateActorInternal##tClassName); \
+} 

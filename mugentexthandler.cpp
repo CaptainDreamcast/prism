@@ -506,7 +506,7 @@ static void drawSingleBitmapSubSprite(void* tCaller, void* tData) {
 	Position p = vecAdd2D(caller->mBasePosition, vecScale(makePosition(subSprite->mOffset.x, subSprite->mOffset.y, subSprite->mOffset.z), factor));
 	scaleDrawing(factor, p);
 	drawSprite(subSprite->mTexture, p, makeRectangleFromTexture(subSprite->mTexture));
-	setDrawingParametersToIdentity();
+	scaleDrawing(1 / factor, p);
 }
 
 static int hasBitmapTextToLinebreak(char* tText, int tCurrent, Position p, MugenFont* tFont, MugenSpriteFileGroup* tSpriteGroup, double tRightX, double tFactor) {
@@ -611,9 +611,9 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 
 	double factor = caller->mText->mScale; // TODO: remove
 
-	// scaleDrawing(factor, p); // TODO: remove
+	scaleDrawing(factor, p); // TODO: remove
 	drawSprite(subSprite->mTexture, p, makeRectangle(leftX, upY, rightX - leftX, downY - upY));
-	// setDrawingParametersToIdentity();
+	scaleDrawing(1 / factor, p); // TODO: remove
 
 	caller->mBasePosition.x += (rightX - leftX + 1) * factor;
 }
@@ -947,6 +947,12 @@ void setMugenTextPosition(int tID, Position tPosition)
 	MugenTextAlignment alignment = e->mAlignment;
 	e->mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
 	setMugenTextAlignment(tID, alignment);
+}
+
+void addMugenTextPosition(int tID, Position tPosition)
+{
+	auto pos = getMugenTextPositionReference(tID);
+	*pos += tPosition;
 }
 
 void setMugenTextTextBoxWidth(int tID, double tWidth)

@@ -403,28 +403,29 @@ static void updateScreenAbort() {
 	}
 }
 
-static void updatePausableScreen() {
-	updatePhysicsHandler();
-	updateTweening(); // TODO: remove or optionalize
-	updateAnimationHandler();
-	updateStageHandler(); // TODO: remove or optionalize
-	updateCollisionAnimationHandler(); // TODO: remove or optionalize
-	updateCollisionHandler();
-	updateTimer();
-	updateWrapperComponentHandler();
-	updateActorHandler();
 
-	if (gData.mScreen->mUpdate) {
-		gData.mScreen->mUpdate();
-	}
-}
 
 static void updateScreen() {
 	updateSystem();
 	updateInput();
 
-	if (gData.mDebug.mIsPaused < 2) {
-		updatePausableScreen();
+	if (gData.mDebug.mIsPaused < 2 && !gData.mIsPaused) {
+		updatePhysicsHandler();
+		updateTweening(); // TODO: remove or optionalize
+		updateAnimationHandler();
+		updateStageHandler(); // TODO: remove or optionalize
+		updateCollisionAnimationHandler(); // TODO: remove or optionalize
+		updateCollisionHandler();
+		updateTimer();
+		updateWrapperComponentHandler();	
+	}
+
+	updateActorHandler();
+	
+	if (gData.mDebug.mIsPaused < 2 && !gData.mIsPaused) {
+		if (gData.mScreen->mUpdate) {
+			gData.mScreen->mUpdate();
+		}
 	}
 
 	updateScreenDebug();

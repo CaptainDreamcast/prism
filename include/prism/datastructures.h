@@ -9,6 +9,7 @@ char* copyToAllocatedString(char* tSrc); // TODO: remove duplicate
 
 int stringBeginsWithSubstring(const char* tString, const char* tSubstring);
 int stringBeginsWithSubstringCaseIndependent(const char* tString, const char* tSubstring);
+int stringEqualCaseIndependent(const char* tString, const char* tOtherString);
 
 typedef struct ListElement_internal {
 

@@ -30,6 +30,7 @@ typedef struct {
 
 double randfrom(double tMin, double tMax);
 int randfromInteger(int tMin, int tMax);
+Position randPositionInGeoRectangle(const GeoRectangle& tRectangle);
 
 double fatan2(double y, double x);
 

@@ -62,8 +62,8 @@ void initDrawing(){
 	gData.mMatrixStack = new_vector();
 	gData.mIsDisabled = 0;
 
-	gData.mPreviousFrameTime = timer_ms_gettime64() - (1000 / 60);
-	gData.mCurrentFrameTime = timer_ms_gettime64();
+	gData.mPreviousFrameTime = getSystemTicks();
+	gData.mCurrentFrameTime = getSystemTicks();
 
 	sem_init(&gPVRAccessSemaphore, 1);
 }
@@ -261,7 +261,7 @@ void waitForScreen() {
   debugLog("Wait for screen done");
 
   gData.mPreviousFrameTime = gData.mCurrentFrameTime;
-  gData.mCurrentFrameTime = timer_ms_gettime64();
+  gData.mCurrentFrameTime = getSystemTicks();
 }
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);

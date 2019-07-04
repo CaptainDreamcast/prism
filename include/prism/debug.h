@@ -28,4 +28,3 @@ void submitToPrismDebugConsole(std::string tText);
 	double _timePerSample = _timeDelta / double(tSamples); \
 	logFormat("Profiling %s: %f ticks (%d samples running for %llu from %llu to %llu)", #x, _timePerSample, tSamples, _timeDelta, _startTicks, _endTicks); \
 }
-

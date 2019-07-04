@@ -2,7 +2,7 @@
 	emcc $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -g -s SAFE_HEAP=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\lpng1632 -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\zstd\lib -o $@	
 	
 .cpp.o:
-	em++ $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -std=c++11 -fpermissive -g -s SAFE_HEAP=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\lpng1632 -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\zstd\lib -o $@	
+	em++ $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_SDL_TTF=2 -std=c++14 -fpermissive -g -s SAFE_HEAP=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\lpng1632 -I$(PRISM_PATH)\..\..\..\PLATFORMS\WINDOWS\LIBS\zstd\lib -o $@	
 	
 build_develop: $(OBJS) 
 	em++ $(OBJS) -O3 \

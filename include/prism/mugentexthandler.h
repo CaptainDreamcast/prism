@@ -32,6 +32,7 @@ void setMugenTextColor(int tID, Color tColor);
 void setMugenTextColorRGB(int tID, double tR, double tG, double tB);
 void setMugenTextRectangle(int tID, GeoRectangle tRectangle);
 void setMugenTextPosition(int tID, Position tPosition);
+void addMugenTextPosition(int tID, Position tPosition);
 void setMugenTextTextBoxWidth(int tID, double tWidth);
 void setMugenTextBuildup(int tID, Duration mBuildUpDurationPerLetter);
 void setMugenTextBuiltUp(int tID);

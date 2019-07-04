@@ -16,6 +16,7 @@ Velocity getBlitzPhysicsVelocity(int tEntityID);
 Velocity* getBlitzPhysicsVelocityReference(int tEntityID);
 void setBlitzPhysicsVelocity(int tEntityID, Velocity tVelocity);
 void setBlitzPhysicsVelocityX(int tEntityID, double tX);
+void addBlitzPhysicsVelocity(int tEntityID, Velocity tVelocity);
 void addBlitzPhysicsVelocityX(int tEntityID, double tX);
 double getBlitzPhysicsVelocityY(int tEntityID);
 void setBlitzPhysicsVelocityY(int tEntityID, double tY);

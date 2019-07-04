@@ -27,6 +27,11 @@ int randfromInteger(int tMin, int tMax)
 	return val;
 }
 
+Position randPositionInGeoRectangle(const GeoRectangle& tRectangle)
+{
+	return makePosition(randfrom(tRectangle.mTopLeft.x, tRectangle.mBottomRight.x), randfrom(tRectangle.mTopLeft.y, tRectangle.mBottomRight.y), randfrom(tRectangle.mTopLeft.z, tRectangle.mBottomRight.z));
+}
+
 #define PI_FLOAT     3.14159265f
 #define PIBY2_FLOAT  1.5707963f
 
