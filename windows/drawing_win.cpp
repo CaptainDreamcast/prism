@@ -156,13 +156,23 @@ private:
 	} impl_;
 };
 
+enum GraphicsCardType {
+	INTEL,
+	NVIDIA,
+	AMD,
+	UNKNOWN
+};
+
 static struct {
 	int          mShaderHandle, mVertHandle, mFragHandle;
 	int          mAttribLocationTex, mAttribLocationProjMtx;
 	int          mAttribLocationPosition, mAttribLocationUV, mAttribLocationColor;
 	unsigned int mVboHandle, mElementsHandle;
 
+	GraphicsCardType mCardType;
 	Vector3D mScreenScale;
+
+	uint32_t mSubtractionEquation;
 } gOpenGLData;
 
 static struct {
@@ -174,6 +184,35 @@ static vector<DrawListElement> gDrawVector;
 static DrawingData gData;
 
 extern SDL_Window* gSDLWindow;
+
+static void detectOpenGLCardType() {
+	auto vendorString = std::string((char*)glGetString(GL_VENDOR));
+	turnStringLowercase(vendorString);
+	const auto vendorStringsSplit = splitStringBySeparator(vendorString, ' ');
+
+	if (std::find(vendorStringsSplit.begin(), vendorStringsSplit.end(), "intel") != vendorStringsSplit.end()) {
+		gOpenGLData.mCardType = GraphicsCardType::INTEL;
+	}
+	else if (std::find(vendorStringsSplit.begin(), vendorStringsSplit.end(), "nvidia") != vendorStringsSplit.end()) {
+		gOpenGLData.mCardType = GraphicsCardType::NVIDIA;
+	} 
+	else if (std::find(vendorStringsSplit.begin(), vendorStringsSplit.end(), "ati") != vendorStringsSplit.end() || std::find(vendorStringsSplit.begin(), vendorStringsSplit.end(), "amd") != vendorStringsSplit.end()) {
+		gOpenGLData.mCardType = GraphicsCardType::AMD;
+	}
+	else {
+		logWarningFormat("Uable to detect GPU properly: %s %s", (char*)glGetString(GL_VENDOR), (char*)glGetString(GL_RENDERER));
+		gOpenGLData.mCardType = GraphicsCardType::UNKNOWN;
+	}
+}
+
+static void setupCardSpecificRendering() {
+	if (gOpenGLData.mCardType == GraphicsCardType::INTEL) {
+		gOpenGLData.mSubtractionEquation = GL_FUNC_ADD;
+	}
+	else {
+		gOpenGLData.mSubtractionEquation = GL_FUNC_REVERSE_SUBTRACT;
+	}
+}
 
 static void initOpenGL() {
 
@@ -228,6 +267,9 @@ static void initOpenGL() {
 
 	glViewport(0, 0, 640, 480);
 	glClearColor(0, 0, 0, 1);
+
+	detectOpenGLCardType();
+	setupCardSpecificRendering();
 }
 
 void setDrawingScreenScale(double tScaleX, double tScaleY);
@@ -448,7 +490,7 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 	else if (e->mData.mBlendType == BLEND_TYPE_SUBTRACTION) {
-		glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+		glBlendEquation(gOpenGLData.mSubtractionEquation);
 		glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 	}
 	else {

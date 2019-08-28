@@ -79,6 +79,22 @@ int stringEqualCaseIndependent(const char * tString, const char * tOtherString)
 	return s == otherString;
 }
 
+vector<string> splitStringBySeparator(const string tString, char tSeparator)
+{
+	vector<string> ret;
+	size_t startPos = 0;
+	size_t pos = 0;
+	while ((pos = tString.find(tSeparator, startPos)) != string::npos) {
+		auto word = tString.substr(startPos, pos - startPos + 1);
+		ret.push_back(word);
+		startPos = pos + 1;
+	}
+	if (startPos != string::npos) {
+		ret.push_back(tString.substr(startPos));
+	}
+	return ret;
+}
+
 static ListElement* newListElement(List* tList, void* tData, int tIsOwned) {
 	ListElement* e = (ListElement*)allocMemory(sizeof(ListElement));
 	e->mID = tList->mIDs++;

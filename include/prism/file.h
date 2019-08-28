@@ -46,6 +46,7 @@ int fileUnlink(const char* tPath);
 void* fileMemoryMap(FileHandler tHandler);
 
 int isFile(const char* tPath);
+int isFile(const std::string& tPath);
 int isDirectory(const char* tPath);
 
 Buffer makeBuffer(void* tData, uint32_t tLength);

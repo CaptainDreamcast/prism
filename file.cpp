@@ -86,6 +86,10 @@ int isFile(const char* tPath) {
 	return 1;
 }
 
+int isFile(const std::string& tPath) {
+	return isFile(tPath.c_str());
+}
+
 int isDirectory(const char* tPath) {
 	struct stat sb;
 	char path[1024];

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 void turnStringLowercase(char* tString);
 void turnStringLowercase(std::string& tString);
@@ -10,6 +11,8 @@ char* copyToAllocatedString(char* tSrc); // TODO: remove duplicate
 int stringBeginsWithSubstring(const char* tString, const char* tSubstring);
 int stringBeginsWithSubstringCaseIndependent(const char* tString, const char* tSubstring);
 int stringEqualCaseIndependent(const char* tString, const char* tOtherString);
+
+std::vector<std::string> splitStringBySeparator(const std::string tString, char tSeparator);
 
 typedef struct ListElement_internal {
 
