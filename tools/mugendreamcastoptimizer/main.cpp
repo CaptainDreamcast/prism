@@ -11,6 +11,9 @@
 int romdisk_buffer_length = 0;
 char romdisk_buffer[2];
 
+int isInDevelopMode() {
+	return 0;
+}
 
 typedef struct {
 	Buffer mBuffer;
@@ -459,9 +462,9 @@ int main(int argc, char* argv[])
 {
 	initPrismWrapperWithMugenFlags();
 
-	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.preloaded");
-	DeletePreloadedRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
-	ConvertSFFRecursively(L"C:\\Users\\Legion\\Desktop\\DEV\\MICROSOFT\\WINDOWS\\LIBTARIPORT\\DolmexicaInfinite\\assets", L"*.sff", 0);
+	DeletePreloadedRecursively(L"C:\\DEV\\PROJECTS\\DolmexicaInfinite\\assets", L"*.preloaded");
+	//DeletePreloadedRecursively(L"C:\\DEV\\PROJECTS\\DolmexicaInfinite\\windows\\debug", L"*.preloaded");
+	ConvertSFFRecursively(L"C:\\DEV\\PROJECTS\\DolmexicaInfinite\\assets", L"*.sff", 0);
 	return 0;
 }
 

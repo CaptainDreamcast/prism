@@ -1,5 +1,6 @@
 *.o
 
+.git_*
 windows/vs17/.vs/*
 windows/vs17/Release/*
 windows/vs17/Debug/*

@@ -15,7 +15,7 @@ typedef struct {
 } MugenSounds;
 
 
-MugenSounds loadMugenSoundFile(char* tPath);
+MugenSounds loadMugenSoundFile(const char* tPath);
 void unloadMugenSoundFile(MugenSounds* tSounds);
 MugenSounds createEmptyMugenSoundFile();
 int playMugenSound(MugenSounds* tSounds, int tGroup, int tSample);

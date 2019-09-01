@@ -77,7 +77,7 @@ static MugenSounds loadMugenSoundFileFromBuffer(Buffer b) {
 	return ret;
 }
 
-MugenSounds loadMugenSoundFile(char * tPath)
+MugenSounds loadMugenSoundFile(const char * tPath)
 {
 	Buffer b = fileToBuffer(tPath);
 	MugenSounds ret = loadMugenSoundFileFromBuffer(b);

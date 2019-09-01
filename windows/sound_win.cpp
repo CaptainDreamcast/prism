@@ -112,7 +112,7 @@ static void unloadTrack() {
 	gData.mHasLoadedTrack = 0;
 }
 
-static void streamMusicFileGeneral(const char* tPath, int tLoopAmount);
+static void streamMusicFileGeneral(const char* tPath, int tLoopAmount, int tIsForcingSynchronously);
 
 static void playTrackGeneral(int tTrack, int tLoopAmount) {
 #ifdef __EMSCRIPTEN__
@@ -124,7 +124,7 @@ static void playTrackGeneral(int tTrack, int tLoopAmount) {
 
 	char path[1024];
 	sprintf(path, "tracks/%d.wav", tTrack);
-	streamMusicFileGeneral(path, tLoopAmount);
+	streamMusicFileGeneral(path, tLoopAmount, 0);
 }
 
 void playTrack(int tTrack) {
@@ -165,9 +165,16 @@ static void musicFinishedCB() {
 	gData.mHasLoadedTrack = 0;
 }
 
-static void streamMusicFileGeneral(const char* tPath, int tLoopAmount) {
+static void streamMusicFileGeneral(const char* tPath, int tLoopAmount, int tIsForcingSynchronously) {
 	playMusicPath(tPath);
 	Mix_HookMusicFinished(musicFinishedCB);
+
+#ifdef __EMSCRIPTEN__
+	if (tIsForcingSynchronously) {
+		gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
+		while (SDL_GetTicks() - gData.mTimeWhenMusicPlaybackStarted < 10000);
+	}
+#endif
 
 	Mix_PlayMusic(gData.mTrackChunk, tLoopAmount);
 	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
@@ -176,14 +183,14 @@ static void streamMusicFileGeneral(const char* tPath, int tLoopAmount) {
 	gData.mIsPlayingTrack = 1;
 }
 
-void streamMusicFile(const char * tPath)
+void streamMusicFile(const char * tPath, int tIsForcingSynchronously)
 {
-	streamMusicFileGeneral(tPath, -1);
+	streamMusicFileGeneral(tPath, -1, tIsForcingSynchronously);
 }
 
-void streamMusicFileOnce(const char * tPath)
+void streamMusicFileOnce(const char * tPath, int tIsForcingSynchronously)
 {
-	streamMusicFileGeneral(tPath, 0);
+	streamMusicFileGeneral(tPath, 0, tIsForcingSynchronously);
 }
 
 void stopStreamingMusicFile()

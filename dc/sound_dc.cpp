@@ -83,11 +83,11 @@ static void streamMusicFileGeneral(const char* tPath, int tLoop) {
 	gData.mIsStreamingSoundFile = 1;
 }
 
-void streamMusicFile(const char* tPath) {
+void streamMusicFile(const char* tPath, int /*tIsForcingSynchronously*/) {
     streamMusicFileGeneral(tPath, 1);
 }
 
-void streamMusicFileOnce(const char* tPath) {
+void streamMusicFileOnce(const char* tPath, int /*tIsForcingSynchronously*/) {
 	streamMusicFileGeneral(tPath, 0);
 }
 

@@ -17,8 +17,8 @@ void pauseTrack();
 void resumeTrack();
 void playTrackOnce(int tTrack);
 
-void streamMusicFile(const char* tPath);
-void streamMusicFileOnce(const char* tPath);
+void streamMusicFile(const char* tPath, int tIsForcingSynchronously = 0);
+void streamMusicFileOnce(const char* tPath, int tIsForcingSynchronously = 0);
 void stopStreamingMusicFile();
 uint64_t getStreamingSoundTimeElapsedInMilliseconds();
 int isPlayingStreamingMusic();
