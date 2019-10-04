@@ -105,7 +105,6 @@ static ScriptPosition findNextScriptOccurenceOnSameLevel(ScriptPosition tPos, co
 	}
 
 	if(*tWord == '}') {
-		// TODO: unhack
 		tPos.mPointer = tPos.mRegion.mEnd;
 		return tPos;
 	}
@@ -176,7 +175,7 @@ static ScriptPosition findScriptRegionStart(ScriptPosition tPos, const char* tNa
 	logString(tName);
 	recoverFromError();
 	#if defined(DREAMCAST) || defined(__EMSCRIPTEN__)
-	return tPos; // TODO: fix unreachable code (Windows) / no return (DC) conflict
+	return tPos;
 	#endif
 }
 

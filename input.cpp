@@ -36,7 +36,7 @@ static struct {
 	SetInputData mSetInput[MAXIMUM_CONTROLLER_AMOUNT];
 
 	int mMainController;
-} gData;
+} gPrismGeneralInputData;
 
 void resetInputForAllControllers() {
 	int i;
@@ -55,7 +55,7 @@ void resetInputForAllControllers() {
 		hasPressedAbortFlankSingle(i);
 		hasShotGunFlankSingle(i);
 
-		gData.mSetInput[i].mIsActive = 0;
+		gPrismGeneralInputData.mSetInput[i].mIsActive = 0;
 	}
 }
 
@@ -74,55 +74,55 @@ static int hasPressedFlank(int tCurrent, int* tFlank) {
 
 
 int hasPressedAFlankSingle(int i) {
-	return hasPressedFlank(hasPressedASingle(i), &gData.mFlanks[i].mAFlank);
+	return hasPressedFlank(hasPressedASingle(i), &gPrismGeneralInputData.mFlanks[i].mAFlank);
 }
 
 int hasPressedBFlankSingle(int i) {
-	return hasPressedFlank(hasPressedBSingle(i), &gData.mFlanks[i].mBFlank);
+	return hasPressedFlank(hasPressedBSingle(i), &gPrismGeneralInputData.mFlanks[i].mBFlank);
 }
 int hasPressedXFlankSingle(int i) {
-	return hasPressedFlank(hasPressedXSingle(i), &gData.mFlanks[i].mXFlank);
+	return hasPressedFlank(hasPressedXSingle(i), &gPrismGeneralInputData.mFlanks[i].mXFlank);
 }
 
 int hasPressedYFlankSingle(int i) {
-	return hasPressedFlank(hasPressedYSingle(i), &gData.mFlanks[i].mYFlank);
+	return hasPressedFlank(hasPressedYSingle(i), &gPrismGeneralInputData.mFlanks[i].mYFlank);
 }
 
 int hasPressedLeftFlankSingle(int i) {
-	return hasPressedFlank(hasPressedLeftSingle(i), &gData.mFlanks[i].mLeftFlank);
+	return hasPressedFlank(hasPressedLeftSingle(i), &gPrismGeneralInputData.mFlanks[i].mLeftFlank);
 }
 
 int hasPressedRightFlankSingle(int i) {
-	return hasPressedFlank(hasPressedRightSingle(i), &gData.mFlanks[i].mRightFlank);
+	return hasPressedFlank(hasPressedRightSingle(i), &gPrismGeneralInputData.mFlanks[i].mRightFlank);
 }
 
 int hasPressedUpFlankSingle(int i) {
-	return hasPressedFlank(hasPressedUpSingle(i), &gData.mFlanks[i].mUpFlank);
+	return hasPressedFlank(hasPressedUpSingle(i), &gPrismGeneralInputData.mFlanks[i].mUpFlank);
 }
 
 int hasPressedDownFlankSingle(int i) {
-	return hasPressedFlank(hasPressedDownSingle(i), &gData.mFlanks[i].mDownFlank);
+	return hasPressedFlank(hasPressedDownSingle(i), &gPrismGeneralInputData.mFlanks[i].mDownFlank);
 }
 
 int hasPressedLFlankSingle(int i) {
-	return hasPressedFlank(hasPressedLSingle(i), &gData.mFlanks[i].mLFlank);
+	return hasPressedFlank(hasPressedLSingle(i), &gPrismGeneralInputData.mFlanks[i].mLFlank);
 }
 
 int hasPressedRFlankSingle(int i) {
-	return hasPressedFlank(hasPressedRSingle(i), &gData.mFlanks[i].mRFlank);
+	return hasPressedFlank(hasPressedRSingle(i), &gPrismGeneralInputData.mFlanks[i].mRFlank);
 }
 
 int hasPressedStartFlankSingle(int i) {
-	return hasPressedFlank(hasPressedStartSingle(i), &gData.mFlanks[i].mStartFlank);
+	return hasPressedFlank(hasPressedStartSingle(i), &gPrismGeneralInputData.mFlanks[i].mStartFlank);
 }
 
 int hasPressedAbortFlankSingle(int i) {
-	return hasPressedFlank(hasPressedAbortSingle(i), &gData.mFlanks[i].mAbortFlank);
+	return hasPressedFlank(hasPressedAbortSingle(i), &gPrismGeneralInputData.mFlanks[i].mAbortFlank);
 }
 
 int hasShotGunFlankSingle(int i)
 {
-	return hasPressedFlank(hasShotGunSingle(i), &gData.mFlanks[i].mShotFlank);
+	return hasPressedFlank(hasShotGunSingle(i), &gPrismGeneralInputData.mFlanks[i].mShotFlank);
 }
 
 
@@ -240,7 +240,7 @@ double getRNormalized() {
 	return getSingleRNormalized(getMainController());
 }
 
-int hasPressedAnyButton() { // TODO: smarter
+int hasPressedAnyButton() {
 	int hasPressedFaceButton = hasPressedA() || hasPressedB() || hasPressedX() || hasPressedY() || hasPressedStart();
 	int hasPressedShoulderButton = hasPressedR() || hasPressedL();
 	int hasPressedDirection = hasPressedLeft() || hasPressedRight() || hasPressedUp() || hasPressedDown();
@@ -265,11 +265,11 @@ Vector3D getShotPosition()
 
 
 void setMainController(int i) {
-	gData.mMainController = i;
+	gPrismGeneralInputData.mMainController = i;
 }
 
 int getMainController() {
-	return gData.mMainController;
+	return gPrismGeneralInputData.mMainController;
 }
 
 int isUsingController() {
@@ -315,15 +315,15 @@ static void updateInputSettingController(int i) {
 	for (int j = 0; j < CONTROLLER_BUTTON_AMOUNT_PRISM; j++) {
 		if (hasPressedRawButton(i, (ControllerButtonPrism)j)) {
 			pressedAnyButton = 1;
-			if (!gData.mSetInput[i].mFlankCheckDone) continue;
-			setButtonForController(i, gData.mSetInput[i].mTargetButton, (ControllerButtonPrism)j);
-			gData.mSetInput[i].mIsActive = 0;
-			if (gData.mSetInput[i].mSettingOptionalCB) gData.mSetInput[i].mSettingOptionalCB(gData.mSetInput[i].mCaller);
+			if (!gPrismGeneralInputData.mSetInput[i].mFlankCheckDone) continue;
+			setButtonForController(i, gPrismGeneralInputData.mSetInput[i].mTargetButton, (ControllerButtonPrism)j);
+			gPrismGeneralInputData.mSetInput[i].mIsActive = 0;
+			if (gPrismGeneralInputData.mSetInput[i].mSettingOptionalCB) gPrismGeneralInputData.mSetInput[i].mSettingOptionalCB(gPrismGeneralInputData.mSetInput[i].mCaller);
 			break;
 		}
 	}
 
-	if (!pressedAnyButton) gData.mSetInput[i].mFlankCheckDone = 1;
+	if (!pressedAnyButton) gPrismGeneralInputData.mSetInput[i].mFlankCheckDone = 1;
 }
 
 static void updateInputSettingKeyboard(int i) {
@@ -331,15 +331,15 @@ static void updateInputSettingKeyboard(int i) {
 	for (int j = 0; j < KEYBOARD_AMOUNT_PRISM; j++) {
 		if (hasPressedRawKeyboardKey((KeyboardKeyPrism)j)) {
 			pressedAnyKey = 1;
-			if (!gData.mSetInput[i].mFlankCheckDone) continue;
-			setButtonForKeyboard(i, gData.mSetInput[i].mTargetButton, (KeyboardKeyPrism)j);
-			gData.mSetInput[i].mIsActive = 0;
-			if(gData.mSetInput[i].mSettingOptionalCB) gData.mSetInput[i].mSettingOptionalCB(gData.mSetInput[i].mCaller);
+			if (!gPrismGeneralInputData.mSetInput[i].mFlankCheckDone) continue;
+			setButtonForKeyboard(i, gPrismGeneralInputData.mSetInput[i].mTargetButton, (KeyboardKeyPrism)j);
+			gPrismGeneralInputData.mSetInput[i].mIsActive = 0;
+			if(gPrismGeneralInputData.mSetInput[i].mSettingOptionalCB) gPrismGeneralInputData.mSetInput[i].mSettingOptionalCB(gPrismGeneralInputData.mSetInput[i].mCaller);
 			break;
 		}
 	}
 
-	if (!pressedAnyKey) gData.mSetInput[i].mFlankCheckDone = 1;
+	if (!pressedAnyKey) gPrismGeneralInputData.mSetInput[i].mFlankCheckDone = 1;
 }
 
 static void updateInputGettingController(int i) {
@@ -347,31 +347,31 @@ static void updateInputGettingController(int i) {
 	for (int j = 0; j < CONTROLLER_BUTTON_AMOUNT_PRISM; j++) {
 		if (hasPressedRawButton(i, (ControllerButtonPrism)j)) {
 			pressedAnyButton = 1;
-			if (!gData.mSetInput[i].mFlankCheckDone) continue;
-			gData.mSetInput[i].mIsActive = 0;
-			gData.mSetInput[i].mControllerWaitingCB(gData.mSetInput[i].mCaller, (ControllerButtonPrism)j);
+			if (!gPrismGeneralInputData.mSetInput[i].mFlankCheckDone) continue;
+			gPrismGeneralInputData.mSetInput[i].mIsActive = 0;
+			gPrismGeneralInputData.mSetInput[i].mControllerWaitingCB(gPrismGeneralInputData.mSetInput[i].mCaller, (ControllerButtonPrism)j);
 			break;
 		}
 	}
 
-	if (!pressedAnyButton) gData.mSetInput[i].mFlankCheckDone = 1;
+	if (!pressedAnyButton) gPrismGeneralInputData.mSetInput[i].mFlankCheckDone = 1;
 }
 
 static void updateInputGettingKeyboard(int i) {
 	for (int j = 0; j < KEYBOARD_AMOUNT_PRISM; j++) {
 		if (hasPressedKeyboardKeyFlank((KeyboardKeyPrism)j)) {
-			gData.mSetInput[i].mIsActive = 0;
-			gData.mSetInput[i].mKeyboardWaitingCB(gData.mSetInput[i].mCaller, (KeyboardKeyPrism)j);
+			gPrismGeneralInputData.mSetInput[i].mIsActive = 0;
+			gPrismGeneralInputData.mSetInput[i].mKeyboardWaitingCB(gPrismGeneralInputData.mSetInput[i].mCaller, (KeyboardKeyPrism)j);
 			break;
 		}
 	}
 }
 
 static void updateInputSettingSingle(int i) {
-	if (!gData.mSetInput[i].mIsActive) return;
+	if (!gPrismGeneralInputData.mSetInput[i].mIsActive) return;
 
-	if (gData.mSetInput[i].mIsSetting) {
-		if (gData.mSetInput[i].mIsSettingController) {
+	if (gPrismGeneralInputData.mSetInput[i].mIsSetting) {
+		if (gPrismGeneralInputData.mSetInput[i].mIsSettingController) {
 			updateInputSettingController(i);
 		}
 		else {
@@ -379,7 +379,7 @@ static void updateInputSettingSingle(int i) {
 		}
 	}
 	else {
-		if (gData.mSetInput[i].mIsSettingController) {
+		if (gPrismGeneralInputData.mSetInput[i].mIsSettingController) {
 			updateInputGettingController(i);
 		}
 		else {
@@ -401,15 +401,15 @@ void updateInput() {
 }
 
 static void setButtonFromUserInputGeneral(int i, ControllerButtonPrism tTargetButton, void(*tSettingOptionalCB)(void*), void(*tControllerWaitingCB)(void*, ControllerButtonPrism), void(*tKeyboardWaitingCB)(void*, KeyboardKeyPrism), void* tCaller, int tIsSetting, int tIsSettingController) {
-	gData.mSetInput[i].mTargetButton = tTargetButton;
-	gData.mSetInput[i].mIsSetting = tIsSetting;
-	gData.mSetInput[i].mIsSettingController = tIsSettingController;
-	gData.mSetInput[i].mSettingOptionalCB = tSettingOptionalCB;
-	gData.mSetInput[i].mControllerWaitingCB = tControllerWaitingCB;
-	gData.mSetInput[i].mKeyboardWaitingCB = tKeyboardWaitingCB;
-	gData.mSetInput[i].mCaller = tCaller;
-	gData.mSetInput[i].mFlankCheckDone = 0;
-	gData.mSetInput[i].mIsActive = 1;
+	gPrismGeneralInputData.mSetInput[i].mTargetButton = tTargetButton;
+	gPrismGeneralInputData.mSetInput[i].mIsSetting = tIsSetting;
+	gPrismGeneralInputData.mSetInput[i].mIsSettingController = tIsSettingController;
+	gPrismGeneralInputData.mSetInput[i].mSettingOptionalCB = tSettingOptionalCB;
+	gPrismGeneralInputData.mSetInput[i].mControllerWaitingCB = tControllerWaitingCB;
+	gPrismGeneralInputData.mSetInput[i].mKeyboardWaitingCB = tKeyboardWaitingCB;
+	gPrismGeneralInputData.mSetInput[i].mCaller = tCaller;
+	gPrismGeneralInputData.mSetInput[i].mFlankCheckDone = 0;
+	gPrismGeneralInputData.mSetInput[i].mIsActive = 1;
 }
 
 void setButtonFromUserInputForController(int i, ControllerButtonPrism tTargetButton, void(*tOptionalCB)(void*), void* tCaller) {
@@ -431,5 +431,5 @@ void waitForButtonFromUserInputForKeyboard(int i, void(*tCB)(void*, KeyboardKeyP
 
 void cancelWaitingForButtonFromUserInput(int i)
 {
-	gData.mSetInput[i].mIsActive = 0;
+	gPrismGeneralInputData.mSetInput[i].mIsActive = 0;
 }

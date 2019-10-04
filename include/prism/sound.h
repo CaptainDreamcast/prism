@@ -10,6 +10,7 @@ void shutdownSound();
 double getVolume();
 void setVolume(double tVolume);
 double getPanningValue();
+void setPanningValue(int tChannel, double tPanning);
 
 void playTrack(int tTrack);
 void stopTrack();
@@ -17,8 +18,8 @@ void pauseTrack();
 void resumeTrack();
 void playTrackOnce(int tTrack);
 
-void streamMusicFile(const char* tPath, int tIsForcingSynchronously = 0);
-void streamMusicFileOnce(const char* tPath, int tIsForcingSynchronously = 0);
+void streamMusicFile(const char* tPath);
+void streamMusicFileOnce(const char* tPath);
 void stopStreamingMusicFile();
 uint64_t getStreamingSoundTimeElapsedInMilliseconds();
 int isPlayingStreamingMusic();

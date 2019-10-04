@@ -13,11 +13,6 @@
 
 using namespace std;
 
-// TODO: update to newest KOS, so no more manual memory tracking required
-extern void initMemoryHandlerHW(); 
-extern void increaseAvailableTextureMemoryHW(size_t tSize);
-extern void decreaseAvailableTextureMemoryHW(size_t tSize);
-
 #ifdef DREAMCAST
 
 #include <kos.h>
@@ -48,14 +43,11 @@ static void addToUsageQueueFront(TextureMemory tMem);
 static void removeFromUsageQueue(TextureMemory tMem);
 static void makeSpaceInTextureMemory(size_t tSize);
 
-
-
 static void* allocTextureFunc(size_t tSize) {
 
 	makeSpaceInTextureMemory(tSize);
 
 	TextureMemory ret = (TextureMemory)malloc(sizeof(struct TextureMemory_internal));
-	decreaseAvailableTextureMemoryHW(tSize);
 	ret->mData = allocTextureHW(tSize);
 	ret->mSize = tSize;
 	ret->mIsVirtual = 0;
@@ -71,7 +63,6 @@ static void freeTextureFunc(void* tData) {
 		free(tMem->mData);
 	} else {
 		removeFromUsageQueue(tMem);
-		increaseAvailableTextureMemoryHW(tMem->mSize);
 		freeTextureHW(tMem->mData);
 	}
 	free(tMem);
@@ -307,7 +298,6 @@ static void decompressMemory(TextureMemory tMem, void** tBuffer) {
 static void virtualizeSingleTextureMemory(TextureMemory tMem) {
 	debugLog("Virtualizing texture memory.");
 	debugInteger(tMem->mSize);
-	increaseAvailableTextureMemoryHW(tMem->mSize);
 
 	void* mainMemoryBuffer = malloc(tMem->mSize);
 	memcpy(mainMemoryBuffer, tMem->mData, tMem->mSize);
@@ -331,8 +321,6 @@ static void unvirtualizeSingleTextureMemory(TextureMemory tMem) {
 	free(tMem->mData);
 	tMem->mData = textureMemoryBuffer;
 	tMem->mIsVirtual = 0;
-
-	decreaseAvailableTextureMemoryHW(tMem->mSize);
 
 	addToUsageQueueFront(tMem);
 }
@@ -562,11 +550,10 @@ void initMemoryHandler() {
 	initTextureMemoryUsageList();
 	pushMemoryStack();
 	pushTextureMemoryStack();
-	initMemoryHandlerHW();
 }
 
 void shutdownMemoryHandler() {
-	if (!gMemoryHandler.mActive) return; // TODO: free properly
+	if (!gMemoryHandler.mActive) return;
 
 	gMemoryHandler.mActive = 0;
 	emptyMemoryListStack(&gMemoryHandler.mMemoryStack);

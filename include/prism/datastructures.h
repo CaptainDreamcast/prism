@@ -6,7 +6,7 @@
 void turnStringLowercase(char* tString);
 void turnStringLowercase(std::string& tString);
 void copyStringLowercase(char* tDst, const char* tSrc);
-char* copyToAllocatedString(char* tSrc); // TODO: remove duplicate
+char* copyToAllocatedString(char* tSrc);
 
 int stringBeginsWithSubstring(const char* tString, const char* tSubstring);
 int stringBeginsWithSubstringCaseIndependent(const char* tString, const char* tSubstring);

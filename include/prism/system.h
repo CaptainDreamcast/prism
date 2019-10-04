@@ -20,6 +20,12 @@ typedef struct {
 	int y;
 } ScreenSize;
 
+typedef enum {
+	FIFTY_HERTZ = 50,
+	SIXTY_HERTZ = 60
+} Framerate;
+#define FRAMERATE_AMOUNT 2
+
 void initSystem();
 void shutdownSystem();
 void updateSystem();
@@ -29,12 +35,19 @@ void returnToMenu();
 
 void setGameName(const char* tName);
 void updateGameName(const char* tName);
+void setIcon(const char* tPath);
 
 void setScreen(int tX, int tY, int tFramerate, int tIsVGA);
 void setScreenSize(int tX, int tY);
 ScreenSize getScreenSize();
 void setDisplayedScreenSize(int tX, int tY);
 void setScreenFramerate(int tFramerate);
+
+void setFramerate(Framerate tFramerate);
+Framerate getFramerate();
+double getFramerateFactor();
+double getInverseFramerateFactor();
+
 void setVGA();
 int isOnDreamcast();
 int isOnWindows();

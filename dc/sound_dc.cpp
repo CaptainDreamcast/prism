@@ -48,6 +48,9 @@ double getPanningValue() {
 	return gData.mPanning;
 }
 
+void setPanningValue(int /*tChannel*/, double tPanning) {
+	gData.mPanning = tPanning;
+}
 
 void playTrack(int tTrack) {
 	 cdrom_cdda_play(tTrack, tTrack, 15, CDDA_TRACKS);
@@ -83,11 +86,11 @@ static void streamMusicFileGeneral(const char* tPath, int tLoop) {
 	gData.mIsStreamingSoundFile = 1;
 }
 
-void streamMusicFile(const char* tPath, int /*tIsForcingSynchronously*/) {
+void streamMusicFile(const char* tPath) {
     streamMusicFileGeneral(tPath, 1);
 }
 
-void streamMusicFileOnce(const char* tPath, int /*tIsForcingSynchronously*/) {
+void streamMusicFileOnce(const char* tPath) {
 	streamMusicFileGeneral(tPath, 0);
 }
 

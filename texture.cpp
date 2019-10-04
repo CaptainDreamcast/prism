@@ -106,6 +106,28 @@ TextureData createWhiteTexture() {
 	return ret;
 }
 
+TextureData createWhiteCircleTexture()
+{
+	int length = 16 * 16 * 4;
+	uint8_t* data = (uint8_t*)allocMemory(length);
+	memset(data, 0xFF, length);
+	const std::vector<int> LINE_EMPTY_AMOUNT = {5, 3, 2, 1, 1};
+	for (size_t y = 0; y < LINE_EMPTY_AMOUNT.size(); y++) {
+		const auto width = LINE_EMPTY_AMOUNT[y];
+		for (int x = 0; x < width; x++) {
+			data[(y * 16 + x) * 4 + 3] = 0;
+			data[(y * 16 + (15 - x)) * 4 + 3] = 0;
+			data[((15 - y) * 16 + x) * 4 + 3] = 0;
+			data[((15 - y) * 16 + (15 - x)) * 4 + 3] = 0;
+		}
+	}
+
+	TextureData ret = loadTextureFromARGB32Buffer(makeBuffer(data, length), 16, 16);
+
+	freeMemory(data);
+	return ret;
+}
+
 Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc) {
 	int dstSize = tSrc.mLength / 2;
 	char* dst = (char*)allocMemory(dstSize);

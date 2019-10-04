@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{73ABF5A4-0792-466B-BFE3-BA09374E41F1}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.dc"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.dc clean"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.dc clean &amp;&amp; make -f Makefile.dc"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>DREAMCAST;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.dc"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.dc clean"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/kos &amp;&amp; . environ.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.dc clean &amp;&amp; make -f Makefile.dc"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>DREAMCAST;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PROJECTS\addons\prism\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\dc\drawing_dc.cpp" />
+    <ClCompile Include="..\..\dc\file_dc.cpp" />
+    <ClCompile Include="..\..\dc\framerateselect_dc.cpp" />
+    <ClCompile Include="..\..\dc\input_dc.cpp" />
+    <ClCompile Include="..\..\dc\logoscreen_dc.cpp" />
+    <ClCompile Include="..\..\dc\log_dc.cpp" />
+    <ClCompile Include="..\..\dc\math_dc.cpp" />
+    <ClCompile Include="..\..\dc\memoryhandler_dc.cpp" />
+    <ClCompile Include="..\..\dc\screeneffect_dc.cpp" />
+    <ClCompile Include="..\..\dc\soundeffect_dc.cpp" />
+    <ClCompile Include="..\..\dc\sound_dc.cpp" />
+    <ClCompile Include="..\..\dc\system_dc.cpp" />
+    <ClCompile Include="..\..\dc\texture_dc.cpp" />
+    <ClCompile Include="..\..\dc\thread_dc.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Makefile.common" />
+    <None Include="..\..\Makefile.commondc" />
+    <None Include="..\..\Makefile.dc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

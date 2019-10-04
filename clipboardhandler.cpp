@@ -16,12 +16,12 @@ static struct {
 	int mTextIDs[CLIPBOARD_LINE_AMOUNT];
 
 	int mIsVisible;
-} gData;
+} gPrismClipboardHandlerData;
 
 void initClipboardForGame() {
-	memset(gData.mLines, 0, sizeof gData.mLines);
-	gData.mLineAmount = 0;
-	gData.mIsVisible = 0;
+	memset(gPrismClipboardHandlerData.mLines, 0, sizeof gPrismClipboardHandlerData.mLines);
+	gPrismClipboardHandlerData.mLineAmount = 0;
+	gPrismClipboardHandlerData.mIsVisible = 0;
 }
 
 static void initClipboardLines() {
@@ -30,19 +30,19 @@ static void initClipboardLines() {
 	Position pos = makePosition(20, 20, 90);
 	int i;
 	for (i = 0; i < CLIPBOARD_LINE_AMOUNT; i++) {
-		gData.mTextIDs[i] = addMugenText("", pos, font);
+		gPrismClipboardHandlerData.mTextIDs[i] = addMugenText("", pos, font);
 		pos.y += deltaY;
 	}
 }
 
 static void setClipboardLineTexts() {
 	int i;
-	for (i = 0; i < gData.mLineAmount; i++) {
-		if (gData.mIsVisible) {
-			changeMugenText(gData.mTextIDs[i], gData.mLines[i]);
+	for (i = 0; i < gPrismClipboardHandlerData.mLineAmount; i++) {
+		if (gPrismClipboardHandlerData.mIsVisible) {
+			changeMugenText(gPrismClipboardHandlerData.mTextIDs[i], gPrismClipboardHandlerData.mLines[i]);
 		}
 		else {
-			changeMugenText(gData.mTextIDs[i], "");
+			changeMugenText(gPrismClipboardHandlerData.mTextIDs[i], "");
 		}
 	}
 }
@@ -59,20 +59,20 @@ ActorBlueprint getClipboardHandler() {
 
 static void moveClipboardLinesDown() {
 	int i;
-	for (i = 1; i < gData.mLineAmount; i++) {
-		strcpy(gData.mLines[i - 1], gData.mLines[i]);
+	for (i = 1; i < gPrismClipboardHandlerData.mLineAmount; i++) {
+		strcpy(gPrismClipboardHandlerData.mLines[i - 1], gPrismClipboardHandlerData.mLines[i]);
 	}
 
-	gData.mLineAmount--;
+	gPrismClipboardHandlerData.mLineAmount--;
 }
 
 void addClipboardLine(char* tLine) {
-	if (gData.mLineAmount == CLIPBOARD_LINE_AMOUNT) {
+	if (gPrismClipboardHandlerData.mLineAmount == CLIPBOARD_LINE_AMOUNT) {
 		moveClipboardLinesDown();
 	}
 
-	strcpy(gData.mLines[gData.mLineAmount], tLine);
-	gData.mLineAmount++;
+	strcpy(gPrismClipboardHandlerData.mLines[gPrismClipboardHandlerData.mLineAmount], tLine);
+	gPrismClipboardHandlerData.mLineAmount++;
 
 	setClipboardLineTexts();
 }
@@ -106,7 +106,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 	}
 	else if(identifier == 'd' || identifier == 'i') {
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
-		int val = atoi(argumentText); // TODO: fix
+		int val = atoi(argumentText); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
 		sprintf(parsedValue, "%d", val);
 		int len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
@@ -114,23 +114,23 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 	}
 	else if (identifier == 'f' || identifier == 'F') {
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
-		double val = atof(argumentText); // TODO: fix
+		double val = atof(argumentText); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
 		sprintf(parsedValue, "%f", val);
 		int len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
 		*tDst += len;
 	}
-	else if (identifier == 'e' || identifier == 'E') { // TODO: uppercase
+	else if (identifier == 'e' || identifier == 'E') {
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
-		double val = atof(argumentText); // TODO: fix
+		double val = atof(argumentText); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
 		sprintf(parsedValue, "%e", val);
 		int len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
 		*tDst += len;
 	}
-	else if (identifier == 'g' || identifier == 'G') { // TODO: uppercase
+	else if (identifier == 'g' || identifier == 'G') {
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
-		double val = atof(argumentText); // TODO: fix
+		double val = atof(argumentText); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
 		sprintf(parsedValue, "%g", val);
 		int len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
@@ -183,7 +183,7 @@ static void parseFormatInput(const char* tFormatString, int* i, char** tDst, cha
 
 void addClipboardLineFormatString(const char * tFormatString, const char * tParameterString)
 {
-	// TODO: parse properly
+	// TODO: parse properly (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
 	char text[1024];
 	char* dst;
 	char paramBuffer[200];
@@ -232,22 +232,22 @@ void clipf(char* tFormatString, ...) {
 void clearClipboard()
 {
 	int i;
-	for (i = 0; i < gData.mLineAmount; i++) {
-		gData.mLines[i][0] = '\0';
+	for (i = 0; i < gPrismClipboardHandlerData.mLineAmount; i++) {
+		gPrismClipboardHandlerData.mLines[i][0] = '\0';
 	}
 	setClipboardLineTexts();
 
-	gData.mLineAmount = 0;
+	gPrismClipboardHandlerData.mLineAmount = 0;
 }
 
 void setClipboardInvisible()
 {
-	gData.mIsVisible = 0;
+	gPrismClipboardHandlerData.mIsVisible = 0;
 	setClipboardLineTexts();
 }
 
 void setClipboardVisible()
 {
-	gData.mIsVisible = 1;
+	gPrismClipboardHandlerData.mIsVisible = 1;
 	setClipboardLineTexts();
 }

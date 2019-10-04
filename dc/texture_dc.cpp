@@ -5,15 +5,13 @@
 #include <kos.h>
 #include <kos/string.h>
 
-// TODO: remove quicklz and remove it with something suitable
-#include "prism/quicklz.h"
-
 #include "prism/file.h"
 
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
 #include "prism/system.h"
 #include "prism/math.h"
+#include "prism/compression.h"
 
 #define HEADER_SIZE_KMG 64
 // TODO: use kmg.h from KOS
@@ -25,24 +23,10 @@ TextureData loadTexturePKG(const char* tFileDir) {
   TextureData returnData;
   returnData.mHasPalette = 0;
 
-  qlz_state_decompress *state_decompress = (qlz_state_decompress *) allocMemory(sizeof(qlz_state_decompress));
-  size_t bufferLength;
-  char* kmgData;
-  Buffer pkgBuffer;
-
-  pkgBuffer = fileToBuffer(tFileDir);
-
-  bufferLength = qlz_size_decompressed((const char*)pkgBuffer.mData);
-  debugInteger(bufferLength);
-
-  kmgData = (char*) allocMemory(bufferLength);
-
-  // decompress and write result
-  bufferLength = qlz_decompress((const char*)pkgBuffer.mData, kmgData, state_decompress);
-  debugInteger(bufferLength);
-
-  freeBuffer(pkgBuffer);
-  freeMemory(state_decompress);
+  auto pkgBuffer = fileToBuffer(tFileDir);
+  decompressBufferZSTD(&pkgBuffer);
+  char* kmgData = (char*)pkgBuffer.mData;
+  size_t bufferLength = pkgBuffer.mLength;
 
   returnData.mTextureSize.x = 0;
   returnData.mTextureSize.y = 0;
@@ -55,7 +39,7 @@ TextureData loadTexturePKG(const char* tFileDir) {
   sq_cpy(returnData.mTexture->mData, kmgData + HEADER_SIZE_KMG, bufferLength - HEADER_SIZE_KMG);
   sem_signal(&gPVRAccessSemaphore);
 
-  freeMemory(kmgData);
+  freeBuffer(pkgBuffer);
 
   return returnData;
 }

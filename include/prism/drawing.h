@@ -47,10 +47,10 @@ typedef int TextSize;
 
 void initDrawing();
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition);
-void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor);
-void drawAdvancedText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize);
-void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize);
-void drawTruetypeText(char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth);
+void drawText(const char* tText, Position tPosition, TextSize tSize, Color tColor);
+void drawAdvancedText(const char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize);
+void drawMultilineText(const char* tText, const char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize);
+void drawTruetypeText(const char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth);
 void waitForScreen();
 void startDrawing();
 void stopDrawing();
@@ -85,6 +85,7 @@ void printRectangle(Rectangle r);
 Vector3D makeFontSize(int x, int y);
 
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
+int hasToLinebreak(const char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize);
 
 void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget);
 

@@ -8,10 +8,11 @@
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
 
+#ifdef __EMSCRIPTEN__
+#define SDL_strncasecmp SDL_strncasecmp
+#endif
 
 static StringMap gRomdiskHandlers;
-
-//TODO: REMOVE
 
 #define O_MODE_MASK 0x0f        /**< \brief Mask for mode numbers */
 //#define O_TRUNC       0x0100      /* Truncate */
@@ -114,7 +115,6 @@ static uint32_t romdisk_find_object(rd_image_t * mnt, const char *fn, size_t fnl
 		}
 
 		/* Check filename */
-		// TODO: work around strncasecmp
 		if ((strlen(fhdr->filename) == fnlen) && (!SDL_strncasecmp(fhdr->filename, fn, fnlen))) {
 			/* Match: return this index */
 			return i;
@@ -197,7 +197,7 @@ FileHandler fileOpenRomdisk(char* tPath, int tFlags) {
 	rd_image_t      *mnt = getRomdiskImageFromPath(tPath);
 
 	/* Make sure they don't want to open things as writeable */
-	if (tFlags != O_RDONLY) { // TODO: check better
+	if (tFlags != O_RDONLY) {
 		errno = EPERM;
 		return NULL;
 	}

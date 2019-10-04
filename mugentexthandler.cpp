@@ -76,7 +76,7 @@ static void loadBitmapFont(MugenDefScript* tScript, MugenFont* tFont) {
 	e->mSprites = loadMugenSpriteFileWithoutPalette(path);
 	freeMemory(path);
 
-	// TODO: banktype
+	// TODO: banktype (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/362)
 
 	tFont->mData = e;
 }
@@ -207,7 +207,7 @@ static MugenFontType getMugenFontTypeFromScript(MugenDefScript* tScript) {
 static void setMugenFontDirectory(char* tPath) {
 
 	(void)tPath;
-	setWorkingDirectory("/"); // TODO
+	setWorkingDirectory("/");
 }
 
 static void setMugenFontDirectory2(char* tPath) {
@@ -233,8 +233,6 @@ typedef struct {
 
 	uint8_t mComment[40];
 } MugenFontHeader;
-
-static void unloadElecbyteFont(MugenFont* tFont); // TODO: remove
 
 static void addMugenFont1(int tKey, char* tPath) {
 	setMugenFontDirectory(tPath);
@@ -298,7 +296,7 @@ static void addMugenFont2(int tKey, char* tPath) {
 void addMugenFont(int tKey, const char* tPath) {
 	char path[1024];
 
-    // TODO: fix when assets is dropped from Dolmexica
+    // TODO: fix when assets is dropped from Dolmexica (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/350) 
 	if (strchr(tPath, '/')) {
 		sprintf(path, "assets/%s", tPath);
 		if (!isFile(path)) {
@@ -490,56 +488,97 @@ static void updateMugenTextHandler(void* tData) {
 	stl_int_map_map(gMugenTextHandler.mHandledTexts, updateSingleText);
 }
 
+static double getOriginalMugenFontFactor() {
+	const auto sz = getScreenSize();
+	return sz.y / 240.0;
+}
+
+static double getNewMugenFontFactor() {
+	const auto sz = getScreenSize();
+	return sz.y / 480.0;
+}
+
 typedef struct {
 	MugenSpriteFileSprite* mSprite;
 	Position mBasePosition;
 	MugenText* mText;
+	MugenFont* mFont;
 } BitmapDrawCaller;
 
-// TODO: rectangle + color
 static void drawSingleBitmapSubSprite(void* tCaller, void* tData) {
 	BitmapDrawCaller* caller = (BitmapDrawCaller*)tCaller;
 	MugenSpriteFileSubSprite* subSprite = (MugenSpriteFileSubSprite*)tData;
 
-	setDrawingBaseColorAdvanced(caller->mText->mR, caller->mText->mG, caller->mText->mB);
-	double factor = 1 * caller->mText->mScale; // TODO: 640p
-	Position p = vecAdd2D(caller->mBasePosition, vecScale(makePosition(subSprite->mOffset.x, subSprite->mOffset.y, subSprite->mOffset.z), factor));
+	double factor = getNewMugenFontFactor() * caller->mText->mScale;
+	Position p = vecAdd2D(caller->mBasePosition, vecScale(makePosition(subSprite->mOffset.x, subSprite->mOffset.y, subSprite->mOffset.z), factor));	
+	
+	int minHeight = 0;
+	int maxHeight = subSprite->mTexture.mTextureSize.y - 1;
+	int upY = max(minHeight, min(maxHeight, (int)(caller->mText->mRectangle.mTopLeft.y - p.y)));
+	int downY = max(minHeight, min(maxHeight, upY + (int)(caller->mText->mRectangle.mBottomRight.y - (p.y + caller->mFont->mSize.y))));
+	if (upY == downY) return;
+
+	p.y = max(p.y, caller->mText->mRectangle.mTopLeft.y);
+
 	scaleDrawing(factor, p);
 	drawSprite(subSprite->mTexture, p, makeRectangleFromTexture(subSprite->mTexture));
 	scaleDrawing(1 / factor, p);
 }
 
-static int hasBitmapTextToLinebreak(char* tText, int tCurrent, Position p, MugenFont* tFont, MugenSpriteFileGroup* tSpriteGroup, double tRightX, double tFactor) {
+static set<int> getBitmapTextLinebreaks(char* tText, Position tStart, MugenFont* tFont, MugenSpriteFileGroup* tSpriteGroup, double tRightX, double tFactor) {
+	if (tRightX >= INF / 2) return set<int>();
 
-	if (tText[0] == ' ') return 0;
-	if (tText[0] == '\n') return 1;
-
-	char word[1024];
-	int positionsRead;
-	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
-
-	int i;
-	for (i = tCurrent; i < tCurrent+positionsRead; i++) {
-		if (int_map_contains(&tSpriteGroup->mSprites, (int)tText[i])) {
-			MugenSpriteFileSprite* sprite = (MugenSpriteFileSprite*)int_map_get(&tSpriteGroup->mSprites, (int)tText[i]);
-			
-			p = vecAdd2D(p, vecScale(makePosition(sprite->mOriginalTextureSize.x, 0, 0), tFactor));
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+	set<int> ret;
+	Position p = tStart;
+	int n = strlen(tText);
+	for (int i = 0; i < n; i++) {
+		int positionsRead = 0;
+		int doesBreak;
+		if (tText[i] == '\n') {
+			doesBreak = 1;
 		}
 		else {
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSize.x, 0, 0), tFactor));
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+			char word[1024];
+			sscanf(tText + i, "%1023s%n", word, &positionsRead);
+			for (int j = i; j < i + positionsRead; j++) {
+				if (int_map_contains(&tSpriteGroup->mSprites, (int)tText[j])) {
+					MugenSpriteFileSprite* sprite = (MugenSpriteFileSprite*)int_map_get(&tSpriteGroup->mSprites, (int)tText[j]);
+					p = vecAdd2D(p, vecScale(makePosition(sprite->mOriginalTextureSize.x, 0, 0), tFactor));
+					p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+				}
+				else {
+					p = vecAdd2D(p, vecScale(makePosition(tFont->mSize.x, 0, 0), tFactor));
+					p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+				}
+			}
+			doesBreak = (p.x > tRightX);
+			i += std::max(positionsRead - 1, 0);
+		}
+
+		if (doesBreak) {
+			auto skipIndex = i;
+			i -= positionsRead - 1;
+			while (i > 0 && i < n && tText[i] == ' ') i++;
+			i = max(0, i - 1);
+			if (ret.find(i) == ret.end()) {
+				ret.insert(i);
+				p.x = tStart.x;
+			}
+			else {
+				i = skipIndex;
+			}
 		}
 	}
-
-	return (p.x > tRightX);
+	return ret;
 }
 
 static void drawSingleBitmapText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)font->mData;
 	int textLength = strlen(e->mDisplayText);
-	double factor = 1 * e->mScale; // TODO: 640p
+	double factor = getNewMugenFontFactor() * e->mScale;
+
+	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 
 	MugenSpriteFileGroup* spriteGroup = (MugenSpriteFileGroup*)int_map_get(&bitmapFont->mSprites.mGroups, 0);
 
@@ -547,6 +586,7 @@ static void drawSingleBitmapText(MugenText* e) {
 	Position p = vecAdd2D(e->mPosition, vecScale(makePosition(font->mOffset.x, font->mOffset.y, 0), factor));
 	Position start = p;
 	double rightX = p.x + e->mTextBoxWidth;
+	const auto breaks = getBitmapTextLinebreaks(e->mText, start, font, spriteGroup, rightX, factor);
 	for (i = 0; i < textLength; i++) {
 
 		if (int_map_contains(&spriteGroup->mSprites, (int)e->mDisplayText[i])) {
@@ -554,6 +594,7 @@ static void drawSingleBitmapText(MugenText* e) {
 			caller.mSprite = (MugenSpriteFileSprite*)int_map_get(&spriteGroup->mSprites, (int)e->mDisplayText[i]);
 			caller.mBasePosition = p;
 			caller.mText = e;
+			caller.mFont = font;
 			list_map(&caller.mSprite->mTextures, drawSingleBitmapSubSprite, &caller);
 
 			p = vecAdd2D(p, vecScale(makePosition(caller.mSprite->mOriginalTextureSize.x, 0, 0), factor));
@@ -564,15 +605,17 @@ static void drawSingleBitmapText(MugenText* e) {
 			p = vecAdd2D(p, vecScale(makePosition(font->mSpacing.x, 0, 0), factor));
 		}
 
-		if (hasBitmapTextToLinebreak(e->mText, i, p, font, spriteGroup, rightX, factor)) {
+		if (breaks.find(i) != breaks.end()) {
 			p.x = start.x;
 			p = vecAdd2D(p, vecScale(makePosition(0, font->mSize.y, 0), factor));
 			p = vecAdd2D(p, vecScale(makePosition(0, font->mSpacing.y, 0), factor));
 		}
 	}
+
+	setDrawingBaseColorAdvanced(1, 1, 1);
 }
 
-// TODO: color + rectangle
+// TODO: color + rectangle (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/348)
 static void drawSingleTruetypeText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenTruetypeFont* truetypeFont = (MugenTruetypeFont*)font->mData;
@@ -609,81 +652,74 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 
 	p.y = max(p.y, caller->mText->mRectangle.mTopLeft.y);
 
-	double factor = caller->mText->mScale; // TODO: remove
-
-	scaleDrawing(factor, p); // TODO: remove
+	double factor = getOriginalMugenFontFactor() * caller->mText->mScale;
+	scaleDrawing(factor, p);
 	drawSprite(subSprite->mTexture, p, makeRectangle(leftX, upY, rightX - leftX, downY - upY));
-	scaleDrawing(1 / factor, p); // TODO: remove
+	scaleDrawing(1 / factor, p);
 
 	caller->mBasePosition.x += (rightX - leftX + 1) * factor;
 }
 
-static set<int> getElecbyteTextLinebreaks(char* tText, Position tStart, MugenFont* tFont, MugenElecbyteFont* tElecbyteFont, double tRightX, double tFactor) { // TODO: fix
-	
+static set<int> getElecbyteTextLinebreaks(char* tText, Position tStart, MugenFont* tFont, MugenElecbyteFont* tElecbyteFont, double tRightX, double tFactor) {
+	if (tRightX >= INF / 2) return set<int>();
+
 	set<int> ret;
 	Position p = tStart;
 	int n = strlen(tText);
 	for (int i = 0; i < n; i++) {
-		if (tElecbyteFont->mMap[(int)tText[i]].mExists) {
-			MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(int)tText[i]];
-			p = vecAdd2D(p, vecScale(makePosition(mapEntry.mWidth, 0, 0), tFactor));
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+		int positionsRead = 0;
+		int doesBreak;
+		if (tText[i] == '\n') {
+				doesBreak = 1;
 		}
 		else {
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSize.x, 0, 0), tFactor));
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+			char word[1024];
+			sscanf(tText + i, "%1023s%n", word, &positionsRead);
+			for (int j = i; j < i + positionsRead; j++) {
+				if (tElecbyteFont->mMap[(int)tText[j]].mExists) {
+					MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(int)tText[j]];
+					p = vecAdd2D(p, vecScale(makePosition(mapEntry.mWidth, 0, 0), tFactor));
+					p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+				}
+				else {
+					p = vecAdd2D(p, vecScale(makePosition(tFont->mSize.x, 0, 0), tFactor));
+					p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
+				}
+			}
+			doesBreak = (p.x > tRightX);
+			i += std::max(positionsRead - 1, 0);
 		}
 
-		if (p.x > tRightX) {
-			p.x = tStart.x;
-			p = vecAdd2D(p, vecScale(makePosition(0, tFont->mSize.y, 0), tFactor));
-			p = vecAdd2D(p, vecScale(makePosition(0, tFont->mSpacing.y, 0), tFactor));
-			ret.insert(i);
+		if (doesBreak) {
+			auto skipIndex = i;
+			i -= positionsRead - 1;
+			while (i > 0 && i < n && tText[i] == ' ') i++;
+			i = max(0, i - 1);
+			if (ret.find(i) == ret.end()) {
+				ret.insert(i);
+				p.x = tStart.x;
+			}
+			else {
+				i = skipIndex;
+			}
 		}
 	}
-
 	return ret;
-}
-
-static int hasElecbyteTextToLinebreak(char* tText, int tCurrent, Position p, MugenFont* tFont, MugenElecbyteFont* tElecbyteFont, double tRightX, double tFactor) {
-
-	if (tText[0] == ' ') return 0;
-	if (tText[0] == '\n') return 1;
-
-	char word[1024];
-	int positionsRead;
-	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
-
-	int i;
-	for (i = tCurrent; i < tCurrent + positionsRead; i++) {
-		if (tElecbyteFont->mMap[(int)tText[i]].mExists) {
-			MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(int)tText[i]];
-			p = vecAdd2D(p, vecScale(makePosition(mapEntry.mWidth, 0, 0), tFactor));
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
-		}
-		else {
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSize.x, 0, 0), tFactor));
-			p = vecAdd2D(p, vecScale(makePosition(tFont->mSpacing.x, 0, 0), tFactor));
-		}
-	}
-
-	return (p.x > tRightX);
 }
 
 static void drawSingleElecbyteText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
 	int textLength = strlen(e->mDisplayText);
-	double factor = e->mScale; // TODO
+	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 
-	//printf("draw %s\n", e->mText);
 	int i;
 	Position p = vecAdd2D(e->mPosition, makePosition(font->mOffset.x, font->mOffset.y, 0));
 	Position start = p;
 	double rightX = p.x + e->mTextBoxWidth;
-	set<int> breaks = getElecbyteTextLinebreaks(e->mText, start, font, elecbyteFont, rightX, factor);
+	const auto breaks = getElecbyteTextLinebreaks(e->mText, start, font, elecbyteFont, rightX, factor);
 	for (i = 0; i < textLength; i++) {
 
 		if (elecbyteFont->mMap[(int)e->mDisplayText[i]].mExists) {
@@ -701,7 +737,7 @@ static void drawSingleElecbyteText(MugenText* e) {
 			p = vecAdd2D(p, vecScale(makePosition(font->mSize.x, 0, 0), factor));
 			p = vecAdd2D(p, vecScale(makePosition(font->mSpacing.x, 0, 0), factor));
 		}
-		if (hasElecbyteTextToLinebreak(e->mText, i, p, font, elecbyteFont, rightX, factor)) {
+		if (breaks.find(i) != breaks.end()) {
 			p.x = start.x;
 			p = vecAdd2D(p, vecScale(makePosition(0, font->mSize.y, 0), factor));
 			p = vecAdd2D(p, vecScale(makePosition(0, font->mSpacing.y, 0), factor));
@@ -822,7 +858,7 @@ static double getBitmapTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)font->mData;
 	int textLength = strlen(e->mText);
-	double factor = e->mScale; // TODO: 640p
+	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	MugenSpriteFileGroup* spriteGroup = (MugenSpriteFileGroup*)int_map_get(&bitmapFont->mSprites.mGroups, 0);
 
@@ -852,7 +888,7 @@ static double getElecbyteTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
 	int textLength = strlen(e->mText);
-	double factor = e->mScale; // TODO: 640p
+	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	int i;
 	double sizeX = 0;
@@ -958,7 +994,7 @@ void addMugenTextPosition(int tID, Position tPosition)
 void setMugenTextTextBoxWidth(int tID, double tWidth)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
-	e->mTextBoxWidth = tWidth; // TODO: implement for all types
+	e->mTextBoxWidth = tWidth;
 }
 
 void setMugenTextBuildup(int tID, Duration mBuildUpDurationPerLetter)
@@ -1042,35 +1078,26 @@ MugenTextAlignment getMugenTextAlignmentFromMugenAlignmentIndex(int tIndex)
 
 Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 {
-	// TODO: refactor
-	if (tIndex == 0) {
+	switch (tIndex) {
+	case 0:
 		return COLOR_WHITE;
-	}
-	else if (tIndex == 1) {
+	case 1:
 		return COLOR_RED;
-	}
-	else if (tIndex == 2) {
+	case 2:
 		return COLOR_GREEN;
-	}
-	else if (tIndex == 3) {
+	case 3:
 		return COLOR_BLUE;
-	}
-	else if (tIndex == 4) {
+	case 4:
 		return COLOR_CYAN;
-	}
-	else if (tIndex == 5) {
+	case 5:
 		return COLOR_YELLOW;
-	}
-	else if (tIndex == 6) {
+	case 6:
 		return COLOR_MAGENTA;
-	}
-	else if (tIndex == 7) {
+	case 7:
 		return COLOR_BLACK;
-	}
-	else if (tIndex == 8) {
-		return COLOR_LIGHT_GRAY; // TODO: new index(?)
-	}
-	else {
+	case 8:
+		return COLOR_LIGHT_GRAY; // TODO: catalogue new index (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/343)
+	default:
 		logError("Unrecognized Mugen text color.");
 		logErrorInteger(tIndex);
 		recoverFromError();

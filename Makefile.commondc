@@ -1,12 +1,12 @@
 TARGET = 1ST_READ
 
-OBJS += romdisk.o 
+OBJS += romdisk.o
 OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -DDREAMCAST -Wall -fpermissive
 KOS_CPPFLAGS+= $(OPTFLAGS)
-CXXFLAGS += -DNDEBUG
+CXXFLAGS += -DNDEBUG -std=c++11 -Wall
 KOS_ROMDISK_DIR = romdisk_boot
 
-complete: clean build_images build_develop
+complete: make_filesystem build_develop
 
 romdisk: clean build_images to_romdisk build_romdisk
 
@@ -18,27 +18,13 @@ code: build_develop
 
 rd_code: build_romdisk
 
-build_images: copy_debug make_filesystem copy_assets copy_debugfolder copy_logo copy_effects convert_assets actions_user
+build_images: make_filesystem copy_assets copy_debugfolder actions_user
 
-copy_debug:
-	-$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/debug/*.png)
-	-find assets/debug -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
-	-$(KOS_BASE)/utils/kmgenc/kmgenc -a4 $(wildcard assets/fonts/*.png)
-	-find assets/fonts -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
-	mkdir romdisk_boot
-	mkdir romdisk_boot/fonts
-	-cp assets/fonts/* romdisk_boot/fonts
-	-find romdisk_boot/fonts/ -name '*.png' | xargs rm -f
-	-find romdisk_boot/fonts/ -name '*.kmg' | xargs rm -f
-	mkdir romdisk_boot/debug
-	-cp assets/debug/*.pkg romdisk_boot/debug
-	
 make_filesystem:
+	-mkdir romdisk_boot
 	-mkdir filesystem
-	mkdir filesystem/assets
-	mkdir filesystem/logo
-	mkdir filesystem/effects
-	mkdir filesystem/debug
+	-mkdir filesystem/assets
+	-mkdir filesystem/debug
 
 copy_assets:
 	cp -r assets/* filesystem/assets
@@ -46,22 +32,6 @@ copy_assets:
 copy_debugfolder:
 	cp -r debug/* filesystem/debug
 
-copy_logo:
-	cp -r $(KOS_BASE)/addons/prism/assets/logo/LOGO_DC.png filesystem/logo/LOGO_DC.png
-
-copy_effects:
-	cp -r $(KOS_BASE)/addons/prism/assets/effects/* filesystem/effects		
-
-
-convert_assets:
-	find filesystem/ -name '*.png' | xargs $(KOS_BASE)/utils/kmgenc/kmgenc -a4 
-	find filesystem/ -name '*.kmg' | xargs $(KOS_BASE)/addons/prism/tools/bin/kompressor
-	find filesystem/ -name '*.png' | xargs rm -f
-	find filesystem/ -name '*.kmg' | xargs rm -f
-	find filesystem/ -name '*.xcf' | xargs rm -f
-	#find filesystem/ -name '*.wav' | xargs rm -f
-	#find assets/ -name '*.wav' | xargs -I {} sox {} -b 16 filesystem/{}
-	
 to_romdisk:
 	cp -r filesystem/* romdisk_boot
 	
@@ -97,5 +67,10 @@ build_romdisk: $(OBJS)
 	$(OBJS) -lkmg $(OPTIONAL_LIBS) -lprism -lzstd -lpng -lz -ltremor -lm $(OBJEXTRA) $(KOS_LIBS)
 	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
 
+run:
+	/opt/toolchains/dc/bin/dc-tool-ip -t 192.168.0.4 -c . -x 1ST_READ.BIN 
+	
+run_in_assets:
+	/opt/toolchains/dc/bin/dc-tool-ip -t 192.168.0.4 -c ./assets -x 1ST_READ.BIN 
 	
 include $(KOS_BASE)/Makefile.rules

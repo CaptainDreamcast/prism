@@ -17,11 +17,11 @@ typedef struct {
 static struct {
 	IntMap mThreads;
 	Semaphore mThreadMapAccessSemaphore;
-} gData;
+} gPrismWindowsThreadData;
 
 void initThreading() {
-	gData.mThreadMapAccessSemaphore = createSemaphore(1);
-	gData.mThreads = new_int_map();
+	gPrismWindowsThreadData.mThreadMapAccessSemaphore = createSemaphore(1);
+	gPrismWindowsThreadData.mThreads = new_int_map();
 }
 
 static int forceShutdownSingleThread(void* tCaller, void* tData) {
@@ -35,10 +35,10 @@ static int forceShutdownSingleThread(void* tCaller, void* tData) {
 
 void shutdownThreading()
 {
-	lockSemaphore(gData.mThreadMapAccessSemaphore);
-	int_map_remove_predicate(&gData.mThreads, forceShutdownSingleThread, NULL);
-	delete_int_map(&gData.mThreads);
-	releaseSemaphore(&gData.mThreadMapAccessSemaphore);
+	lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+	int_map_remove_predicate(&gPrismWindowsThreadData.mThreads, forceShutdownSingleThread, NULL);
+	delete_int_map(&gPrismWindowsThreadData.mThreads);
+	releaseSemaphore(&gPrismWindowsThreadData.mThreadMapAccessSemaphore);
 }
 
 DWORD WINAPI threadFunction(LPVOID lpParam) {
@@ -47,9 +47,9 @@ DWORD WINAPI threadFunction(LPVOID lpParam) {
 	e->mFunc(e->mCaller);
 
 	CloseHandle(e->mThreadHandle);
-	lockSemaphore(gData.mThreadMapAccessSemaphore);
-	int_map_remove(&gData.mThreads, e->mID);
-	releaseSemaphore(gData.mThreadMapAccessSemaphore);
+	lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+	int_map_remove(&gPrismWindowsThreadData.mThreads, e->mID);
+	releaseSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
 
 	return 0;
 }
@@ -60,9 +60,9 @@ int startThread(void(tFunc)(void *), void* tCaller)
 	e->mFunc = tFunc;
 	e->mCaller = tCaller;
 
-	lockSemaphore(gData.mThreadMapAccessSemaphore);
-	e->mID = int_map_push_back_owned(&gData.mThreads, e);
-	releaseSemaphore(gData.mThreadMapAccessSemaphore);
+	lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+	e->mID = int_map_push_back_owned(&gPrismWindowsThreadData.mThreads, e);
+	releaseSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
 
 	e->mThreadHandle = CreateThread(NULL, 0, threadFunction, e, 0, &e->mThreadID);
 	return e->mID;

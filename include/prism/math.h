@@ -3,21 +3,17 @@
 #include <cmath>
 #include <algorithm>
 
+#ifdef DREAMCAST
+#include <kos.h>
+#endif
+
 #include "geometry.h"
 
-#ifdef DREAMCAST
-
-#include <kos.h>
-
-#define fmin	min
-#define fmax	max
-#define fabs 	abs
-// TODO: sort out the math header stuff
-
-#define M_PI 3.14159265358979323846 // TODO: fix for #Dreamcast
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+#ifndef M_E
 #define M_E 2.71828182845904523536
-
-#elif defined __EMSCRIPTEN__
 #endif
 
 #define fclamp(val, mini, maxi) (fmin(fmax(val, mini), maxi))
@@ -45,4 +41,3 @@ Matrix4D createScaleMatrix4D(Vector3D tScale);
 Matrix4D createTranslationMatrix4D(Vector3D tTranslation);
 Matrix4D createRotationZMatrix4D(double tAngle);
 Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, double tUp, double tBottom, double tNear, double tFar);
-

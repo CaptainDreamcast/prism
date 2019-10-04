@@ -12,17 +12,17 @@ static struct {
 	Screen* mNextScreen;
 
 	TextureData mBGTexture;
-	int mBG;
+	AnimationHandlerElement* mBG;
 
 	int mHasSetFadeOutColor;
 	Color mFadeOutColor;
-} gData;
+} gPrismLogoScreenData;
 
 extern char gLogoScreenFileName[100];
 
 static void leaveLogoScreen() {
-	if (!gData.mNextScreen) abortScreenHandling();
-	else setNewScreen(gData.mNextScreen);
+	if (!gPrismLogoScreenData.mNextScreen) abortScreenHandling();
+	else setNewScreen(gPrismLogoScreenData.mNextScreen);
 }
 
 static void endLogoFadeOut(void* tCaller) {
@@ -33,8 +33,8 @@ static void endLogoFadeOut(void* tCaller) {
 static void startLogoFadeOut(void* tCaller) {
 	(void)tCaller;
 
-	if (gData.mHasSetFadeOutColor) {
-		setFadeColor(gData.mFadeOutColor);
+	if (gPrismLogoScreenData.mHasSetFadeOutColor) {
+		setFadeColor(gPrismLogoScreenData.mFadeOutColor);
 	}
 
 	addFadeOut(20, endLogoFadeOut, NULL);
@@ -54,8 +54,8 @@ static void loadWrapperLogoScreen() {
 		leaveLogoScreen();
 		return;
 	}
-	gData.mBGTexture = loadTexture(bgPath);
-	gData.mBG = playOneFrameAnimationLoop(makePosition(0,0,1), &gData.mBGTexture);
+	gPrismLogoScreenData.mBGTexture = loadTexture(bgPath);
+	gPrismLogoScreenData.mBG = playOneFrameAnimationLoop(makePosition(0,0,1), &gPrismLogoScreenData.mBGTexture);
 
 	addFadeIn(20, logoFadeInOver, NULL);
 }
@@ -67,7 +67,7 @@ static Screen* getNextLogoScreenScreen() {
 	}
 
 	if (hasPressedStartFlank()) {
-		return gData.mNextScreen;
+		return gPrismLogoScreenData.mNextScreen;
 	}
 
 	return NULL;
@@ -82,10 +82,10 @@ Screen* getLogoScreenFromWrapper() {
 
 void setScreenAfterWrapperLogoScreen(Screen * tScreen)
 {
-	gData.mNextScreen = tScreen;
+	gPrismLogoScreenData.mNextScreen = tScreen;
 }
 
 void setLogoScreenFadeOutColor(Color tColor) {
-	gData.mFadeOutColor = tColor;
-	gData.mHasSetFadeOutColor = 1;
+	gPrismLogoScreenData.mFadeOutColor = tColor;
+	gPrismLogoScreenData.mHasSetFadeOutColor = 1;
 }

@@ -7,7 +7,7 @@
 #include "geometry.h"
 #include "animation.h"
 
-typedef enum {
+enum KeyboardKeyPrism : char {
 	KEYBOARD_A_PRISM,
 	KEYBOARD_B_PRISM,
 	KEYBOARD_C_PRISM,
@@ -66,7 +66,7 @@ typedef enum {
 	KEYBOARD_PERIOD_PRISM,
 	KEYBOARD_SLASH_PRISM,
 	KEYBOARD_AMOUNT_PRISM,
-} KeyboardKeyPrism;
+};
 
 typedef enum {
 	CONTROLLER_A_PRISM,

@@ -1,5 +1,4 @@
 #include <prism/framerateselectscreen.h>
-#include <prism/pvr.h>
 #include <prism/physics.h>
 #include <prism/file.h>
 #include <prism/drawing.h>
@@ -9,6 +8,7 @@
 #include <prism/stagehandler.h>
 #include <prism/logoscreen.h>
 #include <prism/mugentexthandler.h>
+#include <prism/debug.h>
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -35,30 +35,17 @@ void exitGame() {
 #endif
 }
 
-void setMainFileSystem() {
-#ifdef DEVELOP
-	setFileSystem("/pc");
-#else
-	setFileSystem("/cd");
-#endif
-}
-
-int isInDevelopMode() {
-#ifdef DEVELOP
-	return 1;
-#else
-	return 0;
-#endif
-}
-
 int main(int argc, char** argv) {
 	(void)argc;
 	(void)argv;
 
+	#ifdef DEVELOP
+	setDevelopMode();
+	#endif
+
 	setGameName("TEMPLATE");
 	setScreenSize(640, 480);
 	
-	setMainFileSystem();
 	initPrismWrapperWithConfigFile("data/config.cfg");
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
 

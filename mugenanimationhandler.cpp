@@ -11,106 +11,6 @@
 
 using namespace std;
 
-typedef int MugenDuration;
-
-typedef struct {
-	int mList;
-	int mID;
-	Collider mCollider;
-} MugenAnimationHandlerHitboxElement;
-
-typedef struct {
-
-	MugenAnimation* mAnimation;
-	MugenSpriteFile* mSprites;
-	int mStep;
-
-	int mIsFacingRight;
-	int mIsFacingDown;
-
-	MugenDuration mOverallTime;
-	MugenDuration mStepTime;
-	MugenSpriteFileSprite* mSprite;
-	int mHasSprite;
-
-	int mHasPassiveHitCB;
-	void* mPassiveHitCaller;
-	void(*mPassiveHitCB)(void* tCaller, void* tCollisionData);
-
-	int mHasAttackHitCB;
-	void* mAttackHitCaller;
-	void(*mAttackHitCB)(void* tCaller, void* tCollisionData);
-
-	int mHasAnimationFinishedCallback;
-	void* mAnimationFinishedCaller;
-	void(*mAnimationFinishedCB)(void* tCaller);
-
-	int mHasPassiveHitboxes;
-	int mPassiveCollisionList;
-	void* mPassiveCollisionData;
-
-	int mHasAttackHitboxes;
-	int mAttackCollisionList;
-	void* mAttackCollisionData;
-
-	list<MugenAnimationHandlerHitboxElement> mActiveHitboxes;
-
-	Position mPlayerPositionReference;
-
-	double mDrawScale;
-
-	Vector3D mBaseDrawScale;
-
-	Position mOffset;
-
-	int mHasRectangleWidth;
-	int mRectangleWidth;
-
-	int mHasRectangleHeight;
-	int mRectangleHeight;
-
-	int mHasCameraPositionReference;
-	Position* mCameraPositionReference;
-
-	int mHasCameraScaleReference;
-	Vector3D* mCameraScaleReference;
-
-	int mHasCameraAngleReference;
-	double* mCameraAngleReference;
-
-	int mHasCameraEffectPositionReference;
-	Position* mCameraEffectPositionReference;
-
-	int mIsInvisible;
-
-	double mBaseDrawAngle;
-
-	int mHasBasePositionReference;
-	Position* mBasePositionReference;
-
-	int mHasScaleReference;
-	Vector3D* mScaleReference;
-
-	int mHasAngleReference;
-	double* mAngleReference;
-
-	int mHasBlendType;
-	BlendType mBlendType;
-
-	int mHasConstraintRectangle;
-	GeoRectangle mConstraintRectangle;
-
-	int mIsPaused;
-	int mIsLooping;
-
-	double mR;
-	double mG;
-	double mB;
-	double mAlpha;
-
-	int mIsCollisionDebugActive;
-} MugenAnimationHandlerElement;
-
 static struct {
 	map<int, MugenAnimationHandlerElement> mAnimations;
 	int mIsPaused;
@@ -161,7 +61,7 @@ static void attackAnimationHitCB(void* tCaller, void* tCollisionData) {
 
 typedef struct {
 	MugenAnimationHandlerElement* mElement;
-	int mList;
+	CollisionListData* mList;
 	CollisionCallback mCB;
 	void* mCollisionData;
 } HitboxAdditionCaller;
@@ -191,12 +91,12 @@ static void addSingleHitbox(void* tCaller, void* tData) {
 	e.mCollider = makeColliderFromRect(scaledRectangle);
 
 	e.mList = caller->mList;
-	e.mID = addColliderToCollisionHandler(caller->mList, &caller->mElement->mPlayerPositionReference, e.mCollider, caller->mCB, caller->mElement, caller->mCollisionData);
+	e.mElement = addColliderToCollisionHandler(caller->mList, &caller->mElement->mPlayerPositionReference, e.mCollider, caller->mCB, caller->mElement, caller->mCollisionData);
 
 	
 }
 
-static void addNewSingleHitboxType(MugenAnimationHandlerElement* e, List* tHitboxes, int tList, CollisionCallback tCB, void* tCollisionData) {
+static void addNewSingleHitboxType(MugenAnimationHandlerElement* e, List* tHitboxes, CollisionListData* tList, CollisionCallback tCB, void* tCollisionData) {
 	HitboxAdditionCaller caller;
 	caller.mElement = e;
 	caller.mList = tList;
@@ -221,7 +121,7 @@ static int removeSingleHitbox(void* tCaller, MugenAnimationHandlerHitboxElement&
 	(void)tCaller;
 	MugenAnimationHandlerHitboxElement* hitbox = &tData;
 
-	removeFromCollisionHandler(hitbox->mList, hitbox->mID);
+	removeFromCollisionHandler(hitbox->mElement);
 	destroyCollider(&hitbox->mCollider);
 	return 1;
 }
@@ -254,7 +154,7 @@ static void unloadMugenAnimation(MugenAnimationHandlerElement* e) {
 
 static void updateStepSpriteAndSpriteValidity(MugenAnimationHandlerElement* e) {
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
-	e->mSprite = step ? getMugenSpriteFileTextureReference(e->mSprites, step->mGroupNumber, step->mSpriteNumber) : NULL; // TODO: proper operator
+	e->mSprite = step ? getMugenSpriteFileTextureReference(e->mSprites, step->mGroupNumber, step->mSpriteNumber) : NULL;
 	e->mHasSprite = e->mSprite != NULL;
 }
 
@@ -270,7 +170,7 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 		if (e->mIsLooping) {
 			e->mStep = e->mAnimation->mLoopStart;
 			e->mStepTime = 1;
-			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep) + 1; // TODO: test TODO: Mr. Big and Felicia imply this should be + 1 or at least not = 0 for loop start, either that or count loops for animelemtime
+			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep) + 1; // TODO: test TODO: Mr. Big and Felicia imply this should be + 1 or at least not = 0 for loop start, either that or count loops for animelemtime (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/358)
 		}
 		else {
 			unloadMugenAnimation(e);
@@ -303,7 +203,7 @@ static void startNewAnimationWithStartStep(MugenAnimationHandlerElement* e, int 
 	}
 }
 
-int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites, Position tPosition)
+MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites, Position tPosition)
 {
 	MugenAnimationHandlerElement e;
 	e.mAnimation = tStartAnimation;
@@ -356,143 +256,125 @@ int addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites
 
 	startNewAnimationWithStartStep(&e, 0);
 
-	return stl_int_map_push_back(gMugenAnimationHandler.mAnimations, e);
+	int id = stl_int_map_push_back(gMugenAnimationHandler.mAnimations, e);
+	auto& ret = gMugenAnimationHandler.mAnimations[id];
+	ret.mID = id;
+	return &ret;
 }
 
-void removeMugenAnimation(int tID)
+void removeMugenAnimation(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	unloadMugenAnimation(e);
-	gMugenAnimationHandler.mAnimations.erase(tID);
+	gMugenAnimationHandler.mAnimations.erase(e->mID);
 }
 
-int isRegisteredMugenAnimation(int tID) {
-	return stl_map_contains(gMugenAnimationHandler.mAnimations, tID);
+int isRegisteredMugenAnimation(MugenAnimationHandlerElement* e) {
+	return stl_map_contains(gMugenAnimationHandler.mAnimations, e->mID);
 }
 
-int getMugenAnimationAnimationNumber(int tID)
+int getMugenAnimationAnimationNumber(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return e->mAnimation->mID;
 }
 
-int getMugenAnimationAnimationStep(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+int getMugenAnimationAnimationStep(MugenAnimationHandlerElement* e) {
 	return e->mStep;
 }
 
-int getMugenAnimationAnimationStepAmount(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+int getMugenAnimationAnimationStepAmount(MugenAnimationHandlerElement* e) {
 	return vector_size(&e->mAnimation->mSteps);
 }
 
-int getMugenAnimationAnimationStepDuration(int tID)
+int getMugenAnimationAnimationStepDuration(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	return step->mDuration;
 }
 
-int getMugenAnimationRemainingAnimationTime(int tID)
+int getMugenAnimationRemainingAnimationTime(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	int remainingTime = (e->mAnimation->mTotalDuration - e->mOverallTime) - 1;
 
-	remainingTime = max(0, remainingTime); // TODO: fix when reading out
+	remainingTime = max(0, remainingTime);
 
 	return remainingTime;
 }
 
-int getMugenAnimationTime(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+int getMugenAnimationTime(MugenAnimationHandlerElement* e) {
 	return e->mOverallTime;
 }
 
-int getMugenAnimationDuration(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+int getMugenAnimationDuration(MugenAnimationHandlerElement* e) {
 	return e->mAnimation->mTotalDuration;
 }
 
-Vector3DI getMugenAnimationSprite(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+Vector3DI getMugenAnimationSprite(MugenAnimationHandlerElement* e) {
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
-	if (!step) return makeVector3DI(-1, -1, 0); // TODO: proper default
+	if (!step) return makeVector3DI(-1, -1, 0);
 	else return makeVector3DI(step->mGroupNumber, step->mSpriteNumber, 0);
 }
 
-void setMugenAnimationFaceDirection(int tID, int tIsFacingRight)
+void setMugenAnimationFaceDirection(MugenAnimationHandlerElement* e, int tIsFacingRight)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mIsFacingRight = tIsFacingRight;
 }
 
-void setMugenAnimationVerticalFaceDirection(int tID, int tIsFacingDown) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+void setMugenAnimationVerticalFaceDirection(MugenAnimationHandlerElement* e, int tIsFacingDown) {
 	e->mIsFacingDown = tIsFacingDown;
 }
 
-void setMugenAnimationRectangleWidth(int tID, int tWidth)
+void setMugenAnimationRectangleWidth(MugenAnimationHandlerElement* e, int tWidth)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasRectangleWidth = 1;
 	e->mRectangleWidth = tWidth;
 }
 
-void setMugenAnimationRectangleHeight(int tID, int tHeight)
+void setMugenAnimationRectangleHeight(MugenAnimationHandlerElement* e, int tHeight)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasRectangleHeight = 1;
 	e->mRectangleHeight = tHeight;
 }
 
-void setMugenAnimationCameraPositionReference(int tID, Position * tCameraPosition)
+void setMugenAnimationCameraPositionReference(MugenAnimationHandlerElement* e, Position * tCameraPosition)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasCameraPositionReference = 1;
 	e->mCameraPositionReference = tCameraPosition;
 }
 
-void setMugenAnimationCameraScaleReference(int tID, Position * tCameraScale)
+void setMugenAnimationCameraScaleReference(MugenAnimationHandlerElement* e, Position * tCameraScale)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasCameraScaleReference = 1;
 	e->mCameraScaleReference = tCameraScale;
 }
 
-void setMugenAnimationCameraAngleReference(int tID, double * tCameraAngle)
+void setMugenAnimationCameraAngleReference(MugenAnimationHandlerElement* e, double * tCameraAngle)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasCameraAngleReference = 1;
 	e->mCameraAngleReference = tCameraAngle;
 }
 
-void setMugenAnimationCameraEffectPositionReference(int tID, Position * tCameraEffectPosition)
+void setMugenAnimationCameraEffectPositionReference(MugenAnimationHandlerElement* e, Position * tCameraEffectPosition)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasCameraEffectPositionReference = 1;
 	e->mCameraEffectPositionReference = tCameraEffectPosition;
 }
 
-void setMugenAnimationInvisible(int tID)
+void setMugenAnimationInvisible(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mIsInvisible = 1;
 }
 
-void setMugenAnimationVisibility(int tID, int tIsVisible) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+void setMugenAnimationVisibility(MugenAnimationHandlerElement* e, int tIsVisible) {
 	e->mIsInvisible = !tIsVisible;
 }
 
-void setMugenAnimationDrawScale(int tID, Vector3D tScale)
+void setMugenAnimationDrawScale(MugenAnimationHandlerElement* e, Vector3D tScale)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mBaseDrawScale = tScale;
 }
 
-void setMugenAnimationDrawSize(int tID, Vector3D tSize)
+void setMugenAnimationDrawSize(MugenAnimationHandlerElement* e, Vector3D tSize)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	if (!e->mHasSprite) {
 		logWarning("Trying to set draw size on element without sprite. Ignoring.");
 		return;
@@ -500,194 +382,164 @@ void setMugenAnimationDrawSize(int tID, Vector3D tSize)
 	double scaleX = tSize.x / e->mSprite->mOriginalTextureSize.x;
 	double scaleY = tSize.y / e->mSprite->mOriginalTextureSize.y;
 	double scaleZ = tSize.z / 1;
-	setMugenAnimationDrawScale(tID, makePosition(scaleX, scaleY, scaleZ));
+	setMugenAnimationDrawScale(e, makePosition(scaleX, scaleY, scaleZ));
 }
 
-void setMugenAnimationDrawAngle(int tID, double tAngle)
+void setMugenAnimationDrawAngle(MugenAnimationHandlerElement* e, double tAngle)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mBaseDrawAngle = tAngle;
 }
 
-void setMugenAnimationBaseDrawScale(int tID, double tScale)
+void setMugenAnimationBaseDrawScale(MugenAnimationHandlerElement* e, double tScale)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mDrawScale = tScale;
 }
 
-void setMugenAnimationBasePosition(int tID, Position * tBasePosition)
+void setMugenAnimationBasePosition(MugenAnimationHandlerElement* e, Position * tBasePosition)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasBasePositionReference = 1;
 	e->mBasePositionReference = tBasePosition;
 }
 
-void setMugenAnimationScaleReference(int tID, Vector3D * tScale)
+void setMugenAnimationScaleReference(MugenAnimationHandlerElement* e, Vector3D * tScale)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasScaleReference = 1;
 	e->mScaleReference = tScale;
 }
 
-void setMugenAnimationAngleReference(int tID, double * tAngle)
+void setMugenAnimationAngleReference(MugenAnimationHandlerElement* e, double * tAngle)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasAngleReference = 1;
 	e->mAngleReference = tAngle;
 }
 
-void setMugenAnimationColor(int tID, double tR, double tG, double tB) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+void setMugenAnimationColor(MugenAnimationHandlerElement* e, double tR, double tG, double tB) {
 	e->mR = tR;
 	e->mG = tG;
 	e->mB = tB;
 }
 
-void setMugenAnimationTransparency(int tID, double tOpacity) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+void setMugenAnimationTransparency(MugenAnimationHandlerElement* e, double tOpacity) {
 	e->mAlpha = tOpacity;
 }
 
-void setMugenAnimationPosition(int tID, Position tPosition)
+void setMugenAnimationPosition(MugenAnimationHandlerElement* e, Position tPosition)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mOffset = tPosition;
 }
 
-void setMugenAnimationBlendType(int tID, BlendType tBlendType)
+void setMugenAnimationBlendType(MugenAnimationHandlerElement* e, BlendType tBlendType)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mBlendType = tBlendType;
 	e->mHasBlendType = 1;
 }
 
-void setMugenAnimationSprites(int tID, MugenSpriteFile * tSprites)
+void setMugenAnimationSprites(MugenAnimationHandlerElement* e, MugenSpriteFile * tSprites)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mSprites = tSprites;
 	updateStepSpriteAndSpriteValidity(e);
 }
 
-void setMugenAnimationConstraintRectangle(int tID, GeoRectangle tConstraintRectangle)
+void setMugenAnimationConstraintRectangle(MugenAnimationHandlerElement* e, GeoRectangle tConstraintRectangle)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mConstraintRectangle = tConstraintRectangle;
 	e->mHasConstraintRectangle = 1;
 }
 
-Position getMugenAnimationPosition(int tID)
+Position getMugenAnimationPosition(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return e->mOffset;
 }
 
-int getMugenAnimationIsFacingRight(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+int getMugenAnimationIsFacingRight(MugenAnimationHandlerElement* e) {
 	return e->mIsFacingRight;
 }
 
-int getMugenAnimationIsFacingDown(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+int getMugenAnimationIsFacingDown(MugenAnimationHandlerElement* e) {
 	return e->mIsFacingDown;
 }
 
-int getMugenAnimationVisibility(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+int getMugenAnimationVisibility(MugenAnimationHandlerElement* e) {
 	return !e->mIsInvisible;
 }
 
-Vector3D getMugenAnimationDrawScale(int tID)
+Vector3D getMugenAnimationDrawScale(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return e->mBaseDrawScale;
 }
 
-double getMugenAnimationDrawAngle(int tID) 
+double getMugenAnimationDrawAngle(MugenAnimationHandlerElement* e) 
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return e->mBaseDrawAngle;
 }
 
-double getMugenAnimationColorRed(int tID)
+double getMugenAnimationColorRed(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return e->mR;
 }
 
-double getMugenAnimationColorGreen(int tID)
+double getMugenAnimationColorGreen(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return e->mG;
 }
 
-double getMugenAnimationColorBlue(int tID)
+double getMugenAnimationColorBlue(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return e->mB;
 }
 
-double * getMugenAnimationColorRedReference(int tID)
+double * getMugenAnimationColorRedReference(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return &e->mR;
 }
 
-double * getMugenAnimationColorGreenReference(int tID)
+double * getMugenAnimationColorGreenReference(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return &e->mG;
 }
 
-double * getMugenAnimationColorBlueReference(int tID)
+double * getMugenAnimationColorBlueReference(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return &e->mB;
 }
 
-double * getMugenAnimationTransparencyReference(int tID)
+double * getMugenAnimationTransparencyReference(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return &e->mAlpha;
 }
 
-double * getMugenAnimationScaleXReference(int tID)
+double * getMugenAnimationScaleXReference(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return &e->mBaseDrawScale.x;
 }
 
-double* getMugenAnimationScaleYReference(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+double* getMugenAnimationScaleYReference(MugenAnimationHandlerElement* e) {
 	return &e->mBaseDrawScale.y;
 }
 
-double * getMugenAnimationBaseScaleReference(int tID)
+double * getMugenAnimationBaseScaleReference(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return &e->mDrawScale;
 }
 
-Position * getMugenAnimationPositionReference(int tID)
+Position * getMugenAnimationPositionReference(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	return &e->mOffset;
 }
 
-void changeMugenAnimation(int tID, MugenAnimation * tNewAnimation)
+void changeMugenAnimation(MugenAnimationHandlerElement* e, MugenAnimation * tNewAnimation)
 {
-	changeMugenAnimationWithStartStep(tID, tNewAnimation, 0);
+	changeMugenAnimationWithStartStep(e, tNewAnimation, 0);
 }
 
-void changeMugenAnimationWithStartStep(int tID, MugenAnimation * tNewAnimation, int tStartStep)
+void changeMugenAnimationWithStartStep(MugenAnimationHandlerElement* e, MugenAnimation * tNewAnimation, int tStartStep)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mAnimation = tNewAnimation;
 	startNewAnimationWithStartStep(e, tStartStep);
 }
 
-int isStartingMugenAnimationElementWithID(int tID, int tStepID)
+int isStartingMugenAnimationElementWithID(MugenAnimationHandlerElement* e, int tStepID)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	if (e->mIsPaused) return 0;
 
 	int currentStep = e->mStep + 1;
@@ -696,13 +548,12 @@ int isStartingMugenAnimationElementWithID(int tID, int tStepID)
 
 
 
-int getTimeFromMugenAnimationElement(int tID, int tStep)
+int getTimeFromMugenAnimationElement(MugenAnimationHandlerElement* e, int tStep)
 {
 	tStep--;
 
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	if (tStep >= vector_size(&e->mAnimation->mSteps)) {
-		tStep = vector_size(&e->mAnimation->mSteps) - 1; // TODO: think about this
+		tStep = vector_size(&e->mAnimation->mSteps) - 1;
 	}
 
 	MugenDuration sum = getTimeWhenStepStarts(e, tStep);
@@ -714,7 +565,7 @@ int getTimeFromMugenAnimationElement(int tID, int tStep)
 
 static int getMugenAnimationElementFromTimeOffsetLoop(MugenAnimationHandlerElement* e, int tTime, int tCurrentStep, int dx) {
 	int n = vector_size(&e->mAnimation->mSteps);
-	if (!n) return 0; // TODO: check default behavior
+	if (!n) return 0;
 
 	int isRunning = 1;
 	while (isRunning) {
@@ -730,10 +581,9 @@ static int getMugenAnimationElementFromTimeOffsetLoop(MugenAnimationHandlerEleme
 	return -1;
 }
 
-int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
+int getMugenAnimationElementFromTimeOffset(MugenAnimationHandlerElement* e, int tTime)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
-	if (!vector_size(&e->mAnimation->mSteps)) return 0; // TODO: check default behavior
+	if (!vector_size(&e->mAnimation->mSteps)) return 0;
 
 	int ret;
 	if (tTime > 0) {
@@ -750,15 +600,12 @@ int getMugenAnimationElementFromTimeOffset(int tID, int tTime)
 	return ret + 1;
 }
 
-int isMugenAnimationTimeOffsetInAnimation(int tID, int tTime) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
-
+int isMugenAnimationTimeOffsetInAnimation(MugenAnimationHandlerElement* e, int tTime) {
 	MugenDuration sum = getTimeWhenStepStarts(e, vector_size(&e->mAnimation->mSteps));
 	return tTime < sum;
 }
 
-int getMugenAnimationTimeWhenStepStarts(int tID, int tStep) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+int getMugenAnimationTimeWhenStepStarts(MugenAnimationHandlerElement* e, int tStep) {
 	tStep = min(tStep, vector_size(&e->mAnimation->mSteps));
 	return getTimeWhenStepStarts(e, tStep);
 }
@@ -769,7 +616,7 @@ static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	increaseMugenDuration(&e->mOverallTime);
 	increaseMugenDuration(&e->mStepTime);
-	if (!step) return 0; // TODO: check default behavior
+	if (!step) return 0;
 	if (isMugenAnimationStepDurationInfinite(step->mDuration)) return 0;
 	if (e->mStepTime >= step->mDuration) {
 		return loadNextStepAndReturnIfShouldBeRemoved(e);
@@ -785,29 +632,25 @@ static int updateSingleMugenAnimationCB(void* tCaller, MugenAnimationHandlerElem
 	return updateSingleMugenAnimation(e);
 }
 
-void advanceMugenAnimationOneTick(int tID)
+void advanceMugenAnimationOneTick(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
-	int shouldBeRemoved = updateSingleMugenAnimation(e); // TODO: think about replacing this
+	int shouldBeRemoved = updateSingleMugenAnimation(e);
 	if (shouldBeRemoved) {
-		removeMugenAnimation(tID);
+		removeMugenAnimation(e);
 	}
 }
 
-void setMugenAnimationCollisionDebug(int tID, int tIsActive) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+void setMugenAnimationCollisionDebug(MugenAnimationHandlerElement* e, int tIsActive) {
 	e->mIsCollisionDebugActive = tIsActive;
 }
 
-void pauseMugenAnimation(int tID)
+void pauseMugenAnimation(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mIsPaused = 1;
 }
 
-void unpauseMugenAnimation(int tID)
+void unpauseMugenAnimation(MugenAnimationHandlerElement* e)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mIsPaused = 0;
 }
 
@@ -824,15 +667,14 @@ static void updateMugenAnimationHandler(void* tData) {
 	stl_int_map_remove_predicate(gMugenAnimationHandler.mAnimations, updateSingleMugenAnimationCB);
 }
 
-void setMugenAnimationCollisionActive(int tID, int tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData)
+void setMugenAnimationCollisionActive(MugenAnimationHandlerElement* e, CollisionListData* tCollisionList, void(*tFunc)(void*, void*), void* tCaller, void* tCollisionData)
 {
-	setMugenAnimationPassiveCollisionActive(tID, tCollisionList, tFunc, tCaller, tCollisionData);
-	setMugenAnimationAttackCollisionActive(tID, tCollisionList, NULL, NULL, NULL);
+	setMugenAnimationPassiveCollisionActive(e, tCollisionList, tFunc, tCaller, tCollisionData);
+	setMugenAnimationAttackCollisionActive(e, tCollisionList, NULL, NULL, NULL);
 }
 
-void setMugenAnimationPassiveCollisionActive(int tID, int tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
+void setMugenAnimationPassiveCollisionActive(MugenAnimationHandlerElement* e, CollisionListData* tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasPassiveHitboxes = 1;
 	e->mPassiveCollisionList = tCollisionList;
 	e->mPassiveCollisionData = tCollisionData;
@@ -841,9 +683,8 @@ void setMugenAnimationPassiveCollisionActive(int tID, int tCollisionList, void(*
 	e->mPassiveHitCaller = tCaller;
 }
 
-void setMugenAnimationAttackCollisionActive(int tID, int tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
+void setMugenAnimationAttackCollisionActive(MugenAnimationHandlerElement* e, CollisionListData* tCollisionList, void(*tFunc)(void *, void *), void * tCaller, void * tCollisionData)
 {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
 	e->mHasAttackHitboxes = 1;
 	e->mAttackCollisionList = tCollisionList;
 	e->mAttackCollisionData = tCollisionData;
@@ -852,13 +693,11 @@ void setMugenAnimationAttackCollisionActive(int tID, int tCollisionList, void(*t
 	e->mAttackHitCaller = tCaller;
 }
 
-void setMugenAnimationNoLoop(int tID) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+void setMugenAnimationNoLoop(MugenAnimationHandlerElement* e) {
 	e->mIsLooping = 0;
 }
 
-void setMugenAnimationCallback(int tID, void(*tFunc)(void*), void* tCaller) {
-	MugenAnimationHandlerElement* e = &gMugenAnimationHandler.mAnimations[tID];
+void setMugenAnimationCallback(MugenAnimationHandlerElement* e, void(*tFunc)(void*), void* tCaller) {
 	e->mHasAnimationFinishedCallback = 1;
 	e->mAnimationFinishedCB = tFunc;
 	e->mAnimationFinishedCaller = tCaller;
@@ -963,14 +802,12 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		p = vecSub(p, *e->mCameraPositionReference);
 	}
 
-
 	if (step->mIsAddition) {
 		setDrawingBlendType(BLEND_TYPE_ADDITION);
 	}
-	else if (e->mHasBlendType) {
-		setDrawingBlendType(e->mBlendType); // TODO: work out step/animation blend type mixing
+	else if (e->mHasBlendType && e->mBlendType != BLEND_TYPE_NORMAL) {
+		setDrawingBlendType(e->mBlendType);
 	}
-
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 	setDrawingTransparency(e->mAlpha);
@@ -986,7 +823,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		scaleDrawing3D(*e->mCameraScaleReference, caller->mCameraCenter);
 	}
 	if (e->mHasCameraAngleReference && *e->mCameraAngleReference > 1e-5) {
-		if (caller->mAngle) { // TODO
+		if (caller->mAngle) { // TODO (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/356)
 			setDrawingRotationZ(-caller->mAngle, caller->mScalePosition + makePosition(0.5, 0.5, 0));
 		}
 	
@@ -1122,9 +959,4 @@ static void drawMugenAnimationHandler(void* tData) {
 
 ActorBlueprint getMugenAnimationHandler() {
 	return makeActorBlueprint(loadMugenAnimationHandler, unloadMugenAnimationHandler, updateMugenAnimationHandler, drawMugenAnimationHandler);
-}
-
-ActorBlueprint getMugenAnimationHandlerActorBlueprint()
-{
-	return getMugenAnimationHandler();
 }

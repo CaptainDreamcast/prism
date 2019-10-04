@@ -2,10 +2,10 @@
 
 #include "animation.h"
 #include "tweening.h"
+#include "actorhandler.h"
 
-void setupStageHandler();
-void shutdownStageHandler();
-void updateStageHandler();
+ActorBlueprint getStageHandler();
+
 void setStageHandlerNoDelayedLoading();
 void setStageHandlerAccelerationPhysics();
 void setStageHandlerTweening();

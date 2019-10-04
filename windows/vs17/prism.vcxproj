@@ -102,7 +102,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -121,7 +121,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -134,7 +134,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -173,7 +173,6 @@
     <ClInclude Include="..\..\include\prism\drawing.h" />
     <ClInclude Include="..\..\include\prism\errorscreen.h" />
     <ClInclude Include="..\..\include\prism\file.h" />
-    <ClInclude Include="..\..\include\prism\framerate.h" />
     <ClInclude Include="..\..\include\prism\framerateselectscreen.h" />
     <ClInclude Include="..\..\include\prism\geometry.h" />
     <ClInclude Include="..\..\include\prism\input.h" />
@@ -189,8 +188,6 @@
     <ClInclude Include="..\..\include\prism\memorystack.h" />
     <ClInclude Include="..\..\include\prism\mugenanimationhandler.h" />
     <ClInclude Include="..\..\include\prism\mugenanimationreader.h" />
-    <ClInclude Include="..\..\include\prism\mugenassignment.h" />
-    <ClInclude Include="..\..\include\prism\mugenassignmentevaluator.h" />
     <ClInclude Include="..\..\include\prism\mugendefreader.h" />
     <ClInclude Include="..\..\include\prism\mugenscriptparser.h" />
     <ClInclude Include="..\..\include\prism\mugensoundfilereader.h" />
@@ -200,8 +197,6 @@
     <ClInclude Include="..\..\include\prism\physics.h" />
     <ClInclude Include="..\..\include\prism\physicshandler.h" />
     <ClInclude Include="..\..\include\prism\profiling.h" />
-    <ClInclude Include="..\..\include\prism\pvr.h" />
-    <ClInclude Include="..\..\include\prism\quicklz.h" />
     <ClInclude Include="..\..\include\prism\screeneffect.h" />
     <ClInclude Include="..\..\include\prism\script.h" />
     <ClInclude Include="..\..\include\prism\sound.h" />
@@ -218,7 +213,6 @@
     <ClInclude Include="..\..\include\prism\tweening.h" />
     <ClInclude Include="..\..\include\prism\windows\romdisk_win.h" />
     <ClInclude Include="..\..\include\prism\wrapper.h" />
-    <ClInclude Include="..\..\include\prism\wrappercomponenthandler.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\actorhandler.cpp" />
@@ -244,7 +238,6 @@
     <ClCompile Include="..\..\drawing.cpp" />
     <ClCompile Include="..\..\errorscreen.cpp" />
     <ClCompile Include="..\..\file.cpp" />
-    <ClCompile Include="..\..\framerate.cpp" />
     <ClCompile Include="..\..\geometry.cpp" />
     <ClCompile Include="..\..\input.cpp" />
     <ClCompile Include="..\..\loadingscreen.cpp" />
@@ -257,8 +250,6 @@
     <ClCompile Include="..\..\memorystack.cpp" />
     <ClCompile Include="..\..\mugenanimationhandler.cpp" />
     <ClCompile Include="..\..\mugenanimationreader.cpp" />
-    <ClCompile Include="..\..\mugenassignment.cpp" />
-    <ClCompile Include="..\..\mugenassignmentevaluator.cpp" />
     <ClCompile Include="..\..\mugendefreader.cpp" />
     <ClCompile Include="..\..\mugenscriptparser.cpp" />
     <ClCompile Include="..\..\mugensoundfilereader.cpp" />
@@ -268,20 +259,19 @@
     <ClCompile Include="..\..\physics.cpp" />
     <ClCompile Include="..\..\physicshandler.cpp" />
     <ClCompile Include="..\..\profiling.cpp" />
-    <ClCompile Include="..\..\quicklz.cpp" />
     <ClCompile Include="..\..\screeneffect.cpp" />
     <ClCompile Include="..\..\script.cpp" />
     <ClCompile Include="..\..\soundeffect.cpp" />
     <ClCompile Include="..\..\stagehandler.cpp" />
     <ClCompile Include="..\..\stlutil.cpp" />
     <ClCompile Include="..\..\storyboard.cpp" />
+    <ClCompile Include="..\..\system.cpp" />
     <ClCompile Include="..\..\texthandler.cpp" />
     <ClCompile Include="..\..\texture.cpp" />
     <ClCompile Include="..\..\texturepool.cpp" />
     <ClCompile Include="..\..\timer.cpp" />
     <ClCompile Include="..\..\tweening.cpp" />
     <ClCompile Include="..\..\wrapper.cpp" />
-    <ClCompile Include="..\..\wrappercomponenthandler.cpp" />
     <ClCompile Include="..\drawing_win.cpp" />
     <ClCompile Include="..\file_win.cpp" />
     <ClCompile Include="..\framerateselect_win.cpp" />
@@ -290,7 +280,6 @@
     <ClCompile Include="..\log_win.cpp" />
     <ClCompile Include="..\math_win.cpp" />
     <ClCompile Include="..\memoryhandler_win.cpp" />
-    <ClCompile Include="..\pvr_win.cpp" />
     <ClCompile Include="..\romdisk_win.cpp" />
     <ClCompile Include="..\screeneffect_win.cpp" />
     <ClCompile Include="..\soundeffect_win.cpp" />

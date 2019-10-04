@@ -22,7 +22,7 @@ static struct {
 	int mIsActive;
 
 	Position mSelectorBasePosition;
-} gData;
+} gPrismOptionHandlerData;
 
 typedef struct {
 	Position mPosition;
@@ -34,31 +34,31 @@ typedef struct {
 } HandledOption;
 
 void setupOptionHandler(){
-	gData.mOptionList = new_list();
-	gData.mSelector = loadTexturePKG("$/rd/debug/selector.pkg");
-	gData.mSelectedOption = 0;
-	gData.mTextSize = 10;
-	gData.mIsUsingA = 0;
-	gData.mIsUsingStart = 0;
-	gData.mIsDisabled = 0;
-	gData.mColor = COLOR_WHITE;
-	gData.mBreakSize = 0;
-	gData.mIsActive = 1;
+	gPrismOptionHandlerData.mOptionList = new_list();
+	gPrismOptionHandlerData.mSelector = loadTexturePKG("$/rd/debug/selector.pkg");
+	gPrismOptionHandlerData.mSelectedOption = 0;
+	gPrismOptionHandlerData.mTextSize = 10;
+	gPrismOptionHandlerData.mIsUsingA = 0;
+	gPrismOptionHandlerData.mIsUsingStart = 0;
+	gPrismOptionHandlerData.mIsDisabled = 0;
+	gPrismOptionHandlerData.mColor = COLOR_WHITE;
+	gPrismOptionHandlerData.mBreakSize = 0;
+	gPrismOptionHandlerData.mIsActive = 1;
 
-	gData.mSelectorBasePosition = makePosition(0, 0, 10);
+	gPrismOptionHandlerData.mSelectorBasePosition = makePosition(0, 0, 10);
 }
 
 
 
 void shutdownOptionHandler() {
-	delete_list(&gData.mOptionList);
-	unloadTexture(gData.mSelector);
+	delete_list(&gPrismOptionHandlerData.mOptionList);
+	unloadTexture(gPrismOptionHandlerData.mSelector);
 
-	gData.mIsActive = 0;
+	gPrismOptionHandlerData.mIsActive = 0;
 }
 
 void disableOptionHandler() {
-	gData.mIsDisabled = 1;
+	gPrismOptionHandlerData.mIsDisabled = 1;
 }
 
 int addOption(Position tPosition, char* tText, OptionCB tCB, void* tCaller){
@@ -67,62 +67,62 @@ int addOption(Position tPosition, char* tText, OptionCB tCB, void* tCaller){
 	strcpy(o->mText, tText);
 	o->mCB = tCB;
 	o->mCaller = tCaller;
-	o->mNumber = list_size(&gData.mOptionList);
+	o->mNumber = list_size(&gPrismOptionHandlerData.mOptionList);
 
-	int id = list_push_front_owned(&gData.mOptionList, (void*)o);
+	int id = list_push_front_owned(&gPrismOptionHandlerData.mOptionList, (void*)o);
 
 	return id;
 }
 
 void removeOption(int tID)
 {
-	list_remove(&gData.mOptionList, tID);
+	list_remove(&gPrismOptionHandlerData.mOptionList, tID);
 }
 
 void setOptionTextSize(int tSize){
-	gData.mTextSize = tSize;
+	gPrismOptionHandlerData.mTextSize = tSize;
 }
 
 void setOptionTextBreakSize(int tBreakSize)
 {
-	gData.mBreakSize = tBreakSize;
+	gPrismOptionHandlerData.mBreakSize = tBreakSize;
 }
 
 void setOptionButtonA(){
-	gData.mIsUsingA = 1;
+	gPrismOptionHandlerData.mIsUsingA = 1;
 }
 void setOptionButtonStart(){
-	gData.mIsUsingStart = 1;
+	gPrismOptionHandlerData.mIsUsingStart = 1;
 }
 
 static void performSelectedAction(void* tCaller, void* tRaw) {
 	(void) tCaller;
 	HandledOption* data = (HandledOption*)tRaw;
 
-	if(data->mNumber != gData.mSelectedOption) return;
+	if(data->mNumber != gPrismOptionHandlerData.mSelectedOption) return;
 
 	data->mCB(data->mCaller);
 }
 
 void updateOptionHandler(){
-	if(!list_size(&gData.mOptionList)) return;
+	if(!list_size(&gPrismOptionHandlerData.mOptionList)) return;
 
-	if(gData.mIsDisabled) return;
+	if(gPrismOptionHandlerData.mIsDisabled) return;
 
 	if(hasPressedDownFlank()) {
-		gData.mSelectedOption = (gData.mSelectedOption + 1) % list_size(&gData.mOptionList);
+		gPrismOptionHandlerData.mSelectedOption = (gPrismOptionHandlerData.mSelectedOption + 1) % list_size(&gPrismOptionHandlerData.mOptionList);
 	} else if(hasPressedUpFlank()) {
-		gData.mSelectedOption--;
-		if(gData.mSelectedOption < 0) gData.mSelectedOption += list_size(&gData.mOptionList);
+		gPrismOptionHandlerData.mSelectedOption--;
+		if(gPrismOptionHandlerData.mSelectedOption < 0) gPrismOptionHandlerData.mSelectedOption += list_size(&gPrismOptionHandlerData.mOptionList);
 	}
 
-	int hasValidA = gData.mIsUsingA && hasPressedAFlank();
-	int hasValidStart = gData.mIsUsingStart && hasPressedStartFlank();
+	int hasValidA = gPrismOptionHandlerData.mIsUsingA && hasPressedAFlank();
+	int hasValidStart = gPrismOptionHandlerData.mIsUsingStart && hasPressedStartFlank();
 	if(hasValidA || hasValidStart) {
-		ListIterator iterator = list_iterator_begin(&gData.mOptionList);
+		ListIterator iterator = list_iterator_begin(&gPrismOptionHandlerData.mOptionList);
 		while (iterator != NULL) {
 			performSelectedAction(NULL, list_iterator_get(iterator));
-			if (!gData.mIsActive) return;
+			if (!gPrismOptionHandlerData.mIsActive) return;
 			if (list_has_next(iterator)) {
 				list_iterator_increase(&iterator);
 			}
@@ -137,28 +137,28 @@ static void drawOption(void* tCaller, void* tRaw) {
 	(void) tCaller;
 	HandledOption* data = (HandledOption*)tRaw;
 
-	drawAdvancedText(data->mText, data->mPosition, makePosition(gData.mTextSize, gData.mTextSize, 1), gData.mColor, gData.mBreakSize);
+	drawAdvancedText(data->mText, data->mPosition, makePosition(gPrismOptionHandlerData.mTextSize, gPrismOptionHandlerData.mTextSize, 1), gPrismOptionHandlerData.mColor, gPrismOptionHandlerData.mBreakSize);
 
-	if(data->mNumber == gData.mSelectedOption) {
-		gData.mSelectorBasePosition = data->mPosition;
+	if(data->mNumber == gPrismOptionHandlerData.mSelectedOption) {
+		gPrismOptionHandlerData.mSelectorBasePosition = data->mPosition;
 	}
 }
 
 static void drawSelector() {
 
-	Position p = gData.mSelectorBasePosition;
-	double selectorFactor =  gData.mTextSize / (double)gData.mSelector.mTextureSize.x;
+	Position p = gPrismOptionHandlerData.mSelectorBasePosition;
+	double selectorFactor =  gPrismOptionHandlerData.mTextSize / (double)gPrismOptionHandlerData.mSelector.mTextureSize.x;
 
-	p = vecAdd(p, makePosition(-gData.mTextSize, 0, 0));
-	Rectangle r = makeRectangleFromTexture(gData.mSelector);
+	p = vecAdd(p, makePosition(-gPrismOptionHandlerData.mTextSize, 0, 0));
+	Rectangle r = makeRectangleFromTexture(gPrismOptionHandlerData.mSelector);
 	scaleDrawing(selectorFactor, p);
-	drawSprite(gData.mSelector, p, r);
+	drawSprite(gPrismOptionHandlerData.mSelector, p, r);
 	setDrawingParametersToIdentity();
 }
 
 void drawOptionHandler(){
-	if(!list_size(&gData.mOptionList)) return;
-	list_map(&gData.mOptionList, drawOption, NULL);
+	if(!list_size(&gPrismOptionHandlerData.mOptionList)) return;
+	list_map(&gPrismOptionHandlerData.mOptionList, drawOption, NULL);
 	drawSelector();
 }
 

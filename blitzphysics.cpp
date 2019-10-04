@@ -8,6 +8,7 @@
 #include "prism/system.h"
 #include "prism/blitzcollision.h"
 #include "prism/math.h"
+#include "prism/stlutil.h"
 
 #include <algorithm>
 
@@ -23,17 +24,16 @@ typedef struct {
 } PhysicsEntry;
 
 static struct {
-	IntMap mEntries;
-} gData;
+	map<int, PhysicsEntry> mEntries;
+} gBlitzPhysicsData;
 
 static void loadBlitzPhysicsHandler(void* tData) {
 	(void)tData;
-	gData.mEntries = new_int_map();
+	gBlitzPhysicsData.mEntries.clear();
 }
 
-static void updateSinglePhysicsEntry(void* tCaller, void* tData) {
-	(void)tCaller;
-	PhysicsEntry* e = (PhysicsEntry*)tData;
+static void updateSinglePhysicsEntry(void* /*tCaller*/, PhysicsEntry& tData) {
+	PhysicsEntry* e = &tData;
 
 	e->mAcceleration = vecAdd(e->mAcceleration, e->mGravity);
 	e->mVelocity = vecAdd(e->mVelocity, e->mAcceleration);
@@ -46,14 +46,13 @@ static void updateSinglePhysicsEntry(void* tCaller, void* tData) {
 	if (hasBlitzCollidedTop(e->mEntityID)) {
 		e->mVelocity.y = max(0.0, e->mVelocity.y);
 	}
-	//printf("phys %d %f\n", hasBlitzCollidedBottom(e->mEntityID), e->mVelocity.y);
 
 	*pos = vecAdd(*pos, e->mVelocity);	
 }
 
 static void updateBlitzPhysicsHandler(void* tData) {
 	(void)tData;
-	int_map_map(&gData.mEntries, updateSinglePhysicsEntry, NULL);
+	stl_int_map_map(gBlitzPhysicsData.mEntries, updateSinglePhysicsEntry);
 }
 
 static void unregisterEntity(int tEntityID);
@@ -63,12 +62,12 @@ static BlitzComponent getBlitzPhysicsComponent() {
 }
 
 static PhysicsEntry* getBlitzPhysicsEntry(int tEntityID) {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) {
+	if (!stl_map_contains(gBlitzPhysicsData.mEntries, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have physics component.", tEntityID);
 		recoverFromError();
 	}
 
-	return (PhysicsEntry*)int_map_get(&gData.mEntries, tEntityID);
+	return &gBlitzPhysicsData.mEntries[tEntityID];
 }
 
 ActorBlueprint getBlitzPhysicsHandler() {
@@ -77,15 +76,15 @@ ActorBlueprint getBlitzPhysicsHandler() {
 
 void addBlitzPhysicsComponent(int tEntityID)
 {
-	PhysicsEntry* e = (PhysicsEntry*)allocMemory(sizeof(PhysicsEntry));
-	e->mEntityID = tEntityID;
-	e->mVelocity = makePosition(0, 0, 0);
-	e->mAcceleration = makePosition(0, 0, 0);
-	e->mGravity = makePosition(0, 0, 0);
-	e->mOneMinusDragOnCollision = makePosition(1, 1, 1);
+	PhysicsEntry e;
+	e.mEntityID = tEntityID;
+	e.mVelocity = makePosition(0, 0, 0);
+	e.mAcceleration = makePosition(0, 0, 0);
+	e.mGravity = makePosition(0, 0, 0);
+	e.mOneMinusDragOnCollision = makePosition(1, 1, 1);
 
 	registerBlitzComponent(tEntityID, getBlitzPhysicsComponent());
-	int_map_push_owned(&gData.mEntries, tEntityID, e);
+	gBlitzPhysicsData.mEntries[tEntityID] = e;
 }
 
 void setBlitzPhysicsGravity(int tEntityID, Acceleration tGravity)
@@ -108,20 +107,20 @@ void setBlitzPhysicsDragFactorOnCollision(int tEntityID, Vector3D tDragFactor)
 
 Velocity getBlitzPhysicsVelocity(int tEntityID)
 {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) return makePosition(0, 0, 0);
+	if (!stl_map_contains(gBlitzPhysicsData.mEntries, tEntityID)) return makePosition(0, 0, 0);
 	
-	PhysicsEntry* e = (PhysicsEntry*)int_map_get(&gData.mEntries, tEntityID);
+	PhysicsEntry* e = &gBlitzPhysicsData.mEntries[tEntityID];
 	return e->mVelocity;
 }
 
-Velocity * getBlitzPhysicsVelocityReference(int tEntityID)
+Velocity* getBlitzPhysicsVelocityReference(int tEntityID)
 {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) {
+	if (!stl_map_contains(gBlitzPhysicsData.mEntries, tEntityID)) {
 		logWarningFormat("Entity %d has no physics component. Returning NULL.", tEntityID);
 		return NULL;
 	}
 	
-	PhysicsEntry* e = (PhysicsEntry*)int_map_get(&gData.mEntries, tEntityID);
+	PhysicsEntry* e = &gBlitzPhysicsData.mEntries[tEntityID];
 	return &e->mVelocity;
 }
 
@@ -168,5 +167,5 @@ void addBlitzPhysicsVelocityY(int tEntityID, double tY)
 }
 
 static void unregisterEntity(int tEntityID) {
-	int_map_remove(&gData.mEntries, tEntityID);
+	gBlitzPhysicsData.mEntries.erase(tEntityID);
 }

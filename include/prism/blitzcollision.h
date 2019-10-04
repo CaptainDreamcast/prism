@@ -3,14 +3,17 @@
 #include <prism/actorhandler.h>
 #include <prism/collision.h>
 
+struct CollisionListData;
+struct CollisionListElement;
+
 ActorBlueprint getBlitzCollisionHandler();
 
 void addBlitzCollisionComponent(int tEntityID);
-int addBlitzCollisionPassiveMugen(int tEntityID, int tList);
-int addBlitzCollisionAttackMugen(int tEntityID, int tList);
-int addBlitzCollisionRect(int tEntityID, int tList, CollisionRect tRectangle);
+int addBlitzCollisionPassiveMugen(int tEntityID, CollisionListData* tList);
+int addBlitzCollisionAttackMugen(int tEntityID, CollisionListData* tList);
+int addBlitzCollisionRect(int tEntityID, CollisionListData* tList, CollisionRect tRectangle);
 void changeBlitzCollisionRect(int tEntityID, int tCollisionID, CollisionRect tRectangle);
-int addBlitzCollisionCirc(int tEntityID, int tList, CollisionCirc tCircle);
+int addBlitzCollisionCirc(int tEntityID, CollisionListData* tList, CollisionCirc tCircle);
 void addBlitzCollisionCB(int tEntityID, int tCollisionID, void(*tCB)(void *, void*), void* tCaller);
 void setBlitzCollisionCollisionData(int tEntityID, int tCollisionID, void* tCollisionData);
 void setBlitzCollisionSolid(int tEntityID, int tCollisionID, int tIsMovable);

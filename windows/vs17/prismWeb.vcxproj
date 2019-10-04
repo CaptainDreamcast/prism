@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{10E9C155-833F-4A97-90C8-8072EE59B89E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\..\Makefile.common" />
+    <None Include="..\..\Makefile.commonweb" />
+    <None Include="..\..\Makefile.web" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

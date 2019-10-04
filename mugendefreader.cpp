@@ -51,7 +51,7 @@ static MugenDefToken* makeMugenDefToken(const char* tValue) {
 }
 
 static int isEmpty(BufferPointer p) {
-	return *p == ' ' || *p == '	' || *p < 0; // TODO: add symbol support for 128+
+	return *p == ' ' || *p == '	' || *p < 0; // TODO: add symbol support for 128+ (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/354)
 }
 
 static int increaseAndCheckIfOver(Buffer* b, BufferPointer* p) {
@@ -98,7 +98,7 @@ static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char
 
 	while ((depth > 0 || *p != end) && (uint32_t)p < ((uint32_t)b->mData)+b->mLength) {
 		if (increaseAndCheckIfOver(b, &p)) {
-			logError("Token reached end in wrong place."); // TODO: proper message
+			logError("Token reached end in wrong place.");
 			logErrorString(p);
 			recoverFromError();
 		}
@@ -126,7 +126,7 @@ static char* makeMugenDefString(char* tPos, int tLength) {
 }
 
 static char* makeMugenDefStringFromEndPoint(BufferPointer tStart, BufferPointer tEnd) {
-	int length = max(0, tEnd - tStart + 1);
+	int length = max(0, (int)(tEnd - tStart + 1));
 
 	return makeMugenDefString(tStart, length);
 }
@@ -316,7 +316,7 @@ static int isLoopStartStatement(Buffer* b, BufferPointer p) {
 	turnStringLowercase(text);
 	int ret = 0;
 	ret |= !strcmp("loopstart", text);
-	ret |= !strcmp("startloop", text); // TODO: check?
+	ret |= !strcmp("startloop", text);
 
 	destroyMugenDefString(text);
 	return ret;
@@ -342,9 +342,9 @@ static int isTextStatement() {
 	int ret = 0;
 	ret |= !strcmp("[Infobox Text]", text);
 	ret |= !strcmp("[ja.Infobox Text]", text);
-	ret |= !strcmp("[ExtraStages]", text); // TODO: check
-	ret |= !strcmp("[Stories]", text); // TODO: check
-	ret |= !strcmp("[Map]", text); // TODO: check
+	ret |= !strcmp("[ExtraStages]", text);
+	ret |= !strcmp("[Stories]", text);
+	ret |= !strcmp("[Map]", text);
 	ret |= !strcmp("[HitObjects]", text); 
 
 	return ret;
@@ -765,7 +765,7 @@ static int isTextStatementToken() {
 	if (gScriptMaker.mGroup == "ja.Infobox Text") return 1;
 	if (gScriptMaker.mGroup == "ExtraStages") return 1;
 	if (gScriptMaker.mGroup == "Stories") return 1;
-	if (gScriptMaker.mGroup == "Map") return 1; // TODO: check
+	if (gScriptMaker.mGroup == "Map") return 1;
 	if (gScriptMaker.mGroup == "HitObjects") return 1;
 
 	return 0;
@@ -812,7 +812,7 @@ static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken) {
 	}
 }
 
-void loadMugenDefScript(MugenDefScript* oScript, string& tPath) { // TODO: refactor
+void loadMugenDefScript(MugenDefScript* oScript, string& tPath) {
 	loadMugenDefScript(oScript, tPath.data());
 }
 

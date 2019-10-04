@@ -25,7 +25,6 @@ tools/mugendreamcastoptimizer/.vs/*
 *.sdf
 *.suo
 *.tlog
-*.user
 *.db
 *.opendb
 *.ipdb

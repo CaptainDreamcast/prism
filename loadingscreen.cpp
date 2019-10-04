@@ -6,11 +6,10 @@
 #include "prism/system.h"
 #include "prism/screeneffect.h"
 
-// TODO: properly separate
 #ifdef DREAMCAST
 static struct {
 	int mTicks;
-} gData;
+} gPrismLoadingScreenData;
 
 extern semaphore_t gPVRAccessSemaphore;
 
@@ -20,7 +19,7 @@ static void drawLoadingText() {
 	strcpy(text, "Loading");
 	int pos = strlen(text);
 	int i;
-	for(i = 0; i < gData.mTicks; i++) text[pos++] = '.';
+	for(i = 0; i < gPrismLoadingScreenData.mTicks; i++) text[pos++] = '.';
 	text[pos] = '\0';
 	drawMugenText(text, makePosition(20, 20, 10), -1);
 }
@@ -35,24 +34,24 @@ static void loadScreenLoop() {
 	drawLoadingText();
 	stopDrawing();
   	sem_signal(&gPVRAccessSemaphore);
-	//printf("liv %d\n", gData.mTicks);
+	//printf("liv %d\n", gPrismLoadingScreenData.mTicks);
 	//thd_sleep(1000);
 
-	gData.mTicks = (gData.mTicks+1) % 10;
+	gPrismLoadingScreenData.mTicks = (gPrismLoadingScreenData.mTicks+1) % 10;
 }
 
 
 void startLoadingScreen(int* tHasFinishedLoadingReference)
 {
 	setScreenBackgroundColorRGB(0, 0, 0);
-	gData.mTicks = 0;
+	gPrismLoadingScreenData.mTicks = 0;
 	while(!(*tHasFinishedLoadingReference)) {
 		loadScreenLoop();
 	}
 }
 #else
 
-void startLoadingScreen(int* tHasFinishedLoadingReference)
+void startLoadingScreen(int* /*tHasFinishedLoadingReference*/)
 {
 	
 }

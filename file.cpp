@@ -5,6 +5,7 @@
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
 #include "prism/system.h"
+#include "prism/debug.h"
 
 using namespace std;
 
@@ -16,6 +17,10 @@ const char* getPureFileName(const char* path) {
 	else return pos + 1;
 }
 
+int hasFileExtension(const char * tPath)
+{
+	return strrchr(tPath, '.') != NULL;
+}
 
 const char* getFileExtension(const char* tPath) {
 	const char* pos = strrchr(tPath, '.');
@@ -327,4 +332,13 @@ void appendBufferString(Buffer* tBuffer, const char* tString, int tLength) {
 
 void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer) {
 	appendBufferString(tBuffer, (char*)tInputBuffer.mData, tInputBuffer.mLength);
+}
+
+void setActiveFileSystemOnStartup() {
+	if (isInDevelopMode()) {
+		setFileSystem("/pc");
+	}
+	else {
+		setFileSystem("/cd");
+	}
 }

@@ -129,7 +129,6 @@ int playMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 int tryPlayMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 {
 	if (!hasMugenSound(tSounds, tGroup, tSample)) {
-		//logWarningFormat("Unable to find sound %d %d.", tGroup, tSample); // TODO: fix
 		return 0;
 	}
 

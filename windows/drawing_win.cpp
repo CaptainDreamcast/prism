@@ -8,8 +8,8 @@
 #include <SDL.h>
 #include <GL/glew.h>
 #ifdef __EMSCRIPTEN__
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_ttf.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 #elif defined _WIN32
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -181,7 +181,7 @@ static struct {
 } gBookkeepingData;
 
 static vector<DrawListElement> gDrawVector;
-static DrawingData gData;
+static DrawingData gPrismWindowsData;
 
 extern SDL_Window* gSDLWindow;
 
@@ -200,7 +200,7 @@ static void detectOpenGLCardType() {
 		gOpenGLData.mCardType = GraphicsCardType::AMD;
 	}
 	else {
-		logWarningFormat("Uable to detect GPU properly: %s %s", (char*)glGetString(GL_VENDOR), (char*)glGetString(GL_RENDERER));
+		logWarningFormat("Unable to detect GPU properly: %s %s", (char*)glGetString(GL_VENDOR), (char*)glGetString(GL_RENDERER));
 		gOpenGLData.mCardType = GraphicsCardType::UNKNOWN;
 	}
 }
@@ -299,26 +299,26 @@ void initDrawing() {
 	gDrawVector.clear();
 	gBookkeepingData.mFrameStartTime = 0;
 
-	gData.mEffectStack = new_vector();
+	gPrismWindowsData.mEffectStack = new_vector();
 
 	int i;
 	for (i = 0; i < 4; i++) {
-		createEmptySDLPalette(gData.mPalettes[i]);
+		createEmptySDLPalette(gPrismWindowsData.mPalettes[i]);
 	}
 
-	gData.mIsDisabled = 0;
+	gPrismWindowsData.mIsDisabled = 0;
 
 	initOpenGL();
 }
 
 void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
-	if (gData.mIsDisabled) return;
+	if (gPrismWindowsData.mIsDisabled) return;
 	
-	if (gData.mIsIdentity) {
+	if (gPrismWindowsData.mIsIdentity) {
 		double sx = tTexture.mTextureSize.x;
 		double sy = tTexture.mTextureSize.y;
 		double maxDelta = max(sx, sy);
-		ScreenSize sz = getScreenSize(); // TODO: fix
+		ScreenSize sz = getScreenSize(); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/372)
 		if (tPos.x + maxDelta < 0) return;
 		if (tPos.x - maxDelta >= sz.x) return;
 		if (tPos.y + maxDelta < 0) return;
@@ -342,7 +342,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
 	e.mTexture = tTexture;
 	e.mPos = tPos;
 	e.mTexturePosition = tTexturePosition;
-	e.mData = gData;
+	e.mData = gPrismWindowsData;
 	e.mZ = tPos.z;
 	gDrawVector.push_back(DrawListElement(e));
 }
@@ -364,28 +364,6 @@ static bool cmpZ(const DrawListElement& tData1, const DrawListElement& tData2) {
 	return z1 < z2;
 }
 
-static SDL_Rect makeSDLRectFromRectangle(Rectangle tRect) {
-	SDL_Rect ret;
-	ret.x = min(tRect.topLeft.x, tRect.bottomRight.x);
-	ret.y = min(tRect.topLeft.y, tRect.bottomRight.y);
-
-	ret.w = abs(tRect.bottomRight.x - tRect.topLeft.x);
-	ret.h = abs(tRect.bottomRight.y - tRect.topLeft.y);
-
-	return ret;
-}
-
-static Rectangle makeRectangleFromSDLRect(SDL_Rect tRect) {
-	Rectangle ret;
-	ret.topLeft.x = tRect.x;
-	ret.topLeft.y = tRect.y;
-
-	ret.bottomRight.x = tRect.x + tRect.w;
-	ret.bottomRight.y = tRect.y + tRect.h;
-
-	return ret;
-}
-
 static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double tV, Position tColor, double tAlpha) {
 	tDst[0] = (GLfloat)tPosition.x;
 	tDst[1] = (GLfloat)tPosition.y;
@@ -397,6 +375,7 @@ static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double
 	tDst[7] = (GLfloat)tAlpha;
 }
 
+// tSrcRect in relative coords to texturesize, tDstRect in pixels
 static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle& tSrcRect, const GeoRectangle& tDstRect, DrawingData* tData) {
 	Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
@@ -422,33 +401,13 @@ static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle& tSrcRect, c
 	glDrawElements(GL_TRIANGLES, (GLsizei)6, GL_UNSIGNED_INT, 0);
 }
 
-static void drawSDLSurface(SDL_Surface* tSurface, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
-	GLuint textureID;
-	GLint last_texture;
-	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tSurface->w, tSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tSurface->pixels);
-	glBindTexture(GL_TEXTURE_2D, last_texture);
-
-	drawOpenGLTexture(textureID, tSrcRect, tDstRect, tData);
-
-	glDeleteTextures(1, &textureID);
-}
-
-
 static void drawPalettedOpenGLTexture(int tTextureID, int tPaletteID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
 	(void)tTextureID;
 	(void)tPaletteID;
 	(void)tSrcRect;
 	(void)tDstRect;
 	(void)tData;
-	// TODO: implement as proper shader
+	// TODO: implement as proper shader (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/222)
 }
 
 static void drawSortedSprite(DrawListSpriteElement* e) {
@@ -556,17 +515,29 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 		rect.mTopLeft = pos;
 		rect.mBottomRight = vecAdd(pos, makePosition(surface->w, surface->h, 0));
 
-		GeoRectangle src = makeGeoRectangle(0, 0, surface->w, surface->h);
+		GeoRectangle src = makeGeoRectangle(0, 0, 1.0, 1.0);
 
 		pos.y += surface->h;
 
-
-		SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
-		drawSDLSurface(formattedSurface, src, rect, &e->mData);
-
-		SDL_FreeSurface(formattedSurface);
+		// must be converted because otherwise WebGL freezes up
+		auto convertedSurface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
 		SDL_FreeSurface(surface);
 
+		GLint last_texture;
+		GLuint texture;
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, convertedSurface->w, convertedSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, convertedSurface->pixels);
+		glBindTexture(GL_TEXTURE_2D, last_texture);
+		SDL_FreeSurface(convertedSurface);
+
+		drawOpenGLTexture(texture, src, rect, &e->mData);
+		glDeleteTextures(1, &texture);
 		i = end + 1;
 	}
 }
@@ -610,7 +581,6 @@ void waitForScreen() {
 
 	QueryPerformanceFrequency(&counter);
 	double freq = counter.QuadPart / 1000.0;
-	auto time = counter.QuadPart / freq;
 	double frameMS = (1.0 / 60) * 1000;
 	double frameEndTime = gBookkeepingData.mFrameStartTime + frameMS;
 	QueryPerformanceCounter(&counter);
@@ -631,24 +601,7 @@ void waitForScreen() {
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
-// TODO: refactor into general drawing code so both have it
-static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize) {
-
-	if (tText[0] == ' ') return 0;
-	if (tText[0] == '\n') return 1;
-
-	char word[1024];
-	int positionsRead;
-	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
-
-	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead - 1) * tBreakSize.x, 0, 0);
-	Position after = vecAdd(tPos, delta);
-	Position bottomRight = vecAdd(tTopLeft, tTextBoxSize);
-
-	return (after.x > bottomRight.x);
-}
-
-void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+void drawMultilineText(const char* tText, const char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
 	int current = 0;
 
 	setDrawingBaseColor(tColor);
@@ -684,7 +637,7 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
 	setDrawingParametersToIdentity();
 }
 
-void drawTruetypeText(char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth)
+void drawTruetypeText(const char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth)
 {
 	DrawListTruetypeElement e;
 	strcpy(e.mText, tText);
@@ -693,7 +646,7 @@ void drawTruetypeText(char * tText, TruetypeFont tFont, Position tPosition, Vect
 	e.mTextSize = tTextSize;
 	e.mColor = tColor;
 	e.mTextBoxWidth = tTextBoxWidth;
-	e.mData = gData;
+	e.mData = gPrismWindowsData;
 	e.mZ = tPosition.z;
 
 	gDrawVector.push_back(DrawListElement(e));
@@ -704,32 +657,32 @@ void scaleDrawing(double tFactor, Position tScalePosition) {
 }
 
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition) {
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(tScalePosition));
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createScaleMatrix4D(makePosition(tFactor.x, tFactor.y, tFactor.z)));
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tScalePosition, -1)));
-	gData.mIsIdentity = gData.mIsIdentity && tFactor.x == 1 && tFactor.y == 1;
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createTranslationMatrix4D(tScalePosition));
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createScaleMatrix4D(makePosition(tFactor.x, tFactor.y, tFactor.z)));
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tScalePosition, -1)));
+	gPrismWindowsData.mIsIdentity = gPrismWindowsData.mIsIdentity && tFactor.x == 1 && tFactor.y == 1;
 }
 
 void setDrawingBaseColor(Color tColor) {
-	getRGBFromColor(tColor, &gData.r, &gData.g, &gData.b);
+	getRGBFromColor(tColor, &gPrismWindowsData.r, &gPrismWindowsData.g, &gPrismWindowsData.b);
 }
 
 void setDrawingBaseColorAdvanced(double r, double g, double b) {
-	gData.r = r;
-	gData.g = g;
-	gData.b = b;
+	gPrismWindowsData.r = r;
+	gPrismWindowsData.g = g;
+	gPrismWindowsData.b = b;
 }
 
 void setDrawingTransparency(double tAlpha) {
-	gData.a = tAlpha;
+	gPrismWindowsData.a = tAlpha;
 }
 
 void setDrawingRotationZ(double tAngle, Position tPosition) {
-	tAngle = (2 * M_PI - tAngle); // TODO: but why
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(tPosition));
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createRotationZMatrix4D(tAngle));
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tPosition, -1)));
-	gData.mIsIdentity = gData.mIsIdentity && tAngle == 2 * M_PI;
+	tAngle = (2 * M_PI - tAngle);
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createTranslationMatrix4D(tPosition));
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createRotationZMatrix4D(tAngle));
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tPosition, -1)));
+	gPrismWindowsData.mIsIdentity = gPrismWindowsData.mIsIdentity && tAngle == 2 * M_PI;
 }
 
 void setDrawingParametersToIdentity() {
@@ -739,15 +692,15 @@ void setDrawingParametersToIdentity() {
 
 	ScreenSize sz = getScreenSize();
 	Vector3D realScreenSize = makePosition(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
-	gData.mTransformationMatrix = createOrthographicProjectionMatrix4D(0, realScreenSize.x, 0, realScreenSize.y, 0, 100);
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(makePosition(0, realScreenSize.y - gOpenGLData.mScreenScale.y*sz.y, 0)));
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createScaleMatrix4D(makePosition(gOpenGLData.mScreenScale.x, gOpenGLData.mScreenScale.y, 1)));
-	gData.mIsIdentity = 1;
+	gPrismWindowsData.mTransformationMatrix = createOrthographicProjectionMatrix4D(0, realScreenSize.x, 0, realScreenSize.y, 0, 100);
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createTranslationMatrix4D(makePosition(0, realScreenSize.y - gOpenGLData.mScreenScale.y*sz.y, 0)));
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createScaleMatrix4D(makePosition(gOpenGLData.mScreenScale.x, gOpenGLData.mScreenScale.y, 1)));
+	gPrismWindowsData.mIsIdentity = 1;
 }
 
 void setDrawingBlendType(BlendType tBlendType)
 {
-	gData.mBlendType = tBlendType;
+	gPrismWindowsData.mBlendType = tBlendType;
 }
 
 typedef struct {
@@ -760,14 +713,13 @@ typedef struct {
 
 } TranslationEffect;
 
-// TODO: check or remove, cause no game uses this stuff
 void pushDrawingTranslation(Vector3D tTranslation) {
 
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(tTranslation));
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createTranslationMatrix4D(tTranslation));
 
 	TranslationEffect* e = (TranslationEffect*)allocMemory(sizeof(TranslationEffect));
 	e->mTranslation = tTranslation;
-	vector_push_back_owned(&gData.mEffectStack, e);
+	vector_push_back_owned(&gPrismWindowsData.mEffectStack, e);
 }
 void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
 	setDrawingRotationZ(tAngle, tCenter);
@@ -775,30 +727,24 @@ void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
 	RotationZEffect* e = (RotationZEffect*)allocMemory(sizeof(RotationZEffect));
 	e->mAngle = tAngle;
 	e->mCenter = tCenter;
-	vector_push_back_owned(&gData.mEffectStack, e);
+	vector_push_back_owned(&gPrismWindowsData.mEffectStack, e);
 }
 
 void popDrawingRotationZ() {
-	int ind = vector_size(&gData.mEffectStack) - 1;
-	RotationZEffect* e = (RotationZEffect*)vector_get(&gData.mEffectStack, ind);
+	int ind = vector_size(&gPrismWindowsData.mEffectStack) - 1;
+	RotationZEffect* e = (RotationZEffect*)vector_get(&gPrismWindowsData.mEffectStack, ind);
 
 	setDrawingRotationZ(-e->mAngle, e->mCenter);
 
-	vector_remove(&gData.mEffectStack, ind);
+	vector_remove(&gPrismWindowsData.mEffectStack, ind);
 }
 void popDrawingTranslation() {
-	int ind = vector_size(&gData.mEffectStack) - 1;
-	TranslationEffect* e = (TranslationEffect*)vector_get(&gData.mEffectStack, ind);
+	int ind = vector_size(&gPrismWindowsData.mEffectStack) - 1;
+	TranslationEffect* e = (TranslationEffect*)vector_get(&gPrismWindowsData.mEffectStack, ind);
 
-	gData.mTransformationMatrix = matMult4D(gData.mTransformationMatrix, createTranslationMatrix4D(vecScale(e->mTranslation, -1)));
+	gPrismWindowsData.mTransformationMatrix = matMult4D(gPrismWindowsData.mTransformationMatrix, createTranslationMatrix4D(vecScale(e->mTranslation, -1)));
 
-	vector_remove(&gData.mEffectStack, ind);
-}
-
-
-static uint32_t* getPixelFromSurface(SDL_Surface* tSurface, int x, int y) {
-	uint32_t* pixels = (uint32_t*)tSurface->pixels;
-	return &pixels[y*tSurface->w + x];
+	vector_remove(&gPrismWindowsData.mEffectStack, ind);
 }
 
 #define PIXEL_BUFFER_SIZE 1000
@@ -808,16 +754,16 @@ void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTa
 	(void)tDst;
 	(void)tColor;
 	(void)tTarget;
-	// TODO: readd
+	// TODO: readd (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/221)
 }
 
 
 void disableDrawing() {
-	gData.mIsDisabled = 1;
+	gPrismWindowsData.mIsDisabled = 1;
 }
 
 void enableDrawing() {
-	gData.mIsDisabled = 0;
+	gPrismWindowsData.mIsDisabled = 0;
 }
 
 
@@ -833,7 +779,7 @@ void setDrawingScreenScale(double tScaleX, double tScaleY) {
 void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
 	assert(tBuffer.mLength == 256 * 4);
 
-	SDL_Color* palette = gData.mPalettes[tPaletteID];
+	SDL_Color* palette = gPrismWindowsData.mPalettes[tPaletteID];
 
 	int amount = tBuffer.mLength / 4;
 	int i;
@@ -849,7 +795,7 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer 
 {
 	assert(tBuffer.mLength == 256 * 3);
 
-	SDL_Color* palette = gData.mPalettes[tPaletteID];
+	SDL_Color* palette = gPrismWindowsData.mPalettes[tPaletteID];
 
 	int amount = 256;
 	int i;
@@ -863,7 +809,7 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer 
 }
 
 SDL_Color* getSDLColorPalette(int tIndex) {
-	return gData.mPalettes[tIndex];
+	return gPrismWindowsData.mPalettes[tIndex];
 }
 double getRealFramerate() {
 	return gBookkeepingData.mRealFramerate;

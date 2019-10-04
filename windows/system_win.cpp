@@ -10,7 +10,7 @@
 #include <GL/glew.h>
 #include <GL/glu.h>
 
-#include <SDL/SDL_image.h>
+#include <SDL_image.h>
 #elif defined _WIN32
 
 
@@ -22,7 +22,6 @@
 #endif
 
 #include "prism/log.h"
-#include "prism/pvr.h"
 #include "prism/geometry.h"
 #include "prism/math.h"
 #include "prism/wrapper.h"
@@ -30,17 +29,6 @@
 void abortSystem(){
  	assert(0);
 	exit(0);
-}
-
-// TODO: move to general
-void recoverFromError()
-{
-	if (isUsingWrapper()) {
-		recoverWrapperError();
-	}
-	else {
-		abortSystem();
-	}
 }
 
 static struct {
@@ -56,29 +44,35 @@ static struct {
 	int mIsFullscreen;
 	
 	char mGameName[100];
-} gData;
+} gPrismWindowsSystemData;
 
 SDL_Window* gSDLWindow;
 SDL_GLContext gGLContext;
 
 static void initScreenDefault() {
-	gData.mIsLoaded = 1;
-	gData.mScreenSizeX = gData.mDisplayedWindowSizeX = 640;
-	gData.mScreenSizeY = gData.mDisplayedWindowSizeY = 480; 
+	gPrismWindowsSystemData.mIsLoaded = 1;
+	gPrismWindowsSystemData.mScreenSizeX = gPrismWindowsSystemData.mDisplayedWindowSizeX = 640;
+	gPrismWindowsSystemData.mScreenSizeY = gPrismWindowsSystemData.mDisplayedWindowSizeY = 480; 
 
-	gData.mIsFullscreen = 0;
+	gPrismWindowsSystemData.mIsFullscreen = 0;
 }
 
 void setGameName(const char* tName) {
-	strcpy(gData.mGameName, tName);
+	strcpy(gPrismWindowsSystemData.mGameName, tName);
 }
 
 void updateGameName(const char * tName)
 {
-	strcpy(gData.mGameName, tName);
-	SDL_SetWindowTitle(gSDLWindow, gData.mGameName);
+	strcpy(gPrismWindowsSystemData.mGameName, tName);
+	SDL_SetWindowTitle(gSDLWindow, gPrismWindowsSystemData.mGameName);
 }
 
+void setIcon(const char * tPath)
+{
+	SDL_Surface* icon = IMG_Load(tPath);
+	SDL_SetWindowIcon(gSDLWindow, icon);
+	SDL_FreeSurface(icon);
+}
 
 #ifdef _WIN32
 #include <windows.h>
@@ -104,8 +98,8 @@ extern void setDrawingScreenScale(double tScaleX, double tScaleY);
 
 static void setWindowSize() {
 	ScreenSize sz = getScreenSize();
-	double scaleX = gData.mDisplayedWindowSizeX / (double)sz.x;
-	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
+	double scaleX = gPrismWindowsSystemData.mDisplayedWindowSizeX / (double)sz.x;
+	double scaleY = gPrismWindowsSystemData.mDisplayedWindowSizeY / (double)sz.y;
 
 	scaleX = fmin(scaleX, scaleY);
 	scaleY = fmin(scaleX, scaleY);
@@ -137,10 +131,10 @@ void initSystem() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 	
-	if (gData.mGameName[0] == '\0') {
-		sprintf(gData.mGameName, "Unnamed libtari game port");
+	if (gPrismWindowsSystemData.mGameName[0] == '\0') {
+		sprintf(gPrismWindowsSystemData.mGameName, "Unnamed libtari game port");
 	}
-	gSDLWindow = SDL_CreateWindow(gData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+	gSDLWindow = SDL_CreateWindow(gPrismWindowsSystemData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
 
 	initOpenGL();
 
@@ -168,20 +162,20 @@ static void checkWindowEvents(SDL_Event* e) {
 
 Vector3D correctSDLWindowPosition(Vector3D v) {
 	ScreenSize sz = getScreenSize();
-	double scaleX = gData.mDisplayedWindowSizeX / (double)sz.x;
-	double scaleY = gData.mDisplayedWindowSizeY / (double)sz.y;
+	double scaleX = gPrismWindowsSystemData.mDisplayedWindowSizeX / (double)sz.x;
+	double scaleY = gPrismWindowsSystemData.mDisplayedWindowSizeY / (double)sz.y;
 	return vecScale3D(v, makePosition(1 / scaleX, 1 / scaleY, 1));
 }
 
 static void switchFullscreen() {
-	if (!gData.mIsFullscreen) {
+	if (!gPrismWindowsSystemData.mIsFullscreen) {
 		SDL_SetWindowFullscreen(gSDLWindow, SDL_WINDOW_FULLSCREEN);
 	}
 	else {
 		SDL_SetWindowFullscreen(gSDLWindow, 0);
 	}
 
-	gData.mIsFullscreen ^= 1;
+	gPrismWindowsSystemData.mIsFullscreen ^= 1;
 }
 
 static void checkFullscreen() {
@@ -211,30 +205,30 @@ void updateSystem() {
 void setScreen(int tX, int tY, int tFramerate, int tIsVGA) {
 	(void)tIsVGA;
 	(void)tFramerate;
-	if(!gData.mIsLoaded) initScreenDefault();
-	gData.mScreenSizeX = tX;
-	gData.mScreenSizeY = tY;
+	if(!gPrismWindowsSystemData.mIsLoaded) initScreenDefault();
+	gPrismWindowsSystemData.mScreenSizeX = tX;
+	gPrismWindowsSystemData.mScreenSizeY = tY;
 }
 
 void setScreenSize(int tX, int tY) {
-	if(!gData.mIsLoaded) initScreenDefault();
+	if(!gPrismWindowsSystemData.mIsLoaded) initScreenDefault();
 
-	gData.mScreenSizeX = tX;
-	gData.mScreenSizeY = tY;
+	gPrismWindowsSystemData.mScreenSizeX = tX;
+	gPrismWindowsSystemData.mScreenSizeY = tY;
 }
 
 ScreenSize getScreenSize() {
-	if(!gData.mIsLoaded) initScreenDefault();
+	if(!gPrismWindowsSystemData.mIsLoaded) initScreenDefault();
 	ScreenSize ret;
-	ret.x = gData.mScreenSizeX;
-	ret.y = gData.mScreenSizeY;
+	ret.x = gPrismWindowsSystemData.mScreenSizeX;
+	ret.y = gPrismWindowsSystemData.mScreenSizeY;
 	return ret;
 }
 
 void setDisplayedScreenSize(int tX, int tY)
 {
-	gData.mDisplayedWindowSizeX = tX;
-	gData.mDisplayedWindowSizeY = tY;
+	gPrismWindowsSystemData.mDisplayedWindowSizeX = tX;
+	gPrismWindowsSystemData.mDisplayedWindowSizeY = tY;
 
 	setWindowSize();
 }

@@ -28,18 +28,18 @@ static struct {
 	int mIsActive;
 } gTweening;
 
-void setupTweening()
+static void unloadTweening(void*);
+static void loadTweening(void*)
 {
 	if (gTweening.mIsActive) {
-		shutdownTweening();
+		unloadTweening(NULL);
 	}
 	gTweening.mTweens.clear();
 	gTweening.mIsActive = 1;
 }
 
-void shutdownTweening()
+static void unloadTweening(void*)
 {
-
 	gTweening.mTweens.clear();
 	gTweening.mIsActive = 0;
 }
@@ -62,9 +62,13 @@ static int updateTween(void* tCaller,Tween& tData) {
 	return isOver;
 }
 
-void updateTweening()
+static void updateTweening(void*)
 {
 	stl_int_map_remove_predicate(gTweening.mTweens, updateTween);
+}
+
+ActorBlueprint getTweeningHandler() {
+	return makeActorBlueprint(loadTweening, unloadTweening, updateTweening);
 }
 
 int tweenDouble(double * tDst, double tStart, double tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void * tCaller)

@@ -18,6 +18,7 @@ void setHandledTextPosition(int tID, Position tPosition);
 void setHandledTextBasePositionReference(int tID, Position* tPosition);
 void setHandledTextBuiltUp(int tID);
 int isHandledTextBuiltUp(int tID);
+void addTextHandlerFont(int tID, const char* tHeaderPath, const char* tTexturePath);
 
 void removeHandledText(int tID);
 

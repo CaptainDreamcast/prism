@@ -1,5 +1,5 @@
 #pragma once
-// TODO - REFACTOR THIS PART
+// copied raw from Dolmexica Engine
 
 #include <stdint.h>
 
@@ -32,7 +32,7 @@ typedef struct {
 	uint8_t Separator1[14];
 
 	uint8_t ReservedSpace[16];
-} StoryBoardUberHeaderStruct; // TODO: refactor Dolmexica's naming conventions
+} StoryBoardUberHeaderStruct;
 
 
 typedef struct {
@@ -144,7 +144,7 @@ typedef struct {
 
 #pragma pack(pop)
 
-// TODO: REFACTOR ENDS HERE
+// Raw copying from Dolmexica Engine ends here
 
 typedef void(*StoryboardFinishedCB)(void* tCaller);
 

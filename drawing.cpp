@@ -3,7 +3,6 @@
 #include "prism/log.h"
 #include "prism/math.h"
 
-// TODO: refactor
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 
 	switch (tColor) {
@@ -63,6 +62,22 @@ void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 	}
 }
 
+int hasToLinebreak(const char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+
+	if (tText[0] == ' ') return 0;
+	if (tText[0] == '\n') return 1;
+
+	char word[1024];
+	int positionsRead;
+	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
+
+	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead - 1) * tBreakSize.x, 0, 0);
+	Position after = vecAdd(tPos, delta);
+	Position bottomRight = vecAdd(tTopLeft, tTextBoxSize);
+
+	return (after.x > bottomRight.x);
+}
+
 Rectangle makeRectangleFromTexture(TextureData tTexture) {
 	return makeRectangle(0, 0, tTexture.mTextureSize.x - 1, tTexture.mTextureSize.y - 1);
 }
@@ -107,11 +122,11 @@ void printRectangle(Rectangle r) {
 
 }
 
-void drawText(char tText[], Position tPosition, TextSize tSize, Color tColor) {
+void drawText(const char* tText, Position tPosition, TextSize tSize, Color tColor) {
 	drawAdvancedText(tText, tPosition, makeFontSize(tSize, tSize), tColor, 0);
 }
 
-void drawAdvancedText(char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize) {
+void drawAdvancedText(const char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize) {
 	drawMultilineText(tText, tText, tPosition, tFontSize, tColor, makeFontSize(tBreakSize, 0), makePosition(INF, INF, INF));
 }
 

@@ -30,11 +30,11 @@ typedef struct {
 
 static struct {
 	IntMap mEntries;
-} gData;
+} gBlitzTimelineAnimationData;
 
 static void loadBlitzTimelineAnimationHandler(void* tData) {
 	(void)tData;
-	gData.mEntries = new_int_map();
+	gBlitzTimelineAnimationData.mEntries = new_int_map();
 }
 
 static void interpolateFloatAnimationStep(BlitzTimelineAnimationStep* tStep, double t, int tEntityID, void(*tFunc)(int, double)) {
@@ -175,7 +175,7 @@ static void updateSingleBlitzTimelineAnimationEntry(void* tCaller, void* tData) 
 
 static void updateBlitzTimelineAnimationHandler(void* tData) {
 	(void)tData;
-	int_map_map(&gData.mEntries, updateSingleBlitzTimelineAnimationEntry, NULL);
+	int_map_map(&gBlitzTimelineAnimationData.mEntries, updateSingleBlitzTimelineAnimationEntry, NULL);
 }
 
 ActorBlueprint getBlitzTimelineAnimationHandler() {
@@ -189,12 +189,12 @@ static BlitzComponent getBlitzTimelineAnimationComponent() {
 };
 
 static BlitzTimelineAnimationEntry* getBlitzTimelineAnimationEntry(int tEntityID) {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) {
+	if (!int_map_contains(&gBlitzTimelineAnimationData.mEntries, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have a timeline animation component.", tEntityID);
 		recoverFromError();
 	}
 
-	return (BlitzTimelineAnimationEntry*)int_map_get(&gData.mEntries, tEntityID);
+	return (BlitzTimelineAnimationEntry*)int_map_get(&gBlitzTimelineAnimationData.mEntries, tEntityID);
 }
 
 static ActiveAnimation* getBlitzTimelineActiveAnimation(int tEntityID, int tAnimationID) {
@@ -216,7 +216,7 @@ void addBlitzTimelineComponent(int tEntityID, BlitzTimelineAnimations* tAnimatio
 	e->mActiveAnimations = new_int_map();
 
 	registerBlitzComponent(tEntityID, getBlitzTimelineAnimationComponent());
-	int_map_push_owned(&gData.mEntries, tEntityID, e);
+	int_map_push_owned(&gBlitzTimelineAnimationData.mEntries, tEntityID, e);
 }
 
 
@@ -225,7 +225,7 @@ static void unregisterEntity(int tEntityID) {
 	BlitzTimelineAnimationEntry* e = getBlitzTimelineAnimationEntry(tEntityID);
 	int_map_remove_predicate(&e->mActiveAnimations, unloadSingleActiveAnimationCB, NULL);
 	delete_int_map(&e->mActiveAnimations);
-	int_map_remove(&gData.mEntries, tEntityID);
+	int_map_remove(&gBlitzTimelineAnimationData.mEntries, tEntityID);
 }
 
 int playBlitzTimelineAnimation(int tEntityID, int tAnimation) {

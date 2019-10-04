@@ -15,17 +15,17 @@ static struct {
 	Position mEffectOffset;
 
 	GeoRectangle mCameraRange;
-} gData;
+} gBlitzCameraHandlerData;
 
 static void loadBlitzCameraHandler(void* tData) {
 	(void)tData;
-	gData.mCameraPosition = makePosition(0, 0, 0); 
-	gData.mScale = makePosition(1, 1, 1);
-	gData.mAngle = 0;
+	gBlitzCameraHandlerData.mCameraPosition = makePosition(0, 0, 0); 
+	gBlitzCameraHandlerData.mScale = makePosition(1, 1, 1);
+	gBlitzCameraHandlerData.mAngle = 0;
 	ScreenSize sz = getScreenSize();
-	gData.mEffectOffset = makePosition(sz.x / 2, sz.y / 2, 0);
-	gData.mCameraRange = makeGeoRectangle(-INF / 2, - INF / 2, INF, INF);
-	gData.mIsActive = 1;
+	gBlitzCameraHandlerData.mEffectOffset = makePosition(sz.x / 2, sz.y / 2, 0);
+	gBlitzCameraHandlerData.mCameraRange = makeGeoRectangle(-INF / 2, - INF / 2, INF, INF);
+	gBlitzCameraHandlerData.mIsActive = 1;
 }
 
 ActorBlueprint getBlitzCameraHandler()
@@ -35,87 +35,87 @@ ActorBlueprint getBlitzCameraHandler()
 
 int isBlitzCameraHandlerEnabled()
 {
-	return gData.mIsActive;
+	return gBlitzCameraHandlerData.mIsActive;
 }
 
 Position * getBlitzCameraHandlerPositionReference()
 {
-	return &gData.mCameraPosition;
+	return &gBlitzCameraHandlerData.mCameraPosition;
 }
 
 Position getBlitzCameraHandlerPosition()
 {
-	return gData.mCameraPosition;
+	return gBlitzCameraHandlerData.mCameraPosition;
 }
 
 void setBlitzCameraHandlerPosition(Position tPos)
 {
 	tPos.z = 0;
-	gData.mCameraPosition = tPos;
-	gData.mCameraPosition = clampPositionToGeoRectangle(gData.mCameraPosition, gData.mCameraRange);
+	gBlitzCameraHandlerData.mCameraPosition = tPos;
+	gBlitzCameraHandlerData.mCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mCameraPosition, gBlitzCameraHandlerData.mCameraRange);
 }
 
 void setBlitzCameraHandlerPositionX(double tX)
 {
-	gData.mCameraPosition.x = tX;
-	gData.mCameraPosition = clampPositionToGeoRectangle(gData.mCameraPosition, gData.mCameraRange);
+	gBlitzCameraHandlerData.mCameraPosition.x = tX;
+	gBlitzCameraHandlerData.mCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mCameraPosition, gBlitzCameraHandlerData.mCameraRange);
 }
 
 void setBlitzCameraHandlerPositionY(double tY)
 {
-	gData.mCameraPosition.y = tY;
-	gData.mCameraPosition = clampPositionToGeoRectangle(gData.mCameraPosition, gData.mCameraRange);
+	gBlitzCameraHandlerData.mCameraPosition.y = tY;
+	gBlitzCameraHandlerData.mCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mCameraPosition, gBlitzCameraHandlerData.mCameraRange);
 
 }
 
 Vector3D * getBlitzCameraHandlerScaleReference()
 {
-	return &gData.mScale;
+	return &gBlitzCameraHandlerData.mScale;
 }
 
 Vector3D getBlitzCameraHandlerScale()
 {
-	return gData.mScale;
+	return gBlitzCameraHandlerData.mScale;
 }
 
 void setBlitzCameraHandlerScale2D(double tScale)
 {
-	gData.mScale = makePosition(tScale, tScale, 1);
+	gBlitzCameraHandlerData.mScale = makePosition(tScale, tScale, 1);
 }
 
 void setBlitzCameraHandlerScaleX(double tScaleX)
 {
-	gData.mScale.x = tScaleX;
+	gBlitzCameraHandlerData.mScale.x = tScaleX;
 }
 
 void setBlitzCameraHandlerScaleY(double tScaleY)
 {
-	gData.mScale.y = tScaleY;
+	gBlitzCameraHandlerData.mScale.y = tScaleY;
 }
 
 double * getBlitzCameraHandlerRotationZReference()
 {
-	return &gData.mAngle;
+	return &gBlitzCameraHandlerData.mAngle;
 }
 
 double getBlitzCameraHandlerRotationZ()
 {
-	return gData.mAngle;
+	return gBlitzCameraHandlerData.mAngle;
 }
 
 void setBlitzCameraHandlerRotationZ(double tAngle)
 {
-	gData.mAngle = tAngle;
+	gBlitzCameraHandlerData.mAngle = tAngle;
 }
 
 Position * getBlitzCameraHandlerEffectPositionReference()
 {
-	return &gData.mEffectOffset;
+	return &gBlitzCameraHandlerData.mEffectOffset;
 }
 
 void setBlitzCameraHandlerEffectPositionOffset(Position tPosition)
 {
-	gData.mEffectOffset = tPosition;
+	gBlitzCameraHandlerData.mEffectOffset = tPosition;
 }
 
 int getBlitzCameraHandlerEntityID()
@@ -131,12 +131,12 @@ void setBlitzCameraHandlerRange(GeoRectangle tRectangle)
 {
 	ScreenSize sz = getScreenSize();
 	tRectangle.mBottomRight = vecSub(tRectangle.mBottomRight, makePosition(sz.x, sz.y, 0));
-	gData.mCameraRange = tRectangle;
+	gBlitzCameraHandlerData.mCameraRange = tRectangle;
 }
 
 void setBlitzCameraPositionBasedOnCenterPoint(Position tCenter)
 {
 	ScreenSize sz = getScreenSize();
-	Position topLeft = vecSub(tCenter, makePosition((sz.x / 2) * gData.mScale.x, (sz.y / 2) * gData.mScale.y, 0));
+	Position topLeft = vecSub(tCenter, makePosition((sz.x / 2) * gBlitzCameraHandlerData.mScale.x, (sz.y / 2) * gBlitzCameraHandlerData.mScale.y, 0));
 	setBlitzCameraHandlerPosition(topLeft);
 }

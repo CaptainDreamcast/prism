@@ -4,21 +4,22 @@
 #include <math.h>
 
 #include "prism/log.h"
-#include "prism/framerate.h"
+#include "prism/system.h"
 
 static struct {
 	Velocity mMaxVelocity;
+	double mMaxVelocityDouble = INFINITY;
 	Gravity mGravity;
 	int mIsPaused;
 	Vector3D mOneMinusDragCoefficient;
-} gData;
+} gPrismPhysicsData;
 
 void setMaxVelocity(Velocity tVelocity) {
-  gData.mMaxVelocity = tVelocity;
+  gPrismPhysicsData.mMaxVelocity = tVelocity;
 }
 
 void setMaxVelocityDouble(double tVelocity) {
-   gData.mMaxVelocity = makePosition(tVelocity, tVelocity, tVelocity); // TODO: change this here and below to enforce vector length tVelocity
+   gPrismPhysicsData.mMaxVelocityDouble = tVelocity;
 }
 
 void resetMaxVelocity() {
@@ -27,22 +28,23 @@ void resetMaxVelocity() {
   maxVelocity.y = INFINITY;
   maxVelocity.z = INFINITY;
   setMaxVelocity(maxVelocity);
+  setMaxVelocityDouble(INFINITY);
 }
 
 void setDragCoefficient(Vector3D tDragCoefficient) {
-  gData.mOneMinusDragCoefficient = vecAdd(makePosition(1, 1, 1), vecScale(tDragCoefficient, -1));
+  gPrismPhysicsData.mOneMinusDragCoefficient = vecAdd(makePosition(1, 1, 1), vecScale(tDragCoefficient, -1));
 }
 
 void resetDragCoefficient() {
-	gData.mOneMinusDragCoefficient = makePosition(1,1,1);
+	gPrismPhysicsData.mOneMinusDragCoefficient = makePosition(1,1,1);
 }
 
 void setGravity(Gravity tGravity) {
-  gData.mGravity = tGravity;
+  gPrismPhysicsData.mGravity = tGravity;
 }
 
 Gravity getGravity() {
-	return gData.mGravity;
+	return gPrismPhysicsData.mGravity;
 }
 
 static double f_min(double a, double b) {
@@ -54,28 +56,30 @@ static double f_max(double a, double b) {
 }
 
 void handlePhysics(PhysicsObject* tObject) {
-  if(gData.mIsPaused) return;
+  if(gPrismPhysicsData.mIsPaused) return;
   tObject->mPosition.x += tObject->mVelocity.x;
   tObject->mPosition.y += tObject->mVelocity.y;
   tObject->mPosition.z += tObject->mVelocity.z;
 
-  tObject->mVelocity.x *= gData.mOneMinusDragCoefficient.x;
-  tObject->mVelocity.y *= gData.mOneMinusDragCoefficient.y;
-  tObject->mVelocity.z *= gData.mOneMinusDragCoefficient.z;
+  tObject->mVelocity.x *= gPrismPhysicsData.mOneMinusDragCoefficient.x;
+  tObject->mVelocity.y *= gPrismPhysicsData.mOneMinusDragCoefficient.y;
+  tObject->mVelocity.z *= gPrismPhysicsData.mOneMinusDragCoefficient.z;
 
   double f = getFramerateFactor();
   tObject->mVelocity.x += tObject->mAcceleration.x*f;
   tObject->mVelocity.y += tObject->mAcceleration.y*f;
   tObject->mVelocity.z += tObject->mAcceleration.z*f;
 
-  //TODO: fix velocity increase problem for 50Hz
-  tObject->mVelocity.x = f_max(-gData.mMaxVelocity.x*f, f_min(gData.mMaxVelocity.x*f, tObject->mVelocity.x));
-  tObject->mVelocity.y = f_max(-gData.mMaxVelocity.y, f_min(gData.mMaxVelocity.y, tObject->mVelocity.y));
-  tObject->mVelocity.z = f_max(-gData.mMaxVelocity.x, f_min(gData.mMaxVelocity.z, tObject->mVelocity.z));
+  tObject->mVelocity.x = f_max(-gPrismPhysicsData.mMaxVelocity.x*f, f_min(gPrismPhysicsData.mMaxVelocity.x*f, tObject->mVelocity.x));
+  tObject->mVelocity.y = f_max(-gPrismPhysicsData.mMaxVelocity.y, f_min(gPrismPhysicsData.mMaxVelocity.y, tObject->mVelocity.y));
+  tObject->mVelocity.z = f_max(-gPrismPhysicsData.mMaxVelocity.x, f_min(gPrismPhysicsData.mMaxVelocity.z, tObject->mVelocity.z));
+  if (vecLength(tObject->mVelocity) > gPrismPhysicsData.mMaxVelocityDouble) {
+    tObject->mVelocity = vecNormalize(tObject->mVelocity) * gPrismPhysicsData.mMaxVelocityDouble * f;
+  }
 
-  tObject->mAcceleration.x = gData.mGravity.x;
-  tObject->mAcceleration.y = gData.mGravity.y;
-  tObject->mAcceleration.z = gData.mGravity.z;
+  tObject->mAcceleration.x = gPrismPhysicsData.mGravity.x;
+  tObject->mAcceleration.y = gPrismPhysicsData.mGravity.y;
+  tObject->mAcceleration.z = gPrismPhysicsData.mGravity.z;
 }
 
 void resetPhysicsObject(PhysicsObject* tObject) {
@@ -92,7 +96,7 @@ void resetPhysics() {
   gravity.z = 0;
   setGravity(gravity);
 
-  gData.mIsPaused = 0;
+  gPrismPhysicsData.mIsPaused = 0;
 }
 
 void initPhysics() {
@@ -100,10 +104,10 @@ void initPhysics() {
 }
 
 void pausePhysics() {
-	gData.mIsPaused = 1;
+	gPrismPhysicsData.mIsPaused = 1;
 }
 void resumePhysics() {
-	gData.mIsPaused = 0;
+	gPrismPhysicsData.mIsPaused = 0;
 }
 
 int isEmptyVelocity(Velocity tVelocity) {

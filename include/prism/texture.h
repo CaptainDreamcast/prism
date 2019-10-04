@@ -16,7 +16,7 @@ typedef struct {
   int mPaletteID;
 } TextureData;
 
-typedef struct {  // TODO: refactor completely from Dolmexica
+typedef struct { 
   float mFilePositionX1;
   float mFilePositionY1;
   float mFilePositionX2;
@@ -46,6 +46,7 @@ int canLoadTexture(const char* tPath);
 
 TextureSize makeTextureSize(int x, int y);
 TextureData createWhiteTexture();
+TextureData createWhiteCircleTexture();
 
 Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc);
 Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight);

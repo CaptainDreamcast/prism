@@ -2,21 +2,30 @@
 
 #include "physics.h"
 
+struct PhysicsHandlerElement {
+	int mID;
+	PhysicsObject mObj;
+	double mMaxVelocity;
+	Vector3D mDragCoefficient;
+	Gravity mGravity;
+	int mIsPaused;
+};
+
 void setupPhysicsHandler();
 void shutdownPhysicsHandler();
 
 void updatePhysicsHandler();
-int addToPhysicsHandler(Position tPosition);
-void removeFromPhysicsHandler(int tID);
-PhysicsObject* getPhysicsFromHandler(int tID);
-Position* getHandledPhysicsPositionReference(int tID);
-Velocity* getHandledPhysicsVelocityReference(int tID);
-Acceleration* getHandledPhysicsAccelerationReference(int tID);
-void addAccelerationToHandledPhysics(int tID, Acceleration tAccel);
-void stopHandledPhysics(int tID);
-void pauseHandledPhysics(int tID);
-void resumeHandledPhysics(int tID);
+PhysicsHandlerElement* addToPhysicsHandler(Position tPosition);
+void removeFromPhysicsHandler(PhysicsHandlerElement* tElement);
+PhysicsObject* getPhysicsFromHandler(PhysicsHandlerElement* tElement);
+Position* getHandledPhysicsPositionReference(PhysicsHandlerElement* tElement);
+Velocity* getHandledPhysicsVelocityReference(PhysicsHandlerElement* tElement);
+Acceleration* getHandledPhysicsAccelerationReference(PhysicsHandlerElement* tElement);
+void addAccelerationToHandledPhysics(PhysicsHandlerElement* tElement, Acceleration tAccel);
+void stopHandledPhysics(PhysicsHandlerElement* tElement);
+void pauseHandledPhysics(PhysicsHandlerElement* tElement);
+void resumeHandledPhysics(PhysicsHandlerElement* tElement);
 
-void setHandledPhysicsMaxVelocity(int tID, double tVelocity);
-void setHandledPhysicsDragCoefficient(int tID, Vector3D tDragCoefficient);
-void setHandledPhysicsGravity(int tID, Vector3D tGravity);
+void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* tElement, double tVelocity);
+void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* tElement, Vector3D tDragCoefficient);
+void setHandledPhysicsGravity(PhysicsHandlerElement* tElement, Vector3D tGravity);

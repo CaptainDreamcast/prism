@@ -12,21 +12,21 @@ typedef struct {
 static struct {
 	int mIsActive;
 	Vector mParseElements;
-} gData;
+} gPrismMugenScriptParserData;
 
 static void clearMugenScriptParser() {
-	delete_vector(&gData.mParseElements);
-	gData.mIsActive = 0;
+	delete_vector(&gPrismMugenScriptParserData.mParseElements);
+	gPrismMugenScriptParserData.mIsActive = 0;
 }
 
 void resetMugenScriptParser()
 {
-	if (gData.mIsActive) {
+	if (gPrismMugenScriptParserData.mIsActive) {
 		clearMugenScriptParser();
 	}
 
-	gData.mParseElements = new_vector();
-	gData.mIsActive = 1;
+	gPrismMugenScriptParserData.mParseElements = new_vector();
+	gPrismMugenScriptParserData.mIsActive = 1;
 }
 
 void addMugenScriptParseFunction(int(*tIsFunc)(MugenDefScriptGroup *), void(*tHandleFunc)(MugenDefScriptGroup *))
@@ -34,7 +34,7 @@ void addMugenScriptParseFunction(int(*tIsFunc)(MugenDefScriptGroup *), void(*tHa
 	ScriptParseElement* e = (ScriptParseElement*)allocMemory(sizeof(ScriptParseElement));
 	e->mIsFunc = tIsFunc;
 	e->mHandleFunc = tHandleFunc;
-	vector_push_back_owned(&gData.mParseElements, e);
+	vector_push_back_owned(&gPrismMugenScriptParserData.mParseElements, e);
 }
 
 void parseMugenScript(MugenDefScript * tScript)
@@ -43,8 +43,8 @@ void parseMugenScript(MugenDefScript * tScript)
 	while (current != NULL) {
 		int hasFound = 0;
 		int i;
-		for (i = 0; i < vector_size(&gData.mParseElements); i++) {
-			ScriptParseElement* e = (ScriptParseElement*)vector_get(&gData.mParseElements, i);
+		for (i = 0; i < vector_size(&gPrismMugenScriptParserData.mParseElements); i++) {
+			ScriptParseElement* e = (ScriptParseElement*)vector_get(&gPrismMugenScriptParserData.mParseElements, i);
 			if (e->mIsFunc(current)) {
 				e->mHandleFunc(current);
 				hasFound = 1;

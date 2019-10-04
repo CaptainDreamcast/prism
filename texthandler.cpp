@@ -6,6 +6,7 @@
 #include "prism/log.h"
 #include "prism/math.h"
 #include "prism/memoryhandler.h"
+#include "prism/stlutil.h"
 
 typedef struct {
 	char mText[1024];
@@ -37,21 +38,24 @@ static struct {
 	int mIsActive;
 
 	List mTexts;
-} gData;
+	std::map<int, std::pair<std::string, std::string>> mFonts; // stores (HeaderPath, TexturePath)
+} gPrismTextHandlerData;
 
 void setupTextHandler() {
-	if (gData.mIsActive) {
+	if (gPrismTextHandlerData.mIsActive) {
 		logWarning("Trying to setup active text handler.");
 		shutdownTextHandler();
 	}
 
-	gData.mTexts = new_list();
-	gData.mIsActive = 1;
+	gPrismTextHandlerData.mTexts = new_list();
+	gPrismTextHandlerData.mFonts.clear();
+	gPrismTextHandlerData.mIsActive = 1;
 }
 
 void shutdownTextHandler() {
-	list_empty(&gData.mTexts);
-	gData.mIsActive = 0;
+	list_empty(&gPrismTextHandlerData.mTexts);
+	gPrismTextHandlerData.mFonts.clear();
+	gPrismTextHandlerData.mIsActive = 0;
 }
 
 static void increaseDrawnText(HandledText* e) {
@@ -88,7 +92,7 @@ static int updateSingleText(void* tCaller, void* tData) {
 }
 
 void updateTextHandler() {
-	list_remove_predicate(&gData.mTexts, updateSingleText, NULL);
+	list_remove_predicate(&gPrismTextHandlerData.mTexts, updateSingleText, NULL);
 }
 
 static void drawSingleText(void* tCaller, void* tData) {
@@ -99,13 +103,14 @@ static void drawSingleText(void* tCaller, void* tData) {
 	if (e->mHasBasePositionReference) {
 		p = vecAdd(p, *e->mBasePositionReference);
 	}
-
-	// TODO: set font to correct font 
+	if (gPrismTextHandlerData.mFonts.find(e->mFont) != gPrismTextHandlerData.mFonts.end()) {
+		setFont(gPrismTextHandlerData.mFonts[e->mFont].first.c_str(), gPrismTextHandlerData.mFonts[e->mFont].second.c_str());
+	}
 	drawMultilineText(e->mDrawnText, e->mText, p, e->mFontSize, e->mColor, e->mBreakSize, e->mTextBoxSize);
 }
 
 void drawHandledTexts() {
-	list_map(&gData.mTexts, drawSingleText, NULL);
+	list_map(&gPrismTextHandlerData.mTexts, drawSingleText, NULL);
 }
 
 int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration) {
@@ -134,12 +139,12 @@ int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vec
 	e->mHasBasePositionReference = 0;
 	e->mBasePositionReference = NULL;
 
-	return list_push_front_owned(&gData.mTexts, e);
+	return list_push_front_owned(&gPrismTextHandlerData.mTexts, e);
 }
 
 int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration, Duration tBuildupDuration) {
 	int id = addHandledText(tPosition, tText, tFont, tColor, tFontSize, tBreakSize, tTextBoxSize, tDuration);
-	HandledText* e = (HandledText*)list_get(&gData.mTexts, id);
+	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, id);
 	e->mSingleLetterBuildupDuration = tBuildupDuration / strlen(tText);
 	e->mDrawnText[0] = '\0';
 	return id;
@@ -152,45 +157,50 @@ int addHandledTextWithInfiniteDurationOnOneLine(Position tPosition, char * tText
 
 void setHandledText(int tID, char * tText)
 {
-	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, tID);
 	strcpy(e->mText, tText);
 	strcpy(e->mDrawnText, tText);
 }
 
 void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects)
 {
-	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, tID);
 	e->mHasSoundEffects = 1;
 	e->mSoundEffects = tSoundEffects;
 }
 
 void setHandledTextPosition(int tID, Position tPosition)
 {
-	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, tID);
 	e->mPosition = tPosition;
 }
 
 void setHandledTextBasePositionReference(int tID, Position * tPosition)
 {
-	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, tID);
 	e->mHasBasePositionReference = 1;
 	e->mBasePositionReference = tPosition;
 }
 
 void setHandledTextBuiltUp(int tID)
 {
-	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, tID);
 	strcpy(e->mDrawnText, e->mText);
 }
 
 int isHandledTextBuiltUp(int tID)
 {
-	HandledText* e = (HandledText*)list_get(&gData.mTexts, tID);
+	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, tID);
 	return !strcmp(e->mDrawnText, e->mText);
 }
 
+void addTextHandlerFont(int tID, const char* tHeaderPath, const char* tTexturePath)
+{
+	gPrismTextHandlerData.mFonts[tID] = std::make_pair(tHeaderPath, tTexturePath);
+}
+
 void removeHandledText(int tID) {
-	list_remove(&gData.mTexts, tID);
+	list_remove(&gPrismTextHandlerData.mTexts, tID);
 }
 
 static void setupTextHandlerCB(void* tData) {

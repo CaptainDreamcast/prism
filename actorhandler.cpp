@@ -19,7 +19,7 @@ static struct {
 	IntMap mActors;
 	List mSequentialActorList;
 	int mIsInitialized;
-} gData;
+} gPrismActorHandlerData;
 
 ActorBlueprint makeActorBlueprint(LoadActorFunction tLoad, UnloadActorFunction tUnload, UpdateActorFunction tUpdate, DrawActorFunction tDraw, IsActorActiveFunction tIsActive) {
 	ActorBlueprint ret;
@@ -33,14 +33,14 @@ ActorBlueprint makeActorBlueprint(LoadActorFunction tLoad, UnloadActorFunction t
 
 void setupActorHandler()
 {
-	if (gData.mIsInitialized) {
+	if (gPrismActorHandlerData.mIsInitialized) {
 		logWarning("Actor handling already initialized.");
 		shutdownActorHandler();
 	}
 
-	gData.mActors = new_int_map();
-	gData.mSequentialActorList = new_list();
-	gData.mIsInitialized = 1;
+	gPrismActorHandlerData.mActors = new_int_map();
+	gPrismActorHandlerData.mSequentialActorList = new_list();
+	gPrismActorHandlerData.mIsInitialized = 1;
 }
 
 static void unloadActor(Actor* e) {
@@ -50,7 +50,7 @@ static void unloadActor(Actor* e) {
 		freeMemory(e->mData);
 	}
 
-	int_map_remove(&gData.mActors, e->mID);
+	int_map_remove(&gPrismActorHandlerData.mActors, e->mID);
 }
 
 static int removeActorCB(void* tCaller, void* tData) {
@@ -62,10 +62,10 @@ static int removeActorCB(void* tCaller, void* tData) {
 
 void shutdownActorHandler()
 {
-	list_remove_predicate(&gData.mSequentialActorList, removeActorCB, NULL);
-	delete_int_map(&gData.mActors);
-	delete_list(&gData.mSequentialActorList);
-	gData.mIsInitialized = 0;
+	list_remove_predicate(&gPrismActorHandlerData.mSequentialActorList, removeActorCB, NULL);
+	delete_int_map(&gPrismActorHandlerData.mActors);
+	delete_list(&gPrismActorHandlerData.mSequentialActorList);
+	gPrismActorHandlerData.mIsInitialized = 0;
 }
 
 static int updateSingleActor(void* tCaller, void* tData) {
@@ -85,7 +85,7 @@ static int updateSingleActor(void* tCaller, void* tData) {
 
 void updateActorHandler()
 {
-	list_remove_predicate(&gData.mSequentialActorList, updateSingleActor, NULL);
+	list_remove_predicate(&gPrismActorHandlerData.mSequentialActorList, updateSingleActor, NULL);
 }
 
 static void drawSingleActor(void* tCaller, void* tData) {
@@ -97,7 +97,7 @@ static void drawSingleActor(void* tCaller, void* tData) {
 
 void drawActorHandler()
 {
-	list_map(&gData.mSequentialActorList, drawSingleActor, NULL);
+	list_map(&gPrismActorHandlerData.mSequentialActorList, drawSingleActor, NULL);
 }
 
 int instantiateActor(ActorBlueprint tBP)
@@ -115,34 +115,34 @@ int instantiateActorWithData(ActorBlueprint tBP, void * tData, int tIsOwned)
 	
 	if (e->mBP.mLoad) e->mBP.mLoad(e->mData);
 
-	list_push_back_owned(&gData.mSequentialActorList, e);
-	e->mListEntry = list_iterator_end(&gData.mSequentialActorList);
+	list_push_back_owned(&gPrismActorHandlerData.mSequentialActorList, e);
+	e->mListEntry = list_iterator_end(&gPrismActorHandlerData.mSequentialActorList);
 
-	e->mID = int_map_push_back(&gData.mActors, e);
+	e->mID = int_map_push_back(&gPrismActorHandlerData.mActors, e);
 	return e->mID;
 }
 
 void performOnActor(int tID, ActorInteractionFunction tFunc, void * tCaller)
 {
-	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
+	Actor* e = (Actor*)int_map_get(&gPrismActorHandlerData.mActors, tID);
 	tFunc(tCaller, e->mData);
 }
 
 void setActorUnpausable(int tID)
 {
-	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
+	Actor* e = (Actor*)int_map_get(&gPrismActorHandlerData.mActors, tID);
 	e->mIsPausable = 0;
 }
 
 void removeActor(int tID)
 {
-	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
+	Actor* e = (Actor*)int_map_get(&gPrismActorHandlerData.mActors, tID);
 	unloadActor(e);
-	list_iterator_remove(&gData.mSequentialActorList, e->mListEntry);
+	list_iterator_remove(&gPrismActorHandlerData.mSequentialActorList, e->mListEntry);
 }
 
 void * getActorData(int tID)
 {
-	Actor* e = (Actor*)int_map_get(&gData.mActors, tID);
+	Actor* e = (Actor*)int_map_get(&gPrismActorHandlerData.mActors, tID);
 	return e->mData;
 }

@@ -53,9 +53,6 @@
     <ClInclude Include="..\..\include\prism\file.h">
       <Filter>hdr</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\prism\framerate.h">
-      <Filter>hdr</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\prism\framerateselectscreen.h">
       <Filter>hdr</Filter>
     </ClInclude>
@@ -89,12 +86,6 @@
     <ClInclude Include="..\..\include\prism\mugenanimationreader.h">
       <Filter>hdr</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\prism\mugenassignment.h">
-      <Filter>hdr</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\prism\mugenassignmentevaluator.h">
-      <Filter>hdr</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\prism\mugendefreader.h">
       <Filter>hdr</Filter>
     </ClInclude>
@@ -117,12 +108,6 @@
       <Filter>hdr</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\prism\physicshandler.h">
-      <Filter>hdr</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\prism\pvr.h">
-      <Filter>hdr</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\prism\quicklz.h">
       <Filter>hdr</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\prism\screeneffect.h">
@@ -203,9 +188,6 @@
     <ClInclude Include="..\..\include\prism\blitzparticles.h">
       <Filter>hdr</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\prism\wrappercomponenthandler.h">
-      <Filter>hdr</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\prism\blitz.h">
       <Filter>hdr</Filter>
     </ClInclude>
@@ -257,9 +239,6 @@
       <Filter>src\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\memoryhandler_win.cpp">
-      <Filter>src\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\pvr_win.cpp">
       <Filter>src\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\romdisk_win.cpp">
@@ -346,9 +325,6 @@
     <ClCompile Include="..\..\file.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\framerate.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\geometry.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -385,12 +361,6 @@
     <ClCompile Include="..\..\mugenanimationreader.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mugenassignment.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mugenassignmentevaluator.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mugendefreader.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -416,9 +386,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\profiling.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\quicklz.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\screeneffect.cpp">
@@ -454,9 +421,6 @@
     <ClCompile Include="..\..\wrapper.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\wrappercomponenthandler.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\blitzcomponent.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -464,6 +428,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\debug.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\system.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

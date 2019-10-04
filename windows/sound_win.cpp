@@ -7,7 +7,7 @@
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-#include <SDL/SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 #elif defined _WIN32
 #include <SDL_mixer.h>
 #endif
@@ -49,19 +49,27 @@ static struct {
 	uint64_t mTimeWhenMusicPlaybackStarted;
 
 	Microphone mMicrophone;
-} gData;
+} gPrismWindowsSoundData;
 
 void initSound() {
-	gData.mPanning = 128;
-	Mix_Init(MIX_INIT_OGG);
-	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-	Mix_AllocateChannels(1024);
-
-	gData.mHasLoadedTrack = 0;
-	gData.mIsPlayingTrack = 0;
+	gPrismWindowsSoundData.mPanning = 128;
+	if (!Mix_Init(MIX_INIT_OGG))
+	{
+		logErrorFormat("Unable to init SDL Mixer: %s", SDL_GetError());
+	}
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == -1)
+	{
+		logErrorFormat("Unable to open audio: %s", SDL_GetError());
+	}
+	if (Mix_AllocateChannels(1024) != 1024)
+	{
+		logErrorFormat("Unable to allocate mixer channels: %s", SDL_GetError());
+	}
+	gPrismWindowsSoundData.mHasLoadedTrack = 0;
+	gPrismWindowsSoundData.mIsPlayingTrack = 0;
 	
 	setVolume(0.2);
-	gData.mMicrophone.mIsMicrophoneActive = 0;
+	gPrismWindowsSoundData.mMicrophone.mIsMicrophoneActive = 0;
 }
 
 void shutdownSound() {
@@ -69,16 +77,22 @@ void shutdownSound() {
 }
 
 double getVolume() {
-	return gData.mVolume / 128.0;
+	return gPrismWindowsSoundData.mVolume / 128.0;
 }
 
 void setVolume(double tVolume) {
-	gData.mVolume = (int)(tVolume * 128);
-	Mix_VolumeMusic(gData.mVolume);
+	gPrismWindowsSoundData.mVolume = (int)(tVolume * 128);
+	Mix_VolumeMusic(gPrismWindowsSoundData.mVolume);
 }
 
 double getPanningValue() {
-	return (gData.mPanning / 128.0) - 1.0;
+	return (gPrismWindowsSoundData.mPanning / 128.0) - 1.0;
+}
+
+void setPanningValue(int tChannel, double tPanning)
+{
+	const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
+	Mix_SetPanning(tChannel, 255 - right, right);
 }
 
 static void playMusicPath(const char* tPath) {
@@ -89,42 +103,36 @@ static void playMusicPath(const char* tPath) {
 #ifdef __EMSCRIPTEN__
 	Buffer tBuffer = fileToBuffer(fullPath);
 	SDL_RWops* rwOps = SDL_RWFromConstMem(tBuffer.mData, tBuffer.mLength);
-	gData.mTrackChunk = Mix_LoadMUS_RW(rwOps);
-	freeBuffer(tBuffer); // only works because emscripten preloads everything
+	gPrismWindowsSoundData.mTrackChunk = Mix_LoadMUS_RW(rwOps, 1);
+	if (!gPrismWindowsSoundData.mTrackChunk) {
+		logErrorFormat("Unable to play sound %s: %s", tPath, SDL_GetError());
+	}
 #else
-	gData.mTrackChunk = Mix_LoadMUS(fullPath);
+	gPrismWindowsSoundData.mTrackChunk = Mix_LoadMUS(fullPath);
 #endif
-	gData.mHasLoadedTrack = 1;
-}
-
-static void loadTrack(int tTrack) {
-	assert(!gData.mHasLoadedTrack);
-
-	char path[1024];
-	sprintf(path, "tracks/%d.wav", tTrack);
-	playMusicPath(path);
+	gPrismWindowsSoundData.mHasLoadedTrack = 1;
 }
 
 static void unloadTrack() {
-	assert(gData.mHasLoadedTrack);
+	assert(gPrismWindowsSoundData.mHasLoadedTrack);
 
-	Mix_FreeMusic(gData.mTrackChunk);
-	gData.mHasLoadedTrack = 0;
+	Mix_FreeMusic(gPrismWindowsSoundData.mTrackChunk);
+	gPrismWindowsSoundData.mHasLoadedTrack = 0;
 }
 
-static void streamMusicFileGeneral(const char* tPath, int tLoopAmount, int tIsForcingSynchronously);
+static void streamMusicFileGeneral(const char* tPath, int tLoopAmount);
 
 static void playTrackGeneral(int tTrack, int tLoopAmount) {
 #ifdef __EMSCRIPTEN__
 	return;
 #endif
 
-	if (gData.mIsPlayingTrack) stopTrack();
-	if (gData.mHasLoadedTrack) unloadTrack();
+	if (gPrismWindowsSoundData.mIsPlayingTrack) stopTrack();
+	if (gPrismWindowsSoundData.mHasLoadedTrack) unloadTrack();
 
 	char path[1024];
 	sprintf(path, "tracks/%d.wav", tTrack);
-	streamMusicFileGeneral(path, tLoopAmount, 0);
+	streamMusicFileGeneral(path, tLoopAmount);
 }
 
 void playTrack(int tTrack) {
@@ -133,24 +141,24 @@ void playTrack(int tTrack) {
 
 void stopTrack()
 {
-	if (!gData.mIsPlayingTrack) return;
+	if (!gPrismWindowsSoundData.mIsPlayingTrack) return;
 
 	Mix_HaltMusic();
 }
 
 void pauseTrack()
 {
-	if (!gData.mIsPlayingTrack || gData.mIsPaused) return;
+	if (!gPrismWindowsSoundData.mIsPlayingTrack || gPrismWindowsSoundData.mIsPaused) return;
 	Mix_PauseMusic();
-	gData.mIsPaused = 1;
+	gPrismWindowsSoundData.mIsPaused = 1;
 }
 
 void resumeTrack()
 {
-	if (!gData.mIsPlayingTrack || !gData.mIsPaused) return;
+	if (!gPrismWindowsSoundData.mIsPlayingTrack || !gPrismWindowsSoundData.mIsPaused) return;
 
 	Mix_ResumeMusic();
-	gData.mIsPaused = 0;
+	gPrismWindowsSoundData.mIsPaused = 0;
 }
 
 void playTrackOnce(int tTrack)
@@ -159,38 +167,31 @@ void playTrackOnce(int tTrack)
 }
 
 static void musicFinishedCB() {
-	gData.mIsPlayingTrack = 0;
+	gPrismWindowsSoundData.mIsPlayingTrack = 0;
 
-	Mix_FreeMusic(gData.mTrackChunk);
-	gData.mHasLoadedTrack = 0;
+	Mix_FreeMusic(gPrismWindowsSoundData.mTrackChunk);
+	gPrismWindowsSoundData.mHasLoadedTrack = 0;
 }
 
-static void streamMusicFileGeneral(const char* tPath, int tLoopAmount, int tIsForcingSynchronously) {
+static void streamMusicFileGeneral(const char* tPath, int tLoopAmount) {
 	playMusicPath(tPath);
 	Mix_HookMusicFinished(musicFinishedCB);
 
-#ifdef __EMSCRIPTEN__
-	if (tIsForcingSynchronously) {
-		gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
-		while (SDL_GetTicks() - gData.mTimeWhenMusicPlaybackStarted < 10000);
-	}
-#endif
+	Mix_PlayMusic(gPrismWindowsSoundData.mTrackChunk, tLoopAmount);
+	gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
 
-	Mix_PlayMusic(gData.mTrackChunk, tLoopAmount);
-	gData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
-
-	gData.mIsPaused = 0;
-	gData.mIsPlayingTrack = 1;
+	gPrismWindowsSoundData.mIsPaused = 0;
+	gPrismWindowsSoundData.mIsPlayingTrack = 1;
 }
 
-void streamMusicFile(const char * tPath, int tIsForcingSynchronously)
+void streamMusicFile(const char * tPath)
 {
-	streamMusicFileGeneral(tPath, -1, tIsForcingSynchronously);
+	streamMusicFileGeneral(tPath, -1);
 }
 
-void streamMusicFileOnce(const char * tPath, int tIsForcingSynchronously)
+void streamMusicFileOnce(const char * tPath)
 {
-	streamMusicFileGeneral(tPath, 0, tIsForcingSynchronously);
+	streamMusicFileGeneral(tPath, 0);
 }
 
 void stopStreamingMusicFile()
@@ -200,16 +201,16 @@ void stopStreamingMusicFile()
 
 uint64_t getStreamingSoundTimeElapsedInMilliseconds()
 {
-	if (!gData.mIsPlayingTrack) return 0;
-	if (!gData.mTimeWhenMusicPlaybackStarted) return 0;
+	if (!gPrismWindowsSoundData.mIsPlayingTrack) return 0;
+	if (!gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted) return 0;
 	
 	uint64_t now = SDL_GetTicks();
-	return (uint64_t)(now - gData.mTimeWhenMusicPlaybackStarted);
+	return (uint64_t)(now - gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted);
 }
 
 int isPlayingStreamingMusic()
 {
-	return gData.mIsPlayingTrack;
+	return gPrismWindowsSoundData.mIsPlayingTrack;
 }
 
 void stopMusic()
@@ -233,21 +234,21 @@ static void microphoneCB(void *userdata, Uint8 *stream, int len) {
 
 	int i;
 	for (i = 0; i < len; i++) {
-		gData.mMicrophone.mSamplePointer = (gData.mMicrophone.mSamplePointer + 1) % MICROPHONE_SAMPLE_AMOUNT;
+		gPrismWindowsSoundData.mMicrophone.mSamplePointer = (gPrismWindowsSoundData.mMicrophone.mSamplePointer + 1) % MICROPHONE_SAMPLE_AMOUNT;
 
-		if (gData.mMicrophone.mSampleAmount > MICROPHONE_SAMPLE_AMOUNT) {
-			gData.mMicrophone.mSampleSum -= gData.mMicrophone.mSamples[gData.mMicrophone.mSamplePointer];
-			gData.mMicrophone.mSampleAmount--;
+		if (gPrismWindowsSoundData.mMicrophone.mSampleAmount > MICROPHONE_SAMPLE_AMOUNT) {
+			gPrismWindowsSoundData.mMicrophone.mSampleSum -= gPrismWindowsSoundData.mMicrophone.mSamples[gPrismWindowsSoundData.mMicrophone.mSamplePointer];
+			gPrismWindowsSoundData.mMicrophone.mSampleAmount--;
 		}
 
-		gData.mMicrophone.mSamples[gData.mMicrophone.mSamplePointer] = stream[i];
-		gData.mMicrophone.mSampleSum += stream[i];
-		gData.mMicrophone.mSampleAmount++;
+		gPrismWindowsSoundData.mMicrophone.mSamples[gPrismWindowsSoundData.mMicrophone.mSamplePointer] = stream[i];
+		gPrismWindowsSoundData.mMicrophone.mSampleSum += stream[i];
+		gPrismWindowsSoundData.mMicrophone.mSampleAmount++;
 	}
 
-	gData.mMicrophone.mMasterPeakVolume = 0;
+	gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume = 0;
 	for (i = 0; i < MICROPHONE_SAMPLE_AMOUNT; i++) {
-		gData.mMicrophone.mMasterPeakVolume = max(gData.mMicrophone.mMasterPeakVolume, (int)gData.mMicrophone.mSamples[i]);
+		gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume = max(gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume, (int)gPrismWindowsSoundData.mMicrophone.mSamples[i]);
 	}
 }
 
@@ -263,7 +264,7 @@ static void startMicrophone(void* tData)
 	want.channels = 1;
 	want.samples = 256;
 	want.callback = microphoneCB;
-	gData.mMicrophone.mMicrophone = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(0, 1), 1, &want, &have, 0);
+	gPrismWindowsSoundData.mMicrophone.mMicrophone = SDL_OpenAudioDevice(SDL_GetAudioDeviceName(0, 1), 1, &want, &have, 0);
 	logg("Opening audio device");
 	logString(SDL_GetAudioDeviceName(0, 1));
 	if (have.format != want.format) {
@@ -272,21 +273,21 @@ static void startMicrophone(void* tData)
 		return;
 	}
 
-	SDL_PauseAudioDevice(gData.mMicrophone.mMicrophone, 0);
+	SDL_PauseAudioDevice(gPrismWindowsSoundData.mMicrophone.mMicrophone, 0);
 
-	gData.mMicrophone.mSampleSum = 0;
-	gData.mMicrophone.mSamplePointer = 0;
-	gData.mMicrophone.mSampleAmount = 0;
-	gData.mMicrophone.mIsMicrophoneActive = 1;
-	gData.mMicrophone.mMasterPeakVolume = 0;
+	gPrismWindowsSoundData.mMicrophone.mSampleSum = 0;
+	gPrismWindowsSoundData.mMicrophone.mSamplePointer = 0;
+	gPrismWindowsSoundData.mMicrophone.mSampleAmount = 0;
+	gPrismWindowsSoundData.mMicrophone.mIsMicrophoneActive = 1;
+	gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume = 0;
 }
 
 static void stopMicrophone(void* tData)
 {
 	(void)tData;
-	SDL_CloseAudioDevice(gData.mMicrophone.mMicrophone);
+	SDL_CloseAudioDevice(gPrismWindowsSoundData.mMicrophone.mMicrophone);
 
-	gData.mMicrophone.mIsMicrophoneActive = 0;
+	gPrismWindowsSoundData.mMicrophone.mIsMicrophoneActive = 0;
 }
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint()
@@ -296,7 +297,7 @@ ActorBlueprint getMicrophoneHandlerActorBlueprint()
 
 double getMicrophoneVolume()
 {
-	return gData.mMicrophone.mMasterPeakVolume / 255.0;
+	return gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume / 255.0;
 
 
 }

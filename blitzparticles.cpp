@@ -21,13 +21,13 @@ typedef struct {
 static struct {
 	TextureData mWhiteTexture;
 	IntMap mParticles;
-} gData;
+} gBlitzParticlesData;
 
 
 static void loadParticleHandler(void* tData) {
 	(void)tData;
-	gData.mWhiteTexture = createWhiteTexture();
-	gData.mParticles = new_int_map();
+	gBlitzParticlesData.mWhiteTexture = createWhiteTexture();
+	gBlitzParticlesData.mParticles = new_int_map();
 }
 
 static int updateSingleParticle(void* tCaller, void* tData) {
@@ -46,7 +46,7 @@ static int updateSingleParticle(void* tCaller, void* tData) {
 
 static void updateParticleHandler(void* tData) {
 	(void)tData;
-	int_map_remove_predicate(&gData.mParticles, updateSingleParticle, NULL);
+	int_map_remove_predicate(&gBlitzParticlesData.mParticles, updateSingleParticle, NULL);
 }
 
 static void drawSingleParticle(void* tCaller, void* tData) {
@@ -57,14 +57,14 @@ static void drawSingleParticle(void* tCaller, void* tData) {
 
 	setDrawingRotationZ(e->mAngle, vecAdd(pos, makePosition(0.5, 0.5, 0)));
 	setDrawingBaseColorAdvanced(e->mColor.x, e->mColor.y, e->mColor.z);
-	drawSprite(gData.mWhiteTexture, pos, makeRectangle(0, 0, 1, 1));
+	drawSprite(gBlitzParticlesData.mWhiteTexture, pos, makeRectangle(0, 0, 1, 1));
 	setDrawingBaseColorAdvanced(1, 1, 1);
 	setDrawingRotationZ(-e->mAngle, vecAdd(pos, makePosition(0.5, 0.5, 0)));
 }
 
 static void drawParticleHandler(void* tData) {
 	(void)tData;
-	int_map_map(&gData.mParticles, drawSingleParticle, NULL);
+	int_map_map(&gBlitzParticlesData.mParticles, drawSingleParticle, NULL);
 }
 
 ActorBlueprint getBlitzParticleHandler() {
@@ -95,5 +95,5 @@ void addBlitzParticle(Position tPosition, Position tPositionRange, double tSpeed
 	e->mNow = 0;
 	e->mLifeTime = randfrom(tLifetime - tLifetimeRange / 2, tLifetime + tLifetimeRange / 2);
 
-	int_map_push_back_owned(&gData.mParticles, e);
+	int_map_push_back_owned(&gBlitzParticlesData.mParticles, e);
 }

@@ -240,7 +240,7 @@ static void loadAnimationsFromScript(BlitzTimelineAnimations* tAnimations, Mugen
 
 }
 
-BlitzTimelineAnimations loadBlitzTimelineAnimations(char * tPath)
+BlitzTimelineAnimations loadBlitzTimelineAnimations(const char * tPath)
 {
 	BlitzTimelineAnimations ret = makeEmptyTimelineAnimations();
 	MugenDefScript script;

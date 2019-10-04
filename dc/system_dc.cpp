@@ -3,7 +3,6 @@
 #include <kos.h>
 
 #include "prism/log.h"
-#include "prism/pvr.h"
 #include "prism/wrapper.h"
 
 void abortSystem(){
@@ -12,17 +11,6 @@ void abortSystem(){
 
 void returnToMenu() {
 	arch_menu();
-}
-
-// TODO: move to general
-void recoverFromError()
-{
-	if (isUsingWrapper()) {
-		recoverWrapperError();
-	}
-	else {
-		abortSystem();
-	}
 }
 
 static struct {
@@ -37,7 +25,25 @@ static struct {
 
 } gSystem;
 
-void initSystem(){}
+static void initiatePVR() {
+	pvr_init_params_t params = {
+		/* Enable opaque and translucent polygons with size 16 */
+		{ PVR_BINSIZE_0, PVR_BINSIZE_0, PVR_BINSIZE_16, PVR_BINSIZE_0, PVR_BINSIZE_0 },
+		/* Vertex buffer size 192K */
+		192 * 1024,
+		/* No DMA */
+		0,
+		/* No FSAA */
+		0,
+		/* Translucent Autosort enabled. */
+		0
+	};
+	pvr_init(&params);
+}
+
+void initSystem(){
+	initiatePVR();
+}
 
 void shutdownSystem(){}
 
@@ -126,14 +132,11 @@ void setVGA() {
 	setVideoModeInternal();
 }
 
+void setGameName(const char* /*tName*/) {}
 
-void setGameName(const char* tName) {
-	(void) tName;
-}
+void updateGameName(const char* /*tName*/) {}
 
-void updateGameName(const char* tName) {
-	(void) tName;
-}
+void setIcon(const char* /*tPath*/) {}
 
 int isOnDreamcast() {
 	return 1;

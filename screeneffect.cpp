@@ -1,7 +1,5 @@
 #include "prism/screeneffect.h"
 
-#include <algorithm> // TODO: remove preprocessor stuff
-
 #include "prism/file.h"
 #include "prism/timer.h"
 #include "prism/memoryhandler.h"
@@ -20,13 +18,13 @@ struct FadeInStruct;
 typedef int(*IsScreenEffectOverFunction)(struct FadeInStruct* );
 
 typedef struct FadeInStruct {
-	int* mAnimationIDs;
+	AnimationHandlerElement** mAnimationElements;
 	int mAnimationAmount;
 
-	int mPhysicsID;
+	PhysicsHandlerElement* mPhysicsElement;
 	Vector3D* mSize;
 
-	int mAlphaPhysicsID;
+	PhysicsHandlerElement* mAlphaPhysicsElement;
 	double* mAlpha;
 
 	Duration mDuration;
@@ -53,7 +51,7 @@ static struct {
 
 	int mFullLineSize;
 
-	int mScreenFillID;
+	AnimationHandlerElement* mScreenFillElement;
 
 	FadeColor mFadeColor;
 
@@ -64,7 +62,7 @@ void initScreenEffects() {
 	gScreenEffect.mWhiteTexture = createWhiteTexture();
 	gScreenEffect.mFullLineSize = 10;
 	gScreenEffect.mZ = 80;
-	gScreenEffect.mScreenFillID = -1;
+	gScreenEffect.mScreenFillElement = NULL;
 	gScreenEffect.mFadeColor.mR = gScreenEffect.mFadeColor.mG = gScreenEffect.mFadeColor.mB = 0;
 
 	gScreenEffect.mIsActive = 1;
@@ -98,20 +96,20 @@ static int isVerticalLineFadeInOver(FadeIn* tFadeIn) {
 }	
 
 static void removeFadeIn(FadeIn* e) {
-	removeFromPhysicsHandler(e->mPhysicsID);
-	removeFromPhysicsHandler(e->mAlphaPhysicsID);
+	removeFromPhysicsHandler(e->mPhysicsElement);
+	removeFromPhysicsHandler(e->mAlphaPhysicsElement);
 	
 	int i;
 	for (i = 0; i < e->mAnimationAmount; i++) {
-		removeHandledAnimation(e->mAnimationIDs[i]);
+		removeHandledAnimation(e->mAnimationElements[i]);
 	}
 
-	freeMemory(e->mAnimationIDs);
+	freeMemory(e->mAnimationElements);
 }
 
 static void updateSingleFadeInAnimation(FadeIn* e, int i) {
-	setAnimationSize(e->mAnimationIDs[i], *e->mSize, makePosition(0, 0, 0));
-	setAnimationTransparency(e->mAnimationIDs[i], *e->mAlpha);
+	setAnimationSize(e->mAnimationElements[i], *e->mSize, makePosition(0, 0, 0));
+	setAnimationTransparency(e->mAnimationElements[i], *e->mAlpha);
 }
 
 static int updateFadeIn(FadeIn& e) {
@@ -149,13 +147,13 @@ static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptio
 	e.mCaller = tCaller;
 	e.mDuration = tDuration;
 
-	e.mPhysicsID = addToPhysicsHandler(tStartPatchSize);
-	addAccelerationToHandledPhysics(e.mPhysicsID, tSizeDelta);
-	e.mSize = &getPhysicsFromHandler(e.mPhysicsID)->mPosition;
+	e.mPhysicsElement = addToPhysicsHandler(tStartPatchSize);
+	addAccelerationToHandledPhysics(e.mPhysicsElement, tSizeDelta);
+	e.mSize = &getPhysicsFromHandler(e.mPhysicsElement)->mPosition;
 
-	e.mAlphaPhysicsID = addToPhysicsHandler(makePosition(tStartAlpha, 0, 0));
-	addAccelerationToHandledPhysics(e.mAlphaPhysicsID, makePosition(tAlphaDelta, 0, 0));
-	e.mAlpha = &getPhysicsFromHandler(e.mAlphaPhysicsID)->mPosition.x;
+	e.mAlphaPhysicsElement = addToPhysicsHandler(makePosition(tStartAlpha, 0, 0));
+	addAccelerationToHandledPhysics(e.mAlphaPhysicsElement, makePosition(tAlphaDelta, 0, 0));
+	e.mAlpha = &getPhysicsFromHandler(e.mAlphaPhysicsElement)->mPosition.x;
 
 	e.mIsOverFunction = tIsOverFunc;
 
@@ -163,13 +161,13 @@ static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptio
 	int amountY = (int)((screen.y + (tFullPatchSize.y - 1)) / tFullPatchSize.y);
 	e.mAnimationAmount = amountX*amountY;
 
-	e.mAnimationIDs = (int*)allocMemory(e.mAnimationAmount*sizeof(int));
+	e.mAnimationElements = (AnimationHandlerElement**)allocMemory(e.mAnimationAmount*sizeof(AnimationHandlerElement*));
 	Position p = makePosition(0, 0, gScreenEffect.mZ);
 	int i;
 	for (i = 0; i < e.mAnimationAmount; i++) {
-		e.mAnimationIDs[i] = playAnimationLoop(p, &gScreenEffect.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gScreenEffect.mWhiteTexture));
+		e.mAnimationElements[i] = playAnimationLoop(p, &gScreenEffect.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gScreenEffect.mWhiteTexture));
 		updateSingleFadeInAnimation(&e, i);
-		setAnimationColor(e.mAnimationIDs[i], gScreenEffect.mFadeColor.mR, gScreenEffect.mFadeColor.mG, gScreenEffect.mFadeColor.mB);
+		setAnimationColor(e.mAnimationElements[i], gScreenEffect.mFadeColor.mR, gScreenEffect.mFadeColor.mG, gScreenEffect.mFadeColor.mB);
 
 		p = vecAdd(p, makePosition(tFullPatchSize.x, 0, 0));
 		if (p.x >= screen.x) {
@@ -283,25 +281,12 @@ void setScreenBlack() {
 	if (!gScreenEffect.mIsActive) return;
 
 	setScreenColor(COLOR_BLACK);
-	return;
-
-	gScreenEffect.mScreenFillID = playAnimationLoop(makePosition(0,0,gScreenEffect.mZ), &gScreenEffect.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gScreenEffect.mWhiteTexture));
-	setAnimationSize(gScreenEffect.mScreenFillID, makePosition(640, 480, 1), makePosition(0, 0, 0));
-	setAnimationColor(gScreenEffect.mScreenFillID, gScreenEffect.mFadeColor.mR, gScreenEffect.mFadeColor.mG, gScreenEffect.mFadeColor.mB);
 }
 
 void unsetScreenBlack() {
 	if (!gScreenEffect.mIsActive) return;
 
 	unsetScreenColor();
-	return;
-
-	if (gScreenEffect.mScreenFillID == -1) {
-		logError("Screen not set to black, unable to reset");
-		recoverFromError();
-	}
-
-	removeHandledAnimation(gScreenEffect.mScreenFillID);
 }
 
 void setScreenWhite() {

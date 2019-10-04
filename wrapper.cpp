@@ -6,7 +6,6 @@
 #include <emscripten.h>
 #endif
 
-#include "prism/pvr.h"
 #include "prism/physics.h"
 #include "prism/file.h"
 #include "prism/drawing.h"
@@ -14,7 +13,6 @@
 #include "prism/memoryhandler.h"
 #include "prism/sound.h"
 
-#include "prism/framerate.h"
 #include "prism/timer.h"
 #include "prism/animation.h"
 #include "prism/input.h"
@@ -41,7 +39,6 @@
 #include "prism/blitztimelineanimation.h"
 #include "prism/blitzcollision.h"
 #include "prism/blitzparticles.h"
-#include "prism/wrappercomponenthandler.h"
 #include "prism/thread.h"
 #include "prism/loadingscreen.h"
 #include "prism/errorscreen.h"
@@ -72,6 +69,8 @@ static struct {
 	int mIsUsingMugen;
 	int mIsUsingClipboard;
 	int mIsUsingBlitzModule;
+	int mIsUsingStageHandler;
+	int mIsUsingCollisionAnimationHandler;
 
 	int mHasBetweenScreensCB;
 	void(*mBetweenScreensCB)(void*);
@@ -86,13 +85,11 @@ static struct {
 
 	int mIsNotUsingWrapperRecovery;
 	int mIsActive;
-} gData;
+} gPrismWrapperData;
 
 static void initBasicSystems() {
 	logg("Initiating system.");
 	initSystem();
-	debugLog("Initiating PowerVR.");
-	initiatePVR();
 	debugLog("Initiating memory handler.");
 	initMemoryHandler();
 	debugLog("Initiating physics.");
@@ -117,8 +114,8 @@ static void initBasicSystems() {
 	}
 
 
-	gData.mGlobalTimeDilatation = 1;
-	gData.mIsActive = 1;
+	gPrismWrapperData.mGlobalTimeDilatation = 1;
+	gPrismWrapperData.mIsActive = 1;
 }
 
 void initPrismWrapperWithDefaultFlags() {
@@ -126,42 +123,44 @@ void initPrismWrapperWithDefaultFlags() {
 	debugLog("Initiating font.");
 	setFont("$/rd/fonts/dolmexica.hdr", "$/rd/fonts/dolmexica.pkg");
 	
-	gData.mIsUsingBasicTextHandler = 1;
+	gPrismWrapperData.mIsUsingBasicTextHandler = 1;
 }
 
 void initPrismWrapperWithMugenFlags() {
 	initBasicSystems();
-	debugLog("Initiating font.");
 
-	gData.mIsUsingMugen = 1;
-	gData.mIsUsingClipboard = 1;
+	gPrismWrapperData.mIsUsingMugen = 1;
+	gPrismWrapperData.mIsUsingClipboard = 1;
+
+	debugLog("Initiating mugen text handler.");
+	loadMugenTextHandler();
 }
 
-void initPrismWrapperWithConfigFile(char* tPath) {
+void initPrismWrapperWithConfigFile(const char* tPath) {
 	initBasicSystems();
 
 	MugenDefScript configFile;
 	loadMugenDefScript(&configFile, tPath);
-	gData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "texthandler", 0);
-	gData.mIsUsingMugen = getMugenDefIntegerOrDefault(&configFile, "Modules", "mugen", 0);
-	if (gData.mIsUsingMugen) {
+	gPrismWrapperData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "texthandler", 0);
+	gPrismWrapperData.mIsUsingStageHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "stagehandler", 0);
+	gPrismWrapperData.mIsUsingCollisionAnimationHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "collisionanimationhandler", 0);
+	gPrismWrapperData.mIsUsingMugen = getMugenDefIntegerOrDefault(&configFile, "Modules", "mugen", 0);
+	if (gPrismWrapperData.mIsUsingMugen) {
 		debugLog("Setting up Mugen Module for game");
 		loadMugenTextHandler();
 	}
-	gData.mIsUsingClipboard = getMugenDefIntegerOrDefault(&configFile, "Modules", "clipboard", 0);
-	if (gData.mIsUsingClipboard) {
+	gPrismWrapperData.mIsUsingClipboard = getMugenDefIntegerOrDefault(&configFile, "Modules", "clipboard", 0);
+	if (gPrismWrapperData.mIsUsingClipboard) {
 		debugLog("Setting up Clipboard for game");
 		char* fontName = getAllocatedMugenDefStringVariable(&configFile, "Clipboard", "font");
 		addMugenFont(-1, fontName);
 		freeMemory(fontName);
 		initClipboardForGame();
 	}
-	gData.mIsUsingBlitzModule = getMugenDefIntegerOrDefault(&configFile, "Modules", "blitz", 0);
+	gPrismWrapperData.mIsUsingBlitzModule = getMugenDefIntegerOrDefault(&configFile, "Modules", "blitz", 0);
 
 	unloadMugenDefScript(configFile);
 }
-
-
 
 void shutdownPrismWrapper() {
 	shutdownThreading();
@@ -169,35 +168,35 @@ void shutdownPrismWrapper() {
 	shutdownMemoryHandler();
 	shutdownSystem();
 
-	gData.mIsActive = 0;
+	gPrismWrapperData.mIsActive = 0;
 }
 
 void pauseWrapper() {
-	if (gData.mIsPaused) return;
+	if (gPrismWrapperData.mIsPaused) return;
 	pausePhysics();
 	pauseDurationHandling();
-	gData.mIsPaused = 1;
+	gPrismWrapperData.mIsPaused = 1;
 }
 
 static void resumeWrapperComponentsForced() {
 	resumePhysics();
 	resumeDurationHandling();
-	gData.mIsPaused = 0;
+	gPrismWrapperData.mIsPaused = 0;
 }
 
 void resumeWrapper() {
-	if (!gData.mIsPaused) return;
+	if (!gPrismWrapperData.mIsPaused) return;
 	resumeWrapperComponentsForced();
 }
 
 int isWrapperPaused()
 {
-	return gData.mIsPaused;
+	return gPrismWrapperData.mIsPaused;
 }
 
 int isUsingWrapper()
 {
-	return gData.mIsActive;
+	return gPrismWrapperData.mIsActive;
 }
 
 static void loadingThreadFunction(void* tCaller) {
@@ -208,13 +207,13 @@ static void loadingThreadFunction(void* tCaller) {
 		tScreen->mLoad();
 	}
 
-	gData.mHasFinishedLoading = 1;
+	gPrismWrapperData.mHasFinishedLoading = 1;
 }
 
 static void loadScreen(Screen* tScreen) {
-	gData.mScreen = tScreen;
-	gData.mNext = NULL;
-	gData.mHasFinishedLoading = 0;
+	gPrismWrapperData.mScreen = tScreen;
+	gPrismWrapperData.mNext = NULL;
+	gPrismWrapperData.mHasFinishedLoading = 0;
 
 	logg("Loading handled screen");
 	debugLog("Pushing memory stacks");
@@ -223,61 +222,64 @@ static void loadScreen(Screen* tScreen) {
 
 	logFormat("Blocks allocated pre-screen: %d.", getAllocatedMemoryBlockAmount());
 
-	debugLog("Setting up wrapper component handler");
-	setupWrapperComponentHandler();
 	debugLog("Setting up Timer");
 	setupTimer();
 	debugLog("Setting up Texture pool");
 	setupTexturePool();
 	debugLog("Setting up Animationhandling");
 	setupAnimationHandler();
-	debugLog("Setting up Tweeninghandling");
-	setupTweening();
 	debugLog("Setting up Physicshandling");
 	setupPhysicsHandler();
-	debugLog("Setting up Stagehandling");
-	setupStageHandler();
 	debugLog("Setting up Collisionhandling");
 	setupCollisionHandler();
-	debugLog("Setting up Collisionanimationhandling");
-	setupCollisionAnimationHandler();
 	debugLog("Setting up Soundeffecthandling");
 	setupSoundEffectHandler();
 	debugLog("Setting up Actorhandling");
 	setupActorHandler();
+	debugLog("Setting up Tweeninghandling");
+	instantiateActor(getTweeningHandler());
 	debugLog("Setting up Screen effects");
-	addWrapperComponent(getScreenEffectHandler());
-	
+	instantiateActor(getScreenEffectHandler());
 
-	if (gData.mIsUsingBasicTextHandler) {
+	if (gPrismWrapperData.mIsUsingBasicTextHandler) {
 		debugLog("Setting up Texthandling");
-		addWrapperComponent(getTextHandler());
+		instantiateActor(getTextHandler());
 	}
 
-	if (gData.mIsUsingMugen) {
+	if (gPrismWrapperData.mIsUsingStageHandler) {
+		debugLog("Setting up Stagehandling");
+		instantiateActor(getStageHandler());
+	}
+
+	if (gPrismWrapperData.mIsUsingCollisionAnimationHandler) {
+		debugLog("Setting up Collisionanimationhandling");
+		instantiateActor(getCollisionAnimationHandler());
+	}
+
+	if (gPrismWrapperData.mIsUsingMugen) {
 		debugLog("Setting up Mugen Module");
-		addWrapperComponent(getMugenAnimationHandler());
-		addWrapperComponent(getMugenTextHandler());
+		instantiateActor(getMugenAnimationHandler());
+		instantiateActor(getMugenTextHandler());
 	}
 
-	if (gData.mIsUsingClipboard) {
+	if (gPrismWrapperData.mIsUsingClipboard) {
 		debugLog("Setting up Clipboard");
-		addWrapperComponent(getClipboardHandler());
+		instantiateActor(getClipboardHandler());
 	}
-	if (gData.mIsUsingBlitzModule) {
+	if (gPrismWrapperData.mIsUsingBlitzModule) {
 		debugLog("Setting up Blitz Module");
-		addWrapperComponent(getBlitzCameraHandler());
-		addWrapperComponent(getBlitzParticleHandler());
-		addWrapperComponent(getBlitzEntityHandler());
-		addWrapperComponent(getBlitzMugenAnimationHandler());
-		addWrapperComponent(getBlitzMugenSoundHandler());
-		addWrapperComponent(getBlitzCollisionHandler());
-		addWrapperComponent(getBlitzPhysicsHandler());
-		addWrapperComponent(getBlitzTimelineAnimationHandler());
+		instantiateActor(getBlitzCameraHandler());
+		instantiateActor(getBlitzParticleHandler());
+		instantiateActor(getBlitzEntityHandler());
+		instantiateActor(getBlitzMugenAnimationHandler());
+		instantiateActor(getBlitzMugenSoundHandler());
+		instantiateActor(getBlitzCollisionHandler());
+		instantiateActor(getBlitzPhysicsHandler());
+		instantiateActor(getBlitzTimelineAnimationHandler());
 	}
 
 	if (isInDevelopMode()) {
-		addWrapperComponent(getPrismDebug());
+		instantiateActor(getPrismDebug());
 	}
 
 	debugLog("Setting up input flanks");
@@ -288,7 +290,7 @@ static void loadScreen(Screen* tScreen) {
 	if(hasLoadingScreen) {	
 		startThread(loadingThreadFunction, tScreen);
 		debugLog("Start loading screen");
-		startLoadingScreen(&gData.mHasFinishedLoading);
+		startLoadingScreen(&gPrismWrapperData.mHasFinishedLoading);
 		debugLog("End loading screen");
 	} else {
 		loadingThreadFunction(tScreen);
@@ -298,34 +300,30 @@ static void loadScreen(Screen* tScreen) {
 }
 
 static void callBetweenScreensCB() {
-	if (!gData.mHasBetweenScreensCB) return;
+	if (!gPrismWrapperData.mHasBetweenScreensCB) return;
 
 	debugLog("Calling user CB");
-	gData.mBetweenScreensCB(gData.mBetweenScreensCaller);
-	gData.mHasBetweenScreensCB = 0;
+	gPrismWrapperData.mBetweenScreensCB(gPrismWrapperData.mBetweenScreensCaller);
+	gPrismWrapperData.mHasBetweenScreensCB = 0;
+}
+
+static void stopWrapperMusic() {
+	if (!gPrismWrapperData.mIsNotPausingTracksBetweenScreens) {
+		stopMusic();
+	}
 }
 
 static void unloadWrapper() {
-	if (!gData.mIsNotPausingTracksBetweenScreens) {
-		stopMusic(); // TODO: remove double
-	}
+	stopWrapperMusic();
 
 	debugLog("Shutting down Actorhandling");
 	shutdownActorHandler();
-	debugLog("Shutting down Wrapper component handler");
-	shutdownWrapperComponentHandler();
 	debugLog("Shutting down Soundeffecthandling");
 	shutdownSoundEffectHandler();
-	debugLog("Shutting down Collisionanimationhandling");
-	shutdownCollisionAnimationHandler();
 	debugLog("Shutting down Collisionhandling");
 	shutdownCollisionHandler();
-	debugLog("Shutting down Stagehandling");
-	shutdownStageHandler();
 	debugLog("Shutting down Physicshandling");
 	shutdownPhysicsHandler();
-	debugLog("Shutting down Tweeninghandling");
-	shutdownTweening();
 	debugLog("Shutting down Animationhandling");
 	shutdownAnimationHandler();
 	debugLog("Shutting down Texture pool");
@@ -347,10 +345,7 @@ static void unloadWrapper() {
 
 static void unloadScreen(Screen* tScreen) {
 	logg("Unloading handled screen");
-	
-	if (!gData.mIsNotPausingTracksBetweenScreens) {
-		stopMusic();
-	}
+	stopWrapperMusic();
 
 	if (tScreen->mUnload) {
 		debugLog("Unloading user screen data");
@@ -364,41 +359,41 @@ static void updateScreenDebug() {
 	if (!isInDevelopMode()) return;
 
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_PAUSE_PRISM)) {
-		gData.mDebug.mIsPaused = gData.mDebug.mIsPaused ? 0 : 2;
+		gPrismWrapperData.mDebug.mIsPaused = gPrismWrapperData.mDebug.mIsPaused ? 0 : 2;
 	}
 
-	if (gData.mDebug.mIsPaused == 1) gData.mDebug.mIsPaused++;
-	if (gData.mDebug.mIsPaused && hasPressedKeyboardKeyFlank(KEYBOARD_SCROLLLOCK_PRISM)) {
-		gData.mDebug.mIsPaused = 1;
+	if (gPrismWrapperData.mDebug.mIsPaused == 1) gPrismWrapperData.mDebug.mIsPaused++;
+	if (gPrismWrapperData.mDebug.mIsPaused && hasPressedKeyboardKeyFlank(KEYBOARD_SCROLLLOCK_PRISM)) {
+		gPrismWrapperData.mDebug.mIsPaused = 1;
 	}
 
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_R_PRISM)) {
-		setNewScreen(gData.mScreen);
+		setNewScreen(gPrismWrapperData.mScreen);
 	}
 }
 
 static void updateExhibitionMode() {
-	if (!gData.mIsInExhibitionMode) return;
-	if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) return;
+	if (!gPrismWrapperData.mIsInExhibitionMode) return;
+	if (!gPrismWrapperData.mTitleScreen || gPrismWrapperData.mScreen == gPrismWrapperData.mTitleScreen) return;
 
 	if (hasPressedAnyButton()) {
-		gData.mExhibition.mTicksSinceInput = 0;
+		gPrismWrapperData.mExhibition.mTicksSinceInput = 0;
 	}
 
-	int secondsSinceInput = gData.mExhibition.mTicksSinceInput / (getFramerate() * 60);
+	int secondsSinceInput = gPrismWrapperData.mExhibition.mTicksSinceInput / (getFramerate() * 60);
 	if (secondsSinceInput >= 2) {
-		setNewScreen(gData.mTitleScreen);
-		gData.mExhibition.mTicksSinceInput = 0;
+		setNewScreen(gPrismWrapperData.mTitleScreen);
+		gPrismWrapperData.mExhibition.mTicksSinceInput = 0;
 	}
 }
 
 static void updateScreenAbort() {
 	if (hasPressedAbortFlank()) {
-		if ((!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen) && !gData.mIsInExhibitionMode) {
+		if ((!gPrismWrapperData.mTitleScreen || gPrismWrapperData.mScreen == gPrismWrapperData.mTitleScreen) && !gPrismWrapperData.mIsInExhibitionMode) {
 			abortScreenHandling();
 		}
 		else {
-			setNewScreen(gData.mTitleScreen);
+			setNewScreen(gPrismWrapperData.mTitleScreen);
 		}
 	}
 }
@@ -409,22 +404,18 @@ static void updateScreen() {
 	updateSystem();
 	updateInput();
 
-	if (gData.mDebug.mIsPaused < 2 && !gData.mIsPaused) {
+	if (gPrismWrapperData.mDebug.mIsPaused < 2 && !gPrismWrapperData.mIsPaused) {
 		updatePhysicsHandler();
-		updateTweening(); // TODO: remove or optionalize
 		updateAnimationHandler();
-		updateStageHandler(); // TODO: remove or optionalize
-		updateCollisionAnimationHandler(); // TODO: remove or optionalize
 		updateCollisionHandler();
 		updateTimer();
-		updateWrapperComponentHandler();	
 	}
 
 	updateActorHandler();
 	
-	if (gData.mDebug.mIsPaused < 2 && !gData.mIsPaused) {
-		if (gData.mScreen->mUpdate) {
-			gData.mScreen->mUpdate();
+	if (gPrismWrapperData.mDebug.mIsPaused < 2 && !gPrismWrapperData.mIsPaused) {
+		if (gPrismWrapperData.mScreen->mUpdate) {
+			gPrismWrapperData.mScreen->mUpdate();
 		}
 	}
 
@@ -441,11 +432,10 @@ static void drawScreen() {
 	startDrawing();
 	drawHandledAnimations();
 	drawHandledCollisions();
-	drawWrapperComponentHandler();
 	drawActorHandler();
 
-	if (gData.mScreen->mDraw) {
-		gData.mScreen->mDraw();
+	if (gPrismWrapperData.mScreen->mDraw) {
+		gPrismWrapperData.mScreen->mDraw();
 	}
 
 	stopDrawing();
@@ -454,30 +444,28 @@ static void drawScreen() {
 static void performScreenIteration() {
 	setPrismDebugUpdateStartTime();
 
-	gData.mUpdateTimeCounter += gData.mGlobalTimeDilatation;
-	int updateAmount = (int)gData.mUpdateTimeCounter;
+	gPrismWrapperData.mUpdateTimeCounter += gPrismWrapperData.mGlobalTimeDilatation;
+	int updateAmount = (int)gPrismWrapperData.mUpdateTimeCounter;
 	int i;
 	for (i = 0; i < updateAmount; i++) {
 		updateScreen();
-		gData.mUpdateTimeCounter = 0;
 	}
+	gPrismWrapperData.mUpdateTimeCounter -= updateAmount;
 
 	drawScreen();
-	if (gData.mScreen->mGetNextScreen && !gData.mNext) {
-		gData.mNext = gData.mScreen->mGetNextScreen();
+	if (gPrismWrapperData.mScreen->mGetNextScreen && !gPrismWrapperData.mNext) {
+		gPrismWrapperData.mNext = gPrismWrapperData.mScreen->mGetNextScreen();
 	}
 	
-
-	// TODO: make Emscripten less hacky
 #ifdef __EMSCRIPTEN__
-	if (gData.mIsAborted || gData.mNext != NULL) {
+	if (gPrismWrapperData.mIsAborted || gPrismWrapperData.mNext != NULL) {
 		emscripten_cancel_main_loop();
-		unloadScreen(gData.mScreen);
-		if (!gData.mIsAborted) {
-			startScreenHandling(gData.mNext);
+		unloadScreen(gPrismWrapperData.mScreen);
+		if (!gPrismWrapperData.mIsAborted) {
+			startScreenHandling(gPrismWrapperData.mNext);
 		}
 		else {
-			startScreenHandling(gData.mScreen);
+			startScreenHandling(gPrismWrapperData.mScreen);
 		}
 	}
 #endif
@@ -486,25 +474,24 @@ static void performScreenIteration() {
 static Screen* showScreen() {
 	logg("Show screen");
 
-	// TODO: make Emscripten less hacky
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop(performScreenIteration, 60, 1);
 #endif
 
-	while(!gData.mIsAborted && gData.mNext == NULL) {
+	while(!gPrismWrapperData.mIsAborted && gPrismWrapperData.mNext == NULL) {
 		performScreenIteration();
 	}
 
-	return gData.mNext;
+	return gPrismWrapperData.mNext;
 }
 
 void abortScreenHandling() {
-	gData.mIsAborted = 1;
+	gPrismWrapperData.mIsAborted = 1;
 }
 
 void setNewScreen(Screen * tScreen)
 {
-	gData.mNext = tScreen;
+	gPrismWrapperData.mNext = tScreen;
 }
 
 Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate, DrawScreenFunction tDraw, UnloadScreenFunction tUnload, Screen*(*tGetNextScreen)()) {
@@ -518,12 +505,22 @@ Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate, DrawSc
 }
 
 void startScreenHandling(Screen* tScreen) {
-	gData.mIsAborted = 0;
-
-	if (setjmp(gData.mExceptionJumpBuffer)) {
-		tScreen = gData.mNext;
+	gPrismWrapperData.mIsAborted = 0;
+// TODO: refactor with exceptions (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/431)
+#ifdef DREAMCAST
+#pragma GCC diagnostic ignored "-Wclobbered"
+#endif
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable: 4611)
+#endif
+	if (setjmp(gPrismWrapperData.mExceptionJumpBuffer)) {
+		tScreen = gPrismWrapperData.mNext;
 	}
-	while(!gData.mIsAborted) {
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
+	while(!gPrismWrapperData.mIsAborted) {
 		loadScreen(tScreen);
 		Screen* next = showScreen();
 		unloadScreen(tScreen);
@@ -537,39 +534,39 @@ void startScreenHandling(Screen* tScreen) {
 
 void setWrapperTimeDilatation(double tDilatation)
 {
-	gData.mGlobalTimeDilatation = tDilatation;
+	gPrismWrapperData.mGlobalTimeDilatation = tDilatation;
 }
 
 void setWrapperBetweenScreensCB(void(*tCB)(void *), void* tCaller)
 {
-	gData.mBetweenScreensCB = tCB;
-	gData.mBetweenScreensCaller = tCaller;
-	gData.mHasBetweenScreensCB = 1;
+	gPrismWrapperData.mBetweenScreensCB = tCB;
+	gPrismWrapperData.mBetweenScreensCaller = tCaller;
+	gPrismWrapperData.mHasBetweenScreensCB = 1;
 }
 
 void setWrapperIsPausingTracksBetweenScreens(int tIsPausingTracks)
 {
-	gData.mIsNotPausingTracksBetweenScreens = !tIsPausingTracks;
+	gPrismWrapperData.mIsNotPausingTracksBetweenScreens = !tIsPausingTracks;
 }
 
 void setWrapperToExhibitionMode() {
-	gData.mExhibition.mTicksSinceInput = 0;
-	gData.mIsInExhibitionMode = 1;
+	gPrismWrapperData.mExhibition.mTicksSinceInput = 0;
+	gPrismWrapperData.mIsInExhibitionMode = 1;
 }
 
 void setWrapperTitleScreen(Screen * tTitleScreen)
 {
-	gData.mTitleScreen = tTitleScreen;
+	gPrismWrapperData.mTitleScreen = tTitleScreen;
 }
 
 void recoverWrapperError()
 {
-	gData.mHasFinishedLoading = 1;
+	gPrismWrapperData.mHasFinishedLoading = 1;
 
-	if (gData.mIsUsingMugen && !gData.mIsNotUsingWrapperRecovery) {
+	if (gPrismWrapperData.mIsUsingMugen && !gPrismWrapperData.mIsNotUsingWrapperRecovery) {
 		setNewScreen(getErrorScreen());
 		unloadWrapper();
-		longjmp(gData.mExceptionJumpBuffer, 1);
+		longjmp(gPrismWrapperData.mExceptionJumpBuffer, 1);
 	}
 	else {
 		gotoNextScreenAfterWrapperError();
@@ -579,18 +576,18 @@ void recoverWrapperError()
 
 void gotoNextScreenAfterWrapperError()
 {
-	if (!gData.mTitleScreen || gData.mScreen == gData.mTitleScreen || gData.mIsNotUsingWrapperRecovery) {
+	if (!gPrismWrapperData.mTitleScreen || gPrismWrapperData.mScreen == gPrismWrapperData.mTitleScreen || gPrismWrapperData.mIsNotUsingWrapperRecovery) {
 		abortSystem();
 	}
 	else {
-		setNewScreen(gData.mTitleScreen);
+		setNewScreen(gPrismWrapperData.mTitleScreen);
 		unloadWrapper();
-		longjmp(gData.mExceptionJumpBuffer, 1);
+		longjmp(gPrismWrapperData.mExceptionJumpBuffer, 1);
 	}
 }
 
 void disableWrapperErrorRecovery()
 {
-	gData.mIsNotUsingWrapperRecovery = 1;
+	gPrismWrapperData.mIsNotUsingWrapperRecovery = 1;
 }
 

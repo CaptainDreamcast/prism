@@ -15,34 +15,15 @@
 using namespace std;
 
 typedef struct {
-	int mListID;
-	
-	int mIsColliderOwned;
-	Collider mCollider;
 
-	CollisionCallback mCB;
-	void* mCaller;
-
-	void* mCollisionData;
-
-	int mIsScheduledForDeletion;
-
-} CollisionListElement;
-
-typedef struct {
-	map<int, CollisionListElement> mCollisionElements;
-} CollisionListData;
-
-typedef struct {
-
-	int mID1;
-	int mID2;
-
+	CollisionListData* mList1;
+	CollisionListData* mList2;
 } CollisionListPair;
 
 typedef struct {
 	int mIsActive;
-	
+	TextureData mWhiteCircleTexture;
+
 	Position* mScreenPositionReference;
 } CollisionHandlerDebugData;
 
@@ -115,8 +96,8 @@ static int checkElementRemoval(CollisionListElement& tData) {
 static void updateSingleCollisionPair(CollisionListPair& tData) {
 	CollisionListPair* data = &tData;
 
-	CollisionListData* list1 = &gCollisionHandler.mCollisionLists[data->mID1];
-	CollisionListData* list2 = &gCollisionHandler.mCollisionLists[data->mID2];
+	CollisionListData* list1 = data->mList1;
+	CollisionListData* list2 = data->mList2;
 
 	stl_int_map_remove_predicate(list1->mCollisionElements, checkElementRemoval);
 	stl_int_map_remove_predicate(list2->mCollisionElements, checkElementRemoval);
@@ -132,40 +113,31 @@ void updateCollisionHandler() {
 	stl_int_map_map(gCollisionHandler.mCollisionListPairs, updateSingleCollisionPair);
 }
 
-static void setColliderOwned(int tListID, int tID) {
-	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
-	CollisionListElement* e = &list->mCollisionElements[tID];
-
+static void setColliderOwned(CollisionListElement* e) {
 	e->mIsColliderOwned = 1;
 }
 
-int addCollisionRectangleToCollisionHandler(int tListID, Position* tBasePosition, CollisionRect tRect, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
+CollisionListElement* addCollisionRectangleToCollisionHandler(CollisionListData* tList, Position* tBasePosition, CollisionRect tRect, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
 	Collider collider = makeColliderFromRect(tRect);
-	int id = addColliderToCollisionHandler(tListID, tBasePosition, collider, tCB, tCaller, tCollisionData);
-	setColliderOwned(tListID, id);
-	return id;
+	auto element = addColliderToCollisionHandler(tList, tBasePosition, collider, tCB, tCaller, tCollisionData);
+	setColliderOwned(element);
+	return element;
 }
 
-void changeCollisionRectangleInCollisionHandler(int tListID, int tElementID, CollisionRect tRect)
+void changeCollisionRectangleInCollisionHandler(CollisionListElement* e, CollisionRect tRect)
 {
-	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
-	auto e = &list->mCollisionElements[tElementID];
 	e->mCollider.mImpl.mRect = tRect;
 }
 
-int addCollisionCircleToCollisionHandler(int tListID, Position* tBasePosition, CollisionCirc tCirc, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
+CollisionListElement* addCollisionCircleToCollisionHandler(CollisionListData* tList, Position* tBasePosition, CollisionCirc tCirc, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
 	Collider collider = makeColliderFromCirc(tCirc);
-	int id = addColliderToCollisionHandler(tListID, tBasePosition, collider, tCB, tCaller, tCollisionData);
-	setColliderOwned(tListID, id);
-	return id;
+	auto element = addColliderToCollisionHandler(tList, tBasePosition, collider, tCB, tCaller, tCollisionData);
+	setColliderOwned(element);
+	return element;
 }
 
-int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
-	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
-	
+CollisionListElement* addColliderToCollisionHandler(CollisionListData* tList, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData) {	
 	CollisionListElement e;
-	e.mListID = tListID;
-
 	e.mCollider = tCollider;
 	e.mIsColliderOwned = 0;
 
@@ -176,37 +148,36 @@ int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider
 
 	e.mIsScheduledForDeletion = 0;
 
-	int id = stl_int_map_push_back(list->mCollisionElements, e);
-	setColliderBasePosition(&list->mCollisionElements[id].mCollider, tBasePosition);
-	return id;
+	int id = stl_int_map_push_back(tList->mCollisionElements, e);
+	auto element = &tList->mCollisionElements[id];
+	element->mID = id;
+	setColliderBasePosition(&element->mCollider, tBasePosition);
+	return element;
 }
 
 
-void addCollisionHandlerCheck(int tListID1, int tListID2) {
+void addCollisionHandlerCheck(CollisionListData* tList1, CollisionListData* tList2) {
 	CollisionListPair e;
-	e.mID1 = tListID1;
-	e.mID2 = tListID2;
+	e.mList1 = tList1;
+	e.mList2 = tList2;
 
 	stl_int_map_push_back(gCollisionHandler.mCollisionListPairs, e);
 }
 
-int addCollisionListToHandler() {
+CollisionListData* addCollisionListToHandler() {
 	CollisionListData e;
 	e.mCollisionElements.clear();
-
-	return stl_int_map_push_back(gCollisionHandler.mCollisionLists, e);
+	int id = stl_int_map_push_back(gCollisionHandler.mCollisionLists, e);
+	auto list = &gCollisionHandler.mCollisionLists[id];
+	list->mID = id;
+	return list;
 }
 
-void removeFromCollisionHandler(int tListID, int tElementID) {
-	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
-	CollisionListElement* e = &list->mCollisionElements[tElementID];
+void removeFromCollisionHandler(CollisionListElement* e) {
 	e->mIsScheduledForDeletion = 1;
 }
 
-void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider) {
-	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
-	CollisionListElement* e = &list->mCollisionElements[tElementID];
-
+void updateColliderForCollisionHandler(CollisionListElement* e, Collider tCollider) {
 	if (e->mIsColliderOwned) {
 		destroyCollider(&e->mCollider);
 	}
@@ -218,76 +189,48 @@ void setCollisionHandlerOwningColliders() {
 	gCollisionHandler.mIsOwningColliders = 1;
 }
 
-static CollisionListElement* getCollisionListElement(int tListID, int tElementID) {
-	if (!stl_map_contains(gCollisionHandler.mCollisionLists, tListID)) {
-		logErrorFormat("Collision handler does not contain list with id %d.", tListID);
-		recoverFromError();
-	}
-	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
-
-	if (!stl_map_contains(list->mCollisionElements, tElementID)) {
-		logErrorFormat("Collision handler list %d does not contain element with id %d.", tListID, tElementID);
-		recoverFromError();
-	}
-	return &list->mCollisionElements[tElementID];
-}
-
-void resolveHandledCollisionMovableStatic(int tListID1, int tElementID1, int tListID2, int tElementID2, Position* tPos1, Velocity tVel1)
+void resolveHandledCollisionMovableStatic(CollisionListElement* e1, CollisionListElement* e2, Position* tPos1, Velocity tVel1)
 {
-	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
-	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);	
 	resolveCollisionColliderColliderMovableStatic(tPos1, tVel1, e1->mCollider, e2->mCollider);
 }
 
-int isHandledCollisionAboveOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2)
+int isHandledCollisionAboveOtherCollision(CollisionListElement* e1, CollisionListElement* e2)
 {
-	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
-	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
 	return getColliderDown(e1->mCollider) <= getColliderUp(e2->mCollider);
 }
 
-int isHandledCollisionBelowOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2)
+int isHandledCollisionBelowOtherCollision(CollisionListElement* e1, CollisionListElement* e2)
 {
-	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
-	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
 	return getColliderUp(e1->mCollider) >= getColliderDown(e2->mCollider);
 }
 
-int isHandledCollisionLeftOfOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2)
+int isHandledCollisionLeftOfOtherCollision(CollisionListElement* e1, CollisionListElement* e2)
 {
-	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
-	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
 	return getColliderRight(e1->mCollider) <= getColliderLeft(e2->mCollider);
 }
 
-int isHandledCollisionRightOfOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2)
+int isHandledCollisionRightOfOtherCollision(CollisionListElement* e1, CollisionListElement* e2)
 {
-	CollisionListElement* e1 = getCollisionListElement(tListID1, tElementID1);
-	CollisionListElement* e2 = getCollisionListElement(tListID2, tElementID2);
 	return getColliderLeft(e1->mCollider) >= getColliderRight(e2->mCollider);
 }
 
-int isHandledCollisionValid(int tListID, int tElementID)
+int isHandledCollisionValid(CollisionListElement* e)
 {
-	if (!stl_map_contains(gCollisionHandler.mCollisionLists, tListID)) {
+	if (!stl_map_contains(gCollisionHandler.mCollisionLists, e->mListID)) {
 		return 0;
 	}
-	CollisionListData* list = &gCollisionHandler.mCollisionLists[tListID];
+	CollisionListData* list = &gCollisionHandler.mCollisionLists[e->mListID];
 
-	if (!stl_map_contains(list->mCollisionElements, tElementID)) {
+	if (!stl_map_contains(list->mCollisionElements, e->mID)) {
 		return 0;
 	}
-
-	CollisionListElement* e = &list->mCollisionElements[tElementID];
 	return !e->mIsScheduledForDeletion;
 }
 
-int isHandledCollisionScheduledForDeletion(int tListID, int tElementID)
+int isHandledCollisionScheduledForDeletion(CollisionListElement* e)
 {
-	CollisionListElement* e = getCollisionListElement(tListID, tElementID);
 	return e->mIsScheduledForDeletion;
 }
-
 
 #define DEBUG_Z 99
 
@@ -310,8 +253,6 @@ static void drawCollisionRect(CollisionRect tRect, Position tBasePosition, Posit
 	TextureData whiteTexture = getEmptyWhiteTexture();
 	drawSprite(whiteTexture, position, makeRectangleFromTexture(whiteTexture));
 	setDrawingParametersToIdentity();
-
-	
 }
 
 static void drawCollisionCirc(CollisionCirc tCirc, Position tBasePosition, Position tScreenPositionOffset, Vector3D tColor, double tAlpha) {
@@ -331,8 +272,7 @@ static void drawCollisionCirc(CollisionCirc tCirc, Position tBasePosition, Posit
 	setDrawingBaseColorAdvanced(tColor.x, tColor.y, tColor.z);
 	setDrawingTransparency(tAlpha);
 
-	TextureData whiteTexture = getEmptyWhiteTexture();
-	drawSprite(whiteTexture, position, makeRectangleFromTexture(whiteTexture)); // TODO: circle texture
+	drawSprite(gCollisionHandler.mDebug.mWhiteCircleTexture, position, makeRectangleFromTexture(gCollisionHandler.mDebug.mWhiteCircleTexture));
 	setDrawingParametersToIdentity();
 }
 
@@ -388,5 +328,6 @@ void drawHandledCollisions() {
 
 void activateCollisionHandlerDebugMode() {
 	gCollisionHandler.mDebug.mIsActive = 1;
+	gCollisionHandler.mDebug.mWhiteCircleTexture = createWhiteCircleTexture();
 	gCollisionHandler.mDebug.mScreenPositionReference = NULL;	
 }

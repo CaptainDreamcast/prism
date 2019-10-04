@@ -10,6 +10,17 @@
 #include <memory>
 #include <functional>
 
+// until we use c++14 with DC, define make_unique ourselves
+#ifdef DREAMCAST
+namespace std {
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+}
+#endif
+
 template <class K, class V>
 void stl_new_map(std::map<K, V>& tMap) {
 	tMap.clear();
@@ -57,7 +68,7 @@ void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(C* tCaller
 }
 
 template <class T>
-void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(T& tData)) { // TODO: rewrite with lambdas
+void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(T& tData)) {
 	typename std::map<int, T>::iterator it = tMap.begin();
 
 	while (it != tMap.end()) {
@@ -70,7 +81,7 @@ void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(T& tData))
 }
 
 template <class T>
-void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*tFunc)(T& tData)) { // TODO: rewrite with lambdas
+void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*tFunc)(T& tData)) {
 	typename std::map<int, std::unique_ptr<T>>::iterator it = tMap.begin();
 
 	while (it != tMap.end()) {
@@ -83,7 +94,7 @@ void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*
 }
 
 template <class T, class C>
-void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) { // TODO: rewrite with lambdas
+void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
 	typename std::map<int, std::unique_ptr<T>>::iterator it = tMap.begin();
 
 	while (it != tMap.end()) {
@@ -96,7 +107,7 @@ void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(*
 }
 
 template <class O, class T>
-void stl_int_map_remove_predicate(O& tClass, std::map<int, std::unique_ptr<T>> &tMap, int(O::*tFunc)(T& tData)) { // TODO: rewrite with lambdas
+void stl_int_map_remove_predicate(O& tClass, std::map<int, std::unique_ptr<T>> &tMap, int(O::*tFunc)(T& tData)) {
 	typename std::map<int, std::unique_ptr<T>>::iterator it = tMap.begin();
 
 	while (it != tMap.end()) {
@@ -109,7 +120,7 @@ void stl_int_map_remove_predicate(O& tClass, std::map<int, std::unique_ptr<T>> &
 }
 
 template <class T>
-void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(T::*tFunc)()) { // TODO: rewrite with lambdas
+void stl_int_map_remove_predicate(std::map<int, std::unique_ptr<T>> &tMap, int(T::*tFunc)()) {
 	typename std::map<int, std::unique_ptr<T>>::iterator it = tMap.begin();
 
 	while (it != tMap.end()) {
@@ -133,7 +144,7 @@ void stl_int_map_map(std::map<int, T> &tMap, void(*tFunc)(C* tCaller, T& tData),
 }
 
 template <class T>
-void stl_int_map_map(std::map<int, T> &tMap, void(*tFunc)(T& tData)) { // TODO: rewrite with lambdas
+void stl_int_map_map(std::map<int, T> &tMap, void(*tFunc)(T& tData)) {
 	typename std::map<int, T>::iterator it = tMap.begin();
 
 	while (it != tMap.end()) {

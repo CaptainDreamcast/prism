@@ -13,11 +13,11 @@ typedef struct {
 
 static struct {
 	IntMap mEntries;
-} gData;
+} gBlitzMugenSoundData;
 
 static void loadBlitzMugenSoundHandler(void* tData) {
 	(void)tData;
-	gData.mEntries = new_int_map();
+	gBlitzMugenSoundData.mEntries = new_int_map();
 }
 
 static void unregisterEntity(int tEntityID);
@@ -37,16 +37,16 @@ void addBlitzMugenSoundComponent(int tEntityID, MugenSounds* tSounds)
 	e->mSounds = tSounds;
 
 	registerBlitzComponent(tEntityID, getBlitzMugenSoundComponent());
-	int_map_push_owned(&gData.mEntries, tEntityID, e);
+	int_map_push_owned(&gBlitzMugenSoundData.mEntries, tEntityID, e);
 }
 
 static SoundEntry* getSoundEntry(int tEntityID) {
-	if (!int_map_contains(&gData.mEntries, tEntityID)) {
+	if (!int_map_contains(&gBlitzMugenSoundData.mEntries, tEntityID)) {
 		logErrorFormat("Entity with ID %d does not have a mugen sound component.", tEntityID);
 		recoverFromError();
 	}
 
-	return (SoundEntry*)int_map_get(&gData.mEntries, tEntityID);
+	return (SoundEntry*)int_map_get(&gBlitzMugenSoundData.mEntries, tEntityID);
 }
 
 void playEntityMugenSound(int tEntityID, int tGroup, int tSample)
@@ -56,5 +56,5 @@ void playEntityMugenSound(int tEntityID, int tGroup, int tSample)
 }
 
 static void unregisterEntity(int tEntityID) {
-	int_map_remove(&gData.mEntries, tEntityID);
+	int_map_remove(&gBlitzMugenSoundData.mEntries, tEntityID);
 }

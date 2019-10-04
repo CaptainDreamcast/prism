@@ -2,14 +2,15 @@
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
-#include <SDL/SDL_image.h>
-#include <SDL/SDL_ttf.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 #elif defined _WIN32
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #endif
 
 #include <string.h>
+#include <sstream>
 
 #include "prism/file.h"
 #include "prism/log.h"
@@ -17,8 +18,6 @@
 #include "prism/system.h"
 #include "prism/math.h"
 #include "prism/compression.h"
-
-
 
 TextureData textureFromSurface(SDL_Surface* tSurface) {
 	TextureData returnData;
@@ -120,7 +119,6 @@ static Buffer untwiddleBuffer(Buffer tBuffer, uint32_t tWidth, uint32_t tHeight)
 	uint32_t dstLength = tBuffer.mLength;
 
 	untwiddle((uint16_t*)tBuffer.mData, dst, tWidth, tHeight);
-	freeBuffer(tBuffer);
 
 	return makeBufferOwned(dst, dstLength);
 }
@@ -152,7 +150,7 @@ static KMGHeader untwiddleKMGBufferAndReturnHeader(Buffer* tBuffer) {
 
 static TextureData loadTexturePKGWindows(const char* tFileDir) {
 	Buffer b = fileToBuffer(tFileDir);
-	decompressBuffer(&b);
+	decompressBufferZSTD(&b);
 	KMGHeader hdr = untwiddleKMGBufferAndReturnHeader(&b);
 	SDL_Surface* s = makeSurfaceFromUntwiddledTexture(b, hdr);
 	return textureFromSurface(s);
@@ -297,7 +295,7 @@ TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWid
 
 	return ret;
 
-	// TODO: fix
+	// TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/222)
 	/*
 
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(b.mData, tWidth, tHeight, 8, tWidth, 0, 0, 0, 0);
@@ -328,15 +326,89 @@ TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWid
 	*/
 }
 
+#ifdef _WIN32
+#include <Windows.h>
+// Get system font file path (Taken from https://stackoverflow.com/questions/11387564/get-a-font-filepath-from-name-and-style-in-c-windows)
+static std::string getSystemFontFile(const std::string& tFaceName) {
+
+	static const LPWSTR fontRegistryPath = L"Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
+	HKEY hKey;
+	LONG result;
+	std::wstring wsFaceName(tFaceName.begin(), tFaceName.end());
+
+	// Open Windows font registry key
+	result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, fontRegistryPath, 0, KEY_READ, &hKey);
+	if (result != ERROR_SUCCESS) {
+		return "";
+	}
+
+	DWORD maxValueNameSize, maxValueDataSize;
+	result = RegQueryInfoKey(hKey, 0, 0, 0, 0, 0, 0, 0, &maxValueNameSize, &maxValueDataSize, 0, 0);
+	if (result != ERROR_SUCCESS) {
+		return "";
+	}
+
+	DWORD valueIndex = 0;
+	std::vector<WCHAR> valueName = std::vector<WCHAR>(maxValueNameSize);
+	std::vector<BYTE> valueData = std::vector<BYTE>(maxValueDataSize);
+	DWORD valueNameSize, valueDataSize, valueType;
+	std::wstring wsFontFile;
+
+	// Look for a matching font name
+	do {
+		wsFontFile.clear();
+		valueDataSize = maxValueDataSize;
+		valueNameSize = maxValueNameSize;
+
+		result = RegEnumValue(hKey, valueIndex, valueName.data(), &valueNameSize, 0, &valueType, valueData.data(), &valueDataSize);
+
+		valueIndex++;
+
+		if (result != ERROR_SUCCESS || valueType != REG_SZ) {
+			continue;
+		}
+
+		std::wstring wsValueName(valueName.data(), valueNameSize);
+
+		// Found a match
+		if (_wcsnicmp(wsFaceName.c_str(), wsValueName.c_str(), wsFaceName.length()) == 0) {
+
+			wsFontFile.assign((LPWSTR)valueData.data(), valueDataSize);
+			break;
+		}
+	} while (result != ERROR_NO_MORE_ITEMS);
+
+	RegCloseKey(hKey);
+
+	if (wsFontFile.empty()) {
+		return "";
+	}
+
+	// Build full font file path
+	WCHAR winDir[MAX_PATH];
+	GetWindowsDirectory(winDir, MAX_PATH);
+
+	std::wstringstream ss;
+	ss << winDir << "\\Fonts\\" << wsFontFile;
+	wsFontFile = ss.str();
+
+	return std::string(wsFontFile.begin(), wsFontFile.end());
+}
+#else 
+static std::string getSystemFontFile(const std::string &tFaceName) {
+	return "C:/Windows/Fonts/" + tFaceName;
+}
+#endif
+
 TruetypeFont loadTruetypeFont(const char * tName, double tSize)
 {
-
 	char path[1024];
 	if (isFile(tName)) {
 		getFullPath(path, tName);
 	}
 	else {
-		sprintf(path, "C:/Windows/Fonts/%s", tName); // TODO: properly
+		const auto systemPath = getSystemFontFile(tName);
+		strcpy(path, systemPath.c_str());
 		if (!isFile(path)) {
 			logError("Unable to open font file.");
 			logErrorString(tName);

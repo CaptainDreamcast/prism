@@ -32,8 +32,10 @@ typedef struct {
 	int mCanBeUnloaded;
 	int mIsLoaded;
 	TextureData* mTextureData;
+	int mHasTextureSize;
+	TextureSize mTextureSize;
 
-	int mAnimationID;
+	AnimationHandlerElement* mAnimationElement;
 } BackgroundPatchData;
 
 typedef struct {
@@ -71,14 +73,14 @@ static struct {
 	GeoRectangle mCameraRange;
 	int mIsLoadingTexturesDirectly;
 	ScreenShake mShake;
-} gData;
+} gPrismStageHandlerData;
 
-void setupStageHandler() {
-	gData.mList = new_list();
-	gData.mIsLoadingTexturesDirectly = 0;
-	gData.mCameraRange = makeGeoRectangle(-INF, -INF, INF * 2, INF * 2);
-	gData.mShake.mStrength = 0;
-	gData.mShake.mMaximum = INF;
+static void loadStageHandler(void*) {
+	gPrismStageHandlerData.mList = new_list();
+	gPrismStageHandlerData.mIsLoadingTexturesDirectly = 0;
+	gPrismStageHandlerData.mCameraRange = makeGeoRectangle(-INF, -INF, INF * 2, INF * 2);
+	gPrismStageHandlerData.mShake.mStrength = 0;
+	gPrismStageHandlerData.mShake.mMaximum = INF;
 	setStageHandlerAccelerationPhysics();
 	
 }
@@ -89,30 +91,35 @@ static void emptyAll(void* tCaller, void* tData) {
 	list_empty(&data->mPatchList);
 }
 
-void shutdownStageHandler() {
-	list_map(&gData.mList, emptyAll, NULL);
-	list_empty(&gData.mList);
+static void unloadStageHandler(void*) {
+	list_map(&gPrismStageHandlerData.mList, emptyAll, NULL);
+	list_empty(&gPrismStageHandlerData.mList);
 }
 
 static void setPatchAnimationActive(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
-	tData->mAnimationID = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
-	setAnimationScreenPositionReference(tData->mAnimationID, &tBackgroundData->mReferencedPosition);
+	tData->mAnimationElement = playAnimationLoop(tData->mPosition, tData->mTextureData, tData->mAnimation, makeRectangleFromTexture(tData->mTextureData[0]));
+	setAnimationScreenPositionReference(tData->mAnimationElement, &tBackgroundData->mReferencedPosition);
 
 }
 
 static void setPatchAnimationInactive(BackgroundPatchData* tData) {
-	removeHandledAnimation(tData->mAnimationID);
+	removeHandledAnimation(tData->mAnimationElement);
 }
 
 
 static void loadStagePatchFromPath(BackgroundPatchData* tData) {
 	tData->mTextureData = (TextureData*)allocMemory(tData->mAnimation.mFrameAmount * sizeof(TextureData));
 	Frame i;
+	TextureSize ts = { 0, 0 };
 	for (i = 0; i < tData->mAnimation.mFrameAmount; i++) {
 		char fPath[100];
 		getPathWithNumberAffixedFromAssetPath(fPath, tData->mPath, i);
 		tData->mTextureData[i] = loadTextureFromPool(fPath);
+		ts.x = std::max(ts.x, tData->mTextureData[i].mTextureSize.x);
+		ts.y = std::max(ts.y, tData->mTextureData[i].mTextureSize.y);
 	}
+	tData->mTextureSize = ts;
+	tData->mHasTextureSize = 1;
 }
 
 static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
@@ -131,13 +138,20 @@ static void loadStagePatchIfNecessary(BackgroundPatchData* tData, SingleBackgrou
 }
 
 static int isStagePatchOutOfBounds(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
-	if (gData.mIsLoadingTexturesDirectly) return 0;
+	if (gPrismStageHandlerData.mIsLoadingTexturesDirectly) return 0;
 
 	double sl = tBackgroundData->mPhysics.mPosition.x;
 	double sr = sl + 640.0;
 
 	double l = tData->mPosition.x;
-	double r = l + 640; // TODO: Can only know real size after loading texture! Find a fix.
+	int size;
+	if (tData->mHasTextureSize) {
+		size = tData->mTextureSize.x;
+	}
+	else {
+		size = 640;
+	}
+	double r = l + size;
 
 	int isOut = l > sr || r < sl;
 	return isOut;
@@ -182,20 +196,20 @@ static void setSingleStagePatches(SingleBackgroundData* data) {
 }
 
 static void clampCameraRange(Vector3D* v, Vector3D tScrollingFactor) {
-	GeoRectangle rect = scaleGeoRectangleByFactor2D(gData.mCameraRange, tScrollingFactor);
+	GeoRectangle rect = scaleGeoRectangleByFactor2D(gPrismStageHandlerData.mCameraRange, tScrollingFactor);
 	*v = clampPositionToGeoRectangle(*v, rect);
 }
 
 static void setReferencedPosition(SingleBackgroundData* e) {
-	double l = gData.mShake.mStrength*vecLength(e->mScrollingFactor);
-	e->mReferencedPosition = vecAdd(e->mPhysics.mPosition, vecScale(gData.mShake.mDirection, l));
+	double l = gPrismStageHandlerData.mShake.mStrength*vecLength(e->mScrollingFactor);
+	e->mReferencedPosition = vecAdd(e->mPhysics.mPosition, vecScale(gPrismStageHandlerData.mShake.mDirection, l));
 }
 
 static void updateSingleStage(void* tCaller, void* tData) {
 	(void)tCaller;
 	SingleBackgroundData* data = (SingleBackgroundData*)tData;
 
-	gData.mCamera.mUpdate(data);
+	gPrismStageHandlerData.mCamera.mUpdate(data);
 	clampCameraRange(&data->mPhysics.mPosition, data->mScrollingFactor);
 	setReferencedPosition(data);
 
@@ -203,21 +217,26 @@ static void updateSingleStage(void* tCaller, void* tData) {
 }
 
 static void updateCameraShake() {
-	gData.mShake.mStrength *= 0.9;
-	if (gData.mShake.mStrength < 0.5) gData.mShake.mStrength = 0;
-	gData.mShake.mStrength = min(gData.mShake.mStrength, gData.mShake.mMaximum);
+	gPrismStageHandlerData.mShake.mStrength *= 0.9;
+	if (gPrismStageHandlerData.mShake.mStrength < 0.5) gPrismStageHandlerData.mShake.mStrength = 0;
+	gPrismStageHandlerData.mShake.mStrength = min(gPrismStageHandlerData.mShake.mStrength, gPrismStageHandlerData.mShake.mMaximum);
 
 	double angle = randfrom(0, M_PI * 2);
-	gData.mShake.mDirection = getDirectionFromAngleZ(angle);
+	gPrismStageHandlerData.mShake.mDirection = getDirectionFromAngleZ(angle);
 }
 
-void updateStageHandler() {
+static void updateStageHandler(void*) {
 	updateCameraShake();
-	list_map(&gData.mList, updateSingleStage, NULL);
+	list_map(&gPrismStageHandlerData.mList, updateSingleStage, NULL);
+}
+
+ActorBlueprint getStageHandler()
+{
+	return makeActorBlueprint(loadStageHandler, unloadStageHandler, updateStageHandler);
 }
 
 void setStageHandlerNoDelayedLoading() {
-	gData.mIsLoadingTexturesDirectly = 1;
+	gPrismStageHandlerData.mIsLoadingTexturesDirectly = 1;
 }
 
 int addScrollingBackground(double tScrollingFactor, double tZ) {
@@ -240,17 +259,17 @@ int addScrollingBackgroundWithMovementIn2D(double tDeltaX, double tDeltaY, doubl
 	data->mCurrentEndPatch = NULL;
 
 
-	return list_push_front_owned(&gData.mList, data);
+	return list_push_front_owned(&gPrismStageHandlerData.mList, data);
 }
 
 int addBackgroundElementInternal(int tBackgroundID, Position tPosition, const char* tPath, TextureData* tTextureData, Animation tAnimation, int tCanBeUnloaded) {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tBackgroundID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tBackgroundID);
 
 	BackgroundPatchData* pData = (BackgroundPatchData*)allocMemory(sizeof(BackgroundPatchData));
 	
 	pData->mCanBeUnloaded = tCanBeUnloaded;
 	pData->mIsLoaded = 0;
-
+	pData->mHasTextureSize = 0;
 	pData->mTextureData = tTextureData;
 	pData->mPosition = tPosition;
 	pData->mPosition.z = data->mZ + list_size(&data->mPatchList)*0.001;
@@ -261,7 +280,7 @@ int addBackgroundElementInternal(int tBackgroundID, Position tPosition, const ch
 
 	if (data->mCurrentStartPatch == NULL) data->mCurrentStartPatch = data->mCurrentEndPatch = list_iterator_begin(&data->mPatchList);
 
-	if (gData.mIsLoadingTexturesDirectly || !pData->mCanBeUnloaded) {
+	if (gPrismStageHandlerData.mIsLoadingTexturesDirectly || !pData->mCanBeUnloaded) {
 		loadStagePatchIfNecessary(pData, data);
 	}
 
@@ -280,13 +299,13 @@ int addBackgroundElementWithTextureData(int tBackgroundID, Position tPosition, T
 
 TextureData* getBackgroundElementTextureData(int tBackgroundID, int tElementID)
 {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tBackgroundID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tBackgroundID);
 	BackgroundPatchData* e = (BackgroundPatchData*)list_get(&data->mPatchList, tElementID);
 	return e->mTextureData;
 }
 
 Position getRealScreenPosition(int tBackgroundID, Position tPos) {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tBackgroundID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tBackgroundID);
 	Position p = vecAdd(tPos, vecScale(data->mReferencedPosition, -1));
 	p.z = tPos.z;
 	return p;
@@ -302,23 +321,23 @@ static void scrollSingleBackground(void* tCaller, void* tData) {
 	SingleBackgroundData* data = (SingleBackgroundData*)tData;
 	BackgroundScrollData* sData = (BackgroundScrollData*)tCaller;
 
-	gData.mCamera.mAddMovement(data, *sData);
+	gPrismStageHandlerData.mCamera.mAddMovement(data, *sData);
 }
 
 void scrollBackgroundRight(double tAccel) {
 	BackgroundScrollData sData = newBackgroundScrollData(makePosition(tAccel, 0, 0));
 
-	list_map(&gData.mList, scrollSingleBackground, &sData);
+	list_map(&gPrismStageHandlerData.mList, scrollSingleBackground, &sData);
 }
 
 void scrollBackgroundDown(double tAccel)
 {
 	BackgroundScrollData sData = newBackgroundScrollData(makePosition(0, tAccel, 0));
-	list_map(&gData.mList, scrollSingleBackground, &sData);
+	list_map(&gPrismStageHandlerData.mList, scrollSingleBackground, &sData);
 }
 
 Position* getScrollingBackgroundPositionReference(int tID) {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tID);
 
 	return &data->mReferencedPosition;
 }
@@ -330,24 +349,24 @@ static void resetScrollingBackgroundPatchLoading(SingleBackgroundData* data) {
 }
 
 void setScrollingBackgroundPosition(int tID, Position tPos) {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tID);
 	data->mPhysics.mPosition = tPos;
 	data->mReferencedPosition = tPos;
 	resetScrollingBackgroundPatchLoading(data);
 }
 
 void setScrollingBackgroundMaxVelocity(int tID, double tVel) {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tID);
 	data->mMaxVelocity = tVel;
 }
 
 PhysicsObject* getScrollingBackgroundPhysics(int tID) {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tID);
 	return &data->mPhysics;
 }
 
 void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics) {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tID);
 	data->mPhysics = tPhysics;
 	data->mReferencedPosition = data->mPhysics.mPosition;
 }
@@ -373,26 +392,26 @@ static void setStagePatchInvisible(void* tCaller, void* tData) {
 
 void setScrollingBackgroundInvisible(int tID)
 {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tID);
 	data->mIsVisible = 0;
 	list_map(&data->mPatchList, setStagePatchInvisible, data);
 }
 
 void setScrollingBackgroundVisible(int tID)
 {
-	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gData.mList, tID);
+	SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tID);
 	data->mIsVisible = 1;
 	list_map(&data->mPatchList, setStagePatchVisible, data);
 }
 
 void addStageHandlerScreenShake(double tStrength)
 {
-	gData.mShake.mStrength += tStrength;
+	gPrismStageHandlerData.mShake.mStrength += tStrength;
 }
 
 void setStageHandlerMaximumScreenShake(double tStrength)
 {
-	gData.mShake.mMaximum = tStrength;
+	gPrismStageHandlerData.mShake.mMaximum = tStrength;
 }
 
 typedef struct {
@@ -553,7 +572,7 @@ static StageHandlerCameraStrategy getTweeningCamera() {
 
 void setStageHandlerAccelerationPhysics()
 {
-	gData.mCamera = getPhysicsCamera();
+	gPrismStageHandlerData.mCamera = getPhysicsCamera();
 }
 
 static void setSingleBackgroundTweening(void* tCaller, void* tData) {
@@ -564,11 +583,11 @@ static void setSingleBackgroundTweening(void* tCaller, void* tData) {
 
 void setStageHandlerTweening()
 {
-	gData.mCamera = getTweeningCamera();
-	list_map(&gData.mList, setSingleBackgroundTweening, NULL);
+	gPrismStageHandlerData.mCamera = getTweeningCamera();
+	list_map(&gPrismStageHandlerData.mList, setSingleBackgroundTweening, NULL);
 }
 
 void setStageCameraRange(GeoRectangle tRange)
 {
-	gData.mCameraRange = tRange;
+	gPrismStageHandlerData.mCameraRange = tRange;
 }

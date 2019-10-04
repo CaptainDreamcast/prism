@@ -13,26 +13,27 @@ static struct {
 	char cwd[1024];
 	char mFileSystem[1024];
 	int mIsUsingRomdisk;
-} gData;
+} gPrismWindowsFileData;
 
 
 extern char romdisk_buffer[];
 extern int romdisk_buffer_length;
 
 void initFileSystem(){
-	sprintf(gData.cwd, "/");
-	sprintf(gData.mFileSystem, ".");
-	debugString(gData.cwd);
+	setActiveFileSystemOnStartup();
+	sprintf(gPrismWindowsFileData.cwd, "/");
+	sprintf(gPrismWindowsFileData.mFileSystem, ".");
+	debugString(gPrismWindowsFileData.cwd);
 
 	initRomdisks();
 
 	if (romdisk_buffer_length) {
 		mountRomdiskFromBuffer(makeBuffer(romdisk_buffer, romdisk_buffer_length), "ASSETS");
-		strcpy(gData.mFileSystem, "/ASSETS");
+		strcpy(gPrismWindowsFileData.mFileSystem, "/ASSETS");
 	}
 	else if (isFile("assets.pak")) {
 		mountRomdisk("assets.pak", "ASSETS");
-		strcpy(gData.mFileSystem, "/ASSETS");
+		strcpy(gPrismWindowsFileData.mFileSystem, "/ASSETS");
 	}	
 }
 
@@ -57,32 +58,32 @@ void setFileSystem(const char* path){
 }
 
 const char* getFileSystem() {
-	return gData.mFileSystem;
+	return gPrismWindowsFileData.mFileSystem;
 }
 
 
 void setWorkingDirectory(const char* path) {
 	char expandedPath[1024], absolutePath[1024];
 	if (path[0] != '/') {
-		sprintf(absolutePath, "%s%s", gData.cwd, path);
+		sprintf(absolutePath, "%s%s", gPrismWindowsFileData.cwd, path);
 	}
 	else {
 		strcpy(absolutePath, path);
 	}
 
 	expandPath(expandedPath, absolutePath);
-	strcpy(gData.cwd, expandedPath);
-	debugString(gData.cwd);
+	strcpy(gPrismWindowsFileData.cwd, expandedPath);
+	debugString(gPrismWindowsFileData.cwd);
 
-	int l = strlen(gData.cwd);
-	if(gData.cwd[l-1] != '/') {
-		gData.cwd[l] = '/';
-		gData.cwd[l+1] = '\0';
+	int l = strlen(gPrismWindowsFileData.cwd);
+	if(gPrismWindowsFileData.cwd[l-1] != '/') {
+		gPrismWindowsFileData.cwd[l] = '/';
+		gPrismWindowsFileData.cwd[l+1] = '\0';
 	}
 }
 
 const char* getWorkingDirectory() {
-	return gData.cwd;
+	return gPrismWindowsFileData.cwd;
 }
 
 static int isAbsoluteWindowsDirectory(const char* tPath) {
@@ -102,10 +103,10 @@ void getFullPath(char* tDest, const char* tPath) {
 	if (tPath[0] == '/') {
 		char expandedPath[1024];
 		expandPath(expandedPath, tPath);
-		sprintf(tDest, "%s%s", gData.mFileSystem, expandedPath);
+		sprintf(tDest, "%s%s", gPrismWindowsFileData.mFileSystem, expandedPath);
 	}
 
-	else sprintf(tDest, "%s%s%s", gData.mFileSystem, gData.cwd, tPath);
+	else sprintf(tDest, "%s%s%s", gPrismWindowsFileData.mFileSystem, gPrismWindowsFileData.cwd, tPath);
 }
 
 FileHandler fileOpen(const char* tPath, int tFlags){
@@ -119,8 +120,8 @@ FileHandler fileOpen(const char* tPath, int tFlags){
 
 	debugLog("Open file.");
 	debugString(tPath);
-	debugString(gData.mFileSystem);
-	debugString(gData.cwd);
+	debugString(gPrismWindowsFileData.mFileSystem);
+	debugString(gPrismWindowsFileData.cwd);
 
 	char flags[100];
 	flags[0] = '\0';

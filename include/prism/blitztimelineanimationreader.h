@@ -49,5 +49,5 @@ typedef struct {
 	IntMap mAnimations; // contains BlitzTimelineAnimation
 } BlitzTimelineAnimations;
 
-BlitzTimelineAnimations loadBlitzTimelineAnimations(char* tPath);
+BlitzTimelineAnimations loadBlitzTimelineAnimations(const char* tPath);
 BlitzTimelineAnimation* getBlitzTimelineAnimation(BlitzTimelineAnimations* tAnimations, int tAnimationID);

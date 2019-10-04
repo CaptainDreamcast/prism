@@ -2,7 +2,6 @@
 
 #include <kos.h>
 
-#include "prism/framerate.h"
 #include "prism/drawing.h"
 #include "prism/physics.h"
 #include "prism/input.h"
@@ -52,7 +51,7 @@ static int hasToSetFramerate() {
   else {
     if (flashrom_get_region() == FLASHROM_REGION_EUROPE) {
 
-      setFramerateSixty(); // TODO: reinsert properly without dependency to fonts
+      setFramerateSixty();
 
     }
     else {

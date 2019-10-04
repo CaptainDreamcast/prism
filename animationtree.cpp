@@ -227,10 +227,10 @@ typedef struct {
 static struct {
 	List mAnimationTreeList;
 
-} gData;
+} gPrismAnimationTreeData;
 
 void setupAnimationTreeHandling() {
-	gData.mAnimationTreeList = new_list();
+	gPrismAnimationTreeData.mAnimationTreeList = new_list();
 }
 
 
@@ -270,7 +270,7 @@ static void drawSingleTree(void* tCaller, void* tData) {
 }
 
 void drawAnimationTreeHandling() {
-	list_map(&gData.mAnimationTreeList, drawSingleTree, NULL);
+	list_map(&gPrismAnimationTreeData.mAnimationTreeList, drawSingleTree, NULL);
 }
 
 static void copySingleTreeNode(TreeNode* tDst, TreeNode* tSrc) {
@@ -313,11 +313,11 @@ int playAnimationTreeLoop(Position tPosition, AnimationTree tTree, char* tAnimat
 	e->mPosition = tPosition;
 	setAnimationTreeAnimation(&e->mTree, tAnimation);
 
-	return list_push_back_owned(&gData.mAnimationTreeList, e);
+	return list_push_back_owned(&gPrismAnimationTreeData.mAnimationTreeList, e);
 }
 
 void setHandledAnimationTreeAnimation(int tID, char* tAnimation) {
-	AnimationTreeHandlerEntry* e = (AnimationTreeHandlerEntry*)list_get(&gData.mAnimationTreeList, tID);
+	AnimationTreeHandlerEntry* e = (AnimationTreeHandlerEntry*)list_get(&gPrismAnimationTreeData.mAnimationTreeList, tID);
 	setAnimationTreeAnimation(&e->mTree, tAnimation);
 }
 

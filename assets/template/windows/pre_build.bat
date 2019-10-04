@@ -1,3 +1,10 @@
+del ..\assets\*.exe
+del ..\assets\*.dll
+del ..\assets\*.exp
+del ..\assets\*.iobj
+del ..\assets\*.ipdb
+del ..\assets\*.lib
+del ..\assets\*.pdb
 ..\..\tools\genromfs-win\x64\Debug\genromfs.exe -d ..\assets -f %1\assets.pak
 ..\..\tools\bin2c\x64\Debug\bin2c.exe %1\assets.pak ..\assets.cpp romdisk_buffer
 set cur_file=..\assets.cpp

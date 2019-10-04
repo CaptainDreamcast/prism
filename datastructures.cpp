@@ -26,7 +26,7 @@ void turnStringLowercase(char* tString) {
 
 void turnStringLowercase(string& tString)
 {
-	transform(tString.begin(), tString.end(), tString.begin(), ::tolower);
+	transform(tString.begin(), tString.end(), tString.begin(), [](char c) {return (char)::tolower(c); });
 }
 
 void copyStringLowercase(char* tDst, const char* tSrc) {
@@ -37,7 +37,6 @@ void copyStringLowercase(char* tDst, const char* tSrc) {
 	}
 }
 
-// TODO: remove duplicate
 char* copyToAllocatedString(char* tSrc) {
 	if (!tSrc) return NULL;
 
@@ -65,8 +64,8 @@ int stringBeginsWithSubstringCaseIndependent(const char * tString, const char * 
 {
 	string s(tString);
 	string substring(tSubstring);
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
-	transform(substring.begin(), substring.end(), substring.begin(), ::tolower);
+	transform(s.begin(), s.end(), s.begin(), [](char c) {return (char)::tolower(c); });
+	transform(substring.begin(), substring.end(), substring.begin(), [](char c) {return (char)::tolower(c); });
 	return stringBeginsWithSubstring(s.data(), substring.data());
 }
 
@@ -74,8 +73,8 @@ int stringEqualCaseIndependent(const char * tString, const char * tOtherString)
 {
 	string s(tString);
 	string otherString(tOtherString);
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
-	transform(otherString.begin(), otherString.end(), otherString.begin(), ::tolower);
+	transform(s.begin(), s.end(), s.begin(), [](char c) {return (char)::tolower(c); });
+	transform(otherString.begin(), otherString.end(), otherString.begin(), [](char c) {return (char)::tolower(c); });
 	return s == otherString;
 }
 
@@ -85,7 +84,7 @@ vector<string> splitStringBySeparator(const string tString, char tSeparator)
 	size_t startPos = 0;
 	size_t pos = 0;
 	while ((pos = tString.find(tSeparator, startPos)) != string::npos) {
-		auto word = tString.substr(startPos, pos - startPos + 1);
+		auto word = tString.substr(startPos, pos - startPos);
 		ret.push_back(word);
 		startPos = pos + 1;
 	}

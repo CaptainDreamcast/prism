@@ -47,7 +47,7 @@ void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVe
 	*tPos1 = vecAdd(*tPos1, deltas[smallestIndex]);
 }
 
-// TODO: use something better; this will likely cause vibrations
+// TODO: use something better; this will likely cause vibrations (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/364)
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect) {
   Velocity vel = tObject->mVelocity;
 
@@ -95,8 +95,6 @@ int checkCollision(CollisionRect tRect1, CollisionRect tRect2) {
     return 0;
   if (tRect2.mTopLeft.y > tRect1.mBottomRight.y)
     return 0;
-
-  // TODO: fix for Hazy Hank
 
   debugLog("Collision found");
   return 1;

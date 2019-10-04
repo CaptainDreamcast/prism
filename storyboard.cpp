@@ -21,8 +21,8 @@
 #pragma pack(push, 1)
 
 typedef struct {
-	int mID;
-	int mPhysicsID;
+	AnimationHandlerElement* mElement;
+	PhysicsHandlerElement* mPhysicsElement;
 	TextureData* mTextures;
 	Animation mAnimation;
 	Position mPosition;
@@ -64,28 +64,28 @@ typedef struct {
 
 static struct {
 	List mStoryboards;
-} gData;
+} gPrismStoryboardData;
 
 void setupStoryboards() {
-	gData.mStoryboards = new_list();
+	gPrismStoryboardData.mStoryboards = new_list();
 }
 
 static void destroyStoryboardTexture(Storyboard* e, int tSlot) {
 
-	if (e->mState.mTextures[tSlot].mID == -1) {
+	if (e->mState.mTextures[tSlot].mElement == NULL) {
 		logError("Attempt to destroy unloaded texture slot.");
 		logErrorInteger(tSlot);
-		logErrorInteger(e->mState.mTextures[tSlot].mID);
+		logErrorInteger(e->mState.mTextures[tSlot].mElement);
 		recoverFromError();
 	}
 
-	if (isHandledAnimation(e->mState.mTextures[tSlot].mID)) {
-		removeHandledAnimation(e->mState.mTextures[tSlot].mID);
+	if (isHandledAnimation(e->mState.mTextures[tSlot].mElement)) {
+		removeHandledAnimation(e->mState.mTextures[tSlot].mElement);
 	}
 
-	if (e->mState.mTextures[tSlot].mPhysicsID != -1) {
-		removeFromPhysicsHandler(e->mState.mTextures[tSlot].mPhysicsID);
-		e->mState.mTextures[tSlot].mPhysicsID = -1;
+	if (e->mState.mTextures[tSlot].mPhysicsElement != NULL) {
+		removeFromPhysicsHandler(e->mState.mTextures[tSlot].mPhysicsElement);
+		e->mState.mTextures[tSlot].mPhysicsElement = NULL;
 	}
 
 	int i;
@@ -95,7 +95,7 @@ static void destroyStoryboardTexture(Storyboard* e, int tSlot) {
 
 	freeMemory(e->mState.mTextures[tSlot].mTextures);
 
-	e->mState.mTextures[tSlot].mID = -1;
+	e->mState.mTextures[tSlot].mElement = NULL;
 }
 
 static void destroyStoryboardText(Storyboard* e, int tSlot) {
@@ -132,7 +132,7 @@ static void unloadStoryboard(Storyboard* e) {
 
 	int i;
 	for (i = 0; i < StoryBoardMaximumTextureAmount; i++) {
-		if (e->mState.mTextures[i].mID != -1) {
+		if (e->mState.mTextures[i].mElement != NULL) {
 			destroyStoryboardTexture(e, i);
 		}
 	}
@@ -159,7 +159,7 @@ static int removeStoryboardEntry(void* tCaller, void* tData) {
 }
 
 void shutdownStoryboards() {
-	list_remove_predicate(&gData.mStoryboards, removeStoryboardEntry, NULL);
+	list_remove_predicate(&gPrismStoryboardData.mStoryboards, removeStoryboardEntry, NULL);
 }
 
 
@@ -194,17 +194,17 @@ static void loadStoryboardTextureTexture(Storyboard* e, StoryBoardTextureStruct*
 	rect.bottomRight.y = (int)tTexture->TexturePositionY2*e->mState.mTextures[slot].mTextures[0].mTextureSize.y;
 
 	if (tTexture->Loop) { 
-		e->mState.mTextures[slot].mID = playAnimationLoop(makePosition(0, 0, 0), e->mState.mTextures[slot].mTextures, e->mState.mTextures[slot].mAnimation, rect);
+		e->mState.mTextures[slot].mElement = playAnimationLoop(makePosition(0, 0, 0), e->mState.mTextures[slot].mTextures, e->mState.mTextures[slot].mAnimation, rect);
 	}
 	else {
-		e->mState.mTextures[slot].mID = playAnimation(makePosition(0, 0, 0), e->mState.mTextures[slot].mTextures, e->mState.mTextures[slot].mAnimation, rect, NULL, NULL);
+		e->mState.mTextures[slot].mElement = playAnimation(makePosition(0, 0, 0), e->mState.mTextures[slot].mTextures, e->mState.mTextures[slot].mAnimation, rect, NULL, NULL);
 	}
 
-	Position* pos = &getPhysicsFromHandler(e->mState.mTextures[slot].mPhysicsID)->mPosition;
-	setAnimationBasePositionReference(e->mState.mTextures[slot].mID, pos);
+	Position* pos = &getPhysicsFromHandler(e->mState.mTextures[slot].mPhysicsElement)->mPosition;
+	setAnimationBasePositionReference(e->mState.mTextures[slot].mElement, pos);
 	
 	Vector3D scale = makePosition(tTexture->SizeX / (double)e->mState.mTextures[slot].mTextures[0].mTextureSize.x, tTexture->SizeY / (double)e->mState.mTextures[slot].mTextures[0].mTextureSize.y, 1);
-	setAnimationScale(e->mState.mTextures[slot].mID, scale, makePosition(0,0,0));
+	setAnimationScale(e->mState.mTextures[slot].mElement, scale, makePosition(0,0,0));
 }
 
 static void loadStoryboardTexture(Storyboard* e, StoryBoardTextureStruct* tTexture) {
@@ -213,13 +213,13 @@ static void loadStoryboardTexture(Storyboard* e, StoryBoardTextureStruct* tTextu
 	if (tTexture->PositionX == 0xFFFF) tTexture->PositionX = (uint16_t)e->mState.mTextures[slot].mPosition.x;
 	if (tTexture->PositionY == 0xFFFF) tTexture->PositionY = (uint16_t)e->mState.mTextures[slot].mPosition.y;
 
-	if (e->mState.mTextures[slot].mPhysicsID != -1) {
-		removeFromPhysicsHandler(e->mState.mTextures[slot].mPhysicsID);
-		e->mState.mTextures[slot].mPhysicsID = -1;
+	if (e->mState.mTextures[slot].mPhysicsElement != NULL) {
+		removeFromPhysicsHandler(e->mState.mTextures[slot].mPhysicsElement);
+		e->mState.mTextures[slot].mPhysicsElement = NULL;
 	}
 
-	e->mState.mTextures[slot].mPhysicsID = addToPhysicsHandler(makePosition(tTexture->PositionX, tTexture->PositionY, tTexture->PositionZ));
-	addAccelerationToHandledPhysics(e->mState.mTextures[slot].mPhysicsID, makePosition(tTexture->MovementX, tTexture->MovementY, 0));
+	e->mState.mTextures[slot].mPhysicsElement = addToPhysicsHandler(makePosition(tTexture->PositionX, tTexture->PositionY, tTexture->PositionZ));
+	addAccelerationToHandledPhysics(e->mState.mTextures[slot].mPhysicsElement, makePosition(tTexture->MovementX, tTexture->MovementY, 0));
 
 	if (tTexture->TextureAction == StoryBoardLoadTextureIdentifier) {
 		loadStoryboardTextureTexture(e, tTexture);
@@ -242,10 +242,23 @@ static void loadStoryboardTextures(Storyboard* e, StoryBoardHeaderStruct* tHeade
 	}
 }
 
-
 static uint8_t parseDolmexicaColor(int tDolmexicaColor) {
-	(void)tDolmexicaColor;
-	return COLOR_WHITE; // TODO
+	switch (tDolmexicaColor) {
+	case 0:
+		return COLOR_WHITE;
+	case 1:
+		return COLOR_BLACK;
+	case 2:
+		return COLOR_RED;
+	case 3:
+		return COLOR_GREEN;
+	case 4:
+		return COLOR_BLUE;
+	case 5:
+		return COLOR_YELLOW;
+	default:
+		return COLOR_WHITE;
+	}
 }
 
 static void loadStoryboardText(Storyboard* e, StoryBoardTextStruct* tText) {
@@ -362,7 +375,7 @@ static int updateSingleStoryboard(void* tCaller, void* tData) {
 }
 
 void updateStoryboards() {
-	list_remove_predicate(&gData.mStoryboards, updateSingleStoryboard, NULL);
+	list_remove_predicate(&gPrismStoryboardData.mStoryboards, updateSingleStoryboard, NULL);
 }
 
 
@@ -376,8 +389,8 @@ static void resetStoryboard(Storyboard* e) {
 
 	int i;
 	for (i = 0; i < StoryBoardMaximumTextureAmount; i++) {
-		e->mState.mTextures[i].mID = -1;
-		e->mState.mTextures[i].mPhysicsID = -1;
+		e->mState.mTextures[i].mElement = NULL;
+		e->mState.mTextures[i].mPhysicsElement = NULL;
 	}
 	for (i = 0; i < StoryBoardMaximumTextAmount; i++) {
 		e->mState.mTexts[i].mID = -1;
@@ -406,18 +419,18 @@ static Storyboard* loadStoryboard(char* tPath) {
 }
 
 int playStoryboard(char* tPath) {
-	if (list_size(&gData.mStoryboards)) {
+	if (list_size(&gPrismStoryboardData.mStoryboards)) {
 		logError("Unable to play more than one story board at a time.");
 		logErrorString(tPath);
 		recoverFromError();
 	}
 
 	Storyboard* e = loadStoryboard(tPath);
-	return list_push_front_owned(&gData.mStoryboards, e);
+	return list_push_front_owned(&gPrismStoryboardData.mStoryboards, e);
 }
 
 void setStoryboardFinishedCB(int tID, StoryboardFinishedCB tCB, void* tCaller) {
-	Storyboard* e = (Storyboard*)list_get(&gData.mStoryboards, tID);
+	Storyboard* e = (Storyboard*)list_get(&gPrismStoryboardData.mStoryboards, tID);
 	e->mFinishedCB = tCB;
 	e->mFinishedCaller = tCaller;
 }

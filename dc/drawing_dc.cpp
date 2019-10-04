@@ -266,24 +266,7 @@ void waitForScreen() {
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
-// TODO: refactor into general drawing code so both have it
-static int hasToLinebreak(char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize) {
-	
-	if (tText[0] == ' ') return 0;
-	if (tText[0] == '\n') return 1;
-	
-	char word[1024];
-	int positionsRead;
-	sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
-
-	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead-1) * tBreakSize.x, 0, 0);
-	Position after = vecAdd(tPos, delta);
-	Position bottomRight = vecAdd(tTopLeft, tTextBoxSize);
-
-	return (after.x > bottomRight.x);
-}
-
-void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+void drawMultilineText(const char* tText, const char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
   if(gData.mIsDisabled) return;
 
   //sem_wait(&gPVRAccessSemaphore);
@@ -355,7 +338,7 @@ void drawMultilineText(char* tText, char* tFullText, Position tPosition, Vector3
   //sem_signal(&gPVRAccessSemaphore);
 }
 
-void drawTruetypeText(char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth) {
+void drawTruetypeText(const char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth) {
 	// TODO
 	(void) tText;
 	(void) tFont;

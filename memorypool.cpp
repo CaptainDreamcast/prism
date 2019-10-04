@@ -7,6 +7,11 @@
 
 #include <string.h>
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4463) 
+#endif
+
 #define BOOL int
 #define TRUE 1
 #define FALSE 0
@@ -930,3 +935,7 @@ static 	void *
 		chunk = WOF_DATA_TO_CHUNK(ptr);
 		return chunk->allocator == (int)allocator;
 	}
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif

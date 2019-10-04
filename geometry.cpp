@@ -207,7 +207,6 @@ double degreesToRadians(double tDegrees) {
 	return (tDegrees / 180) * M_PI;
 }
 
-// TODO: refactor and/or add intersection position test;
 int checkIntersectLineCircle(Line tLine, Circle tCircle) {
 
 	double r = tCircle.mRadius;

@@ -75,6 +75,7 @@ void appendBufferFloat(Buffer* tBuffer, float tFloat);
 void appendBufferString(Buffer* tBuffer, const char* tString, int tLength);
 void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer);
 
+void setActiveFileSystemOnStartup();
 void initFileSystem();
 void setFileSystem(const char* path);
 void setWorkingDirectory(const char* path);
@@ -86,6 +87,7 @@ void mountRomdisk(const char* tFilePath, const char* tMountPath);
 void unmountRomdisk(const char* tMountPath);
 
 const char* getPureFileName(const char* path);
+int hasFileExtension(const char* tPath);
 const char* getFileExtension(const char* tPath);
 char* getFileExtension(char* tPath);
 void getPathWithoutFileExtension(char* tDest, const char* tPath);

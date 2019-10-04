@@ -17,11 +17,11 @@ static struct {
 	int mPointer;
 	int mAmount;
 	LogEntry mLog[MAX_LOG_ENTRY_AMOUNT];
-} gData;
+} gPrismLogData;
 
 void logprintf(const char* tFormatString, ...) {
-	char* logEntry = gData.mLog[gData.mPointer].mText;
-	char* writePoint = gData.mLog[gData.mPointer].mText + strlen(logEntry);
+	char* logEntry = gPrismLogData.mLog[gPrismLogData.mPointer].mText;
+	char* writePoint = gPrismLogData.mLog[gPrismLogData.mPointer].mText + strlen(logEntry);
 	va_list args;
 	va_start(args, tFormatString);
 	vsprintf(writePoint, tFormatString, args);
@@ -29,15 +29,15 @@ void logprintf(const char* tFormatString, ...) {
 }
 
 void logCommit(LogType tType) {
-	gData.mLog[gData.mPointer].mType = tType;
+	gPrismLogData.mLog[gPrismLogData.mPointer].mType = tType;
 
-	if(tType >= gData.mMinimumLogType) {
-		printf("%s", gData.mLog[gData.mPointer].mText);
+	if(tType >= gPrismLogData.mMinimumLogType) {
+		printf("%s", gPrismLogData.mLog[gPrismLogData.mPointer].mText);
 	}
 
-	gData.mPointer = (gData.mPointer + 1) % MAX_LOG_ENTRY_AMOUNT;
-	gData.mAmount = gData.mAmount + 1 > MAX_LOG_AMOUNT ? MAX_LOG_AMOUNT : gData.mAmount + 1; // TODO: min error
-	*gData.mLog[gData.mPointer].mText = '\0';
+	gPrismLogData.mPointer = (gPrismLogData.mPointer + 1) % MAX_LOG_ENTRY_AMOUNT;
+	gPrismLogData.mAmount = gPrismLogData.mAmount + 1 > MAX_LOG_AMOUNT ? MAX_LOG_AMOUNT : gPrismLogData.mAmount + 1;
+	*gPrismLogData.mLog[gPrismLogData.mPointer].mText = '\0';
 }
 
 void logFormatFunc(const char* tFormatString, ...) {
@@ -51,7 +51,7 @@ void logFormatFunc(const char* tFormatString, ...) {
 }
 
 void setMinimumLogType(LogType tType) {
-	gData.mMinimumLogType = tType;
+	gPrismLogData.mMinimumLogType = tType;
 }
 
 Vector getLogEntries()
@@ -60,10 +60,10 @@ Vector getLogEntries()
 
 	int i;
 	int pointer;
-	if (gData.mAmount < MAX_LOG_AMOUNT) pointer = 0;
-	else pointer = (gData.mPointer + 1) % MAX_LOG_ENTRY_AMOUNT;
-	for (i = 0; i < gData.mAmount; i++) {
-		vector_push_back(&ret, &gData.mLog[pointer]);
+	if (gPrismLogData.mAmount < MAX_LOG_AMOUNT) pointer = 0;
+	else pointer = (gPrismLogData.mPointer + 1) % MAX_LOG_ENTRY_AMOUNT;
+	for (i = 0; i < gPrismLogData.mAmount; i++) {
+		vector_push_back(&ret, &gPrismLogData.mLog[pointer]);
 		pointer = (pointer + 1) % MAX_LOG_ENTRY_AMOUNT;
 	}
 

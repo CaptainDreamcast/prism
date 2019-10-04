@@ -28,16 +28,7 @@ static struct {
 	int mIsLoopStart;
 	int mIsReadingDefaultHitbox;
 	int mIsReadingHitbox1;
-
-	MemoryStack* mMemoryStack;
 } gMugenAnimationState;
-
-static void* allocMemoryOnMemoryStackOrMemory(uint32_t tSize) {
-	return allocMemory(tSize);
-	
-	if (gMugenAnimationState.mMemoryStack) return allocMemoryOnMemoryStack(gMugenAnimationState.mMemoryStack, tSize);
-	else return allocMemory(tSize);
-}
 
 static void setGlobalAnimationState() {
 	if (gMugenAnimationState.mIsLoaded) return;
@@ -85,7 +76,7 @@ static void resetSingleAnimationState() {
 
 
 static MugenAnimation* makeEmptyMugenAnimation(int tID) {
-	MugenAnimation* ret = (MugenAnimation*)allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimation));
+	MugenAnimation* ret = (MugenAnimation*)allocMemory(sizeof(MugenAnimation));
 	ret->mLoopStart = 0;
 	ret->mSteps = new_vector();
 	ret->mID = tID;
@@ -163,7 +154,7 @@ static void copySingleHitboxToNewList(void* tCaller, void* tData) {
 	List* dst = (List*)tCaller;
 	CollisionRect* e = (CollisionRect*)tData;
 
-	CollisionRect* newRect = (CollisionRect*)allocMemoryOnMemoryStackOrMemory(sizeof(CollisionRect));
+	CollisionRect* newRect = (CollisionRect*)allocMemory(sizeof(CollisionRect));
 	*newRect = *e;
 
 	list_push_back_owned(dst, newRect);
@@ -179,7 +170,7 @@ static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, M
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
 	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	
-	MugenAnimationStep* e = (MugenAnimationStep*)allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimationStep));
+	MugenAnimationStep* e = (MugenAnimationStep*)allocMemory(sizeof(MugenAnimationStep));
 	
 	if (gMugenAnimationState.mHasOwnHitbox1) {
 		e->mAttackHitboxes = copyHitboxList(gMugenAnimationState.mOwnHitbox1);
@@ -205,8 +196,9 @@ static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, M
 	e->mDuration = vectorElement->mVector.mSize >= 5 ? atoi(vectorElement->mVector.mElement[4]) : 1;
 
 	if (vectorElement->mVector.mSize >= 6) {
-		e->mIsFlippingHorizontally = strchr(vectorElement->mVector.mElement[5], 'H') != NULL;
-		e->mIsFlippingVertically = strchr(vectorElement->mVector.mElement[5], 'V') != NULL; // TODO: handle lowercase
+		turnStringLowercase(vectorElement->mVector.mElement[5]);
+		e->mIsFlippingHorizontally = strchr(vectorElement->mVector.mElement[5], 'h') != NULL;
+		e->mIsFlippingVertically = strchr(vectorElement->mVector.mElement[5], 'v') != NULL;
 	}
 	else {
 		e->mIsFlippingHorizontally = 0;
@@ -433,7 +425,7 @@ static void loadSingleAnimationGroup(MugenAnimations* tAnimations, MugenDefScrip
 	if (!isAnimationGroup(tGroup)) return;
 
 	int id = getAnimationID(tGroup);
-	if (int_map_contains(&tAnimations->mAnimations, id)) return; // TODO: check id safe to ignore
+	if (int_map_contains(&tAnimations->mAnimations, id)) return;
 
 	MugenAnimation* anim = makeEmptyMugenAnimation(id);
 	int_map_push_owned(&tAnimations->mAnimations, id, anim);
@@ -484,14 +476,6 @@ MugenAnimations loadMugenAnimationFile(const char * tPath)
 	return ret;
 }
 
-MugenAnimations loadMugenAnimationFileWithMemoryStack(const char* tPath, MemoryStack* tMemoryStack) 
-{
-	gMugenAnimationState.mMemoryStack = tMemoryStack;
-	MugenAnimations ret = loadMugenAnimationFile(tPath);
-	gMugenAnimationState.mMemoryStack = NULL;
-	return ret;
-}
-
 static void unloadSingleMugenAnimationStep(void* tCaller, void* tData) {
 	(void)tCaller;
 	MugenAnimationStep* e = (MugenAnimationStep*)tData;
@@ -499,11 +483,13 @@ static void unloadSingleMugenAnimationStep(void* tCaller, void* tData) {
 	delete_list(&e->mAttackHitboxes);
 }
 
-static int unloadSingleMugenAnimation(void* tCaller, void* tData) {
-	(void)tCaller;
-	MugenAnimation* e = (MugenAnimation*)tData;
+static void unloadSingleMugenAnimation(MugenAnimation* e) {
 	vector_map(&e->mSteps, unloadSingleMugenAnimationStep, NULL);
 	delete_vector(&e->mSteps);
+}
+
+static int unloadSingleMugenAnimation(void* /*tCaller*/, void* tData) {
+	unloadSingleMugenAnimation((MugenAnimation*)tData);
 	return 1;
 }
 
@@ -527,7 +513,7 @@ MugenAnimation* getMugenAnimation(MugenAnimations * tAnimations, int i)
 MugenAnimation * createOneFrameMugenAnimationForSprite(int tSpriteGroup, int tSpriteItem)
 {
 	MugenAnimation* e = makeEmptyMugenAnimation(-1);
-	MugenAnimationStep* step = (MugenAnimationStep*)allocMemoryOnMemoryStackOrMemory(sizeof(MugenAnimationStep));
+	MugenAnimationStep* step = (MugenAnimationStep*)allocMemory(sizeof(MugenAnimationStep));
 
 	step->mPassiveHitboxes = new_list();
 	step->mAttackHitboxes = new_list();
@@ -554,9 +540,7 @@ MugenAnimation * createOneFrameMugenAnimationForSprite(int tSpriteGroup, int tSp
 
 void destroyMugenAnimation(MugenAnimation * tAnimation)
 {
-	vector_empty(&tAnimation->mSteps); // TODO: free everything in steps
-	delete_vector(&tAnimation->mSteps); 
-
+	unloadSingleMugenAnimation(tAnimation);
 	freeMemory(tAnimation);
 }
 

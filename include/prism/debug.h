@@ -7,6 +7,7 @@
 #include "prism/log.h"
 
 int isInDevelopMode();
+void setDevelopMode();
 
 void initDebug();
 ActorBlueprint getPrismDebug();

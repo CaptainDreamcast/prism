@@ -38,13 +38,13 @@ typedef struct {
 } ConsoleCommand;
 
 typedef struct {
-	int mBackgroundAnimationID;
+	AnimationHandlerElement* mBackgroundAnimationElement;
 	string mConsoleArchiveText[CONSOLE_ARCHIVE_AMOUNT];
 	int mConsoleArchiveTextID[CONSOLE_ARCHIVE_AMOUNT];
 	int mArchivePointer;
 	string mConsoleText;
 	int mConsoleTextID;
-	int mConsolePointerAnimationID;
+	AnimationHandlerElement* mConsolePointerAnimationElement;
 	int mPointerPosition;
 	TextureData mWhiteTexture;
 
@@ -62,9 +62,18 @@ static struct {
 	SideDisplay mSideDisplay;
 	Console mConsole;
 
+	int mIsInDevelopMode;
 	int mIsActive;
 
 } gPrismDebug;
+
+int isInDevelopMode() {
+	return gPrismDebug.mIsInDevelopMode;
+}
+
+void setDevelopMode() {
+	gPrismDebug.mIsInDevelopMode = 1;
+}
 
 static void toggleVisibility();
 
@@ -191,7 +200,7 @@ static void updateConsoleText()
 		offset = getMugenTextSizeX(gPrismDebug.mConsole.mConsoleTextID) + 1;
 	}
 	changeMugenText(gPrismDebug.mConsole.mConsoleTextID, gPrismDebug.mConsole.mConsoleText.data());
-	setAnimationPosition(gPrismDebug.mConsole.mConsolePointerAnimationID, makePosition(20 + offset, 90, CONSOLE_Z + 1));
+	setAnimationPosition(gPrismDebug.mConsole.mConsolePointerAnimationElement, makePosition(20 + offset, 90, CONSOLE_Z + 1));
 }
 
 static void clearConsoleInput() {
@@ -306,11 +315,11 @@ static void keyboardInputReceived(void* tCaller, KeyboardKeyPrism tKey) {
 }
 
 static void setConsoleVisible() {
-	gPrismDebug.mConsole.mBackgroundAnimationID = playOneFrameAnimationLoop(makePosition(0, 0, CONSOLE_Z), &gPrismDebug.mConsole.mWhiteTexture);
+	gPrismDebug.mConsole.mBackgroundAnimationElement = playOneFrameAnimationLoop(makePosition(0, 0, CONSOLE_Z), &gPrismDebug.mConsole.mWhiteTexture);
 	ScreenSize sz = getScreenSize();
-	setAnimationSize(gPrismDebug.mConsole.mBackgroundAnimationID, makePosition(sz.x, 100, 1), makePosition(0, 0, 0));
-	setAnimationColor(gPrismDebug.mConsole.mBackgroundAnimationID, 0.3, 0.3, 0.3);
-	setAnimationTransparency(gPrismDebug.mConsole.mBackgroundAnimationID, 0.7);
+	setAnimationSize(gPrismDebug.mConsole.mBackgroundAnimationElement, makePosition(sz.x, 100, 1), makePosition(0, 0, 0));
+	setAnimationColor(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.3, 0.3, 0.3);
+	setAnimationTransparency(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.7);
 
 	for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
 	{
@@ -319,9 +328,9 @@ static void setConsoleVisible() {
 
 	gPrismDebug.mConsole.mConsoleTextID = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleText.data(), makePosition(20, 91, CONSOLE_Z + 1), makeVector3DI(-2, 0, 1));
 
-	gPrismDebug.mConsole.mConsolePointerAnimationID = playOneFrameAnimationLoop(makePosition(20, 90, CONSOLE_Z + 1), &gPrismDebug.mConsole.mWhiteTexture);
-	setAnimationSize(gPrismDebug.mConsole.mConsolePointerAnimationID, makePosition(6, 1, 1), makePosition(0, 0, 0));
-	setAnimationColor(gPrismDebug.mConsole.mConsolePointerAnimationID, 1, 1, 1);
+	gPrismDebug.mConsole.mConsolePointerAnimationElement = playOneFrameAnimationLoop(makePosition(20, 90, CONSOLE_Z + 1), &gPrismDebug.mConsole.mWhiteTexture);
+	setAnimationSize(gPrismDebug.mConsole.mConsolePointerAnimationElement, makePosition(6, 1, 1), makePosition(0, 0, 0));
+	setAnimationColor(gPrismDebug.mConsole.mConsolePointerAnimationElement, 1, 1, 1);
 	updateConsoleText();
 
 	waitForButtonFromUserInputForKeyboard(0, keyboardInputReceived);
@@ -331,7 +340,7 @@ static void setConsoleVisible() {
 }
 
 static void setConsoleInvisible() {
-	removeHandledAnimation(gPrismDebug.mConsole.mBackgroundAnimationID);
+	removeHandledAnimation(gPrismDebug.mConsole.mBackgroundAnimationElement);
 
 	for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
 	{
@@ -339,7 +348,7 @@ static void setConsoleInvisible() {
 	}
 
 	removeMugenText(gPrismDebug.mConsole.mConsoleTextID);
-	removeHandledAnimation(gPrismDebug.mConsole.mConsolePointerAnimationID);
+	removeHandledAnimation(gPrismDebug.mConsole.mConsolePointerAnimationElement);
 
 	cancelWaitingForButtonFromUserInput(0);
 

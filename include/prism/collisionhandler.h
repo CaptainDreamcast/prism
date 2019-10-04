@@ -1,30 +1,53 @@
 #pragma once
 
+#include <map>
+
 #include "collision.h"
 
 typedef void (*CollisionCallback)(void* tCaller, void* tCollisionData);
+
+struct CollisionListElement {
+	int mID;
+	int mListID;
+
+	int mIsColliderOwned;
+	Collider mCollider;
+
+	CollisionCallback mCB;
+	void* mCaller;
+
+	void* mCollisionData;
+
+	int mIsScheduledForDeletion;
+
+};
+
+struct CollisionListData {
+	int mID;
+	std::map<int, CollisionListElement> mCollisionElements;
+};
 
 void setupCollisionHandler();
 void shutdownCollisionHandler();
 void updateCollisionHandler();
 
-int addCollisionRectangleToCollisionHandler(int tListID, Position* tBasePosition, CollisionRect tRect, CollisionCallback tCB, void* tCaller, void* tCollisionData);
-void changeCollisionRectangleInCollisionHandler(int tListID, int tElementID, CollisionRect tRect);
-int addCollisionCircleToCollisionHandler(int tListID, Position* tBasePosition, CollisionCirc tCirc, CollisionCallback tCB, void* tCaller, void* tCollisionData);
-int addColliderToCollisionHandler(int tListID, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData);
-void addCollisionHandlerCheck(int tListID1, int tListID2);
-int addCollisionListToHandler();
-void removeFromCollisionHandler(int tListID, int tElementID);
-void updateColliderForCollisionHandler(int tListID, int tElementID, Collider tCollider);
+CollisionListElement* addCollisionRectangleToCollisionHandler(CollisionListData* tList, Position* tBasePosition, CollisionRect tRect, CollisionCallback tCB, void* tCaller, void* tCollisionData);
+void changeCollisionRectangleInCollisionHandler(CollisionListElement* tElement, CollisionRect tRect);
+CollisionListElement* addCollisionCircleToCollisionHandler(CollisionListData* tList, Position* tBasePosition, CollisionCirc tCirc, CollisionCallback tCB, void* tCaller, void* tCollisionData);
+CollisionListElement* addColliderToCollisionHandler(CollisionListData* tList, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData);
+void addCollisionHandlerCheck(CollisionListData* tList1, CollisionListData* tList2);
+CollisionListData* addCollisionListToHandler();
+void removeFromCollisionHandler(CollisionListElement* tElement);
+void updateColliderForCollisionHandler(CollisionListElement* tElement, Collider tCollider);
 void setCollisionHandlerOwningColliders();
-void resolveHandledCollisionMovableStatic(int tListID1, int tElementID1, int tListID2, int tElementID2, Position* tPos1, Velocity tVel1);
+void resolveHandledCollisionMovableStatic(CollisionListElement* tElement1, CollisionListElement* tElement2, Position* tPos1, Velocity tVel1);
 
-int isHandledCollisionAboveOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2);
-int isHandledCollisionBelowOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2);
-int isHandledCollisionLeftOfOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2);
-int isHandledCollisionRightOfOtherCollision(int tListID1, int tElementID1, int tListID2, int tElementID2);
-int isHandledCollisionValid(int tListID, int tElementID);
-int isHandledCollisionScheduledForDeletion(int tListID, int tElementID);
+int isHandledCollisionAboveOtherCollision(CollisionListElement* tElement1, CollisionListElement* tElement2);
+int isHandledCollisionBelowOtherCollision(CollisionListElement* tElement1, CollisionListElement* tElement2);
+int isHandledCollisionLeftOfOtherCollision(CollisionListElement* tElement1, CollisionListElement* tElement2);
+int isHandledCollisionRightOfOtherCollision(CollisionListElement* tElement1, CollisionListElement* tElement2);
+int isHandledCollisionValid(CollisionListElement* tElement);
+int isHandledCollisionScheduledForDeletion(CollisionListElement* tElement);
 
 void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPositionOffset, Vector3D tColor, double tAlpha);
 void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition);

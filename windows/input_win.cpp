@@ -28,77 +28,77 @@ static struct {
 	Uint8* mCurrentKeyStates;
 	Uint8* mPreviousKeyStates;
 	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
-} gData;
+} gPrismWindowsInputData;
 
 
 
 static int evaluateSDLButtonA(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	return SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_A);
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_A);
 }
 
 static int evaluateSDLButtonB(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	return SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_B);
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_B);
 }
 
 static int evaluateSDLButtonX(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	return SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_X);
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_X);
 }
 
 static int evaluateSDLButtonY(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	return SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_Y);
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_Y);
 }
 
 static int evaluateSDLButtonL(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;	
-	double axis = SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;	
+	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
 	return (axis > 0.5);
 }
 
 static int evaluateSDLButtonR(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	double axis = SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
 	return (axis > 0.5);
 }
 
 static int evaluateSDLButtonLeft(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	double axis = SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
 	int ret = (axis < -0.5);
-	ret |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
+	ret |= SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
 	return ret;
 }
 
 static int evaluateSDLButtonRight(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	double axis = SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
 	int ret = (axis > 0.5);
-	ret |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
+	ret |= SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
 	return ret;
 }
 
 static int evaluateSDLButtonUp(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	double axis = SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
 	int ret = (axis < -0.5);
-	ret |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_UP);
+	ret |= SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_UP);
 	return ret;
 }
 
 static int evaluateSDLButtonDown(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	double axis = SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
 	int ret = (axis > 0.5);
-	ret |= SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
+	ret |= SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
 	return ret;
 }
 
 static int evaluateSDLButtonStart(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return 0;
-	return SDL_GameControllerGetButton(gData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_START);
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_START);
 }
 
 typedef int(*InputEvaluationFunction)(int);
@@ -245,28 +245,28 @@ static void initKeyboardScancodes() {
 }
 
 void initInput() {
-	gData.mPreviousKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
-	gData.mCurrentKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
-	gData.mKeyStatePointer = SDL_GetKeyboardState(NULL);
+	gPrismWindowsInputData.mPreviousKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
+	gPrismWindowsInputData.mCurrentKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
+	gPrismWindowsInputData.mKeyStatePointer = SDL_GetKeyboardState(NULL);
 	initKeyboardScancodes();
 }
 
 static void loadController(int i) {
-	if (gData.mControllers[i].mIsUsingController) return;
+	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) return;
 
-	gData.mControllers[i].mController = SDL_GameControllerOpen(i);
-	gData.mControllers[i].mHaptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(gData.mControllers[i].mController));
-	gData.mControllers[i].mIsRumbling = 0;
-	gData.mControllers[i].mIsUsingController = 1;
+	gPrismWindowsInputData.mControllers[i].mController = SDL_GameControllerOpen(i);
+	gPrismWindowsInputData.mControllers[i].mHaptic = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(gPrismWindowsInputData.mControllers[i].mController));
+	gPrismWindowsInputData.mControllers[i].mIsRumbling = 0;
+	gPrismWindowsInputData.mControllers[i].mIsUsingController = 1;
 }
 
 static void unloadController(int i) {
-	if (!gData.mControllers[i].mIsUsingController) return;
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return;
 	turnControllerRumbleOffSingle(i);
-	if(gData.mControllers[i].mHaptic) SDL_HapticClose(gData.mControllers[i].mHaptic);
-	SDL_GameControllerClose(gData.mControllers[i].mController);
-	gData.mControllers[i].mController = NULL;
-	gData.mControllers[i].mIsUsingController = 0;
+	if(gPrismWindowsInputData.mControllers[i].mHaptic) SDL_HapticClose(gPrismWindowsInputData.mControllers[i].mHaptic);
+	SDL_GameControllerClose(gPrismWindowsInputData.mControllers[i].mController);
+	gPrismWindowsInputData.mControllers[i].mController = NULL;
+	gPrismWindowsInputData.mControllers[i].mIsUsingController = 0;
 }
 
 static void updateSingleControllerInput(int i) {
@@ -280,9 +280,9 @@ static void updateSingleControllerInput(int i) {
 
 static void updateSingleControllerRumble(int i) {
 	if (!isUsingControllerSingle(i)) return;
-	if (!gData.mControllers[i].mIsRumbling) return;
+	if (!gPrismWindowsInputData.mControllers[i].mIsRumbling) return;
 
-	if (handleDurationAndCheckIfOver(&gData.mControllers[i].mRumbleNow, gData.mControllers[i].mRumbleDuration)) {
+	if (handleDurationAndCheckIfOver(&gPrismWindowsInputData.mControllers[i].mRumbleNow, gPrismWindowsInputData.mControllers[i].mRumbleDuration)) {
 		turnControllerRumbleOffSingle(i);
 	}
 }
@@ -296,109 +296,106 @@ static void updateControllers() {
 }
 
 void updateInputPlatform() {
-	memcpy(gData.mPreviousKeyStates, gData.mCurrentKeyStates, SDL_NUM_SCANCODES);
-	memcpy(gData.mCurrentKeyStates, gData.mKeyStatePointer, SDL_NUM_SCANCODES);
+	memcpy(gPrismWindowsInputData.mPreviousKeyStates, gPrismWindowsInputData.mCurrentKeyStates, SDL_NUM_SCANCODES);
+	memcpy(gPrismWindowsInputData.mCurrentKeyStates, gPrismWindowsInputData.mKeyStatePointer, SDL_NUM_SCANCODES);
 	updateControllers();
 }
 
 int hasPressedASingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_A_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_A_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_A_PRISM]](i);
 	return state;
 }
 
 int hasPressedBSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_B_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_B_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_B_PRISM]](i);
 	return state;
 }
 
 int hasPressedXSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_X_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_X_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_X_PRISM]](i);
 	return state;
 }
 
 int hasPressedYSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_Y_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_Y_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_Y_PRISM]](i);
 	return state;
 }
 
 int hasPressedLeftSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_LEFT_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_LEFT_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_LEFT_PRISM]](i);
 	return state;
 }
 
 int hasPressedRightSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_RIGHT_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_RIGHT_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_RIGHT_PRISM]](i);
 	return state;
 }
 
 int hasPressedUpSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_UP_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_UP_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_UP_PRISM]](i);
 	return state;
 }
 
 int hasPressedDownSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_DOWN_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_DOWN_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_DOWN_PRISM]](i);
 	return state;
 }
 
 int hasPressedLSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_L_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_L_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_L_PRISM]](i);
 	return state;
 }
 
 int hasPressedRSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_R_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_R_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_R_PRISM]](i);
 	return state;
 }
 
 int hasPressedStartSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_START_PRISM]].second];
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_START_PRISM]].second];
 	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_START_PRISM]](i);
 	return state;
 }
 
 int hasPressedAbortSingle(int i) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
-	int state = gData.mCurrentKeyStates[SDL_SCANCODE_ESCAPE];
-	if (gData.mControllers[i].mIsUsingController) {
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
+	int state = gPrismWindowsInputData.mCurrentKeyStates[SDL_SCANCODE_ESCAPE];
+	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
 		state |= (hasPressedASingle(i) && hasPressedBSingle(i) && hasPressedXSingle(i) && hasPressedYSingle(i) && hasPressedStartSingle(i));
 	}
 	return state;
 }
 
-int hasShotGunSingle(int i)
+int hasShotGunSingle(int /*i*/)
 {
-	(void)i;
 	uint32_t mask = SDL_GetMouseState(NULL, NULL);
-	return mask & SDL_BUTTON(SDL_BUTTON_LEFT); // TODO: fix multiplayer
+	return mask & SDL_BUTTON(SDL_BUTTON_LEFT);
 }
 
 extern Vector3D correctSDLWindowPosition(Vector3D v);
 
-Vector3D getShotPositionSingle(int i) {
-	(void)i; // TODO: fix multiplayer
-
+Vector3D getShotPositionSingle(int /*i*/) {
 	int x, y;
 	SDL_GetMouseState(&x, &y);
 	Vector3D ret = makePosition(x, y, 0);
@@ -407,39 +404,39 @@ Vector3D getShotPositionSingle(int i) {
 
 
 static double getStickNormalizedBinary(int tCodeMinus, int tCodePlus) {
-	if (gData.mCurrentKeyStates == NULL) return 0;
+	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
 
-	if (gData.mCurrentKeyStates[tCodeMinus]) return -1;
-	else if (gData.mCurrentKeyStates[tCodePlus]) return 1;
+	if (gPrismWindowsInputData.mCurrentKeyStates[tCodeMinus]) return -1;
+	else if (gPrismWindowsInputData.mCurrentKeyStates[tCodePlus]) return 1;
 	else return 0;
 }
 
 double getSingleLeftStickNormalizedX(int i) {
-	if (gData.mControllers[i].mIsUsingController) {
-		return SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
+	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
+		return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
 	}
 	else return getStickNormalizedBinary(gKeys[i][CONTROLLER_LEFT_PRISM], gKeys[i][CONTROLLER_RIGHT_PRISM]);
 }
 
 double getSingleLeftStickNormalizedY(int i) {
-	if (gData.mControllers[i].mIsUsingController) {
-		return SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
+	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
+		return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
 	}
 	else return getStickNormalizedBinary(gKeys[i][CONTROLLER_UP_PRISM], gKeys[i][CONTROLLER_DOWN_PRISM]);
 }
 
 double getSingleLNormalized(int i) {
-	if (gData.mControllers[i].mIsUsingController) {
-		return SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
+	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
+		return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
 	}
-	else return gData.mCurrentKeyStates[gKeys[i][CONTROLLER_L_PRISM]];
+	else return gPrismWindowsInputData.mCurrentKeyStates[gKeys[i][CONTROLLER_L_PRISM]];
 }
 
 double getSingleRNormalized(int i) {
-	if (gData.mControllers[i].mIsUsingController) {
-		return SDL_GameControllerGetAxis(gData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
+	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
+		return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
 	}
-	else return gData.mCurrentKeyStates[gKeys[i][CONTROLLER_R_PRISM]];
+	else return gPrismWindowsInputData.mCurrentKeyStates[gKeys[i][CONTROLLER_R_PRISM]];
 }
 
 extern SDL_Window* gSDLWindow;
@@ -459,20 +456,19 @@ void releaseMouseCursorFromWindow() {
 }
 
 int isUsingControllerSingle(int i) {
-	return gData.mControllers[i].mIsUsingController;
+	return gPrismWindowsInputData.mControllers[i].mIsUsingController;
 }
 
 void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude) {
 	if (!isUsingControllerSingle(i)) return;
-	if (!gData.mControllers[i].mHaptic) return;
+	if (!gPrismWindowsInputData.mControllers[i].mHaptic) return;
 
 	turnControllerRumbleOffSingle(i);
 
-	SDL_HapticEffect* effect = &gData.mControllers[i].mHapticEffect;
+	SDL_HapticEffect* effect = &gPrismWindowsInputData.mControllers[i].mHapticEffect;
 	memset(effect, 0, sizeof(SDL_HapticEffect));
 
-	// TODO: fix
-	if ((SDL_HapticQuery(gData.mControllers[i].mHaptic) & SDL_HAPTIC_SINE)) {
+	if ((SDL_HapticQuery(gPrismWindowsInputData.mControllers[i].mHaptic) & SDL_HAPTIC_SINE)) {
 		effect->type = SDL_HAPTIC_SINE;
 	}
 	else {
@@ -487,20 +483,20 @@ void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double
 	effect->periodic.attack_length = 1000;
 	effect->periodic.fade_length = 1000;
 
-	gData.mControllers[i].mHapticEffectID = SDL_HapticNewEffect(gData.mControllers[i].mHaptic, effect);
+	gPrismWindowsInputData.mControllers[i].mHapticEffectID = SDL_HapticNewEffect(gPrismWindowsInputData.mControllers[i].mHaptic, effect);
 
-	SDL_HapticRunEffect(gData.mControllers[i].mHaptic, gData.mControllers[i].mHapticEffectID, 1);
+	SDL_HapticRunEffect(gPrismWindowsInputData.mControllers[i].mHaptic, gPrismWindowsInputData.mControllers[i].mHapticEffectID, 1);
 
-	gData.mControllers[i].mRumbleNow = 0;
-	gData.mControllers[i].mRumbleDuration = tDuration;
-	gData.mControllers[i].mIsRumbling = 1;
+	gPrismWindowsInputData.mControllers[i].mRumbleNow = 0;
+	gPrismWindowsInputData.mControllers[i].mRumbleDuration = tDuration;
+	gPrismWindowsInputData.mControllers[i].mIsRumbling = 1;
 }
 
 void turnControllerRumbleOffSingle(int i) {
-	if (!gData.mControllers[i].mIsRumbling) return;
+	if (!gPrismWindowsInputData.mControllers[i].mIsRumbling) return;
 
-	SDL_HapticDestroyEffect(gData.mControllers[i].mHaptic, gData.mControllers[i].mHapticEffectID);
-	gData.mControllers[i].mIsRumbling = 0;
+	SDL_HapticDestroyEffect(gPrismWindowsInputData.mControllers[i].mHaptic, gPrismWindowsInputData.mControllers[i].mHapticEffectID);
+	gPrismWindowsInputData.mControllers[i].mIsRumbling = 0;
 }
 
 int hasPressedRawButton(int i, ControllerButtonPrism tButton) {
@@ -509,12 +505,12 @@ int hasPressedRawButton(int i, ControllerButtonPrism tButton) {
 
 int hasPressedRawKeyboardKey(KeyboardKeyPrism tKey) {
 	int id = gPrismToSDLKeyboardMapping[tKey].second;
-	return gData.mCurrentKeyStates[id];
+	return gPrismWindowsInputData.mCurrentKeyStates[id];
 }
 
 int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
 	int id = gPrismToSDLKeyboardMapping[tKey].second;
-	return !gData.mPreviousKeyStates[id] && gData.mCurrentKeyStates[id];
+	return !gPrismWindowsInputData.mPreviousKeyStates[id] && gPrismWindowsInputData.mCurrentKeyStates[id];
 }
 
 int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
@@ -529,8 +525,8 @@ int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
 	{
 		KeyboardKeyPrism singleKey = (KeyboardKeyPrism)va_arg(vl, int);
 		int id = gPrismToSDLKeyboardMapping[singleKey].second;
-		previousKeyPressed = previousKeyPressed && gData.mPreviousKeyStates[id];
-		currentKeyPressed = currentKeyPressed && gData.mCurrentKeyStates[id];
+		previousKeyPressed = previousKeyPressed && gPrismWindowsInputData.mPreviousKeyStates[id];
+		currentKeyPressed = currentKeyPressed && gPrismWindowsInputData.mCurrentKeyStates[id];
 	}
 	va_end(vl);
 
