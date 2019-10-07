@@ -62,7 +62,7 @@ static int removeActorCB(void* tCaller, void* tData) {
 
 void shutdownActorHandler()
 {
-	list_remove_predicate(&gPrismActorHandlerData.mSequentialActorList, removeActorCB, NULL);
+	list_remove_predicate_inverted(&gPrismActorHandlerData.mSequentialActorList, removeActorCB, NULL);
 	delete_int_map(&gPrismActorHandlerData.mActors);
 	delete_list(&gPrismActorHandlerData.mSequentialActorList);
 	gPrismActorHandlerData.mIsInitialized = 0;

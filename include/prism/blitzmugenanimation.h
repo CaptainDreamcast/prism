@@ -62,6 +62,8 @@ void setBlitzMugenAnimationConstraintRectangle(int tEntityID, GeoRectangle tCons
 void setBlitzMugenAnimationNoLoop(int tEntityID);
 void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void*), void* tCaller);
 
+void setBlitzMugenAnimationAnimationStepDuration(int tEntityID, int tDuration);
+
 void pauseBlitzMugenAnimation(int tEntityID);
 void unpauseBlitzMugenAnimation(int tEntityID);
 int isStartingBlitzMugenAnimationElementWithID(int tEntityID, int tStepID);

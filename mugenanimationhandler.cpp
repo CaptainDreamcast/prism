@@ -527,6 +527,12 @@ Position * getMugenAnimationPositionReference(MugenAnimationHandlerElement* e)
 	return &e->mOffset;
 }
 
+void setMugenAnimationAnimationStepDuration(MugenAnimationHandlerElement * e, int tDuration)
+{
+	MugenAnimationStep* step = getCurrentAnimationStep(e);
+	step->mDuration = tDuration;
+}
+
 void changeMugenAnimation(MugenAnimationHandlerElement* e, MugenAnimation * tNewAnimation)
 {
 	changeMugenAnimationWithStartStep(e, tNewAnimation, 0);

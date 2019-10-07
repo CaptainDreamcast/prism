@@ -99,17 +99,12 @@ static void playMusicPath(const char* tPath) {
 	char fullPath[1024];
 	getFullPath(fullPath, tPath);
 
-	// emscripten does not like loading music from files directly
-#ifdef __EMSCRIPTEN__
 	Buffer tBuffer = fileToBuffer(fullPath);
 	SDL_RWops* rwOps = SDL_RWFromConstMem(tBuffer.mData, tBuffer.mLength);
 	gPrismWindowsSoundData.mTrackChunk = Mix_LoadMUS_RW(rwOps, 1);
 	if (!gPrismWindowsSoundData.mTrackChunk) {
 		logErrorFormat("Unable to play sound %s: %s", tPath, SDL_GetError());
 	}
-#else
-	gPrismWindowsSoundData.mTrackChunk = Mix_LoadMUS(fullPath);
-#endif
 	gPrismWindowsSoundData.mHasLoadedTrack = 1;
 }
 

@@ -256,7 +256,20 @@ void list_remove_predicate(List* tList, predicateCB tCB, void* tCaller){
 
 		cur = next;
 	}
+}
 
+void list_remove_predicate_inverted(List* tList, predicateCB tCB, void* tCaller) {
+	int left = tList->mSize;
+
+	ListElement* cur = tList->mLast;
+	while (left--) {
+		ListElement* prev = cur->mPrev;
+		if (tCB(tCaller, cur->mData)) {
+			removeListElement(tList, cur);
+		}
+
+		cur = prev;
+	}
 }
 
 ListIterator list_find_first_predicate(List * tList, predicateCB tCB, void * tCaller)

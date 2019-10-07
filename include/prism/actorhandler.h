@@ -2,6 +2,8 @@
 
 #include <cstdio>
 
+#include "stlutil.h"
+
 typedef void(*LoadActorFunction)(void* tOptionalData);
 typedef void(*UpdateActorFunction)(void* tOptionalData);
 typedef void(*DrawActorFunction)(void* tOptionalData);

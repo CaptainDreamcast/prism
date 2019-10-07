@@ -376,6 +376,12 @@ void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void *), void * 
 	e->mCaller = tCaller;
 }
 
+void setBlitzMugenAnimationAnimationStepDuration(int tEntityID, int tDuration)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationAnimationStepDuration(e->mAnimationElement, tDuration);
+}
+
 void pauseBlitzMugenAnimation(int tEntityID)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);

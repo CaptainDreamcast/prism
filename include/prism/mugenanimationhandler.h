@@ -176,6 +176,7 @@ double* getMugenAnimationScaleYReference(MugenAnimationHandlerElement* tElement)
 double* getMugenAnimationBaseScaleReference(MugenAnimationHandlerElement* tElement);
 Position* getMugenAnimationPositionReference(MugenAnimationHandlerElement* tElement);
 
+void setMugenAnimationAnimationStepDuration(MugenAnimationHandlerElement* tElement, int tDuration);
 
 void changeMugenAnimation(MugenAnimationHandlerElement* tElement, MugenAnimation* tNewAnimation);
 void changeMugenAnimationWithStartStep(MugenAnimationHandlerElement* tElement, MugenAnimation* tNewAnimation, int tStartStep);
