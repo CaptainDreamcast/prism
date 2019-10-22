@@ -47,7 +47,7 @@
 
 typedef struct {
 	int mIsPaused;
-
+	int mScreenshotRequested;
 } WrapperDebug;
 
 typedef struct {
@@ -355,6 +355,19 @@ static void unloadScreen(Screen* tScreen) {
 	unloadWrapper();
 }
 
+static void takeWrapperScreenshot() {
+	createDirectory("debug/screenshots");
+	for (int i = 1; i < 999; i++) {
+		std::stringstream ss, ss2;
+		ss << "debug/screenshots/screenshot" << i << ".png";
+		ss2 << "debug/screenshots/screenshot" << i << ".ppm";
+		if (!isFile(ss.str()) && !isFile(ss2.str())) {
+			saveScreenShot(ss.str().c_str());
+			break;
+		}
+	}
+}
+
 static void updateScreenDebug() {
 	if (!isInDevelopMode()) return;
 
@@ -369,6 +382,29 @@ static void updateScreenDebug() {
 
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_R_PRISM)) {
 		setNewScreen(gPrismWrapperData.mScreen);
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F10_PRISM)) {
+		togglePrismDebugSideDisplayVisibility();
+	}
+
+	if (hasPressedKeyboardKeyFlank(KEYBOARD_F11_PRISM)) {
+		if (getPrismDebugSideDisplayVisibility()) {
+			setPrismDebugSideDisplayVisibility(0);
+			gPrismWrapperData.mDebug.mScreenshotRequested = 1;
+		}
+		else {
+			takeWrapperScreenshot();
+		}
+	}
+	else if (gPrismWrapperData.mDebug.mScreenshotRequested) {
+		if (gPrismWrapperData.mDebug.mScreenshotRequested >= 3) {
+			takeWrapperScreenshot();
+			setPrismDebugSideDisplayVisibility(1);
+			gPrismWrapperData.mDebug.mScreenshotRequested = 0;
+		} else {
+			gPrismWrapperData.mDebug.mScreenshotRequested++;
+		}
 	}
 }
 
@@ -529,8 +565,6 @@ void startScreenHandling(Screen* tScreen) {
 	}
 	
 }
-
-
 
 void setWrapperTimeDilatation(double tDilatation)
 {

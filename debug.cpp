@@ -30,6 +30,8 @@ typedef struct {
 	uint64_t mStartWaitingTime;
 	uint64_t mEndWaitingTime;
 	int mWaitingTimeCounterTextID;
+
+	int mIsVisible = 1;
 } SideDisplay;
 
 typedef struct {
@@ -161,18 +163,26 @@ static void updatePrismDebugSideDisplay() {
 	gPrismDebug.mSideDisplay.mPreviousFPS[PREVIOUS_FPS_AMOUNT - 1] = fps;
 	fpsSum /= PREVIOUS_FPS_AMOUNT + 1;
 
-	char text[200];
-	sprintf(text, "%.1f", fpsSum);
-	changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, text);
+	if (gPrismDebug.mSideDisplay.mIsVisible) {
+		char text[200];
+		sprintf(text, "%.1f", fpsSum);
+		changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, text);
 
-	sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
-	changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, text);
+		sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
+		changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, text);
 
-	sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
-	changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, text);
+		sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
+		changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, text);
 
-	sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
-	changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, text);
+		sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
+		changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, text);
+	}
+	else {
+		changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, "");
+		changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, "");
+		changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, "");
+		changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, "");
+	}
 }
 
 static void addConsoleText(string text) {
@@ -364,28 +374,9 @@ static void toggleVisibility() {
 	}
 }
 
-static void captureFlankInput() {
-	hasPressedAFlank();
-	hasPressedBFlank();
-	hasPressedXFlank();
-	hasPressedYFlank();
-	hasPressedLFlank();
-	hasPressedRFlank();
-	hasPressedLeftFlank();
-	hasPressedRightFlank();
-	hasPressedUpFlank();
-	hasPressedDownFlank();
-	hasPressedStartFlank();
-	hasShotGunFlank();
-}
-
 static void updatePrismDebugConsole() {
 	if (hasPressedKeyboardKeyFlank(KEYBOARD_CARET_PRISM)) {
 		toggleVisibility();
-	}
-
-	if (gPrismDebug.mConsole.mIsVisible) {
-		captureFlankInput();
 	}
 }
 
@@ -433,6 +424,23 @@ void setPrismDebugWaitingStartTime()
 	if (!gPrismDebug.mIsActive) return;
 	gPrismDebug.mSideDisplay.mEndUpdateTime = getSystemTicks();
 	gPrismDebug.mSideDisplay.mStartWaitingTime = getSystemTicks();
+}
+
+int getPrismDebugSideDisplayVisibility()
+{
+	if (!gPrismDebug.mIsActive) return 0;
+	return gPrismDebug.mSideDisplay.mIsVisible;
+}
+
+void setPrismDebugSideDisplayVisibility(int tIsVisible)
+{
+	if (!gPrismDebug.mIsActive) return;
+	gPrismDebug.mSideDisplay.mIsVisible = tIsVisible;
+}
+
+void togglePrismDebugSideDisplayVisibility()
+{
+	setPrismDebugSideDisplayVisibility(!getPrismDebugSideDisplayVisibility());
 }
 
 void addPrismDebugConsoleCommand(std::string tCommand, std::string(*tCB)(void *tCaller, std::string tCommandInput), void* tCaller)

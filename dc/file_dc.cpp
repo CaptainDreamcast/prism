@@ -142,6 +142,15 @@ void* fileMemoryMap(FileHandler tHandler) {
 	return fs_mmap(tHandler);
 }
 
+void createDirectory(const char* tPath)
+{
+	if (!isDirectory(tPath)) {
+		char path[1024];
+		getFullPath(path, tPath);
+		fs_mkdir(path);
+	}
+}
+
 void fixMountPath(char* tDst, const char* tSrc) {
 	if(tSrc[0] != '/') {
 		sprintf(tDst, "/%s", tSrc);	

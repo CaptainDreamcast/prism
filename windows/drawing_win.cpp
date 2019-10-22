@@ -89,6 +89,7 @@ struct DrawListTruetypeElement{
 	Vector3DI mTextSize;
 	Vector3D mColor;
 	double mTextBoxWidth;
+	GeoRectangle mDrawRectangle;
 
 	DrawingData mData;
 	double mZ;
@@ -511,12 +512,18 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 
 		SDL_Surface* surface = TTF_RenderText_Blended(e->mFont, text, color);
 
+		GeoRectangle noCulled;
+		noCulled.mTopLeft = pos;
+		noCulled.mBottomRight = vecAdd(pos, makePosition(surface->w, surface->h, 0));
+
 		GeoRectangle rect;
-		rect.mTopLeft = pos;
-		rect.mBottomRight = vecAdd(pos, makePosition(surface->w, surface->h, 0));
+		rect.mTopLeft = clampPositionToGeoRectangle(noCulled.mTopLeft, e->mDrawRectangle);
+		rect.mBottomRight = clampPositionToGeoRectangle(noCulled.mBottomRight, e->mDrawRectangle);
 
-		GeoRectangle src = makeGeoRectangle(0, 0, 1.0, 1.0);
+		const Position topLeftSrc = makePosition((rect.mTopLeft.x - noCulled.mTopLeft.x) / surface->w, (rect.mTopLeft.y - noCulled.mTopLeft.y) / surface->h, 0.0);
+		const Position bottomRightSrc = makePosition((rect.mBottomRight.x - noCulled.mTopLeft.x) / surface->w, (rect.mBottomRight.y - noCulled.mTopLeft.y) / surface->h, 0.0);
 
+		GeoRectangle src = makeGeoRectangle(topLeftSrc.x, topLeftSrc.y, bottomRightSrc.x - topLeftSrc.x, bottomRightSrc.y - topLeftSrc.y);
 		pos.y += surface->h;
 
 		// must be converted because otherwise WebGL freezes up
@@ -637,7 +644,7 @@ void drawMultilineText(const char* tText, const char* tFullText, Position tPosit
 	setDrawingParametersToIdentity();
 }
 
-void drawTruetypeText(const char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth)
+void drawTruetypeText(const char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth, GeoRectangle tDrawRectangle)
 {
 	DrawListTruetypeElement e;
 	strcpy(e.mText, tText);
@@ -646,6 +653,7 @@ void drawTruetypeText(const char * tText, TruetypeFont tFont, Position tPosition
 	e.mTextSize = tTextSize;
 	e.mColor = tColor;
 	e.mTextBoxWidth = tTextBoxWidth;
+	e.mDrawRectangle = tDrawRectangle;
 	e.mData = gPrismWindowsData;
 	e.mZ = tPosition.z;
 

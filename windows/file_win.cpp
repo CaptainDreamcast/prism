@@ -1,6 +1,7 @@
 #include "prism/file.h"
 
 #include <stdio.h>
+#include <filesystem>
 
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
@@ -191,6 +192,16 @@ void* fileMemoryMap(FileHandler tHandler) {
 	return NULL;
 }
 
+void createDirectory(const char * tPath)
+{
+#ifndef __EMSCRIPTEN__
+	if (!isDirectory(tPath)) {
+		char path[1024];
+		getFullPath(path, tPath);
+		std::experimental::filesystem::create_directories(path);
+	}
+#endif
+}
 
 void mountRomdiskFromBuffer(Buffer b, const char * tMountPath)
 {

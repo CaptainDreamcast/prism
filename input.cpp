@@ -4,20 +4,13 @@
 #include "prism/math.h"
 
 typedef struct {
-	int mAFlank;
-	int mBFlank;
-	int mXFlank;
-	int mYFlank;
-	int mLFlank;
-	int mRFlank;
-	int mLeftFlank;
-	int mRightFlank;
-	int mUpFlank;
-	int mDownFlank;
-	int mStartFlank;
-	int mAbortFlank;
-	int mShotFlank;
-} InputFlanks;
+	uint8_t mPrev[CONTROLLER_BUTTON_AMOUNT_PRISM];
+	uint8_t mCurrent[CONTROLLER_BUTTON_AMOUNT_PRISM];
+	uint8_t mAbortPrev = 0;
+	uint8_t mAbortCurrent = 0;
+	uint8_t mShotPrev = 0;
+	uint8_t mShotCurrent = 0;
+} InputStatus;
 
 typedef struct {
 	int mIsActive;
@@ -32,7 +25,7 @@ typedef struct {
 } SetInputData;
 
 static struct {
-	InputFlanks mFlanks[MAXIMUM_CONTROLLER_AMOUNT];
+	InputStatus mStatus[MAXIMUM_CONTROLLER_AMOUNT];
 	SetInputData mSetInput[MAXIMUM_CONTROLLER_AMOUNT];
 
 	int mMainController;
@@ -41,88 +34,60 @@ static struct {
 void resetInputForAllControllers() {
 	int i;
 	for (i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
-		hasPressedAFlankSingle(i);
-		hasPressedBFlankSingle(i);
-		hasPressedXFlankSingle(i);
-		hasPressedYFlankSingle(i);
-		hasPressedLFlankSingle(i);
-		hasPressedRFlankSingle(i);
-		hasPressedLeftFlankSingle(i);
-		hasPressedRightFlankSingle(i);
-		hasPressedUpFlankSingle(i);
-		hasPressedDownFlankSingle(i);
-		hasPressedStartFlankSingle(i);
-		hasPressedAbortFlankSingle(i);
-		hasShotGunFlankSingle(i);
-
 		gPrismGeneralInputData.mSetInput[i].mIsActive = 0;
 	}
 }
 
-static int hasPressedFlank(int tCurrent, int* tFlank) {
-	int returnValue = 0;
-
-	debugInteger(tCurrent);
-	debugInteger((*tFlank));
-	if (tCurrent && !(*tFlank)) {
-		returnValue = 1;
-	}
-
-	(*tFlank) = tCurrent;
-	return returnValue;
-}
-
-
 int hasPressedAFlankSingle(int i) {
-	return hasPressedFlank(hasPressedASingle(i), &gPrismGeneralInputData.mFlanks[i].mAFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_A_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_A_PRISM];
 }
 
 int hasPressedBFlankSingle(int i) {
-	return hasPressedFlank(hasPressedBSingle(i), &gPrismGeneralInputData.mFlanks[i].mBFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_B_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_B_PRISM];
 }
 int hasPressedXFlankSingle(int i) {
-	return hasPressedFlank(hasPressedXSingle(i), &gPrismGeneralInputData.mFlanks[i].mXFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_X_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_X_PRISM];
 }
 
 int hasPressedYFlankSingle(int i) {
-	return hasPressedFlank(hasPressedYSingle(i), &gPrismGeneralInputData.mFlanks[i].mYFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_Y_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_Y_PRISM];
 }
 
 int hasPressedLeftFlankSingle(int i) {
-	return hasPressedFlank(hasPressedLeftSingle(i), &gPrismGeneralInputData.mFlanks[i].mLeftFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_LEFT_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_LEFT_PRISM];
 }
 
 int hasPressedRightFlankSingle(int i) {
-	return hasPressedFlank(hasPressedRightSingle(i), &gPrismGeneralInputData.mFlanks[i].mRightFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_RIGHT_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_RIGHT_PRISM];
 }
 
 int hasPressedUpFlankSingle(int i) {
-	return hasPressedFlank(hasPressedUpSingle(i), &gPrismGeneralInputData.mFlanks[i].mUpFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_UP_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_UP_PRISM];
 }
 
 int hasPressedDownFlankSingle(int i) {
-	return hasPressedFlank(hasPressedDownSingle(i), &gPrismGeneralInputData.mFlanks[i].mDownFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_DOWN_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_DOWN_PRISM];
 }
 
 int hasPressedLFlankSingle(int i) {
-	return hasPressedFlank(hasPressedLSingle(i), &gPrismGeneralInputData.mFlanks[i].mLFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_L_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_L_PRISM];
 }
 
 int hasPressedRFlankSingle(int i) {
-	return hasPressedFlank(hasPressedRSingle(i), &gPrismGeneralInputData.mFlanks[i].mRFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_R_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_R_PRISM];
 }
 
 int hasPressedStartFlankSingle(int i) {
-	return hasPressedFlank(hasPressedStartSingle(i), &gPrismGeneralInputData.mFlanks[i].mStartFlank);
+	return !gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_START_PRISM] && gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_START_PRISM];
 }
 
 int hasPressedAbortFlankSingle(int i) {
-	return hasPressedFlank(hasPressedAbortSingle(i), &gPrismGeneralInputData.mFlanks[i].mAbortFlank);
+	return !gPrismGeneralInputData.mStatus[i].mAbortPrev && gPrismGeneralInputData.mStatus[i].mAbortCurrent;
 }
 
 int hasShotGunFlankSingle(int i)
 {
-	return hasPressedFlank(hasShotGunSingle(i), &gPrismGeneralInputData.mFlanks[i].mShotFlank);
+	return !gPrismGeneralInputData.mStatus[i].mShotPrev && gPrismGeneralInputData.mStatus[i].mShotCurrent;
 }
 
 
@@ -393,11 +358,35 @@ static void updateInputSetting() {
 		updateInputSettingSingle(1);
 }
 
+static void updateInputFlagSingle(uint8_t* tPrev, uint8_t* tCurrent, int tUpdateValue) {
+	*tPrev = *tCurrent;
+	*tCurrent = (uint8_t)tUpdateValue;
+}
+
+static void updateInputFlanks() {
+	for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_A_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_A_PRISM], hasPressedASingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_B_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_B_PRISM], hasPressedBSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_X_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_X_PRISM], hasPressedXSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_Y_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_Y_PRISM], hasPressedYSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_LEFT_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_LEFT_PRISM], hasPressedLeftSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_RIGHT_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_RIGHT_PRISM], hasPressedRightSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_UP_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_UP_PRISM], hasPressedUpSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_DOWN_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_DOWN_PRISM], hasPressedDownSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_L_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_L_PRISM], hasPressedLSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_R_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_R_PRISM], hasPressedRSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_START_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_START_PRISM], hasPressedStartSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mAbortPrev, &gPrismGeneralInputData.mStatus[i].mAbortCurrent, hasPressedAbortSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mShotPrev, &gPrismGeneralInputData.mStatus[i].mShotCurrent, hasShotGunSingle(i));
+	}
+}
+
 extern void updateInputPlatform();
 
 void updateInput() {
 	updateInputPlatform();
 	updateInputSetting();
+	updateInputFlanks();
 }
 
 static void setButtonFromUserInputGeneral(int i, ControllerButtonPrism tTargetButton, void(*tSettingOptionalCB)(void*), void(*tControllerWaitingCB)(void*, ControllerButtonPrism), void(*tKeyboardWaitingCB)(void*, KeyboardKeyPrism), void* tCaller, int tIsSetting, int tIsSettingController) {

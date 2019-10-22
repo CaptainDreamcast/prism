@@ -32,8 +32,8 @@ typedef struct {
 } MugenSpriteFile;
 
 
-MugenSpriteFile loadMugenSpriteFile(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile);
-MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile);
+MugenSpriteFile loadMugenSpriteFile(char * tPath, int tHasPaletteFile, char* tOptionalPaletteFile);
+MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tHasPaletteFile, char* tOptionalPaletteFile);
 
 void unloadMugenSpriteFile(MugenSpriteFile* tFile);
 void unloadMugenSpriteFileSprite(MugenSpriteFileSprite* tSprite);
@@ -48,3 +48,4 @@ void setMugenSpriteFileReaderToFileOperations();
 void setMugenSpriteFileReaderToUsePalette(int tPaletteID);
 void setMugenSpriteFileReaderToNotUsePalette();
 void setMugenSpriteFileReaderCustomFunctionsAndForceARGB16(TextureData(*mCustomLoadTextureFromARGB16Buffer)(Buffer, int, int), TextureData(*mCustomLoadTextureFromARGB32Buffer)(Buffer, int, int), TextureData(*mCustomLoadPalettedTextureFrom8BitBuffer)(Buffer, int, int, int));
+void setMugenSpriteFileReaderSubTextureSplit(int tSubTextureSplitMin, int tSubTextureSplitMax);

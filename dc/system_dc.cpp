@@ -111,6 +111,10 @@ ScreenSize getScreenSize() {
 	return ret;
 }
 
+ScreenSize getDisplayedScreenSize() {
+	return getScreenSize();
+}
+
 void setDisplayedScreenSize(int tX, int tY)
 {
 	(void)tX;

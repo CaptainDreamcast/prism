@@ -159,6 +159,10 @@ static struct {
 	TextureData(*mCustomLoadTextureFromARGB32Buffer)(Buffer, int, int);
 	TextureData(*mCustomLoadPalettedTextureFrom8BitBuffer)(Buffer, int, int, int);
 	int mIsWritingDreamcastOptimized;
+
+	// default values chosen with dolmexica baldhead character special attack stress test, equal values ensure no texture memory fragmentation when only using mugen sprites
+	int mSubTextureSplitMin = 64;
+	int mSubTextureSplitMax = 64;
 } gPrismMugenSpriteFileReaderData;
 
 static uint32_t get2DBufferIndex(uint32_t i, uint32_t j, uint32_t w) {
@@ -450,8 +454,8 @@ static SubImageBuffer* getSingleAllocatedBufferFromSource(Buffer b, int x, int y
 }
 
 static int getMaximumSizeFit(int tVal) {
-	int mini = 64;
-	int maxi = 64;
+	const int mini = gPrismMugenSpriteFileReaderData.mSubTextureSplitMin;
+	const int maxi = gPrismMugenSpriteFileReaderData.mSubTextureSplitMax;
 
 	if (tVal <= mini) return mini;
 
@@ -514,7 +518,6 @@ static void readPNGDataFromInputStream(png_structp png_ptr, png_bytep outBytes, 
 		logError("Did not get caller");
 		recoverFromError();
 	}
-
 
 	PNGReadCaller* caller = (PNGReadCaller*)io_ptr;
 	if (((uint32_t)caller->p) + byteCountToRead > ((uint32_t)caller->b.mData) + caller->b.mLength) {
@@ -1050,7 +1053,7 @@ static void insertLinkedTextureIntoSpriteFile2(MugenSpriteFile* tDst, SFFSprite2
 	insertTextureIntoSpriteFile(tDst, e, tSprite->mGroupNo, tSprite->mItemNo);
 }
 
-static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tPreferredPalette, int tHasPalette) {
+static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tHasPalette) {
 	SFFSprite2 sprite;
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &sprite, sizeof(SFFSprite2));
 
@@ -1077,11 +1080,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 
 		Buffer rawBuffer = readRawSprite2(&sprite, tHeader);
 
-		int palette;
-		int spritePaletteIndex = tHasPalette ? sprite.mPaletteIndex + 1 : sprite.mPaletteIndex;
-		tPreferredPalette = -1; // TODO ((https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/351))
-		if (tPreferredPalette == -1) palette = spritePaletteIndex;
-		else palette = tPreferredPalette;
+		const int palette = tHasPalette ? sprite.mPaletteIndex + 1 : sprite.mPaletteIndex;
 
 		Buffer* paletteBuffer = (Buffer*)vector_get(&tDst->mPalettes, palette);
 
@@ -1108,16 +1107,16 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tP
 	insertTextureIntoSpriteFile(tDst, e, sprite.mGroupNo, sprite.mItemNo);
 }
 
-static void loadSprites2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tPreferredPalette, int tHasPalette) {
+static void loadSprites2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tHasPalette) {
 	int i = 0;
 	gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, tHeader->mSpriteOffset);
 	for (i = 0; i < (int)tHeader->mSpriteTotal; i++) {
-		loadSingleSprite2(tHeader, tDst, tPreferredPalette, tHasPalette);
+		loadSingleSprite2(tHeader, tDst, tHasPalette);
 		if(gPrismMugenSpriteFileReaderData.mIsOnlyLoadingPortraits && vector_size(&tDst->mAllSprites) == 2) break;
 	}
 }
 
-static MugenSpriteFile loadMugenSpriteFile2(int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile) {
+static MugenSpriteFile loadMugenSpriteFile2(int tHasPaletteFile, char* tOptionalPaletteFile) {
 	MugenSpriteFile ret = makeEmptySpriteFile();
 
 	if (tHasPaletteFile) {
@@ -1135,8 +1134,7 @@ static MugenSpriteFile loadMugenSpriteFile2(int tPreferredPalette, int tHasPalet
 	debugInteger(header.mPaletteTotal);
 
 	loadPalettes2(&header, &ret);
-	tPreferredPalette = min(tPreferredPalette, vector_size(&ret.mPalettes) - 1);
-	loadSprites2(&header, &ret, tPreferredPalette, tHasPaletteFile);
+	loadSprites2(&header, &ret, tHasPaletteFile);
 
 	return ret;
 }
@@ -1286,8 +1284,7 @@ static void loadSpritesPreloaded(MugenSpriteFile* tDst) {
 }
 
 
-static MugenSpriteFile loadMugenSpriteFilePreloaded(int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile) {
-	(void)tPreferredPalette; // TODO: implement preferred palette (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/351)
+static MugenSpriteFile loadMugenSpriteFilePreloaded(int tHasPaletteFile, char* tOptionalPaletteFile) {
 	MugenSpriteFile ret = makeEmptySpriteFile();
 
 	if (tHasPaletteFile) {
@@ -1309,7 +1306,7 @@ static void checkMugenSpriteFileReader() {
 	}
 }
 
-static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile)
+static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tHasPaletteFile, char* tOptionalPaletteFile)
 {
 	debugLog("Loading sprite file.");
 	debugString(tPath);
@@ -1321,7 +1318,7 @@ static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tPreferredPa
 	char preloadPath[1024];
 	sprintf(preloadPath, "%s.preloaded", tPath);
 	if (isFile(preloadPath) && !gPrismMugenSpriteFileReaderData.mIsWritingDreamcastOptimized) {
-		return loadMugenSpriteFileGeneral(preloadPath, tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
+		return loadMugenSpriteFileGeneral(preloadPath, tHasPaletteFile, tOptionalPaletteFile);
 	}
 
 	gPrismMugenSpriteFileReaderData.mHasPaletteFile = tHasPaletteFile;
@@ -1336,13 +1333,13 @@ static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tPreferredPa
 	if (header.mVersion[1] == 1 && header.mVersion[3] == 1) {
 		ret = loadMugenSpriteFile1(tHasPaletteFile, tOptionalPaletteFile);
 	} else if (header.mVersion[1] == 1 && header.mVersion[3] == 2) {
-		ret = loadMugenSpriteFile2(tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
+		ret = loadMugenSpriteFile2(tHasPaletteFile, tOptionalPaletteFile);
 	}
 	else if (header.mVersion[1] == 0 && header.mVersion[3] == 2) {
-		ret = loadMugenSpriteFile2(tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
+		ret = loadMugenSpriteFile2(tHasPaletteFile, tOptionalPaletteFile);
 	}
 	else if (header.mVersion[1] == 0 && header.mVersion[3] == 100) {
-		ret = loadMugenSpriteFilePreloaded(tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
+		ret = loadMugenSpriteFilePreloaded(tHasPaletteFile, tOptionalPaletteFile);
 	}
 	else {
 		logError("Unrecognized SFF version.");
@@ -1359,14 +1356,14 @@ static MugenSpriteFile loadMugenSpriteFileGeneral(char * tPath, int tPreferredPa
 	return ret;
 }
 
-MugenSpriteFile loadMugenSpriteFile(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile) {
+MugenSpriteFile loadMugenSpriteFile(char * tPath, int tHasPaletteFile, char* tOptionalPaletteFile) {
 	gPrismMugenSpriteFileReaderData.mIsOnlyLoadingPortraits = 0;
-	return loadMugenSpriteFileGeneral(tPath, tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
+	return loadMugenSpriteFileGeneral(tPath, tHasPaletteFile, tOptionalPaletteFile);
 }
 
-MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tPreferredPalette, int tHasPaletteFile, char* tOptionalPaletteFile) {
+MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tHasPaletteFile, char* tOptionalPaletteFile) {
 	gPrismMugenSpriteFileReaderData.mIsOnlyLoadingPortraits = 1;
-	return loadMugenSpriteFileGeneral(tPath, tPreferredPalette, tHasPaletteFile, tOptionalPaletteFile);
+	return loadMugenSpriteFileGeneral(tPath, tHasPaletteFile, tOptionalPaletteFile);
 }
 
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(std::string tPath)
@@ -1376,10 +1373,9 @@ MugenSpriteFile loadMugenSpriteFileWithoutPalette(std::string tPath)
 	return loadMugenSpriteFileWithoutPalette(path);
 }
 
-
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(char * tPath)
 {
-	return loadMugenSpriteFile(tPath, -1, 0, NULL);
+	return loadMugenSpriteFile(tPath, 0, NULL);
 }
 
 static void unloadSinglePalette(void* tCaller, void* tData) {
@@ -1638,4 +1634,10 @@ void setMugenSpriteFileReaderCustomFunctionsAndForceARGB16(TextureData(*tCustomL
 	gPrismMugenSpriteFileReaderData.mCustomLoadTextureFromARGB32Buffer = tCustomLoadTextureFromARGB32Buffer;
 	gPrismMugenSpriteFileReaderData.mCustomLoadPalettedTextureFrom8BitBuffer = tCustomLoadPalettedTextureFrom8BitBuffer;
 	gPrismMugenSpriteFileReaderData.mIsWritingDreamcastOptimized = 1;
+}
+
+void setMugenSpriteFileReaderSubTextureSplit(int tSubTextureSplitMin, int tSubTextureSplitMax)
+{
+	gPrismMugenSpriteFileReaderData.mSubTextureSplitMin = tSubTextureSplitMin;
+	gPrismMugenSpriteFileReaderData.mSubTextureSplitMax = tSubTextureSplitMax;
 }

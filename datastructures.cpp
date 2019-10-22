@@ -46,6 +46,17 @@ char* copyToAllocatedString(char* tSrc) {
 	return ret;
 }
 
+void removeInvalidFileNameElementsFromString(std::string & tString)
+{
+	transform(tString.begin(), tString.end(), tString.begin(), [](char c) 
+	{
+		if (c >= 'a' && c <= 'z') return c;
+		if (c >= 'A' && c <= 'Z') return c;
+		if (c >= '0' && c <= '9') return c;
+		return '_';
+	});
+}
+
 int stringBeginsWithSubstring(const char * tString, const char * tSubstring)
 {
 	int n = strlen(tSubstring);

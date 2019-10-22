@@ -49,6 +49,8 @@ int isFile(const char* tPath);
 int isFile(const std::string& tPath);
 int isDirectory(const char* tPath);
 
+void createDirectory(const char* tPath);
+
 Buffer makeBuffer(void* tData, uint32_t tLength);
 Buffer makeBufferOwned(void* tData, uint32_t tLength);
 Buffer makeBufferEmptyOwned();

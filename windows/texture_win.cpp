@@ -19,7 +19,7 @@
 #include "prism/math.h"
 #include "prism/compression.h"
 
-TextureData textureFromSurface(SDL_Surface* tSurface) {
+static TextureData textureFromSurface(SDL_Surface* tSurface) {
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
 	returnData.mTextureSize.x = tSurface->w;
@@ -46,7 +46,7 @@ TextureData textureFromSurface(SDL_Surface* tSurface) {
 	return returnData;
 }
 
-static TextureData loadTexturePNG(char* tFileDir) {
+TextureData loadTexturePNG(const char* tFileDir) {
 	
 	Buffer b = fileToBuffer(tFileDir);
 	SDL_RWops* memStream = SDL_RWFromMem(b.mData, b.mLength);
@@ -426,4 +426,15 @@ void unloadTruetypeFont(TruetypeFont tFont)
 {
 	TTF_Font* font = (TTF_Font*)tFont;
 	TTF_CloseFont(font);
+}
+
+#ifdef __EMSCRIPTEN__
+typedef unsigned char BYTE;
+#endif
+
+void saveScreenShot(const char* tFileDir) {
+	const auto sz = getDisplayedScreenSize();
+	std::vector<BYTE> pixels(3 * sz.x * sz.y);
+	glReadPixels(0, 0, sz.x, sz.y, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+	saveRGB32ToPNG(makeBuffer(pixels.data(), pixels.size()), sz.x, sz.y, tFileDir);
 }

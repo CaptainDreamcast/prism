@@ -94,6 +94,9 @@ static void getArgumentTextAndAdvanceParams(char* tArgumentText, char** tParams)
 static void parseParameterInput(const char* tFormatString, int* i, char** tDst, char** tParams) {
 
 	(*i)++;
+	while (isdigit(tFormatString[*i]) || tFormatString[*i] == '.') { // don't care about precision
+		(*i)++;
+	}
 	char identifier = tFormatString[*i];
 
 	char argumentText[100];
@@ -106,7 +109,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 	}
 	else if(identifier == 'd' || identifier == 'i') {
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
-		int val = atoi(argumentText); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
+		int val = atoi(argumentText);
 		sprintf(parsedValue, "%d", val);
 		int len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
@@ -114,7 +117,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 	}
 	else if (identifier == 'f' || identifier == 'F') {
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
-		double val = atof(argumentText); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
+		double val = atof(argumentText);
 		sprintf(parsedValue, "%f", val);
 		int len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
@@ -122,7 +125,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 	}
 	else if (identifier == 'e' || identifier == 'E') {
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
-		double val = atof(argumentText); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
+		double val = atof(argumentText);
 		sprintf(parsedValue, "%e", val);
 		int len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
@@ -130,7 +133,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 	}
 	else if (identifier == 'g' || identifier == 'G') {
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
-		double val = atof(argumentText); // TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
+		double val = atof(argumentText);
 		sprintf(parsedValue, "%g", val);
 		int len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
@@ -183,7 +186,6 @@ static void parseFormatInput(const char* tFormatString, int* i, char** tDst, cha
 
 void addClipboardLineFormatString(const char * tFormatString, const char * tParameterString)
 {
-	// TODO: parse properly (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/365)
 	char text[1024];
 	char* dst;
 	char paramBuffer[200];

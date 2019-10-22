@@ -338,15 +338,8 @@ void drawMultilineText(const char* tText, const char* tFullText, Position tPosit
   //sem_signal(&gPVRAccessSemaphore);
 }
 
-void drawTruetypeText(const char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth) {
-	// TODO
-	(void) tText;
-	(void) tFont;
-	(void) tPosition;
-	(void) tTextSize;
-	(void) tColor;
-	(void) tTextBoxWidth;
-}
+// not on dreamcast
+void drawTruetypeText(const char* /*tText*/, TruetypeFont /*tFont*/, Position /*tPosition*/, Vector3DI /*tTextSize*/, Vector3D /*tColor*/, double /*tTextBoxWidth*/, GeoRectangle /*tDrawRectangle*/) { }
 
 void scaleDrawing(double tFactor, Position tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);

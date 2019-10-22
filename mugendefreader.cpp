@@ -820,7 +820,7 @@ void loadMugenDefScript(MugenDefScript* oScript, const char * tPath)
 {
 	debugLog("Start loading script.");
 	debugString(tPath);
-	logFormat("loading file %s\n", tPath);
+	logFormat("loading file %s", tPath);
 	Buffer b = fileToBuffer(tPath);
 	loadMugenDefScriptFromBufferAndFreeBuffer(oScript, b);
 }

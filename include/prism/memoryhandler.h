@@ -17,8 +17,6 @@ typedef struct {
 
 typedef SDLTextureData* Texture;
 
-#define malloc_stats()  {}
-
 #endif
 
 struct TextureMemory_internal {
@@ -57,5 +55,6 @@ void setMemoryHandlerCompressionInactive();
 
 void debugPrintMemoryStack();
 int getAvailableTextureMemory();
+void logMemoryPlatform();
 
 int getAllocatedMemoryBlockAmount();

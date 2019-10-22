@@ -143,7 +143,7 @@ static MugenDuration getTimeWhenStepStarts(MugenAnimationHandlerElement* e, int 
 		MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&e->mAnimation->mSteps, i);
 		sum += step->mDuration;
 	}
-	return sum;
+	return sum + 1;
 
 }
 
@@ -158,8 +158,14 @@ static void updateStepSpriteAndSpriteValidity(MugenAnimationHandlerElement* e) {
 	e->mHasSprite = e->mSprite != NULL;
 }
 
+static void increaseMugenDuration(MugenDuration* tDuration) {
+	if (gMugenAnimationHandler.mIsPaused) return;
+
+	(*tDuration)++;
+}
+
 static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* e) {
-	e->mStepTime = 0;
+	e->mStepTime = 1;
 	
 	e->mStep++;
 	if (e->mStep == vector_size(&e->mAnimation->mSteps)) {
@@ -170,12 +176,16 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 		if (e->mIsLooping) {
 			e->mStep = e->mAnimation->mLoopStart;
 			e->mStepTime = 1;
-			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep) + 1; // TODO: test TODO: Mr. Big and Felicia imply this should be + 1 or at least not = 0 for loop start, either that or count loops for animelemtime (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/358)
+			e->mHasLooped = 1;
+			e->mOverallTime = getTimeWhenStepStarts(e, e->mStep);
 		}
 		else {
 			unloadMugenAnimation(e);
 			return 1;
 		}
+	}
+	else {
+		increaseMugenDuration(&e->mOverallTime);
 	}
 
 	updateStepSpriteAndSpriteValidity(e);
@@ -185,14 +195,9 @@ static int loadNextStepAndReturnIfShouldBeRemoved(MugenAnimationHandlerElement* 
 	return 0;
 }
 
-static void increaseMugenDuration(MugenDuration* tDuration) {
-	if (gMugenAnimationHandler.mIsPaused) return;
-
-	(*tDuration)++;
-}
-
 static void startNewAnimationWithStartStep(MugenAnimationHandlerElement* e, int tStartStep) {
-	e->mOverallTime = getTimeWhenStepStarts(e, tStartStep);
+	e->mOverallTime = getTimeWhenStepStarts(e, tStartStep) - 1;
+	e->mHasLooped = 0;
 
 	e->mStep = tStartStep - 1;
 	if (loadNextStepAndReturnIfShouldBeRemoved(e)) {
@@ -249,6 +254,7 @@ MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation,
 
 	e.mIsPaused = 0;
 	e.mIsLooping = 1;
+	e.mHasLooped = 0;
 	e.mIsCollisionDebugActive = 0;
 
 	e.mR = e.mG = e.mB = e.mAlpha = 1;
@@ -293,11 +299,16 @@ int getMugenAnimationAnimationStepDuration(MugenAnimationHandlerElement* e)
 
 int getMugenAnimationRemainingAnimationTime(MugenAnimationHandlerElement* e)
 {
-	int remainingTime = (e->mAnimation->mTotalDuration - e->mOverallTime) - 1;
-
+	int remainingTime = (e->mAnimation->mTotalDuration - e->mOverallTime) + 1;
 	remainingTime = max(0, remainingTime);
 
+	if (e->mHasLooped && e->mOverallTime == 1) return 0;
 	return remainingTime;
+}
+
+int hasMugenAnimationLooped(MugenAnimationHandlerElement* tElement)
+{
+	return tElement->mHasLooped;
 }
 
 int getMugenAnimationTime(MugenAnimationHandlerElement* e) {
@@ -547,12 +558,11 @@ void changeMugenAnimationWithStartStep(MugenAnimationHandlerElement* e, MugenAni
 int isStartingMugenAnimationElementWithID(MugenAnimationHandlerElement* e, int tStepID)
 {
 	if (e->mIsPaused) return 0;
+	if (e->mHasLooped && e->mStep == 0) return 0;
 
 	int currentStep = e->mStep + 1;
-	return currentStep == tStepID && e->mStepTime == 0;
+	return currentStep == tStepID && e->mStepTime == 1;
 }
-
-
 
 int getTimeFromMugenAnimationElement(MugenAnimationHandlerElement* e, int tStep)
 {
@@ -562,8 +572,13 @@ int getTimeFromMugenAnimationElement(MugenAnimationHandlerElement* e, int tStep)
 		tStep = vector_size(&e->mAnimation->mSteps) - 1;
 	}
 
-	MugenDuration sum = getTimeWhenStepStarts(e, tStep);
-
+	MugenDuration sum;
+	if (e->mHasLooped && e->mStep == 0 && e->mStepTime == 1) {
+		sum = getMugenAnimationDuration(e);
+	}
+	else {
+		sum = getTimeWhenStepStarts(e, tStep);
+	}
 	int offsetFromStep = e->mOverallTime - sum;
 
 	return offsetFromStep;
@@ -619,16 +634,17 @@ int getMugenAnimationTimeWhenStepStarts(MugenAnimationHandlerElement* e, int tSt
 static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	if (e->mIsPaused) return 0;
 
+	int ret = 0;
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
-	increaseMugenDuration(&e->mOverallTime);
-	increaseMugenDuration(&e->mStepTime);
-	if (!step) return 0;
-	if (isMugenAnimationStepDurationInfinite(step->mDuration)) return 0;
-	if (e->mStepTime >= step->mDuration) {
-		return loadNextStepAndReturnIfShouldBeRemoved(e);
+	if (step && !isMugenAnimationStepDurationInfinite(step->mDuration) && e->mStepTime >= step->mDuration) {
+		ret = loadNextStepAndReturnIfShouldBeRemoved(e);
+	}
+	else {
+		increaseMugenDuration(&e->mStepTime);
+		increaseMugenDuration(&e->mOverallTime);
 	}
 
-	return 0;
+	return ret;
 }
 
 static int updateSingleMugenAnimationCB(void* tCaller, MugenAnimationHandlerElement& tData) {
@@ -644,6 +660,38 @@ void advanceMugenAnimationOneTick(MugenAnimationHandlerElement* e)
 	if (shouldBeRemoved) {
 		removeMugenAnimation(e);
 	}
+}
+
+static int areMugenAnimationsEqual(const MugenAnimationHandlerElement& a, const MugenAnimationHandlerElement& b) {
+	if (a.mAnimation != b.mAnimation) return 0;
+	if (a.mStep != b.mStep) return 0;
+	if (a.mStepTime != b.mStepTime) return 0;
+	return 1;
+}
+
+int hasMugenAnimationChanged(MugenAnimationHandlerElement* tElement, const MugenAnimationHandlerElement& tCompareData)
+{
+	if (tElement->mID != tCompareData.mID) {
+		return 0;
+	}
+	return !areMugenAnimationsEqual(*tElement, tCompareData);
+}
+
+MugenAnimationHandlerElement saveMugenAnimation(MugenAnimationHandlerElement * tElement)
+{
+	return *tElement;
+}
+
+void restoreMugenAnimation(MugenAnimationHandlerElement* tElement, const MugenAnimationHandlerElement& tRestorationData)
+{
+	if (tElement->mID != tRestorationData.mID) {
+		logErrorFormat("Unable to restore animation %d, called with invalid ID %d. Ignoring restore request.", tElement->mID, tRestorationData.mID);
+		return;
+	}
+	const auto activeHitDataList = tElement->mActiveHitboxes;
+	*tElement = tRestorationData;
+	tElement->mActiveHitboxes = activeHitDataList;
+	updateHitboxes(tElement);
 }
 
 void setMugenAnimationCollisionDebug(MugenAnimationHandlerElement* e, int tIsActive) {

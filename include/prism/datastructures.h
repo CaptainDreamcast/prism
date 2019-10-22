@@ -7,6 +7,7 @@ void turnStringLowercase(char* tString);
 void turnStringLowercase(std::string& tString);
 void copyStringLowercase(char* tDst, const char* tSrc);
 char* copyToAllocatedString(char* tSrc);
+void removeInvalidFileNameElementsFromString(std::string& tString);
 
 int stringBeginsWithSubstring(const char* tString, const char* tSubstring);
 int stringBeginsWithSubstringCaseIndependent(const char* tString, const char* tSubstring);

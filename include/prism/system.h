@@ -40,6 +40,7 @@ void setIcon(const char* tPath);
 void setScreen(int tX, int tY, int tFramerate, int tIsVGA);
 void setScreenSize(int tX, int tY);
 ScreenSize getScreenSize();
+ScreenSize getDisplayedScreenSize();
 void setDisplayedScreenSize(int tX, int tY);
 void setScreenFramerate(int tFramerate);
 

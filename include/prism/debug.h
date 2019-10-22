@@ -15,6 +15,9 @@ ActorBlueprint getPrismDebug();
 void setPrismDebugUpdateStartTime();
 void setPrismDebugDrawingStartTime();
 void setPrismDebugWaitingStartTime();
+int getPrismDebugSideDisplayVisibility();
+void setPrismDebugSideDisplayVisibility(int tIsVisible);
+void togglePrismDebugSideDisplayVisibility();
 
 void addPrismDebugConsoleCommand(std::string tCommand, std::string(*tCB)(void* tCaller, std::string tCommandInput), void* tCaller = NULL);
 void submitToPrismDebugConsole(std::string tText);

@@ -619,13 +619,14 @@ static void drawSingleBitmapText(MugenText* e) {
 static void drawSingleTruetypeText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenTruetypeFont* truetypeFont = (MugenTruetypeFont*)font->mData;
-
-	drawTruetypeText(e->mDisplayText, truetypeFont->mFont, e->mPosition, font->mSize, makePosition(e->mR, e->mG, e->mB), e->mTextBoxWidth);
+	drawTruetypeText(e->mDisplayText, truetypeFont->mFont, e->mPosition, font->mSize, makePosition(e->mR, e->mG, e->mB), e->mTextBoxWidth, e->mRectangle);
 }
 
 typedef struct {
 	MugenElecbyteFontMapEntry* mMapEntry;
 	Position mBasePosition;
+	double mStartX;
+	int mPreviousSubSpriteOffsetY;
 	MugenText* mText;
 	MugenFont* mFont;
 } ElecbyteDrawCaller;
@@ -637,12 +638,18 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 	if (caller->mMapEntry->mStartX >= subSprite->mOffset.x + subSprite->mTexture.mTextureSize.x) return;
 	if (caller->mMapEntry->mStartX + caller->mMapEntry->mWidth - 1 < subSprite->mOffset.x) return;
 
+	if (subSprite->mOffset.y > caller->mPreviousSubSpriteOffsetY) {
+		caller->mBasePosition.x = caller->mStartX;
+	}
+	caller->mPreviousSubSpriteOffsetY = subSprite->mOffset.y;
+
 	int minWidth = 0;
 	int maxWidth = subSprite->mTexture.mTextureSize.x - 1;
 	int leftX = max(minWidth, min(maxWidth, caller->mMapEntry->mStartX - subSprite->mOffset.x));
 	int rightX = max(minWidth, min(maxWidth, (caller->mMapEntry->mStartX + caller->mMapEntry->mWidth - 1) - subSprite->mOffset.x));
 
-	Position p = caller->mBasePosition;
+	double factor = getOriginalMugenFontFactor() * caller->mText->mScale;
+	Position p = vecAdd2D(caller->mBasePosition, vecScale(makePosition(0.f, subSprite->mOffset.y, 0.f), factor));
 
 	int minHeight = 0;
 	int maxHeight = subSprite->mTexture.mTextureSize.y - 1;
@@ -652,7 +659,6 @@ static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
 
 	p.y = max(p.y, caller->mText->mRectangle.mTopLeft.y);
 
-	double factor = getOriginalMugenFontFactor() * caller->mText->mScale;
 	scaleDrawing(factor, p);
 	drawSprite(subSprite->mTexture, p, makeRectangle(leftX, upY, rightX - leftX, downY - upY));
 	scaleDrawing(1 / factor, p);
@@ -714,7 +720,6 @@ static void drawSingleElecbyteText(MugenText* e) {
 	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
-
 	int i;
 	Position p = vecAdd2D(e->mPosition, makePosition(font->mOffset.x, font->mOffset.y, 0));
 	Position start = p;
@@ -726,6 +731,8 @@ static void drawSingleElecbyteText(MugenText* e) {
 			ElecbyteDrawCaller caller;
 			caller.mMapEntry = &elecbyteFont->mMap[(int)e->mDisplayText[i]];
 			caller.mBasePosition = p;
+			caller.mStartX = p.x;
+			caller.mPreviousSubSpriteOffsetY = INF;
 			caller.mText = e;
 			caller.mFont = font;
 			list_map(&elecbyteFont->mSprite->mTextures, drawSingleElecbyteSubSprite, &caller);

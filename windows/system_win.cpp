@@ -225,6 +225,15 @@ ScreenSize getScreenSize() {
 	return ret;
 }
 
+ScreenSize getDisplayedScreenSize()
+{
+	if (!gPrismWindowsSystemData.mIsLoaded) initScreenDefault();
+	ScreenSize ret;
+	ret.x = gPrismWindowsSystemData.mDisplayedWindowSizeX;
+	ret.y = gPrismWindowsSystemData.mDisplayedWindowSizeY;
+	return ret;
+}
+
 void setDisplayedScreenSize(int tX, int tY)
 {
 	gPrismWindowsSystemData.mDisplayedWindowSizeX = tX;

@@ -102,6 +102,7 @@ struct MugenAnimationHandlerElement {
 
 	int mIsPaused;
 	int mIsLooping;
+	int mHasLooped;
 
 	double mR;
 	double mG;
@@ -132,6 +133,7 @@ int getMugenAnimationAnimationStep(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationAnimationStepAmount(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationAnimationStepDuration(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationRemainingAnimationTime(MugenAnimationHandlerElement* tElement);
+int hasMugenAnimationLooped(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationTime(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationDuration(MugenAnimationHandlerElement* tElement);
 Vector3DI getMugenAnimationSprite(MugenAnimationHandlerElement* tElement);
@@ -188,6 +190,10 @@ int isMugenAnimationTimeOffsetInAnimation(MugenAnimationHandlerElement* tElement
 int getMugenAnimationTimeWhenStepStarts(MugenAnimationHandlerElement* tElement, int tStep);
 
 void advanceMugenAnimationOneTick(MugenAnimationHandlerElement* tElement);
+
+int hasMugenAnimationChanged(MugenAnimationHandlerElement* tElement, const MugenAnimationHandlerElement& tCompareData);
+MugenAnimationHandlerElement saveMugenAnimation(MugenAnimationHandlerElement* tElement);
+void restoreMugenAnimation(MugenAnimationHandlerElement* tElement, const MugenAnimationHandlerElement& tRestorationData);
 
 void setMugenAnimationCollisionDebug(MugenAnimationHandlerElement* tElement, int tIsActive);
 

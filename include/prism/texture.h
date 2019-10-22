@@ -25,6 +25,7 @@ typedef struct {
 
 typedef void* TruetypeFont;
 
+TextureData loadTexturePNG(const char* tFileDir);
 TextureData loadTexturePKG(const char* tFileDir);
 TextureData loadTexture(const char* tFileDir);
 TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight);
@@ -51,3 +52,6 @@ TextureData createWhiteCircleTexture();
 Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc);
 Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight);
 Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight);
+
+void saveScreenShot(const char* tFileDir);
+void saveRGB32ToPNG(Buffer b, int tWidth, int tHeight, const char* tFileDir);

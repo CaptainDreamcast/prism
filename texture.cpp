@@ -2,6 +2,12 @@
 
 #include<algorithm>
 
+#ifdef DREAMCAST
+#include <png/png.h>
+#else
+#include <png.h>
+#endif
+
 #include "prism/file.h"
 #include "prism/log.h"
 #include "prism/system.h"
@@ -202,3 +208,72 @@ Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight) {
 
 	return makeBufferOwned(vtex, tBuffer.mLength);
 }
+
+#ifdef DREAMCAST
+#pragma GCC diagnostic ignored "-Wclobbered"
+#endif
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable: 4611)
+#endif
+void saveRGB32ToPNG(Buffer b, int tWidth, int tHeight, const char* tFileDir) {
+	char fullPath[1024];
+	getFullPath(fullPath, tFileDir);
+	FILE *fp = fopen(fullPath, "wb");
+	if (!fp) {
+		logErrorFormat("Unable to open file %s", tFileDir);
+		return;
+	}
+
+	auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	if (!png_ptr) {
+		logError("Unable to create png struct.");
+		return;
+	}
+
+	auto info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr) {
+		logError("Unable to create png info struct.");
+		return;
+	}
+
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		logError("Exception writing png.");
+		return;
+	}
+
+	png_init_io(png_ptr, fp);
+
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		logError("Exception writing png.");
+		return;
+	}
+
+	png_set_IHDR(png_ptr, info_ptr, tWidth, tHeight,
+		8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+	png_write_info(png_ptr, info_ptr);
+
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		logError("Exception writing png.");
+		return;
+	}
+
+	for (int y = tHeight - 1; y >= 0; y--) {
+		png_bytep bytes = ((png_bytep)b.mData) + tWidth * 3 * y;
+		png_write_rows(png_ptr, &bytes, 1);
+	}
+
+	if (setjmp(png_jmpbuf(png_ptr))) {
+		logError("Exception writing png.");
+		return;
+	}
+
+	png_write_end(png_ptr, NULL);
+
+	fclose(fp);
+}
+#ifdef _WIN32
+#pragma warning(pop)
+#endif

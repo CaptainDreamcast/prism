@@ -50,7 +50,7 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
 void drawText(const char* tText, Position tPosition, TextSize tSize, Color tColor);
 void drawAdvancedText(const char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize);
 void drawMultilineText(const char* tText, const char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize);
-void drawTruetypeText(const char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth);
+void drawTruetypeText(const char* tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth, GeoRectangle tDrawRectangle);
 void waitForScreen();
 void startDrawing();
 void stopDrawing();

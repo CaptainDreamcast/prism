@@ -103,7 +103,6 @@ int isDirectory(const char* tPath) {
 	return (stat(path, &sb) == 0 && (sb.st_mode & S_IFDIR));
 }
 
-
 static Buffer makeBufferInternal(void * tData, uint32_t tLength, int tIsOwned)
 {
 	Buffer b;
