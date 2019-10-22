@@ -302,7 +302,7 @@ int getMugenAnimationRemainingAnimationTime(MugenAnimationHandlerElement* e)
 	int remainingTime = (e->mAnimation->mTotalDuration - e->mOverallTime) + 1;
 	remainingTime = max(0, remainingTime);
 
-	if (e->mHasLooped && e->mOverallTime == 1) return 0;
+	if (e->mHasLooped) return 0;
 	return remainingTime;
 }
 
@@ -558,7 +558,7 @@ void changeMugenAnimationWithStartStep(MugenAnimationHandlerElement* e, MugenAni
 int isStartingMugenAnimationElementWithID(MugenAnimationHandlerElement* e, int tStepID)
 {
 	if (e->mIsPaused) return 0;
-	if (e->mHasLooped && e->mStep == 0) return 0;
+	if (e->mHasLooped) return 0;
 
 	int currentStep = e->mStep + 1;
 	return currentStep == tStepID && e->mStepTime == 1;
@@ -572,14 +572,16 @@ int getTimeFromMugenAnimationElement(MugenAnimationHandlerElement* e, int tStep)
 		tStep = vector_size(&e->mAnimation->mSteps) - 1;
 	}
 
-	MugenDuration sum;
-	if (e->mHasLooped && e->mStep == 0 && e->mStepTime == 1) {
-		sum = getMugenAnimationDuration(e);
+	MugenDuration time;
+	if (e->mHasLooped) {
+		time = getMugenAnimationDuration(e);
 	}
 	else {
-		sum = getTimeWhenStepStarts(e, tStep);
+		time = e->mOverallTime;
 	}
-	int offsetFromStep = e->mOverallTime - sum;
+
+	MugenDuration sum = getTimeWhenStepStarts(e, tStep);
+	int offsetFromStep = time - sum;
 
 	return offsetFromStep;
 }
@@ -635,6 +637,7 @@ static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	if (e->mIsPaused) return 0;
 
 	int ret = 0;
+	e->mHasLooped = 0;
 	MugenAnimationStep* step = getCurrentAnimationStep(e);
 	if (step && !isMugenAnimationStepDurationInfinite(step->mDuration) && e->mStepTime >= step->mDuration) {
 		ret = loadNextStepAndReturnIfShouldBeRemoved(e);
