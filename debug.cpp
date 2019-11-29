@@ -246,37 +246,16 @@ static void submitConsoleText() {
 	clearConsoleInput();
 }
 
+static void textInputReceived(void* /*tCaller*/, const std::string& tText) {
+	gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, tText);
+	gPrismDebug.mConsole.mPointerPosition += tText.size();
+	updateConsoleText();
+}
+
 static void keyboardInputReceived(void* tCaller, KeyboardKeyPrism tKey) {
 	(void)tCaller;
 
-	if (tKey >= KEYBOARD_A_PRISM && tKey <= KEYBOARD_Z_PRISM) {
-		char c = 'a' + (tKey - KEYBOARD_A_PRISM);
-		if (hasPressedRawKeyboardKey(KEYBOARD_SHIFT_LEFT_PRISM)) c += 'A' - 'a';
-		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, 1, c);
-		gPrismDebug.mConsole.mPointerPosition++;
-		updateConsoleText();
-	} 	if (tKey >= KEYBOARD_0_PRISM && tKey <= KEYBOARD_9_PRISM) {
-		char c = '0' + (tKey - KEYBOARD_0_PRISM);
-		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, 1, c);
-		gPrismDebug.mConsole.mPointerPosition++;
-		updateConsoleText();
-	}
-	else if (tKey == KEYBOARD_SPACE_PRISM) {
-		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, 1, ' ');
-		gPrismDebug.mConsole.mPointerPosition++;
-		updateConsoleText();
-	}
-	else if (tKey == KEYBOARD_PERIOD_PRISM) {
-		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, 1, '.');
-		gPrismDebug.mConsole.mPointerPosition++;
-		updateConsoleText();
-	}
-	else if (tKey == KEYBOARD_SLASH_PRISM) {
-		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, 1, '/');
-		gPrismDebug.mConsole.mPointerPosition++;
-		updateConsoleText();
-	}
-	else if (tKey == KEYBOARD_BACKSPACE_PRISM) {
+	if (tKey == KEYBOARD_BACKSPACE_PRISM) {
 		if (gPrismDebug.mConsole.mPointerPosition > 0) {
 			gPrismDebug.mConsole.mConsoleText.erase(gPrismDebug.mConsole.mPointerPosition - 1, 1);
 			gPrismDebug.mConsole.mPointerPosition--;
@@ -343,6 +322,7 @@ static void setConsoleVisible() {
 	setAnimationColor(gPrismDebug.mConsole.mConsolePointerAnimationElement, 1, 1, 1);
 	updateConsoleText();
 
+	waitForCharacterFromUserInput(0, textInputReceived);
 	waitForButtonFromUserInputForKeyboard(0, keyboardInputReceived);
 
 	gPrismDebug.mConsole.mArchivePointer = -1;
@@ -360,6 +340,7 @@ static void setConsoleInvisible() {
 	removeMugenText(gPrismDebug.mConsole.mConsoleTextID);
 	removeHandledAnimation(gPrismDebug.mConsole.mConsolePointerAnimationElement);
 
+	cancelWaitingForCharacterFromUserInput(0);
 	cancelWaitingForButtonFromUserInput(0);
 
 	gPrismDebug.mConsole.mIsVisible = 0;
@@ -441,6 +422,11 @@ void setPrismDebugSideDisplayVisibility(int tIsVisible)
 void togglePrismDebugSideDisplayVisibility()
 {
 	setPrismDebugSideDisplayVisibility(!getPrismDebugSideDisplayVisibility());
+}
+
+int isPrismDebugConsoleVisible()
+{
+	return gPrismDebug.mConsole.mIsVisible;
 }
 
 void addPrismDebugConsoleCommand(std::string tCommand, std::string(*tCB)(void *tCaller, std::string tCommandInput), void* tCaller)

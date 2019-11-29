@@ -14,3 +14,4 @@ void destroyMemoryStack(MemoryStack* tStack);
 void resizeMemoryStackToCurrentSize(MemoryStack* tStack);
 
 void* allocMemoryOnMemoryStack(MemoryStack* tStack, uint32_t tSize);
+int canFitOnMemoryStack(MemoryStack* tStack, uint32_t tSize);

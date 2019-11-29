@@ -9,6 +9,9 @@ struct PhysicsHandlerElement {
 	Vector3D mDragCoefficient;
 	Gravity mGravity;
 	int mIsPaused;
+
+	double mTimeDilatationNow;
+	double mTimeDilatation;
 };
 
 void setupPhysicsHandler();
@@ -29,3 +32,4 @@ void resumeHandledPhysics(PhysicsHandlerElement* tElement);
 void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* tElement, double tVelocity);
 void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* tElement, Vector3D tDragCoefficient);
 void setHandledPhysicsGravity(PhysicsHandlerElement* tElement, Vector3D tGravity);
+void setHandledPhysicsSpeed(PhysicsHandlerElement* tElement, double tSpeed);

@@ -60,6 +60,8 @@ void shutdownSoundEffectHandler() {
 	gSoundEffectData.mChunks.clear();
 }
 
+void setSoundEffectCompression(int /*tIsEnabled*/) {} // no need for compression in web/windows
+
 static int addBufferToSoundEffectHandler(Buffer tBuffer) {
 	SoundEffectEntry e;
 	e.mBuffer = tBuffer;

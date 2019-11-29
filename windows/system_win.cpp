@@ -186,15 +186,23 @@ static void checkFullscreen() {
 	}
 }
 
+extern void receiveCharacterInputFromSDL(const std::string& tText);
+
 void updateSystem() {
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0) { 
-		if( e.type == SDL_QUIT ) 
-		{  
+		switch (e.type) {
+		case SDL_QUIT:
 			returnToMenu();
-		}
-		else if (e.type == SDL_WINDOWEVENT) {
+			break;
+		case SDL_WINDOWEVENT:
 			checkWindowEvents(&e);
+			break;
+		case SDL_TEXTINPUT:
+			receiveCharacterInputFromSDL(e.text.text);
+			break;
+		default:
+			break;
 		}
 	}
 

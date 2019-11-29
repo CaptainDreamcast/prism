@@ -11,6 +11,8 @@ void initSoundEffects();
 void setupSoundEffectHandler();
 void shutdownSoundEffectHandler();
 
+void setSoundEffectCompression(int tIsEnabled);
+
 int loadSoundEffect(char* tPath);
 int loadSoundEffectFromBuffer(Buffer tBuffer);
 void unloadSoundEffect(int tID);

@@ -92,6 +92,7 @@ const char* getPureFileName(const char* path);
 int hasFileExtension(const char* tPath);
 const char* getFileExtension(const char* tPath);
 char* getFileExtension(char* tPath);
+size_t getFileSize(const char* tPath);
 void getPathWithoutFileExtension(char* tDest, const char* tPath);
 void  getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i);
 void getFullPath(char* tDest, const char* tPath);

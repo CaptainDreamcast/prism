@@ -3,6 +3,7 @@
 #define MAXIMUM_CONTROLLER_AMOUNT 2
 
 #include <stdio.h>
+#include <string>
 
 #include "geometry.h"
 #include "animation.h"
@@ -125,6 +126,9 @@ double getLNormalized();
 double getRNormalized();
 
 int hasPressedAnyButton();
+int hasPressedAnyButtonSingle(int i);
+int hasPressedAnyButtonFlank();
+int hasPressedAnyButtonFlankSingle(int i);
 
 int hasShotGun();
 int hasShotGunFlank();
@@ -203,3 +207,6 @@ void setButtonFromUserInputForKeyboard(int i, ControllerButtonPrism tTargetButto
 void waitForButtonFromUserInputForController(int i, void(*tCB)(void*, ControllerButtonPrism), void* tCaller = NULL);
 void waitForButtonFromUserInputForKeyboard(int i, void(*tCB)(void*, KeyboardKeyPrism), void* tCaller = NULL);
 void cancelWaitingForButtonFromUserInput(int i);
+
+void waitForCharacterFromUserInput(int i, void(*tCB)(void*, const std::string&), void* tCaller = NULL);
+void cancelWaitingForCharacterFromUserInput(int i);

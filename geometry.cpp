@@ -407,3 +407,10 @@ int operator==(const Vector3DI& a, const Vector3DI& b) {
 int operator!=(const Vector3DI& a, const Vector3DI& b) {
 	return a.x != b.x || a.y != b.y || a.z != b.z;
 }
+
+GeoRectangle operator*(const GeoRectangle& a, const double& b) {
+	GeoRectangle ret;
+	ret.mTopLeft = a.mTopLeft*b;
+	ret.mBottomRight = a.mBottomRight*b;
+	return ret;
+}

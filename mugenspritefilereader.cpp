@@ -11,6 +11,7 @@
 #endif
 
 #include "prism/file.h"
+#include "prism/filereader.h"
 #include "prism/log.h"
 #include "prism/system.h"
 #include "prism/texture.h"
@@ -135,25 +136,12 @@ typedef struct {
 	char mFiller[58];
 } PCXHeader;
 
-typedef struct MugenSpriteFileReader_internal {
-	int mType;
-	void(*mInit)(struct MugenSpriteFileReader_internal* tReader, char* tPath);
-	void(*mRead)(struct MugenSpriteFileReader_internal* tReader, void* tDst, uint32_t tSize);
-	Buffer(*mReadBufferReadOnly)(struct MugenSpriteFileReader_internal* tReader, uint32_t tSize);
-	void(*mSeek)(struct MugenSpriteFileReader_internal* tReader, uint32_t tPosition);
-	uint32_t(*mGetCurrentOffset)(struct MugenSpriteFileReader_internal* tReader);
-	void(*mDelete)(struct MugenSpriteFileReader_internal* tReader);
-	void(*mSetOver)(struct MugenSpriteFileReader_internal* tReader);
-	int(*mIsOver)(struct MugenSpriteFileReader_internal* tReader);
-	void* mData;
-} MugenSpriteFileReader;
-
 static struct {
 	int mIsOnlyLoadingPortraits;
 	int mHasPaletteFile;
 	int mIsUsingRealPalette;
 	int mPaletteID;
-	MugenSpriteFileReader mReader;
+	FileReader mReader;
 
 	TextureData(*mCustomLoadTextureFromARGB16Buffer)(Buffer, int, int);
 	TextureData(*mCustomLoadTextureFromARGB32Buffer)(Buffer, int, int);
@@ -864,7 +852,6 @@ static void loadSingleSFFFile(MugenSpriteFile* tDst) {
 	else {
 		gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, subHeader.mNextFilePosition);		
 	}
-
 }
 
 static void loadSFFHeader(SFFHeader* tHeader) {
@@ -1249,8 +1236,6 @@ static void loadSingleSpritePreloaded(MugenSpriteFile* tDst) {
 	insertTextureIntoSpriteFile(tDst, sprite, spriteHeader.mGroupNumber, spriteHeader.mSpriteNumber);
 }
 
-static void initBufferReaderReadOnlyBuffer(MugenSpriteFileReader* tReader, Buffer tBuffer);
-
 static void loadSingleBlockPreloaded(MugenSpriteFile* tDst) {
 	PreloadedBlock header;
 
@@ -1260,9 +1245,9 @@ static void loadSingleBlockPreloaded(MugenSpriteFile* tDst) {
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, buf, header.mBlockSize);
 	Buffer b = makeBufferOwned(buf, header.mBlockSize);
 
-	MugenSpriteFileReader originalReader = gPrismMugenSpriteFileReaderData.mReader;
+	FileReader originalReader = gPrismMugenSpriteFileReaderData.mReader;
 	setMugenSpriteFileReaderToBuffer();
-	initBufferReaderReadOnlyBuffer(&gPrismMugenSpriteFileReaderData.mReader, b);
+	initBufferFileReaderReadOnlyBuffer(&gPrismMugenSpriteFileReaderData.mReader, b);
 
 	for (uint32_t i = 0; i < header.mBlockSpriteAmount; i++) {
 		loadSingleSpritePreloaded(tDst);
@@ -1283,7 +1268,6 @@ static void loadSpritesPreloaded(MugenSpriteFile* tDst) {
 
 }
 
-
 static MugenSpriteFile loadMugenSpriteFilePreloaded(int tHasPaletteFile, char* tOptionalPaletteFile) {
 	MugenSpriteFile ret = makeEmptySpriteFile();
 
@@ -1301,7 +1285,7 @@ static MugenSpriteFile loadMugenSpriteFilePreloaded(int tHasPaletteFile, char* t
 }
 
 static void checkMugenSpriteFileReader() {
-	if (gPrismMugenSpriteFileReaderData.mReader.mType == 0) {
+	if (gPrismMugenSpriteFileReaderData.mReader.mType == FILE_READER_TYPE_NONE) {
 		setMugenSpriteFileReaderToFileOperations();
 	}
 }
@@ -1446,175 +1430,14 @@ MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile
 	return original;
 }
 
-
-typedef struct {
-	Buffer b;
-	BufferPointer p;
-
-	int mIsOver;
-} MugenSpriteFileBufferReaderData;
-
-
-static void initBufferReader(MugenSpriteFileReader* tReader, char* tPath) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)allocMemory(sizeof(MugenSpriteFileBufferReaderData));
-	data->b = fileToBuffer(tPath);
-	data->p = getBufferPointer(data->b);
-	data->mIsOver = 0;
-	tReader->mData = data;
-}
-
-static void initBufferReaderReadOnlyBuffer(MugenSpriteFileReader* tReader, Buffer tBuffer) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)allocMemory(sizeof(MugenSpriteFileBufferReaderData));
-	data->b = tBuffer;
-	data->p = getBufferPointer(data->b);
-	data->mIsOver = 0;
-	tReader->mData = data;
-}
-
-static void deleteBufferReader(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
-	freeBuffer(data->b);
-	freeMemory(data);
-}
-
-static void readBufferReader(MugenSpriteFileReader* tReader, void* tDst, uint32_t tSize) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
-	readFromBufferPointer(tDst, &data->p, tSize);
-}
-
-static void seekBufferReader(MugenSpriteFileReader* tReader, uint32_t tPosition) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
-	data->p = ((char*)data->b.mData) + tPosition;
-
-	if (data->p >= ((char*)data->b.mData) + data->b.mLength) {
-		gPrismMugenSpriteFileReaderData.mReader.mSetOver(&gPrismMugenSpriteFileReaderData.mReader);
-	}
-}
-
-static Buffer readBufferReaderBuffer(MugenSpriteFileReader* tReader, uint32_t tSize) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
-	return makeBuffer(data->p, tSize);
-}
-
-static uint32_t getCurrentBufferReaderOffset(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
-	return (uint32_t)(data->p - ((char*)data->b.mData));
-}
-
-
-static void setBufferReaderOver(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
-	data->p = NULL;
-	data->mIsOver = 1;
-}
-
-static int isBufferReaderOver(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)tReader->mData;
-	return data->mIsOver;
-}
-
-static MugenSpriteFileReader getMugenSpriteFileBufferReader() {
-	MugenSpriteFileReader ret;
-	ret.mType = 1;
-	ret.mInit = initBufferReader;
-	ret.mRead = readBufferReader;
-	ret.mReadBufferReadOnly = readBufferReaderBuffer;
-	ret.mSeek = seekBufferReader;
-	ret.mGetCurrentOffset = getCurrentBufferReaderOffset;
-	ret.mDelete = deleteBufferReader;
-	ret.mSetOver = setBufferReaderOver;
-	ret.mIsOver = isBufferReaderOver;
-	return ret;
-}
-
 void setMugenSpriteFileReaderToBuffer()
 {
-	gPrismMugenSpriteFileReaderData.mReader = getMugenSpriteFileBufferReader();
-}
-
-typedef struct {
-	FileHandler mFile;
-	uint32_t mFileSize;
-	int mIsOver;
-} MugenSpriteFileFileReaderData;
-
-
-static void initFileReader(MugenSpriteFileReader* tReader, char* tPath) {
-	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)allocMemory(sizeof(MugenSpriteFileFileReaderData));
-	data->mFile = fileOpen(tPath, O_RDONLY);
-	data->mFileSize = fileTotal(data->mFile);
-	data->mIsOver = 0;
-	tReader->mData = data;
-}
-
-static void deleteFileReader(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
-	fileClose(data->mFile);
-	freeMemory(data);
-}
-
-static void readFileReader(MugenSpriteFileReader* tReader, void* tDst, uint32_t tSize) {
-	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
-
-	fileRead(data->mFile, tDst, tSize);
-}
-
-static void seekFileReader(MugenSpriteFileReader* tReader, uint32_t tPosition) {
-	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
-
-	fileSeek(data->mFile, tPosition, SEEK_SET); 
-	uint32_t position = gPrismMugenSpriteFileReaderData.mReader.mGetCurrentOffset(&gPrismMugenSpriteFileReaderData.mReader);
-
-	if (position >= data->mFileSize) {
-		gPrismMugenSpriteFileReaderData.mReader.mSetOver(&gPrismMugenSpriteFileReaderData.mReader);
-	}
-}
-
-static Buffer readFileReaderBuffer(MugenSpriteFileReader* tReader, uint32_t tSize) {
-	(void)tReader;
-	uint32_t originalPosition = gPrismMugenSpriteFileReaderData.mReader.mGetCurrentOffset(&gPrismMugenSpriteFileReaderData.mReader);
-	char* dst = (char*)allocMemory(tSize + 10);
-	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, dst, tSize);
-
-	gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, originalPosition);
-
-	return makeBufferOwned(dst, tSize);
-}
-
-static uint32_t getCurrentFileReaderOffset(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
-
-	return (uint32_t)fileTell(data->mFile);
-}
-
-
-static void setFileReaderOver(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
-	data->mIsOver = 1;
-}
-
-static int isFileReaderOver(MugenSpriteFileReader* tReader) {
-	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)tReader->mData;
-	return data->mIsOver;
-}
-
-static MugenSpriteFileReader getMugenSpriteFileFileReader() {
-	MugenSpriteFileReader ret;
-	ret.mType = 2;
-	ret.mInit = initFileReader;
-	ret.mRead = readFileReader;
-	ret.mReadBufferReadOnly = readFileReaderBuffer;
-	ret.mSeek = seekFileReader;
-	ret.mGetCurrentOffset = getCurrentFileReaderOffset;
-	ret.mDelete = deleteFileReader;
-	ret.mSetOver = setFileReaderOver;
-	ret.mIsOver = isFileReaderOver;
-	return ret;
+	gPrismMugenSpriteFileReaderData.mReader = getBufferFileReader();
 }
 
 void setMugenSpriteFileReaderToFileOperations()
 {
-	gPrismMugenSpriteFileReaderData.mReader = getMugenSpriteFileFileReader();
+	gPrismMugenSpriteFileReaderData.mReader = getFileFileReader();
 }
 
 void setMugenSpriteFileReaderToUsePalette(int tPaletteID)

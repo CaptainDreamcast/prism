@@ -22,7 +22,7 @@
 #include "prism/math.h"
 #include "prism/stlutil.h"
 
-static const GLchar *vertex_shader =
+static const GLchar *gVertexShader =
 "uniform mat4 ProjMtx;\n"
 "attribute vec2 Position;\n"
 "attribute vec2 UV;\n"
@@ -36,7 +36,7 @@ static const GLchar *vertex_shader =
 "	gl_Position = ProjMtx * vec4(Position.xy, 0, 1);\n"
 "}\n";
 
-static const GLchar* fragment_shader =
+static const GLchar* gFragmentShader =
 #ifdef __EMSCRIPTEN__
 // WebGL requires precision specifiers but OpenGL 2.1 disallows
 // them, so I define the shader without it and then add it here.
@@ -50,9 +50,23 @@ static const GLchar* fragment_shader =
 "	gl_FragColor = Frag_Color * texture2D(Texture, Frag_UV);\n"
 "}\n";
 
+static const GLchar* gFragmentShaderPalette =
+#ifdef __EMSCRIPTEN__
+// WebGL requires precision specifiers but OpenGL 2.1 disallows
+// them, so I define the shader without it and then add it here.
+"precision mediump float;\n"
+#endif
+"uniform sampler2D Texture;\n"
+"uniform sampler2D Palette;\n"
+"varying vec2 Frag_UV;\n"
+"varying vec4 Frag_Color;\n"
+"void main()\n"
+"{\n"
+"	vec4 index = texture2D(Texture, Frag_UV);\n"
+"	gl_FragColor = Frag_Color * texture2D(Palette, vec2(index.w, 0));\n"
+"}\n";
+
 using namespace std;
-
-
 
 typedef struct {
 
@@ -70,7 +84,7 @@ typedef struct {
 
 	BlendType mBlendType;
 
-	SDL_Color mPalettes[4][256];
+	GLuint mPalettes[4];
 } DrawingData;
 
 struct DrawListSpriteElement{
@@ -164,16 +178,35 @@ enum GraphicsCardType {
 	UNKNOWN
 };
 
+enum ActiveShader {
+	ACTIVE_SHADER_NONE,
+	ACTIVE_SHADER_REGULAR,
+	ACTIVE_SHADER_PALETTE
+};
+
+typedef struct {
+	int mShaderHandle, mVertHandle, mFragHandle;
+	int mAttribLocationTex, mAttribLocationProjMtx;
+	int mAttribLocationPosition, mAttribLocationUV, mAttribLocationColor;
+} RegularShader;
+
+typedef struct {
+	int mShaderHandle, mVertHandle, mFragHandle;
+	int mAttribLocationTex, mAttribLocationPal, mAttribLocationProjMtx;
+	int mAttribLocationPosition, mAttribLocationUV, mAttribLocationColor;
+} PaletteShader;
+
 static struct {
-	int          mShaderHandle, mVertHandle, mFragHandle;
-	int          mAttribLocationTex, mAttribLocationProjMtx;
-	int          mAttribLocationPosition, mAttribLocationUV, mAttribLocationColor;
 	unsigned int mVboHandle, mElementsHandle;
+	RegularShader mRegularShader;
+	PaletteShader mPaletteShader;
 
 	GraphicsCardType mCardType;
 	Vector3D mScreenScale;
+	Vector3D mRealScreenSize;
 
 	uint32_t mSubtractionEquation;
+	ActiveShader mActiveShader;
 } gOpenGLData;
 
 static struct {
@@ -215,40 +248,46 @@ static void setupCardSpecificRendering() {
 	}
 }
 
-static void initOpenGL() {
+static void initRegularShader() {
+	gOpenGLData.mRegularShader.mShaderHandle = glCreateProgram();
+	gOpenGLData.mRegularShader.mVertHandle = glCreateShader(GL_VERTEX_SHADER);
+	gOpenGLData.mRegularShader.mFragHandle = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(gOpenGLData.mRegularShader.mVertHandle, 1, &gVertexShader, NULL);
+	glShaderSource(gOpenGLData.mRegularShader.mFragHandle, 1, &gFragmentShader, 0);
+	glCompileShader(gOpenGLData.mRegularShader.mVertHandle);
+	glCompileShader(gOpenGLData.mRegularShader.mFragHandle);
+	glAttachShader(gOpenGLData.mRegularShader.mShaderHandle, gOpenGLData.mRegularShader.mVertHandle);
+	glAttachShader(gOpenGLData.mRegularShader.mShaderHandle, gOpenGLData.mRegularShader.mFragHandle);
+	glLinkProgram(gOpenGLData.mRegularShader.mShaderHandle);
 
-	gOpenGLData.mShaderHandle = glCreateProgram();
-	gOpenGLData.mVertHandle = glCreateShader(GL_VERTEX_SHADER);
-	gOpenGLData.mFragHandle = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(gOpenGLData.mVertHandle, 1, &vertex_shader, NULL);
-	glShaderSource(gOpenGLData.mFragHandle, 1, &fragment_shader, 0);
-	glCompileShader(gOpenGLData.mVertHandle);
-	glCompileShader(gOpenGLData.mFragHandle);
-	glAttachShader(gOpenGLData.mShaderHandle, gOpenGLData.mVertHandle);
-	glAttachShader(gOpenGLData.mShaderHandle, gOpenGLData.mFragHandle);
-	glLinkProgram(gOpenGLData.mShaderHandle);
+	gOpenGLData.mRegularShader.mAttribLocationTex = glGetUniformLocation(gOpenGLData.mRegularShader.mShaderHandle, "Texture");
+	gOpenGLData.mRegularShader.mAttribLocationProjMtx = glGetUniformLocation(gOpenGLData.mRegularShader.mShaderHandle, "ProjMtx");
+	gOpenGLData.mRegularShader.mAttribLocationPosition = glGetAttribLocation(gOpenGLData.mRegularShader.mShaderHandle, "Position");
+	gOpenGLData.mRegularShader.mAttribLocationUV = glGetAttribLocation(gOpenGLData.mRegularShader.mShaderHandle, "UV");
+	gOpenGLData.mRegularShader.mAttribLocationColor = glGetAttribLocation(gOpenGLData.mRegularShader.mShaderHandle, "Color");
+}
 
-	gOpenGLData.mAttribLocationTex = glGetUniformLocation(gOpenGLData.mShaderHandle, "Texture");
-	gOpenGLData.mAttribLocationProjMtx = glGetUniformLocation(gOpenGLData.mShaderHandle, "ProjMtx");
-	gOpenGLData.mAttribLocationPosition = glGetAttribLocation(gOpenGLData.mShaderHandle, "Position");
-	gOpenGLData.mAttribLocationUV = glGetAttribLocation(gOpenGLData.mShaderHandle, "UV");
-	gOpenGLData.mAttribLocationColor = glGetAttribLocation(gOpenGLData.mShaderHandle, "Color");
+static void initPaletteShader() {
+	gOpenGLData.mPaletteShader.mShaderHandle = glCreateProgram();
+	gOpenGLData.mPaletteShader.mVertHandle = glCreateShader(GL_VERTEX_SHADER);
+	gOpenGLData.mPaletteShader.mFragHandle = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(gOpenGLData.mPaletteShader.mVertHandle, 1, &gVertexShader, NULL);
+	glShaderSource(gOpenGLData.mPaletteShader.mFragHandle, 1, &gFragmentShaderPalette, 0);
+	glCompileShader(gOpenGLData.mPaletteShader.mVertHandle);
+	glCompileShader(gOpenGLData.mPaletteShader.mFragHandle);
+	glAttachShader(gOpenGLData.mPaletteShader.mShaderHandle, gOpenGLData.mPaletteShader.mVertHandle);
+	glAttachShader(gOpenGLData.mPaletteShader.mShaderHandle, gOpenGLData.mPaletteShader.mFragHandle);
+	glLinkProgram(gOpenGLData.mPaletteShader.mShaderHandle);
 
-	glGenBuffers(1, &gOpenGLData.mVboHandle);
-	glGenBuffers(1, &gOpenGLData.mElementsHandle);
+	gOpenGLData.mPaletteShader.mAttribLocationTex = glGetUniformLocation(gOpenGLData.mPaletteShader.mShaderHandle, "Texture");
+	gOpenGLData.mPaletteShader.mAttribLocationPal = glGetUniformLocation(gOpenGLData.mPaletteShader.mShaderHandle, "Palette");
+	gOpenGLData.mPaletteShader.mAttribLocationProjMtx = glGetUniformLocation(gOpenGLData.mPaletteShader.mShaderHandle, "ProjMtx");
+	gOpenGLData.mPaletteShader.mAttribLocationPosition = glGetAttribLocation(gOpenGLData.mPaletteShader.mShaderHandle, "Position");
+	gOpenGLData.mPaletteShader.mAttribLocationUV = glGetAttribLocation(gOpenGLData.mPaletteShader.mShaderHandle, "UV");
+	gOpenGLData.mPaletteShader.mAttribLocationColor = glGetAttribLocation(gOpenGLData.mPaletteShader.mShaderHandle, "Color");
+}
 
-	glUseProgram(gOpenGLData.mShaderHandle);
-	glUniform1i(gOpenGLData.mAttribLocationTex, 0);
-
-	// Render command lists
-	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
-	glEnableVertexAttribArray(gOpenGLData.mAttribLocationPosition);
-	glEnableVertexAttribArray(gOpenGLData.mAttribLocationUV);
-	glEnableVertexAttribArray(gOpenGLData.mAttribLocationColor);
-	int stride = sizeof(GLfloat) * 8;
-	glVertexAttribPointer(gOpenGLData.mAttribLocationPosition, 2, GL_FLOAT, GL_FALSE, stride, 0);
-	glVertexAttribPointer(gOpenGLData.mAttribLocationUV, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 2));
-	glVertexAttribPointer(gOpenGLData.mAttribLocationColor, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 4));
+static void useShaderGeneral() {
 	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gOpenGLData.mElementsHandle);
 
@@ -261,27 +300,68 @@ static void initOpenGL() {
 	glActiveTexture(GL_TEXTURE0);
 
 	GLuint elements[] = {
-	0, 1, 2,
-	2, 3, 0
+		0, 1, 2,
+		2, 3, 0
 	};
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STREAM_DRAW);
 
-	glViewport(0, 0, 640, 480);
+	glViewport(0, 0, (GLsizei)gOpenGLData.mRealScreenSize.x, (GLsizei)gOpenGLData.mRealScreenSize.y);
 	glClearColor(0, 0, 0, 1);
+}
+
+static void useRegularShader() {
+	glUseProgram(gOpenGLData.mRegularShader.mShaderHandle);
+	glUniform1i(gOpenGLData.mRegularShader.mAttribLocationTex, 0);
+
+	// Render command lists
+	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
+	glEnableVertexAttribArray(gOpenGLData.mRegularShader.mAttribLocationPosition);
+	glEnableVertexAttribArray(gOpenGLData.mRegularShader.mAttribLocationUV);
+	glEnableVertexAttribArray(gOpenGLData.mRegularShader.mAttribLocationColor);
+	int stride = sizeof(GLfloat) * 8;
+	glVertexAttribPointer(gOpenGLData.mRegularShader.mAttribLocationPosition, 2, GL_FLOAT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(gOpenGLData.mRegularShader.mAttribLocationUV, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 2));
+	glVertexAttribPointer(gOpenGLData.mRegularShader.mAttribLocationColor, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 4));
+	
+	useShaderGeneral();
+}
+
+static void usePaletteShader() {
+	glUseProgram(gOpenGLData.mPaletteShader.mShaderHandle);
+	glUniform1i(gOpenGLData.mPaletteShader.mAttribLocationTex, 0);
+	glUniform1i(gOpenGLData.mPaletteShader.mAttribLocationPal, 1);
+
+	// Render command lists
+	glBindBuffer(GL_ARRAY_BUFFER, gOpenGLData.mVboHandle);
+	glEnableVertexAttribArray(gOpenGLData.mPaletteShader.mAttribLocationPosition);
+	glEnableVertexAttribArray(gOpenGLData.mPaletteShader.mAttribLocationUV);
+	glEnableVertexAttribArray(gOpenGLData.mPaletteShader.mAttribLocationColor);
+	int stride = sizeof(GLfloat) * 8;
+	glVertexAttribPointer(gOpenGLData.mPaletteShader.mAttribLocationPosition, 2, GL_FLOAT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(gOpenGLData.mPaletteShader.mAttribLocationUV, 2, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 2));
+	glVertexAttribPointer(gOpenGLData.mPaletteShader.mAttribLocationColor, 4, GL_FLOAT, GL_FALSE, stride, (void*)(sizeof(GLfloat) * 4));
+	
+	useShaderGeneral();
+}
+
+static void initOpenGL() {
+	initRegularShader();
+	initPaletteShader();
+
+	glGenBuffers(1, &gOpenGLData.mVboHandle);
+	glGenBuffers(1, &gOpenGLData.mElementsHandle);
+
+	gOpenGLData.mActiveShader = ActiveShader::ACTIVE_SHADER_NONE;
+
+	for (int i = 0; i < 4; i++) {
+		glGenTextures(1, &gPrismWindowsData.mPalettes[i]);
+	}
 
 	detectOpenGLCardType();
 	setupCardSpecificRendering();
 }
 
 void setDrawingScreenScale(double tScaleX, double tScaleY);
-
-static void createEmptySDLPalette(SDL_Color* tColors) {
-
-	int i;
-	for (i = 0; i < 256; i++) {
-		tColors[i].a = tColors[i].r = tColors[i].g = tColors[i].b = 0;
-	}
-}
 
 void initDrawing() {
 	if (gSDLWindow == NULL) {
@@ -293,7 +373,6 @@ void initDrawing() {
 	setDrawingScreenScale((640.0 / sz.x), (480.0 / sz.y));
 	setDrawingParametersToIdentity();
 
-
 	IMG_Init(IMG_INIT_PNG);
 	TTF_Init();
 
@@ -301,11 +380,6 @@ void initDrawing() {
 	gBookkeepingData.mFrameStartTime = 0;
 
 	gPrismWindowsData.mEffectStack = new_vector();
-
-	int i;
-	for (i = 0; i < 4; i++) {
-		createEmptySDLPalette(gPrismWindowsData.mPalettes[i]);
-	}
 
 	gPrismWindowsData.mIsDisabled = 0;
 
@@ -387,7 +461,7 @@ static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle& tSrcRect, c
 		}
 	}
 
-	glUniformMatrix4fv(gOpenGLData.mAttribLocationProjMtx, 1, GL_FALSE, &matrix[0][0]);
+	glUniformMatrix4fv(gOpenGLData.mRegularShader.mAttribLocationProjMtx, 1, GL_FALSE, &matrix[0][0]);
 
 	GLfloat vertices[4 * 8];
 	setSingleVertex(&vertices[0 * 8], tDstRect.mTopLeft, tSrcRect.mTopLeft.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a);
@@ -403,18 +477,55 @@ static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle& tSrcRect, c
 }
 
 static void drawPalettedOpenGLTexture(int tTextureID, int tPaletteID, GeoRectangle tSrcRect, GeoRectangle tDstRect, DrawingData* tData) {
-	(void)tTextureID;
-	(void)tPaletteID;
-	(void)tSrcRect;
-	(void)tDstRect;
-	(void)tData;
-	// TODO: implement as proper shader (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/222)
+	Matrix4D* finalMatrix = &tData->mTransformationMatrix;
+
+	float matrix[4][4];
+	for (int y = 0; y < 4; y++) {
+		for (int x = 0; x < 4; x++) {
+			matrix[y][x] = (float)finalMatrix->m[y][x];
+		}
+	}
+
+	glUniformMatrix4fv(gOpenGLData.mPaletteShader.mAttribLocationProjMtx, 1, GL_FALSE, &matrix[0][0]);
+
+	GLfloat vertices[4 * 8];
+	setSingleVertex(&vertices[0 * 8], tDstRect.mTopLeft, tSrcRect.mTopLeft.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a);
+	setSingleVertex(&vertices[1 * 8], makePosition(tDstRect.mBottomRight.x, tDstRect.mTopLeft.y, tDstRect.mTopLeft.z), tSrcRect.mBottomRight.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a);
+	setSingleVertex(&vertices[2 * 8], tDstRect.mBottomRight, tSrcRect.mBottomRight.x, tSrcRect.mBottomRight.y, makePosition(tData->r, tData->g, tData->b), tData->a);
+	setSingleVertex(&vertices[3 * 8], makePosition(tDstRect.mTopLeft.x, tDstRect.mBottomRight.y, tDstRect.mTopLeft.z), tSrcRect.mTopLeft.x, tSrcRect.mBottomRight.y, makePosition(tData->r, tData->g, tData->b), tData->a);
+
+	int stride = sizeof(GLfloat) * 8;
+	glBufferData(GL_ARRAY_BUFFER, 4 * stride, vertices, GL_STREAM_DRAW);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tTextureID);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, gPrismWindowsData.mPalettes[tPaletteID]);
+	glDrawElements(GL_TRIANGLES, (GLsizei)6, GL_UNSIGNED_INT, 0);
+	glActiveTexture(GL_TEXTURE0);
+}
+
+static void updateActiveShader(ActiveShader tNewShader) {
+	if (tNewShader == gOpenGLData.mActiveShader) return;
+
+	switch (tNewShader) {
+	case ACTIVE_SHADER_REGULAR:
+		useRegularShader();
+		break;
+	case ACTIVE_SHADER_PALETTE:
+		usePaletteShader();
+		break;
+	default:
+		break;
+	}
+	gOpenGLData.mActiveShader = tNewShader;
 }
 
 static void drawSortedSprite(DrawListSpriteElement* e) {
 	int sizeX = abs(e->mTexturePosition.bottomRight.x - e->mTexturePosition.topLeft.x) + 1;
 	int sizeY = abs(e->mTexturePosition.bottomRight.y - e->mTexturePosition.topLeft.y) + 1;
 
+	updateActiveShader(e->mTexture.mHasPalette ? ACTIVE_SHADER_PALETTE : ACTIVE_SHADER_REGULAR);
 
 	GeoRectangle srcRect;
 	if (e->mTexturePosition.topLeft.x < e->mTexturePosition.bottomRight.x) {
@@ -780,45 +891,57 @@ void setDrawingScreenScale(double tScaleX, double tScaleY) {
 	gOpenGLData.mScreenScale = makePosition(tScaleX, tScaleY, 1);
 
 	ScreenSize sz = getScreenSize();
-	Vector3D realScreenSize = makePosition(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
-	glViewport(0, 0, (GLsizei)realScreenSize.x, (GLsizei)realScreenSize.y);
+	gOpenGLData.mRealScreenSize = makePosition(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
+	glViewport(0, 0, (GLsizei)gOpenGLData.mRealScreenSize.x, (GLsizei)gOpenGLData.mRealScreenSize.y);
 }
 
 void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
 	assert(tBuffer.mLength == 256 * 4);
 
-	SDL_Color* palette = gPrismWindowsData.mPalettes[tPaletteID];
-
-	int amount = tBuffer.mLength / 4;
-	int i;
-	for (i = 0; i < amount; i++) {
-		palette[i].a = ((Uint8*)tBuffer.mData)[4 * i + 0];
-		palette[i].r = ((Uint8*)tBuffer.mData)[4 * i + 1];
-		palette[i].g = ((Uint8*)tBuffer.mData)[4 * i + 2];
-		palette[i].b = ((Uint8*)tBuffer.mData)[4 * i + 3];
+	uint8_t* src = (uint8_t*)tBuffer.mData;
+	std::vector<uint8_t> finalBuffer(256 * 4);
+	for (int i = 0; i < 256; i++) {
+		finalBuffer[4 * i + 0] = src[4 * i + 1];
+		finalBuffer[4 * i + 1] = src[4 * i + 2];
+		finalBuffer[4 * i + 2] = src[4 * i + 3];
+		finalBuffer[4 * i + 3] = src[4 * i + 0];
 	}
+
+	GLint last_texture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glBindTexture(GL_TEXTURE_2D, gPrismWindowsData.mPalettes[tPaletteID]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, finalBuffer.data());
+	glBindTexture(GL_TEXTURE_2D, last_texture);
 }
 
 void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer tBuffer)
 {
 	assert(tBuffer.mLength == 256 * 3);
 
-	SDL_Color* palette = gPrismWindowsData.mPalettes[tPaletteID];
-
-	int amount = 256;
-	int i;
-	palette[0].a = palette[0].r = palette[0].g = palette[0].b = 0;
-	for (i = 1; i < amount; i++) {
-		palette[i].a = 0xFF;
-		palette[i].b = ((Uint8*)tBuffer.mData)[3 * i + 0];
-		palette[i].g = ((Uint8*)tBuffer.mData)[3 * i + 1];
-		palette[i].r = ((Uint8*)tBuffer.mData)[3 * i + 2];
+	uint8_t* src = (uint8_t*)tBuffer.mData;
+	std::vector<uint8_t> finalBuffer(256 * 4);
+	for (int i = 0; i < 256; i++) {
+		finalBuffer[4 * i + 0] = src[3 * i + 0];
+		finalBuffer[4 * i + 1] = src[3 * i + 1];
+		finalBuffer[4 * i + 2] = src[3 * i + 2];
+		finalBuffer[4 * i + 3] = i == 0 ? 0 : 255;
 	}
+
+	GLint last_texture;
+	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
+	glBindTexture(GL_TEXTURE_2D, gPrismWindowsData.mPalettes[tPaletteID]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, finalBuffer.data());
+	glBindTexture(GL_TEXTURE_2D, last_texture);
 }
 
-SDL_Color* getSDLColorPalette(int tIndex) {
-	return gPrismWindowsData.mPalettes[tIndex];
-}
 double getRealFramerate() {
 	return gBookkeepingData.mRealFramerate;
 }

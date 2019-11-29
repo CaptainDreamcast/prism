@@ -136,7 +136,9 @@ size_t fileTotal(FileHandler tHandler){
 	return fs_total(tHandler);
 }
 int fileUnlink(const char* tPath) {
-	return fs_unlink(tPath);
+	char path[1024];
+	getFullPath(path, tPath);
+	return fs_unlink(path);
 }
 void* fileMemoryMap(FileHandler tHandler) {
 	return fs_mmap(tHandler);

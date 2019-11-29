@@ -19,6 +19,7 @@ int getPrismDebugSideDisplayVisibility();
 void setPrismDebugSideDisplayVisibility(int tIsVisible);
 void togglePrismDebugSideDisplayVisibility();
 
+int isPrismDebugConsoleVisible();
 void addPrismDebugConsoleCommand(std::string tCommand, std::string(*tCB)(void* tCaller, std::string tCommandInput), void* tCaller = NULL);
 void submitToPrismDebugConsole(std::string tText);
 

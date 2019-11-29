@@ -271,44 +271,14 @@ TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
 	return textureFromSurface(surface);
 }
 
-extern SDL_Color* getSDLColorPalette(int tIndex);
-
 TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight) {
-	uint32_t size = tWidth * tHeight * 4;
-	uint8_t* data = (uint8_t*)allocMemory(tWidth * tHeight * 4);
-	uint8_t* src = (uint8_t*)b.mData;
-
-	SDL_Color* colors = getSDLColorPalette(tPaletteID);
-	int32_t amount = size / 4;
-	int i;
-	for (i = 0; i < amount; i++) {
-		int pid = src[i];
-		data[i * 4 + 0] = colors[pid].r;
-		data[i * 4 + 1] = colors[pid].g;
-		data[i * 4 + 2] = colors[pid].b;
-		data[i * 4 + 3] = colors[pid].a;
-	}
-
-	Buffer newBuffer = makeBufferOwned(data, size);
-	TextureData ret = loadTextureFromARGB32Buffer(newBuffer, tWidth, tHeight);
-	freeBuffer(newBuffer);
-
-	return ret;
-
-	// TODO: fix (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/222)
-	/*
-
-	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(b.mData, tWidth, tHeight, 8, tWidth, 0, 0, 0, 0);
-
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
-	returnData.mTextureSize.x = surface->w;
-	returnData.mTextureSize.y = surface->h;
+	returnData.mTextureSize.x = tWidth;
+	returnData.mTextureSize.y = tHeight;
 	returnData.mHasPalette = 1;
 	returnData.mPaletteID = tPaletteID;
-	Texture texture = returnData.mTexture->mData;
-
-	texture->mSurface = surface;
+	Texture texture = (Texture)returnData.mTexture->mData;
 
 	GLint last_texture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
@@ -318,12 +288,10 @@ TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWid
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, texture->mSurface->w, texture->mSurface->h, 0, GL_ALPHA, GL_UNSIGNED_BYTE, texture->mSurface->pixels);
-
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, tWidth, tHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, b.mData);
 	glBindTexture(GL_TEXTURE_2D, last_texture);
 
 	return returnData;
-	*/
 }
 
 #ifdef _WIN32

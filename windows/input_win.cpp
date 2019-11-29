@@ -23,7 +23,15 @@ typedef struct {
 	Duration mRumbleDuration;
 } Controller;
 
+typedef struct {
+	int mIsActive;
+	void(*mCB)(void*, const std::string&);
+	void* mCaller;
+} KeyInputWait;
+
 static struct {
+	KeyInputWait mInputWait;
+
 	const Uint8* mKeyStatePointer;
 	Uint8* mCurrentKeyStates;
 	Uint8* mPreviousKeyStates;
@@ -251,6 +259,8 @@ static void initKeyboardScancodes() {
 }
 
 void initInput() {
+	gPrismWindowsInputData.mInputWait.mIsActive = 0;
+
 	gPrismWindowsInputData.mPreviousKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
 	gPrismWindowsInputData.mCurrentKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
 	gPrismWindowsInputData.mKeyStatePointer = SDL_GetKeyboardState(NULL);
@@ -557,4 +567,22 @@ KeyboardKeyPrism getButtonForKeyboard(int i, ControllerButtonPrism tTargetButton
 void setButtonForKeyboard(int i, ControllerButtonPrism tTargetButton, KeyboardKeyPrism tKeyValue)
 {
 	gKeys[i][tTargetButton] = tKeyValue;
+}
+
+void receiveCharacterInputFromSDL(const std::string& tText) {
+	if (!gPrismWindowsInputData.mInputWait.mIsActive) return;
+	gPrismWindowsInputData.mInputWait.mCB(gPrismWindowsInputData.mInputWait.mCaller, tText);
+}
+
+void waitForCharacterFromUserInput(int /*i*/, void(*tCB)(void*, const std::string&), void* tCaller) {
+	SDL_StartTextInput();
+
+	gPrismWindowsInputData.mInputWait.mCB = tCB;
+	gPrismWindowsInputData.mInputWait.mCaller = tCaller;
+	gPrismWindowsInputData.mInputWait.mIsActive = 1;
+}
+
+void cancelWaitingForCharacterFromUserInput(int /*i*/) {
+	SDL_StopTextInput();
+	gPrismWindowsInputData.mInputWait.mIsActive = 0;
 }

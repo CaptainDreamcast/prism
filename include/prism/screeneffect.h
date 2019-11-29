@@ -33,3 +33,4 @@ void setScreenWhite();
 void unsetScreenWhite();
 
 TextureData getEmptyWhiteTexture();
+TextureData* getEmptyWhiteTextureReference();

@@ -302,6 +302,11 @@ TextureData getEmptyWhiteTexture()
 	return gScreenEffect.mWhiteTexture;
 }
 
+TextureData* getEmptyWhiteTextureReference()
+{
+	return &gScreenEffect.mWhiteTexture;
+}
+
 ActorBlueprint getScreenEffectHandler()
 {
 	return makeActorBlueprint(loadScreenEffectHandler, unloadScreenEffectHandler, updateScreenEffectHandler);

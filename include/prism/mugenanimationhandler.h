@@ -104,6 +104,9 @@ struct MugenAnimationHandlerElement {
 	int mIsLooping;
 	int mHasLooped;
 
+	double mTimeDilatationNow;
+	double mTimeDilatation;
+
 	double mR;
 	double mG;
 	double mB;
@@ -157,6 +160,8 @@ void setMugenAnimationPosition(MugenAnimationHandlerElement* tElement, Position 
 void setMugenAnimationBlendType(MugenAnimationHandlerElement* tElement, BlendType tBlendType);
 void setMugenAnimationSprites(MugenAnimationHandlerElement* tElement, MugenSpriteFile* tSprites);
 void setMugenAnimationConstraintRectangle(MugenAnimationHandlerElement* tElement, GeoRectangle tConstraintRectangle);
+
+void setMugenAnimationSpeed(MugenAnimationHandlerElement* tElement, double tSpeed);
 
 Position getMugenAnimationPosition(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationIsFacingRight(MugenAnimationHandlerElement* tElement);

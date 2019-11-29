@@ -206,9 +206,26 @@ double getRNormalized() {
 }
 
 int hasPressedAnyButton() {
-	int hasPressedFaceButton = hasPressedA() || hasPressedB() || hasPressedX() || hasPressedY() || hasPressedStart();
-	int hasPressedShoulderButton = hasPressedR() || hasPressedL();
-	int hasPressedDirection = hasPressedLeft() || hasPressedRight() || hasPressedUp() || hasPressedDown();
+	return hasPressedAnyButtonSingle(getMainController());
+}
+
+int hasPressedAnyButtonSingle(int i) {
+	int hasPressedFaceButton = hasPressedASingle(i) || hasPressedBSingle(i) || hasPressedXSingle(i) || hasPressedYSingle(i) || hasPressedStartSingle(i);
+	int hasPressedShoulderButton = hasPressedRSingle(i) || hasPressedLSingle(i);
+	int hasPressedDirection = hasPressedLeftSingle(i) || hasPressedRightSingle(i) || hasPressedUpSingle(i) || hasPressedDownSingle(i);
+
+	return hasPressedFaceButton || hasPressedShoulderButton || hasPressedDirection;
+}
+
+int hasPressedAnyButtonFlank() {
+	return hasPressedAnyButtonFlankSingle(getMainController());
+}
+
+int hasPressedAnyButtonFlankSingle(int i)
+{
+	int hasPressedFaceButton = hasPressedAFlankSingle(i) || hasPressedBFlankSingle(i) || hasPressedXFlankSingle(i) || hasPressedYFlankSingle(i) || hasPressedStartFlankSingle(i);
+	int hasPressedShoulderButton = hasPressedRFlankSingle(i) || hasPressedLFlankSingle(i);
+	int hasPressedDirection = hasPressedLeftFlankSingle(i) || hasPressedRightFlankSingle(i) || hasPressedUpFlankSingle(i) || hasPressedDownFlankSingle(i);
 
 	return hasPressedFaceButton || hasPressedShoulderButton || hasPressedDirection;
 }
@@ -360,7 +377,7 @@ static void updateInputSetting() {
 
 static void updateInputFlagSingle(uint8_t* tPrev, uint8_t* tCurrent, int tUpdateValue) {
 	*tPrev = *tCurrent;
-	*tCurrent = (uint8_t)tUpdateValue;
+	*tCurrent = tUpdateValue != 0;
 }
 
 static void updateInputFlanks() {

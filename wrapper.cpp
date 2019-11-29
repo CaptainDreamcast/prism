@@ -380,7 +380,7 @@ static void updateScreenDebug() {
 		gPrismWrapperData.mDebug.mIsPaused = 1;
 	}
 
-	if (hasPressedKeyboardKeyFlank(KEYBOARD_R_PRISM)) {
+	if (!isPrismDebugConsoleVisible() && hasPressedKeyboardKeyFlank(KEYBOARD_R_PRISM)) {
 		setNewScreen(gPrismWrapperData.mScreen);
 	}
 

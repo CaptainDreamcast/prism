@@ -1,6 +1,6 @@
 TARGET = libprism.a
 OBJS = animation.o physics.o drawing.o texture.o \
-collision.o input.o file.o math.o geometry.o \
+collision.o input.o file.o filereader.o math.o geometry.o \
 timer.o optionhandler.o datastructures.o memoryhandler.o \
 wrapper.o physicshandler.o script.o stagehandler.o collisionhandler.o \
 collisionanimation.o animationtree.o texturepool.o \

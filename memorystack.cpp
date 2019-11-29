@@ -20,6 +20,8 @@ void destroyMemoryStack(MemoryStack * tStack)
 }
 
 void resizeMemoryStackToCurrentSize(MemoryStack* tStack) {
+	if (tStack->mOffset == tStack->mSize) return;
+
 	tStack->mAddress = reallocMemory(tStack->mAddress, tStack->mOffset);
 	tStack->mSize = tStack->mOffset;
 }
@@ -27,9 +29,15 @@ void resizeMemoryStackToCurrentSize(MemoryStack* tStack) {
 void * allocMemoryOnMemoryStack(MemoryStack * tStack, uint32_t tSize)
 {
 	void* ret = (void*)((uint32_t)tStack->mAddress + tStack->mOffset);
-	int padding = (4 - (tSize % 4)) % 4;
+	const auto padding = (4 - (tSize % 4)) % 4;
 	tStack->mOffset += tSize + padding;
 
 	tStack->mAmount++;
 	return ret;
+}
+
+int canFitOnMemoryStack(MemoryStack * tStack, uint32_t tSize)
+{
+	const auto padding = (4 - (tSize % 4)) % 4;
+	return (tStack->mOffset + tSize + padding) <= tStack->mSize;
 }

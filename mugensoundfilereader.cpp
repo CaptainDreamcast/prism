@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include <prism/file.h>
+#include <prism/filereader.h>
 #include <prism/memoryhandler.h>
 #include <prism/soundeffect.h>
 #include <prism/log.h>
@@ -27,16 +28,19 @@ typedef struct {
 	char mComments[488];
 } MugenSoundFileHeader;
 
+static struct {
+	FileReader mFileReader;
+} gMugenSoundFileReaderData;
+
 static void addSoundGroup(MugenSounds* tSounds, int tGroupNumber) {
 	MugenSoundGroup* e = (MugenSoundGroup*)allocMemory(sizeof(MugenSoundGroup));
 	e->mSamples = new_int_map();
 	int_map_push_owned(&tSounds->mGroups, tGroupNumber, e);
 }
 
-static void loadSingleMugenSoundSubfile(MugenSounds* tSounds, BufferPointer* p, Buffer b) {
+static void loadSingleMugenSoundSubfile(MugenSounds* tSounds) {
 	MugenSoundFileSubFileHeader subHeader;
-
-	readFromBufferPointer(&subHeader, p, sizeof(MugenSoundFileSubFileHeader));
+	gMugenSoundFileReaderData.mFileReader.mRead(&gMugenSoundFileReaderData.mFileReader, &subHeader, sizeof(MugenSoundFileSubFileHeader));
 
 	MugenSoundGroup* group;
 	if (!int_map_contains(&tSounds->mGroups, subHeader.mGroupNumber)) {
@@ -44,9 +48,7 @@ static void loadSingleMugenSoundSubfile(MugenSounds* tSounds, BufferPointer* p, 
 	}
 	group = (MugenSoundGroup*)int_map_get(&tSounds->mGroups, subHeader.mGroupNumber);
 
-	char* waveFileData = (char*)allocMemory(subHeader.mSubfileLength);
-	readFromBufferPointer(waveFileData, p, subHeader.mSubfileLength);
-	Buffer waveFileBuffer = makeBufferOwned(waveFileData, subHeader.mSubfileLength);
+	Buffer waveFileBuffer = gMugenSoundFileReaderData.mFileReader.mReadBufferReadOnly(&gMugenSoundFileReaderData.mFileReader, subHeader.mSubfileLength);
 
 	MugenSoundSample* e = (MugenSoundSample*)allocMemory(sizeof(MugenSoundSample));
 	e->mSoundEffectID = loadSoundEffectFromBuffer(waveFileBuffer);
@@ -55,33 +57,42 @@ static void loadSingleMugenSoundSubfile(MugenSounds* tSounds, BufferPointer* p, 
 	int_map_push_owned(&group->mSamples, subHeader.mSampleNumber, e);
 
 	if (subHeader.mNextFileOffset != 0) {
-		(*p) = (BufferPointer)(((uint32_t)b.mData) + subHeader.mNextFileOffset);
+		gMugenSoundFileReaderData.mFileReader.mSeek(&gMugenSoundFileReaderData.mFileReader, subHeader.mNextFileOffset);
 	}
 }
 
-static MugenSounds loadMugenSoundFileFromBuffer(Buffer b) {
+static MugenSounds loadMugenSoundFileWithReader() {
 	MugenSounds ret;
 	ret.mGroups = new_int_map();
 
-	BufferPointer p = getBufferPointer(b);
-
 	MugenSoundFileHeader header;
-	readFromBufferPointer(&header, &p, sizeof(MugenSoundFileHeader));
+	gMugenSoundFileReaderData.mFileReader.mRead(&gMugenSoundFileReaderData.mFileReader, &header, sizeof(MugenSoundFileHeader));
 
-	p = (BufferPointer)(((uint32_t)b.mData) + header.mFirstSubFileOffset);
+	gMugenSoundFileReaderData.mFileReader.mSeek(&gMugenSoundFileReaderData.mFileReader, header.mFirstSubFileOffset);
+
 	int i;
 	for (i = 0; i < (int)header.mNumberOfSounds; i++) {
-		loadSingleMugenSoundSubfile(&ret, &p, b);
+		loadSingleMugenSoundSubfile(&ret);
 	}
 
 	return ret;
 }
 
+static void initMugenSoundFileReader(uint32_t tFileSize) {
+	if (tFileSize <= 1024 * 1024) {
+		gMugenSoundFileReaderData.mFileReader = getBufferFileReader();
+	}
+	else {
+		gMugenSoundFileReaderData.mFileReader = getFileFileReader();
+	}
+}
+
 MugenSounds loadMugenSoundFile(const char * tPath)
 {
-	Buffer b = fileToBuffer(tPath);
-	MugenSounds ret = loadMugenSoundFileFromBuffer(b);
-	freeBuffer(b);
+	initMugenSoundFileReader(getFileSize(tPath));
+	gMugenSoundFileReaderData.mFileReader.mInit(&gMugenSoundFileReaderData.mFileReader, tPath);
+	MugenSounds ret = loadMugenSoundFileWithReader();
+	gMugenSoundFileReaderData.mFileReader.mDelete(&gMugenSoundFileReaderData.mFileReader);
 
 	return ret;
 }

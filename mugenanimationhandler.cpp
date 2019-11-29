@@ -253,6 +253,8 @@ MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation,
 	e.mHasConstraintRectangle = 0;
 
 	e.mIsPaused = 0;
+	e.mTimeDilatation = 1.0;
+	e.mTimeDilatationNow = 0.0;
 	e.mIsLooping = 1;
 	e.mHasLooped = 0;
 	e.mIsCollisionDebugActive = 0;
@@ -299,6 +301,7 @@ int getMugenAnimationAnimationStepDuration(MugenAnimationHandlerElement* e)
 
 int getMugenAnimationRemainingAnimationTime(MugenAnimationHandlerElement* e)
 {
+	if (e->mAnimation->mID == -1) return 0;
 	int remainingTime = (e->mAnimation->mTotalDuration - e->mOverallTime) + 1;
 	remainingTime = max(0, remainingTime);
 
@@ -455,6 +458,11 @@ void setMugenAnimationConstraintRectangle(MugenAnimationHandlerElement* e, GeoRe
 {
 	e->mConstraintRectangle = tConstraintRectangle;
 	e->mHasConstraintRectangle = 1;
+}
+
+void setMugenAnimationSpeed(MugenAnimationHandlerElement* tElement, double tSpeed)
+{
+	tElement->mTimeDilatation = tSpeed;
 }
 
 Position getMugenAnimationPosition(MugenAnimationHandlerElement* e)
@@ -635,19 +643,23 @@ int getMugenAnimationTimeWhenStepStarts(MugenAnimationHandlerElement* e, int tSt
 
 static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	if (e->mIsPaused) return 0;
-
-	int ret = 0;
-	e->mHasLooped = 0;
-	MugenAnimationStep* step = getCurrentAnimationStep(e);
-	if (step && !isMugenAnimationStepDurationInfinite(step->mDuration) && e->mStepTime >= step->mDuration) {
-		ret = loadNextStepAndReturnIfShouldBeRemoved(e);
+	e->mTimeDilatationNow += e->mTimeDilatation;
+	int updateAmount = (int)e->mTimeDilatationNow;
+	e->mTimeDilatationNow -= updateAmount;
+	while (updateAmount--) {
+		int ret = 0;
+		e->mHasLooped = 0;
+		MugenAnimationStep* step = getCurrentAnimationStep(e);
+		if (step && !isMugenAnimationStepDurationInfinite(step->mDuration) && e->mStepTime >= step->mDuration) {
+			ret = loadNextStepAndReturnIfShouldBeRemoved(e);
+		}
+		else {
+			increaseMugenDuration(&e->mStepTime);
+			increaseMugenDuration(&e->mOverallTime);
+		}
+		if (ret) return 1;
 	}
-	else {
-		increaseMugenDuration(&e->mStepTime);
-		increaseMugenDuration(&e->mOverallTime);
-	}
-
-	return ret;
+	return 0;
 }
 
 static int updateSingleMugenAnimationCB(void* tCaller, MugenAnimationHandlerElement& tData) {

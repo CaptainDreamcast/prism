@@ -46,6 +46,13 @@ char* getFileExtension(char* tPath) {
 	return pos + 1;
 }
 
+size_t getFileSize(const char* tPath) {
+	const auto file = fileOpen(tPath, O_RDONLY);
+	const auto ret = fileTotal(file);
+	fileClose(file);
+	return ret;
+}
+
 void getPathWithoutFileExtension(char* tDest, const char* tPath) {
 	strcpy(tDest, tPath);
 	if (!strcmp("", tPath)) return;

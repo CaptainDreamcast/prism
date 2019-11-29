@@ -215,6 +215,9 @@
     <ClInclude Include="..\..\include\prism\debug.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\filereader.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\drawing_win.cpp">
@@ -431,6 +434,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\system.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\filereader.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

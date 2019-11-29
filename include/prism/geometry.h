@@ -98,3 +98,5 @@ Vector3D operator/(const Vector3DI& a, const double& b);
 Vector3DI operator/(const Vector3DI& a, const int& b);
 int operator==(const Vector3DI& a, const Vector3DI& b);
 int operator!=(const Vector3DI& a, const Vector3DI& b);
+
+GeoRectangle operator*(const GeoRectangle& a, const double& b);

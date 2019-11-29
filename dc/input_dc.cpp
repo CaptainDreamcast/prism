@@ -455,3 +455,8 @@ void setButtonForKeyboard(int i, ControllerButtonPrism tTargetButton, KeyboardKe
 	// TODO
 }
 
+void waitForCharacterFromUserInput(int /*i*/, void(*/*tCB*/)(void*, const std::string&), void* /*tCaller*/) {
+}
+
+void cancelWaitingForCharacterFromUserInput(int /*i*/) {
+}
