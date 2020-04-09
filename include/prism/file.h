@@ -42,6 +42,7 @@ size_t fileWrite(FileHandler tHandler, const void* tBuffer, size_t tCount);
 size_t fileSeek(FileHandler tHandler, size_t tOffset, int tWhence);
 size_t fileTell(FileHandler tHandler);
 size_t fileTotal(FileHandler tHandler);
+void fileFlush(FileHandler tHandler);
 int fileUnlink(const char* tPath);
 void* fileMemoryMap(FileHandler tHandler);
 
@@ -79,6 +80,7 @@ void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer);
 
 void setActiveFileSystemOnStartup();
 void initFileSystem();
+void shutdownFileSystem();
 void setFileSystem(const char* path);
 void setWorkingDirectory(const char* path);
 const char* getFileSystem();
@@ -95,6 +97,9 @@ char* getFileExtension(char* tPath);
 size_t getFileSize(const char* tPath);
 void getPathWithoutFileExtension(char* tDest, const char* tPath);
 void  getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i);
+void cleanPathSlashes(char* tDest, const char* tPath);
+void cleanPathSlashes(char* tPath);
+void cleanPathSlashes(std::string& tPath);
 void getFullPath(char* tDest, const char* tPath);
 void getPathToFile(char* tDest, const char* tPath);
 

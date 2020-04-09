@@ -122,7 +122,11 @@ static void parseSingleMapElement(void* tCaller, void* tData) {
 		keyValue = key[0];
 	}
 	else if (key[0] == '0' && key[1] == 'x') {
-		sscanf(e->mString, "%i", &keyValue);
+		int items = sscanf(e->mString, "%i", &keyValue);
+		if (items != 1) {
+			logWarningFormat("Unable to parse keyValue from string: %s", e->mString);
+			keyValue = 0;
+		}
 	}
 	else {
 		logError("Unrecognized map key.");
@@ -244,8 +248,7 @@ static void addMugenFont1(int tKey, char* tPath) {
 	readFromBufferPointer(&header, &p, sizeof(MugenFontHeader));
 
 	Buffer textureBuffer = makeBuffer((void*)(((uint32_t)b.mData) + header.mTextureOffset), header.mTextureLength);
-	Buffer textBuffer = makeBuffer((void*)(((uint32_t)b.mData) + header.mTextOffset), header.mTextLength);
-
+	Buffer textBuffer = makeBuffer((void*)(((uint32_t)b.mData) + header.mTextOffset), (b.mLength - header.mTextOffset));
 	MugenDefScript script; 
 	loadMugenDefScriptFromBufferAndFreeBuffer(&script, textBuffer);
 
@@ -295,8 +298,6 @@ static void addMugenFont2(int tKey, char* tPath) {
 
 void addMugenFont(int tKey, const char* tPath) {
 	char path[1024];
-
-    // TODO: fix when assets is dropped from Dolmexica (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/350) 
 	if (strchr(tPath, '/')) {
 		sprintf(path, "assets/%s", tPath);
 		if (!isFile(path)) {
@@ -326,9 +327,7 @@ void addMugenFont(int tKey, const char* tPath) {
 
 }
 
-static void loadMugenFonts(MugenDefScript* tScript) {
-
-
+void loadMugenFontsFromScript(MugenDefScript* tScript) {
 	addMugenFont(-1, "font/f4x6.fnt");
 	
 	int i;
@@ -347,25 +346,9 @@ static void loadMugenFonts(MugenDefScript* tScript) {
 	}
 }
 
-
 void loadMugenTextHandler()
 {
 	gMugenFontData.mFonts.clear();
-}
-
-void loadMugenSystemFonts() {
-	MugenDefScript script; 
-	loadMugenDefScript(&script, "assets/data/system.def");
-	loadMugenFonts(&script);
-	unloadMugenDefScript(script);
-}
-
-void loadMugenFightFonts()
-{
-	MugenDefScript script;
-	loadMugenDefScript(&script, "assets/data/fight.def");
-	loadMugenFonts(&script);
-	unloadMugenDefScript(script);
 }
 
 static void unloadBitmapFont(MugenFont* tFont) {
@@ -539,7 +522,8 @@ static set<int> getBitmapTextLinebreaks(char* tText, Position tStart, MugenFont*
 		}
 		else {
 			char word[1024];
-			sscanf(tText + i, "%1023s%n", word, &positionsRead);
+			int items = sscanf(tText + i, "%1023s%n", word, &positionsRead);
+			if (items != 1) break;
 			for (int j = i; j < i + positionsRead; j++) {
 				if (int_map_contains(&tSpriteGroup->mSprites, (int)tText[j])) {
 					MugenSpriteFileSprite* sprite = (MugenSpriteFileSprite*)int_map_get(&tSpriteGroup->mSprites, (int)tText[j]);
@@ -615,7 +599,6 @@ static void drawSingleBitmapText(MugenText* e) {
 	setDrawingBaseColorAdvanced(1, 1, 1);
 }
 
-// TODO: color + rectangle (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/348)
 static void drawSingleTruetypeText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenTruetypeFont* truetypeFont = (MugenTruetypeFont*)font->mData;
@@ -680,7 +663,8 @@ static set<int> getElecbyteTextLinebreaks(char* tText, Position tStart, MugenFon
 		}
 		else {
 			char word[1024];
-			sscanf(tText + i, "%1023s%n", word, &positionsRead);
+			int items = sscanf(tText + i, "%1023s%n", word, &positionsRead);
+			if (items != 1) break;
 			for (int j = i; j < i + positionsRead; j++) {
 				if (tElecbyteFont->mMap[(int)tText[j]].mExists) {
 					MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(int)tText[j]];
@@ -1103,7 +1087,7 @@ Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 	case 7:
 		return COLOR_BLACK;
 	case 8:
-		return COLOR_LIGHT_GRAY; // TODO: catalogue new index (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/343)
+		return COLOR_LIGHT_GRAY;
 	default:
 		logError("Unrecognized Mugen text color.");
 		logErrorInteger(tIndex);

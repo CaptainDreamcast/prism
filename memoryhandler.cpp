@@ -114,11 +114,6 @@ static struct {
 	int mActive;
 } gMemoryHandler;
 
-
-
-
-
-
 static void initHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
 	(void)tStrategy;
 	tMap->mMap.clear();

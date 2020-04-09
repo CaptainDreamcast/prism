@@ -2,6 +2,17 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
+
+void setTimeBasedRandomSeed()
+{
+	setRandomSeed((unsigned int)time(NULL));
+}
+
+void setRandomSeed(unsigned int tSeed)
+{
+	srand(tSeed);
+}
 
 double randfrom(double tMin, double tMax) {
 	double range = (tMax - tMin); 
@@ -208,5 +219,14 @@ Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, doubl
 	ret.m[3][2] = -((tFar + tNear) / (tFar - tNear));
 	ret.m[3][3] = 1;
 
+	return ret;
+}
+
+Position rotateScaleTranslatePositionByMatrix4D(const Matrix4D& tMatrix, const Position& tPosition)
+{
+	Position ret;
+	ret.x = tMatrix.m[0][0] * tPosition.x + tMatrix.m[1][0] * tPosition.y + tMatrix.m[2][0] * tPosition.z + tMatrix.m[3][0];
+	ret.y = tMatrix.m[0][1] * tPosition.x + tMatrix.m[1][1] * tPosition.y + tMatrix.m[2][1] * tPosition.z + tMatrix.m[3][1];
+	ret.z = tMatrix.m[0][2] * tPosition.x + tMatrix.m[1][2] * tPosition.y + tMatrix.m[2][2] * tPosition.z + tMatrix.m[3][2];
 	return ret;
 }

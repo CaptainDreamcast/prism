@@ -7,6 +7,9 @@
 #include <math.h>
 
 #include "prism/math.h"
+#include "prism/file.h"
+#include "prism/debug.h"
+#include "prism/system.h"
 
 #define MAX_LOG_AMOUNT 10
 #define MAX_LOG_ENTRY_AMOUNT (MAX_LOG_AMOUNT + 1)
@@ -17,6 +20,8 @@ static struct {
 	int mPointer;
 	int mAmount;
 	LogEntry mLog[MAX_LOG_ENTRY_AMOUNT];
+
+	FileHandler mLogFile = FILEHND_INVALID;
 } gPrismLogData;
 
 void logprintf(const char* tFormatString, ...) {
@@ -28,11 +33,28 @@ void logprintf(const char* tFormatString, ...) {
 	va_end(args);
 }
 
+static void logToFile() {
+	if (!isInDevelopMode()) return;
+	if (isOnDreamcast() || isOnWeb()) return;
+
+	if (gPrismLogData.mLogFile == FILEHND_INVALID) {
+		createDirectory("$pc/debug");
+		gPrismLogData.mLogFile = fileOpen("$pc/debug/log.txt", O_WRONLY);
+	}
+	if (gPrismLogData.mLogFile == FILEHND_INVALID) return;
+
+	fileWrite(gPrismLogData.mLogFile, gPrismLogData.mLog[gPrismLogData.mPointer].mText, strlen(gPrismLogData.mLog[gPrismLogData.mPointer].mText));
+	fileFlush(gPrismLogData.mLogFile);
+}
+
 void logCommit(LogType tType) {
 	gPrismLogData.mLog[gPrismLogData.mPointer].mType = tType;
 
 	if(tType >= gPrismLogData.mMinimumLogType) {
+		printLogColorStart(tType);
 		printf("%s", gPrismLogData.mLog[gPrismLogData.mPointer].mText);
+		printLogColorEnd(tType);
+		logToFile();
 	}
 
 	gPrismLogData.mPointer = (gPrismLogData.mPointer + 1) % MAX_LOG_ENTRY_AMOUNT;

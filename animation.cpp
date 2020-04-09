@@ -171,6 +171,7 @@ static Position getAnimationPositionWithAllReferencesIncluded(AnimationHandlerEl
 static void drawAnimationHandlerCB(void* tCaller, AnimationHandlerElement& tData) {
 	(void) tCaller;
 	AnimationHandlerElement* cur = &tData;
+	if (!cur->mIsVisible) return;
 	int frame = cur->mAnimation.mFrame;
 	
 	Position p = getAnimationPositionWithAllReferencesIncluded(cur);
@@ -251,6 +252,7 @@ static AnimationHandlerElement* playAnimationInternal(Position tPosition, Textur
 	e.mHasTransparency = 0;
 	e.mCenter = makePosition(0,0,0);
 	e.mInversionState = makeVector3DI(0,0,0);
+	e.mIsVisible = 1;
 	int id = stl_int_map_push_back(gAnimationHandler.mList, e);
 	auto& element = gAnimationHandler.mList[id];
 	element.mID = id;
@@ -336,6 +338,11 @@ void setAnimationColorType(AnimationHandlerElement* e, Color tColor)
 void setAnimationTransparency(AnimationHandlerElement* e, double a) {
 	e->mHasTransparency = 1;
 	e->mTransparency = a;
+}
+
+void setAnimationVisibility(AnimationHandlerElement* e, int tIsVisible)
+{
+	e->mIsVisible = tIsVisible;
 }
 
 void setAnimationCenter(AnimationHandlerElement* e, Position tCenter) {

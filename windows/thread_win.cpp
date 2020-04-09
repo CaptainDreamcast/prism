@@ -91,3 +91,7 @@ void releaseSemaphore(Semaphore tSemaphore)
 	HANDLE sem = tSemaphore;
 	ReleaseSemaphore(sem, 1, NULL);
 }
+
+void terminateSelfAsThread(int /*tReturnValue*/) {
+	std::terminate();
+}

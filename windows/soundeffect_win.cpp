@@ -7,6 +7,7 @@
 #include <SDL_mixer.h>
 #endif
 
+#include <algorithm>
 
 #include "prism/file.h"
 #include "prism/sound.h"
@@ -95,19 +96,48 @@ static void tryEraseChannelChunk(int tChannel) {
 }
 
 int playSoundEffect(int tID) {
+	return playSoundEffectChannel(tID, -1, getSoundEffectVolume());
+}
+
+static int parseVolume(double tVolume) {
+	return (int)(tVolume * 128);
+}
+
+int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreqMul*/, int tIsLooping)
+{
 	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
 	SDL_RWops* rwOps = SDL_RWFromConstMem(e->mBuffer.mData, e->mBuffer.mLength);
 	Mix_Chunk* chunk = Mix_LoadWAV_RW(rwOps, 0);
-	int channel = Mix_PlayChannel(-1, chunk, 0);
+	int channel = Mix_PlayChannel(tChannel, chunk, tIsLooping);
+	Mix_Volume(channel, parseVolume(tVolume));
 	tryEraseChannelChunk(channel);
 
 	gSoundEffectData.mChunks[channel] = chunk;
 	return channel;
 }
 
-void stopSoundEffect(int tSFX) {
-	Mix_HaltChannel(tSFX);
-	tryEraseChannelChunk(tSFX);
+void stopSoundEffect(int tChannel) {
+	Mix_HaltChannel(tChannel);
+	tryEraseChannelChunk(tChannel);
+}
+
+static void stopSingleSoundEffectCB(int tChannel, Mix_Chunk*& /*tChunk*/) {
+	Mix_HaltChannel(tChannel);
+	tryEraseChannelChunk(tChannel);
+}
+
+void stopAllSoundEffects() {
+	stl_int_map_map(gSoundEffectData.mChunks, stopSingleSoundEffectCB);
+}
+
+void panSoundEffect(int tChannel, double tPanning)
+{
+	const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
+	Mix_SetPanning(tChannel, 255 - right, right);
+}
+
+int isSoundEffectPlayingOnChannel(int tChannel) {
+	return Mix_Playing(tChannel);
 }
 
 double getSoundEffectVolume() {
@@ -115,6 +145,6 @@ double getSoundEffectVolume() {
 }
 
 void setSoundEffectVolume(double tVolume) {
-	gSoundEffectData.mVolume = (int)(tVolume * 128);
+	gSoundEffectData.mVolume = parseVolume(tVolume);
 	Mix_Volume(-1, gSoundEffectData.mVolume);
 }

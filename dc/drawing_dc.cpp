@@ -110,6 +110,10 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
 			cxt.blend.src = PVR_BLEND_SRCALPHA; 
 			cxt.blend.dst = PVR_BLEND_ONE;
 			break;
+		case BLEND_TYPE_ONE:
+			cxt.blend.src = PVR_BLEND_ONE;
+			cxt.blend.dst = PVR_BLEND_ZERO;
+			break;
 		default:
 			logError("Unrecognized blend type.");
 			logErrorInteger(gData.mBlendType);
@@ -367,10 +371,13 @@ void setDrawingBaseColorAdvanced(double r, double g, double b) {
 	gData.b = b;
 }
 
+void setDrawingColorSolidity(int /*tIsSolid*/) {} // Not implemented for Dreamcast
 
 void setDrawingTransparency(double tAlpha){
 	gData.a = tAlpha;
 }
+
+void setDrawingDestinationTransparency(double /*tAlpha*/) {} // Not implemented for Dreamcast
 
 void setDrawingBlendType(BlendType tBlendType) {
 	gData.mBlendType = tBlendType;
@@ -423,12 +430,6 @@ void popDrawingRotationZ() {
 
 void popDrawingTranslation() {
 	popMatrixInternal();
-}
-
-void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget) {
-	(void) tDst;
-	(void) tColor;
-	(void) tTarget;
 }
 
 static uint32_t packPaletteEntry(uint8_t a, uint8_t r, uint8_t g, uint8_t b) {

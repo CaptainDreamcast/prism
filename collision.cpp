@@ -47,7 +47,6 @@ void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVe
 	*tPos1 = vecAdd(*tPos1, deltas[smallestIndex]);
 }
 
-// TODO: use something better; this will likely cause vibrations (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/364)
 void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect) {
   Velocity vel = tObject->mVelocity;
 

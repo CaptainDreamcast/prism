@@ -66,6 +66,7 @@ void logFormatFunc(const char* tFormatString, ...);
 #define debugDouble(x) logDouble(x)
 #define debugString(x) logString(x)
 #define debugPointer(x) logPointer(x)
+#define debugFormat(x, ...) logFormatGeneral(LOG_TYPE_NORMAL, x,  __VA_ARGS__)
 
 #else
 #define debugLog(x) {}
@@ -73,15 +74,14 @@ void logFormatFunc(const char* tFormatString, ...);
 #define debugDouble(x) {}
 #define debugString(x) {}
 #define debugPointer(x) {}
+#define debugFormat(x, ...) {}
 #endif	
 
-#ifdef DEBUG
 void logTextureMemoryState();
 void logMemoryState();
-#else
-#define logTextureMemoryState() {}
-#define logMemoryState() {}
-#endif
 
 void setMinimumLogType(LogType tType);
 Vector getLogEntries(); // contains LogEntry
+
+void printLogColorStart(LogType tType);
+void printLogColorEnd(LogType tType);

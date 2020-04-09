@@ -52,6 +52,7 @@ struct AnimationHandlerElement {
 	double mTransparency;
 
 	Vector3DI mInversionState;
+	int mIsVisible;
 };
 
 int handleDurationAndCheckIfOver(Duration* tNow, Duration tDuration);
@@ -87,6 +88,7 @@ void setAnimationRotationZ(AnimationHandlerElement* tElement, double tAngle, Pos
 void setAnimationColor(AnimationHandlerElement* tElement, double r, double g, double b);
 void setAnimationColorType(AnimationHandlerElement* tElement, Color tColor);
 void setAnimationTransparency(AnimationHandlerElement* tElement, double a);
+void setAnimationVisibility(AnimationHandlerElement* tElement, int tIsVisible);
 void setAnimationCB(AnimationHandlerElement* tElement, AnimationPlayerCB tCB, void* tCaller);
 void setAnimationPosition(AnimationHandlerElement* tElement, Position tPosition);
 void setAnimationTexturePosition(AnimationHandlerElement* tElement, Rectangle tTexturePosition);

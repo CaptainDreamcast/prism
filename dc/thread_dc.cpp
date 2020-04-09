@@ -84,3 +84,7 @@ void releaseSemaphore(Semaphore tSemaphore)
 	semaphore_t* sem = (semaphore_t*)tSemaphore; 
 	sem_signal(sem);
 }
+
+void terminateSelfAsThread(int tReturnValue) {
+	thd_exit((void*)tReturnValue);
+}

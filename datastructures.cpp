@@ -950,3 +950,15 @@ int suffix_tree_contains(SuffixTree * tTree, char * tKey)
 	void* data = suffix_tree_find_recursive(&tTree->mRoot, tKey);
 	return data != NULL;
 }
+
+void setPrismFlag(uint32_t& tFlag, uint32_t tValue) { 
+	tFlag |= tValue; 
+}
+
+void removePrismFlag(uint32_t& tFlag, uint32_t tValue) {
+	tFlag &= ~tValue;
+}
+
+int hasPrismFlag(const uint32_t& tFlag, uint32_t tValue) { 
+	return tFlag & tValue;
+}

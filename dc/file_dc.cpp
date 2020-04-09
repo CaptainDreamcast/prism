@@ -21,6 +21,8 @@ void initFileSystem(){
 	debugString(gData.cwd);
 }
 
+void shutdownFileSystem() {}
+
 void setFileSystem(const char* path){
 	logg("Setting file system.");
 	if(path[0] != '/'){
@@ -135,6 +137,7 @@ size_t fileTell(FileHandler tHandler) {
 size_t fileTotal(FileHandler tHandler){
 	return fs_total(tHandler);
 }
+void fileFlush(FileHandler /*tHandler*/) { } // Unsupported on Dreamcast
 int fileUnlink(const char* tPath) {
 	char path[1024];
 	getFullPath(path, tPath);

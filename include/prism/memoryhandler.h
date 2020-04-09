@@ -55,6 +55,6 @@ void setMemoryHandlerCompressionInactive();
 
 void debugPrintMemoryStack();
 int getAvailableTextureMemory();
-void logMemoryPlatform();
+int getAvailableSoundMemory();
 
 int getAllocatedMemoryBlockAmount();

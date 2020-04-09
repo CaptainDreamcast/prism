@@ -1,6 +1,7 @@
 #include "prism/file.h"
 
 #include <sys/stat.h>
+#include <algorithm>
 
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
@@ -75,6 +76,23 @@ void getPathWithNumberAffixedFromAssetPath(char* tDest, const char* tSrc, int i)
 		pos[0] = '.';
 	}
 
+}
+
+void cleanPathSlashes(char* tDest, const char* tPath) {
+	const auto n = strlen(tPath);
+	for (size_t i = 0; i < n; i++) {
+		tDest[i] = (tPath[i] == '\\') ? '/' : tPath[i];
+	}
+}
+
+void cleanPathSlashes(char* tPath)
+{
+	cleanPathSlashes(tPath, tPath);
+}
+
+void cleanPathSlashes(std::string & tPath)
+{
+	std::transform(tPath.begin(), tPath.end(), tPath.begin(), [](char c) {return (c == '\\') ? '/' : c; });
 }
 
 void getPathToFile(char * tDest, const char * tPath)

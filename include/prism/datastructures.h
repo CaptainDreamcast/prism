@@ -153,11 +153,6 @@ void suffix_tree_push_owned(SuffixTree* tTree, char* tKey, void* tData);
 void suffix_tree_push(SuffixTree* tTree, char* tKey, void* tData);
 int suffix_tree_contains(SuffixTree* tTree, char* tKey);
 
-
-
-
-
-
-
-
-
+void setPrismFlag(uint32_t& tFlag, uint32_t tValue);
+void removePrismFlag(uint32_t& tFlag, uint32_t tValue);
+int hasPrismFlag(const uint32_t& tFlag, uint32_t tValue);

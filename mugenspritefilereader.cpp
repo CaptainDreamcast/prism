@@ -1464,3 +1464,11 @@ void setMugenSpriteFileReaderSubTextureSplit(int tSubTextureSplitMin, int tSubTe
 	gPrismMugenSpriteFileReaderData.mSubTextureSplitMin = tSubTextureSplitMin;
 	gPrismMugenSpriteFileReaderData.mSubTextureSplitMax = tSubTextureSplitMax;
 }
+
+int hasMugenSprite(MugenSpriteFile* tSprites, int tGroup, int tSprite)
+{
+	if (!tSprites) return 0;
+	if (!int_map_contains(&tSprites->mGroups, tGroup)) return 0;
+	const auto g = (MugenSpriteFileGroup*)int_map_get(&tSprites->mGroups, tGroup);
+	return int_map_contains(&g->mSprites, tSprite);
+}

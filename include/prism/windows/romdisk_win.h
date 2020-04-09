@@ -3,6 +3,7 @@
 #include "prism/file.h"
 
 void initRomdisks();
+void shutdownRomdisks();
 FileHandler fileOpenRomdisk(char* tPath, int tFlags);
 int fileCloseRomdisk(FileHandler tHandler);
 size_t fileReadRomdisk(FileHandler tHandler, void* tBuffer, size_t tCount);

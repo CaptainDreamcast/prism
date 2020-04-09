@@ -195,6 +195,26 @@ Vector3D vecSub2D(Vector3D v1, Vector3D v2)
 	return v1;
 }
 
+Vector3D vecMin2D(const Vector3D& v1, const Vector3D& v2)
+{
+	return makePosition(std::min(v1.x, v2.x), std::min(v1.y, v2.y), 0);
+}
+
+Vector3D vecMax2D(const Vector3D& v1, const Vector3D& v2)
+{
+	return makePosition(std::max(v1.x, v2.x), std::max(v1.y, v2.y), 0);
+}
+
+Vector3DI vecMinI2D(const Vector3DI& v1, const Vector3DI& v2)
+{
+	return makeVector3DI(std::min(v1.x, v2.x), std::min(v1.y, v2.y), 0);
+}
+
+Vector3DI vecMaxI2D(const Vector3DI& v1, const Vector3DI& v2)
+{
+	return makeVector3DI(std::max(v1.x, v2.x), std::max(v1.y, v2.y), 0);
+}
+
 double getAngleFromDirection(Vector3D tDirection) {
 	return -fatan2(tDirection.y, tDirection.x) + M_PI;
 }
@@ -205,6 +225,10 @@ Vector3D getDirectionFromAngleZ(double tAngle) {
 
 double degreesToRadians(double tDegrees) {
 	return (tDegrees / 180) * M_PI;
+}
+
+double radiansToDegrees(double tRadians) {
+	return (tRadians / M_PI) * 180;
 }
 
 int checkIntersectLineCircle(Line tLine, Circle tCircle) {
@@ -343,6 +367,13 @@ Vector3D operator*(const Vector3D& a, const double& b) {
 	return makePosition(a.x * b, a.y * b, a.z * b);
 }
 
+void operator*=(Vector3D & a, const double & b)
+{
+	a.x *= b;
+	a.y *= b;
+	a.z *= b;
+}
+
 Vector3D operator/(const Vector3D& a, const double& b) {
 	return makePosition(a.x / b, a.y / b, a.z / b);
 }
@@ -398,6 +429,14 @@ Vector3D operator/(const Vector3DI& a, const double& b) {
 
 Vector3DI operator/(const Vector3DI& a, const int& b) {
 	return makeVector3DI(a.x / b, a.y / b, a.z / b);
+}
+
+Vector3DI operator*(const Vector3DI& a, const Vector3DI& b) {
+	Vector3DI ret;
+	ret.x = a.x * b.x;
+	ret.y = a.y * b.y;
+	ret.z = a.z * b.z;
+	return ret;
 }
 
 int operator==(const Vector3DI& a, const Vector3DI& b) {

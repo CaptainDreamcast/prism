@@ -51,7 +51,7 @@ static MugenDefToken* makeMugenDefToken(const char* tValue) {
 }
 
 static int isEmpty(BufferPointer p) {
-	return *p == ' ' || *p == '	' || *p < 0; // TODO: add symbol support for 128+ (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/354)
+	return *p == ' ' || *p == '	' || *p < 0;
 }
 
 static int increaseAndCheckIfOver(Buffer* b, BufferPointer* p) {
@@ -812,8 +812,8 @@ static void tokensToDefScript(MugenDefScript* tScript, MugenDefToken* tToken) {
 	}
 }
 
-void loadMugenDefScript(MugenDefScript* oScript, string& tPath) {
-	loadMugenDefScript(oScript, tPath.data());
+void loadMugenDefScript(MugenDefScript* oScript, const string& tPath) {
+	loadMugenDefScript(oScript, tPath.c_str());
 }
 
 void loadMugenDefScript(MugenDefScript* oScript, const char * tPath)

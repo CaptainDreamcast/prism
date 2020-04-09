@@ -53,12 +53,12 @@ typedef struct MugenDefScriptGroup_t{
 	struct MugenDefScriptGroup_t* mNext;
 } MugenDefScriptGroup;
 
-typedef struct {
+struct MugenDefScript {
 	MugenDefScriptGroup* mFirstGroup;
 	std::map<std::string, MugenDefScriptGroup> mGroups;
-} MugenDefScript;
+};
 
-void loadMugenDefScript(MugenDefScript* oScript, std::string& tPath);
+void loadMugenDefScript(MugenDefScript* oScript, const std::string& tPath);
 void loadMugenDefScript(MugenDefScript* oScript, const char* tPath);
 void loadMugenDefScriptFromBufferAndFreeBuffer(MugenDefScript* oScript, Buffer tBuffer);
 void unloadMugenDefScript(MugenDefScript tScript);

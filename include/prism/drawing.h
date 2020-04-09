@@ -40,8 +40,8 @@ typedef enum {
 	BLEND_TYPE_NORMAL,
 	BLEND_TYPE_ADDITION,
 	BLEND_TYPE_SUBTRACTION,
+	BLEND_TYPE_ONE,
 } BlendType;
-
 
 typedef int TextSize;
 
@@ -62,7 +62,9 @@ void scaleDrawing(double tFactor, Position tScalePosition);
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition);
 void setDrawingBaseColor(Color tColor);
 void setDrawingBaseColorAdvanced(double r, double g, double b);
+void setDrawingColorSolidity(int tIsSolid);
 void setDrawingTransparency(double tAlpha);
+void setDrawingDestinationTransparency(double tAlpha);
 void setDrawingRotationZ(double tAngle, Position tPosition);
 void setDrawingParametersToIdentity();
 void setDrawingPunchThrough();
@@ -86,8 +88,6 @@ Vector3D makeFontSize(int x, int y);
 
 void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 int hasToLinebreak(const char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize);
-
-void drawColoredRectangleToTexture(TextureData tDst, Color tColor, Rectangle tTarget);
 
 void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer);
 void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer tBuffer);

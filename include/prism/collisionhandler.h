@@ -4,7 +4,7 @@
 
 #include "collision.h"
 
-typedef void (*CollisionCallback)(void* tCaller, void* tCollisionData);
+typedef void (*CollisionCallback)(void* tCaller, void* tCollisionData, int tOtherCollisionList);
 
 struct CollisionListElement {
 	int mID;

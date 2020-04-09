@@ -29,7 +29,11 @@ static int isAnimationHeaderGroup(MugenDefScriptGroup* tGroup) {
 static BlitzTimelineAnimation* loadBlitzTimelineAnimationHeaderFromGroup(MugenDefScriptGroup* tGroup) {
 	BlitzTimelineAnimation* e = (BlitzTimelineAnimation*)allocMemory(sizeof(BlitzTimelineAnimation));
 	char mGroupTextString[100];
-	sscanf(tGroup->mName.data(), "%s %d", mGroupTextString, &e->mID);
+	int items = sscanf(tGroup->mName.data(), "%s %d", mGroupTextString, &e->mID);
+	if (items != 2) {
+		logWarningFormat("Unable to parse blitz timeline animation header id: %s", tGroup->mName.data());
+		e->mID = -5;
+	}
 	e->mDuration = getMugenDefIntegerOrDefaultAsGroup(tGroup, "duration", 0);
 	e->mIsLooping = getMugenDefIntegerOrDefaultAsGroup(tGroup, "loop", 0);
 	e->BlitzTimelineAnimationSteps = new_vector();

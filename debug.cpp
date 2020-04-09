@@ -149,8 +149,13 @@ static void loadPrismDebug(void* tData) {
 	gPrismDebug.mIsActive = 1;
 }
 
+static void setConsoleInvisible();
+
 static void unloadPrismDebug(void* tData) {
 	(void)tData;
+	if (gPrismDebug.mConsole.mIsVisible) {
+		setConsoleInvisible();
+	}
 }
 
 static void updatePrismDebugSideDisplay() {

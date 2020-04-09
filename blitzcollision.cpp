@@ -162,7 +162,7 @@ static void internalCollisionHandleSingleCB(void* tCaller, void* tData) {
 	callbackData->mFunc(callbackData->mCaller, otherObject->mCollisionData);
 }
 
-static void internalCollisionCB(void* tCaller, void* tCollisionData) {
+static void internalCollisionCB(void* tCaller, void* tCollisionData, int /*tOtherCollisionList*/) {
 	BlitzCollisionObject* selfObject = (BlitzCollisionObject*)tCaller;
 	BlitzCollisionObject* otherObject = (BlitzCollisionObject*)tCollisionData;
 

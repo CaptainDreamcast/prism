@@ -24,6 +24,8 @@ typedef struct {
 	double m[4][4];
 } Matrix4D;
 
+void setTimeBasedRandomSeed();
+void setRandomSeed(unsigned int tSeed);
 double randfrom(double tMin, double tMax);
 int randfromInteger(int tMin, int tMax);
 Position randPositionInGeoRectangle(const GeoRectangle& tRectangle);
@@ -41,3 +43,5 @@ Matrix4D createScaleMatrix4D(Vector3D tScale);
 Matrix4D createTranslationMatrix4D(Vector3D tTranslation);
 Matrix4D createRotationZMatrix4D(double tAngle);
 Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, double tUp, double tBottom, double tNear, double tFar);
+
+Position rotateScaleTranslatePositionByMatrix4D(const Matrix4D& tMatrix, const Position& tPosition);

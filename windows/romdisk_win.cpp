@@ -389,6 +389,11 @@ void initRomdisks() {
 	gInitted = 1;
 }
 
+void shutdownRomdisks() {
+	if (!gInitted) return;
+	gInitted = 0;
+}
+
 void mountRomdiskWindowsFromBuffer(Buffer b, const char * tMountPath)
 {
 	int isAlreadyMounted = string_map_contains(&gRomdiskMapping, tMountPath);
@@ -464,6 +469,7 @@ void unmountRomdiskWindows(const char* tMountPath) {
 
 int isRomdiskPath(const char * tPath)
 {
+	if (!gInitted) return 0;
 	char mount[1024];
 	getPotentialMountFromPath(mount, tPath);
 
@@ -472,6 +478,7 @@ int isRomdiskPath(const char * tPath)
 
 int isRomdiskFileHandler(FileHandler tHandler)
 {
+	if (!gInitted) return 0;
 	char handlerString[100];
 	sprintf(handlerString, "%d", (int)tHandler);
 	return string_map_contains(&gRomdiskHandlers, handlerString);

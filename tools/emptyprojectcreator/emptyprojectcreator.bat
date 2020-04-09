@@ -23,6 +23,8 @@ set cur_file=%target_dir%\windows\Template.vcxproj
 powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
 set cur_file=%target_dir%\windows\Template.vcxproj.filters
 powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
+set cur_file=%target_dir%\windows\Template.vcxproj.user
+powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
 set cur_file=%target_dir%\windows\TemplateDreamcast.sln
 powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
 set cur_file=%target_dir%\windows\TemplateDreamcast.vcxproj
@@ -48,6 +50,7 @@ rename %target_dir%\windows\Template.rc %1.rc
 rename %target_dir%\windows\Template.sln %1.sln
 rename %target_dir%\windows\Template.vcxproj %1.vcxproj
 rename %target_dir%\windows\Template.vcxproj.filters %1.vcxproj.filters
+rename %target_dir%\windows\Template.vcxproj.user %1.vcxproj.user
 rename %target_dir%\windows\TemplateDreamcast.sln %1Dreamcast.sln
 rename %target_dir%\windows\TemplateDreamcast.vcxproj %1Dreamcast.vcxproj
 rename %target_dir%\windows\TemplateDreamcast.vcxproj.filters %1Dreamcast.vcxproj.filters

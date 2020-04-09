@@ -35,7 +35,10 @@ static ScriptPosition updateScriptPositionValidity(ScriptPosition tPos) {
 
 ScriptPosition getNextScriptString(ScriptPosition tPos, char* tDest) {
 	int positionsRead;	
-	sscanf(tPos.mPointer, "%99s%n", tDest, &positionsRead);
+	int items = sscanf(tPos.mPointer, "%99s%n", tDest, &positionsRead);
+	if (items != 1) {
+		logWarningFormat("Unable to parse next script string from: %s", (char*)tPos.mPointer);
+	}
 	tPos.mPointer += positionsRead;
 	tPos = updateScriptPositionValidity(tPos);
 	
@@ -58,7 +61,10 @@ static ScriptPosition getNextScriptRawCharacter(ScriptPosition tPos, char* tDest
 
 ScriptPosition getNextScriptDouble(ScriptPosition tPos, double* tDest) {
 	int positionsRead;	
-	sscanf(tPos.mPointer, "%lf%n", tDest, &positionsRead);
+	int items = sscanf(tPos.mPointer, "%lf%n", tDest, &positionsRead);
+	if (items != 1) {
+		logWarningFormat("Unable to parse next script double from: %s", (char*)tPos.mPointer);
+	}
 	tPos.mPointer += positionsRead;
 	tPos = updateScriptPositionValidity(tPos);
 	
@@ -67,7 +73,10 @@ ScriptPosition getNextScriptDouble(ScriptPosition tPos, double* tDest) {
 
 ScriptPosition getNextScriptInteger(ScriptPosition tPos, int* tDest) {
 	int positionsRead;	
-	sscanf(tPos.mPointer, "%d%n", tDest, &positionsRead);
+	int items = sscanf(tPos.mPointer, "%d%n", tDest, &positionsRead);
+	if (items != 1) {
+		logWarningFormat("Unable to parse next script integer from: %s", (char*)tPos.mPointer);
+	}
 	tPos.mPointer += positionsRead;
 	tPos = updateScriptPositionValidity(tPos);
 	

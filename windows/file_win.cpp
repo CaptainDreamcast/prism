@@ -38,6 +38,10 @@ void initFileSystem(){
 	}	
 }
 
+void shutdownFileSystem() {
+	shutdownRomdisks();
+}
+
 static void expandPath(char* tDest, const char* tPath) {
 	strcpy(tDest, tPath);
 	if (tDest[0] != '/') return;
@@ -92,7 +96,6 @@ static int isAbsoluteWindowsDirectory(const char* tPath) {
 }
 
 void getFullPath(char* tDest, const char* tPath) {
-
 	if (isRomdiskPath(tPath) || isAbsoluteWindowsDirectory(tPath)) {
 		if (tPath[0] == '$') tPath++;
 		strcpy(tDest, tPath);
@@ -106,7 +109,6 @@ void getFullPath(char* tDest, const char* tPath) {
 		expandPath(expandedPath, tPath);
 		sprintf(tDest, "%s%s", gPrismWindowsFileData.mFileSystem, expandedPath);
 	}
-
 	else sprintf(tDest, "%s%s%s", gPrismWindowsFileData.mFileSystem, gPrismWindowsFileData.cwd, tPath);
 }
 
@@ -183,6 +185,12 @@ size_t fileTotal(FileHandler tHandler){
 
 	return size;
 }
+
+void fileFlush(FileHandler tHandler) {
+	if (isRomdiskFileHandler(tHandler)) return;
+	fflush(tHandler);
+}
+
 int fileUnlink(const char* tPath) {
 	return remove(tPath);
 }

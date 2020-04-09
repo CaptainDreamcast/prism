@@ -60,10 +60,16 @@ int vecEqualsI2D(Vector3DI v1, Vector3DI v2);
 double vecLength2D(Vector3D v);
 Vector3D vecAdd2D(Vector3D v1, Vector3D v2);
 Vector3D vecSub2D(Vector3D v1, Vector3D v2);
+Vector3D vecMin2D(const Vector3D& v1, const Vector3D& v2);
+Vector3D vecMax2D(const Vector3D& v1, const Vector3D& v2);
+
+Vector3DI vecMinI2D(const Vector3DI& v1, const Vector3DI& v2);
+Vector3DI vecMaxI2D(const Vector3DI& v1, const Vector3DI& v2);
 
 double getAngleFromDirection(Vector3D tDirection);
 Vector3D getDirectionFromAngleZ(double tAngle);
 double degreesToRadians(double tDegrees);
+double radiansToDegrees(double tRadians);
 
 int checkIntersectLineCircle(Line tLine, Circle tCircle);
 
@@ -81,6 +87,7 @@ Vector3D operator+(const Vector3D& a, const Vector3D& b);
 Vector3D operator-(const Vector3D& a, const Vector3D& b);
 Vector3D operator*(const double& a, const Vector3D& b);
 Vector3D operator*(const Vector3D& a, const double& b);
+void operator*=(Vector3D& a, const double& b);
 Vector3D operator/(const Vector3D& a, const double& b);
 Vector3D operator/(const double& a, const Vector3D& b);
 // pairwise multiplication
@@ -96,6 +103,8 @@ Vector3D operator+(const Vector3D& a, const Vector3DI& b);
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b);
 Vector3D operator/(const Vector3DI& a, const double& b);
 Vector3DI operator/(const Vector3DI& a, const int& b);
+// pairwise multiplication
+Vector3DI operator*(const Vector3DI& a, const Vector3DI& b);
 int operator==(const Vector3DI& a, const Vector3DI& b);
 int operator!=(const Vector3DI& a, const Vector3DI& b);
 

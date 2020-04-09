@@ -70,8 +70,8 @@ static void checkCollisionElements(CollisionListElement* e1, CollisionListElemen
 	if (e1->mIsScheduledForDeletion || e2->mIsScheduledForDeletion) return;
 
 	if(checkCollisionCollider(e1->mCollider, e2->mCollider)) {
-		if(e1->mCB) e1->mCB(e1->mCaller, e2->mCollisionData);
-		if(e2->mCB) e2->mCB(e2->mCaller, e1->mCollisionData);
+		if(e1->mCB) e1->mCB(e1->mCaller, e2->mCollisionData, e2->mListID);
+		if(e2->mCB) e2->mCB(e2->mCaller, e1->mCollisionData, e1->mListID);
 	}
 }
 
@@ -151,6 +151,7 @@ CollisionListElement* addColliderToCollisionHandler(CollisionListData* tList, Po
 	int id = stl_int_map_push_back(tList->mCollisionElements, e);
 	auto element = &tList->mCollisionElements[id];
 	element->mID = id;
+	element->mListID = tList->mID;
 	setColliderBasePosition(&element->mCollider, tBasePosition);
 	return element;
 }

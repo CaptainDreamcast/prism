@@ -96,16 +96,18 @@ static void setToProgramDirectory() {
 
 extern void setDrawingScreenScale(double tScaleX, double tScaleY);
 
-static void setWindowSize() {
+static void setWindowSize(int tX, int tY) {
 	ScreenSize sz = getScreenSize();
-	double scaleX = gPrismWindowsSystemData.mDisplayedWindowSizeX / (double)sz.x;
-	double scaleY = gPrismWindowsSystemData.mDisplayedWindowSizeY / (double)sz.y;
+	double scaleX = tX / (double)sz.x;
+	double scaleY = tY / (double)sz.y;
 
 	scaleX = fmin(scaleX, scaleY);
 	scaleY = fmin(scaleX, scaleY);
 
 	setDrawingScreenScale(scaleX, scaleY);
-	SDL_SetWindowSize(gSDLWindow, (int)(scaleX * sz.x), (int)(scaleY * sz.y));
+	gPrismWindowsSystemData.mDisplayedWindowSizeX = (int)(scaleX * sz.x);
+	gPrismWindowsSystemData.mDisplayedWindowSizeY = (int)(scaleY * sz.y);
+	SDL_SetWindowSize(gSDLWindow, gPrismWindowsSystemData.mDisplayedWindowSizeX, gPrismWindowsSystemData.mDisplayedWindowSizeY);
 }
 
 static void initOpenGL() {
@@ -244,10 +246,7 @@ ScreenSize getDisplayedScreenSize()
 
 void setDisplayedScreenSize(int tX, int tY)
 {
-	gPrismWindowsSystemData.mDisplayedWindowSizeX = tX;
-	gPrismWindowsSystemData.mDisplayedWindowSizeY = tY;
-
-	setWindowSize();
+	setWindowSize(tX, tY);
 }
 
 void setScreenFramerate(int tFramerate) {

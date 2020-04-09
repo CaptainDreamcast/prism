@@ -1,6 +1,8 @@
 #include "prism/wrapper.h"
 
+#if defined(__EMSCRIPTEN__) || defined(DREAMCAST) 
 #include <setjmp.h>
+#endif
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -43,6 +45,7 @@
 #include "prism/loadingscreen.h"
 #include "prism/errorscreen.h"
 #include "prism/debug.h"
+#include "prism/math.h"
 
 
 typedef struct {
@@ -81,7 +84,9 @@ static struct {
 	Exhibition mExhibition;
 
 	WrapperDebug mDebug;
+#if defined(__EMSCRIPTEN__) || defined(DREAMCAST) 
 	jmp_buf mExceptionJumpBuffer;
+#endif
 
 	int mIsNotUsingWrapperRecovery;
 	int mIsActive;
@@ -112,7 +117,8 @@ static void initBasicSystems() {
 		debugLog("Initiating debug.");
 		initDebug();
 	}
-
+	debugLog("Initiating random seed.");
+	setTimeBasedRandomSeed();
 
 	gPrismWrapperData.mGlobalTimeDilatation = 1;
 	gPrismWrapperData.mIsActive = 1;
@@ -165,6 +171,7 @@ void initPrismWrapperWithConfigFile(const char* tPath) {
 void shutdownPrismWrapper() {
 	shutdownThreading();
 	shutdownSound();
+	shutdownFileSystem();
 	shutdownMemoryHandler();
 	shutdownSystem();
 
@@ -197,6 +204,29 @@ int isWrapperPaused()
 int isUsingWrapper()
 {
 	return gPrismWrapperData.mIsActive;
+}
+
+class PrismScreenHandlingException : public std::exception {};
+enum PrismScreenHandlingExceptionState : uint32_t {
+	PRISM_SCREEN_HANDLING_EXCEPTION_NONE = 0,
+	PRISM_SCREEN_HANDLING_EXCEPTION_INIT = 1,
+	PRISM_SCREEN_HANDLING_EXCEPTION_THROWN = 2,
+};
+
+static void jumpBackToScreenHandling() {
+#if defined(__EMSCRIPTEN__) || defined(DREAMCAST)
+	longjmp(gPrismWrapperData.mExceptionJumpBuffer, 1);
+#else
+	throw PrismScreenHandlingException();
+#endif
+}
+
+static void unloadWrapper();
+
+static void tryToUnloadAndReturnToScreenHandling() {
+	setNewScreen(getErrorScreen());
+	unloadWrapper();
+	jumpBackToScreenHandling();
 }
 
 static void loadingThreadFunction(void* tCaller) {
@@ -296,7 +326,10 @@ static void loadScreen(Screen* tScreen) {
 		loadingThreadFunction(tScreen);
 	}
 
-	
+	if (gPrismWrapperData.mHasFinishedLoading == -1) {
+		logg("Caught loading error.");
+		tryToUnloadAndReturnToScreenHandling();
+	}
 }
 
 static void callBetweenScreensCB() {
@@ -477,6 +510,10 @@ static void drawScreen() {
 	stopDrawing();
 }
 
+static int isPrismWrappedScreenOver() {
+	return gPrismWrapperData.mIsAborted || gPrismWrapperData.mNext;
+}
+
 static void performScreenIteration() {
 	setPrismDebugUpdateStartTime();
 
@@ -485,6 +522,7 @@ static void performScreenIteration() {
 	int i;
 	for (i = 0; i < updateAmount; i++) {
 		updateScreen();
+		if (isPrismWrappedScreenOver()) break;
 	}
 	gPrismWrapperData.mUpdateTimeCounter -= updateAmount;
 
@@ -514,7 +552,7 @@ static Screen* showScreen() {
 	emscripten_set_main_loop(performScreenIteration, 60, 1);
 #endif
 
-	while(!gPrismWrapperData.mIsAborted && gPrismWrapperData.mNext == NULL) {
+	while(!isPrismWrappedScreenOver()) {
 		performScreenIteration();
 	}
 
@@ -542,28 +580,37 @@ Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate, DrawSc
 
 void startScreenHandling(Screen* tScreen) {
 	gPrismWrapperData.mIsAborted = 0;
-// TODO: refactor with exceptions (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/431)
+
+#if defined(__EMSCRIPTEN__) || defined(DREAMCAST)
 #ifdef DREAMCAST
 #pragma GCC diagnostic ignored "-Wclobbered"
-#endif
-#ifdef _WIN32
-#pragma warning(push)
-#pragma warning(disable: 4611)
 #endif
 	if (setjmp(gPrismWrapperData.mExceptionJumpBuffer)) {
 		tScreen = gPrismWrapperData.mNext;
 	}
-#ifdef _WIN32
-#pragma warning(pop)
+#else
+	PrismScreenHandlingExceptionState exceptionState = PRISM_SCREEN_HANDLING_EXCEPTION_INIT;
+	while (exceptionState) {
+		if (exceptionState == PRISM_SCREEN_HANDLING_EXCEPTION_THROWN) {
+			tScreen = gPrismWrapperData.mNext;
+		}
+		exceptionState = PRISM_SCREEN_HANDLING_EXCEPTION_NONE;
+
+		try {
 #endif
-	while(!gPrismWrapperData.mIsAborted) {
-		loadScreen(tScreen);
-		Screen* next = showScreen();
-		unloadScreen(tScreen);
-		resumeWrapperComponentsForced();
-		tScreen = next;
+			while (!gPrismWrapperData.mIsAborted) {
+				loadScreen(tScreen);
+				Screen* next = showScreen();
+				unloadScreen(tScreen);
+				resumeWrapperComponentsForced();
+				tScreen = next;
+			}
+#if !defined(__EMSCRIPTEN__) && !defined(DREAMCAST) 
+		} catch (const PrismScreenHandlingException&) {
+			exceptionState = PRISM_SCREEN_HANDLING_EXCEPTION_THROWN;
+		}
 	}
-	
+#endif
 }
 
 void setWrapperTimeDilatation(double tDilatation)
@@ -595,12 +642,14 @@ void setWrapperTitleScreen(Screen * tTitleScreen)
 
 void recoverWrapperError()
 {
-	gPrismWrapperData.mHasFinishedLoading = 1;
-
 	if (gPrismWrapperData.mIsUsingMugen && !gPrismWrapperData.mIsNotUsingWrapperRecovery) {
-		setNewScreen(getErrorScreen());
-		unloadWrapper();
-		longjmp(gPrismWrapperData.mExceptionJumpBuffer, 1);
+#ifdef DREAMCAST
+		if (!gPrismWrapperData.mHasFinishedLoading) {
+			gPrismWrapperData.mHasFinishedLoading = -1;
+			terminateSelfAsThread(0);
+		}
+#endif
+		tryToUnloadAndReturnToScreenHandling();
 	}
 	else {
 		gotoNextScreenAfterWrapperError();
@@ -616,7 +665,7 @@ void gotoNextScreenAfterWrapperError()
 	else {
 		setNewScreen(gPrismWrapperData.mTitleScreen);
 		unloadWrapper();
-		longjmp(gPrismWrapperData.mExceptionJumpBuffer, 1);
+		jumpBackToScreenHandling();
 	}
 }
 
@@ -625,3 +674,16 @@ void disableWrapperErrorRecovery()
 	gPrismWrapperData.mIsNotUsingWrapperRecovery = 1;
 }
 
+void initPrismWrapperScreenForDebug(Screen* tScreen) {
+	loadScreen(tScreen);
+}
+
+void updatePrismWrapperScreenForDebugWithIterations(int tIterations) {
+	while (tIterations--) {
+		updateScreen();
+	}
+}
+
+void unloadPrismWrapperScreenForDebug() {
+	unloadScreen(gPrismWrapperData.mScreen);
+}

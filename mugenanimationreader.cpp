@@ -87,7 +87,11 @@ static MugenAnimation* makeEmptyMugenAnimation(int tID) {
 static int getAnimationID(MugenDefScriptGroup* tGroup) {
 	char text1[20], text2[20];
 	int ret;
-	sscanf(tGroup->mName.data(), "%s %s %d", text1, text2, &ret);
+	int items = sscanf(tGroup->mName.data(), "%s %s %d", text1, text2, &ret);
+	if (items != 3) {
+		logWarningFormat("Unable to parse animation ID: %s", tGroup->mName.data());
+		ret = -5;
+	}
 	return ret;
 }
 
@@ -98,8 +102,8 @@ typedef struct {
 
 static int isAnimationVector(const char* tVariableName) {
 	char text[100];
-	sscanf(tVariableName, "%s", text);
-	return !strcmp(text, "vector_statement");
+	int items = sscanf(tVariableName, "%s", text);
+	return items == 1 && !strcmp(text, "vector_statement");
 }
 
 static void insertAnimationStepIntoAnimation(MugenAnimation* e, MugenAnimationStep* tElement) {
@@ -223,7 +227,12 @@ static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, M
 
 static void handleHitboxSizeAssignment(const char* tName) {
 	char name[100];
-	sscanf(tName, "%s", name);
+	int items = sscanf(tName, "%s", name);
+	if (items != 1) {
+		logError("Unparseable collision size name.");
+		logErrorString(name);
+		recoverFromError();
+	}
 
 	if (!strcmp("clsn1default", name)) {
 		gMugenAnimationState.mIsReadingDefaultHitbox = 1;
@@ -250,8 +259,8 @@ static void handleHitboxSizeAssignment(const char* tName) {
 
 static int isHitboxSizeAssignment(const char* tName) {
 	char name[100];
-	sscanf(tName, "%s", name);
-	return !strcmp("clsn2default", name) || !strcmp("clsn2", name) || !strcmp("clsn1default", name) || !strcmp("clsn1", name);
+	int items = sscanf(tName, "%s", name);
+	return items == 1 && (!strcmp("clsn2default", name) || !strcmp("clsn2", name) || !strcmp("clsn1default", name) || !strcmp("clsn1", name));
 }
 
 static void handleCollisionHitboxAssignment(List* tHitboxes, MugenDefScriptGroupElement* tElement) {
@@ -308,8 +317,8 @@ static int isHitboxAssignment(const char* tName) {
 
 static int isLoopStart(const char* tVariableName) {
 	char text[100];
-	sscanf(tVariableName, "%s", text);
-	return !strcmp(text, "Loopstart");
+	int items = sscanf(tVariableName, "%s", text);
+	return items == 1 && !strcmp(text, "Loopstart");
 }
 
 static void handleLoopStart() {
@@ -560,6 +569,7 @@ Vector3D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, Mugen
 	MugenAnimationStep* firstStep = (MugenAnimationStep*)vector_get(&tAnimation->mSteps, 0);
 
 	MugenSpriteFileSprite* sprite = getMugenSpriteFileTextureReference(tSprites, firstStep->mGroupNumber, firstStep->mSpriteNumber);
+	if (!sprite) return makePosition(0, 0, 0);
 	return sprite->mAxisOffset;
 }
 

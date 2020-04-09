@@ -5,16 +5,17 @@
 #include "drawing.h"
 #include "animation.h"
 
+struct MugenDefScript;
+
 typedef enum {
 	MUGEN_TEXT_ALIGNMENT_LEFT,
 	MUGEN_TEXT_ALIGNMENT_CENTER,
 	MUGEN_TEXT_ALIGNMENT_RIGHT,
 } MugenTextAlignment;
 
-void addMugenFont(int tKey, const char* tPath);
+void addMugenFont(int tKey, const char* tPath); 
+void loadMugenFontsFromScript(MugenDefScript* tScript);
 void loadMugenTextHandler();
-void loadMugenSystemFonts();
-void loadMugenFightFonts();
 void unloadMugenFonts();
 
 int getMugenFontSizeY(int tKey);

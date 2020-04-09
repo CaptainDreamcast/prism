@@ -68,6 +68,19 @@ void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(C* tCaller
 }
 
 template <class T>
+void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(int tKey, T& tData)) {
+	typename std::map<int, T>::iterator it = tMap.begin();
+
+	while (it != tMap.end()) {
+		std::pair<const int, T> &val = *it;
+		typename std::map<int, T>::iterator current = it;
+		it++;
+		int isDeleted = tFunc(val.first, val.second);
+		if (isDeleted) tMap.erase(current);
+	}
+}
+
+template <class T>
 void stl_int_map_remove_predicate(std::map<int, T> &tMap, int(*tFunc)(T& tData)) {
 	typename std::map<int, T>::iterator it = tMap.begin();
 
@@ -140,6 +153,17 @@ void stl_int_map_map(std::map<int, T> &tMap, void(*tFunc)(C* tCaller, T& tData),
 		std::pair<const int, T> &val = *it;
 		it++;
 		tFunc(tCaller, val.second);
+	}
+}
+
+template <class T>
+void stl_int_map_map(std::map<int, T> &tMap, void(*tFunc)(int tKey, T& tData)) {
+	typename std::map<int, T>::iterator it = tMap.begin();
+
+	while (it != tMap.end()) {
+		std::pair<const int, T> &val = *it;
+		it++;
+		tFunc(val.first, val.second);
 	}
 }
 
@@ -296,3 +320,14 @@ void stl_list_map(std::list<T> &tList, void(*tFunc)(C* tCaller, T& tData), C* tC
 	}
 }
 
+template <class T>
+void stl_list_map(std::list<T> &tList, void(*tFunc)(T& tData)) {
+	typename std::list<T>::iterator it = tList.begin();
+
+	while (it != tList.end()) {
+		T &val = *it;
+		typename std::list<T>::iterator current = it;
+		it++;
+		tFunc(val);
+	}
+}

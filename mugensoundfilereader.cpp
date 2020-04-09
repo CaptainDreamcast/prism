@@ -38,7 +38,7 @@ static void addSoundGroup(MugenSounds* tSounds, int tGroupNumber) {
 	int_map_push_owned(&tSounds->mGroups, tGroupNumber, e);
 }
 
-static void loadSingleMugenSoundSubfile(MugenSounds* tSounds) {
+static int loadSingleMugenSoundSubfileAndReturnIfOver(MugenSounds* tSounds) {
 	MugenSoundFileSubFileHeader subHeader;
 	gMugenSoundFileReaderData.mFileReader.mRead(&gMugenSoundFileReaderData.mFileReader, &subHeader, sizeof(MugenSoundFileSubFileHeader));
 
@@ -47,18 +47,27 @@ static void loadSingleMugenSoundSubfile(MugenSounds* tSounds) {
 		addSoundGroup(tSounds, subHeader.mGroupNumber);
 	}
 	group = (MugenSoundGroup*)int_map_get(&tSounds->mGroups, subHeader.mGroupNumber);
-
-	Buffer waveFileBuffer = gMugenSoundFileReaderData.mFileReader.mReadBufferReadOnly(&gMugenSoundFileReaderData.mFileReader, subHeader.mSubfileLength);
-
 	MugenSoundSample* e = (MugenSoundSample*)allocMemory(sizeof(MugenSoundSample));
-	e->mSoundEffectID = loadSoundEffectFromBuffer(waveFileBuffer);
-	freeBuffer(waveFileBuffer);
+	if (unsigned(getAvailableSoundMemory()) >= subHeader.mSubfileLength * 2) {
+		Buffer waveFileBuffer = gMugenSoundFileReaderData.mFileReader.mReadBufferReadOnly(&gMugenSoundFileReaderData.mFileReader, subHeader.mSubfileLength);
+		e->mSoundEffectID = loadSoundEffectFromBuffer(waveFileBuffer);
+		freeBuffer(waveFileBuffer);
+	}
+	else {
+		logWarningFormat("Early out for sound effect %d %d, does not fit in sound memory.", subHeader.mGroupNumber, subHeader.mSampleNumber);
+		e->mSoundEffectID = -1;
+	}
 
 	int_map_push_owned(&group->mSamples, subHeader.mSampleNumber, e);
+
+	if (e->mSoundEffectID == -1) {
+		return 1;
+	}
 
 	if (subHeader.mNextFileOffset != 0) {
 		gMugenSoundFileReaderData.mFileReader.mSeek(&gMugenSoundFileReaderData.mFileReader, subHeader.mNextFileOffset);
 	}
+	return 0;
 }
 
 static MugenSounds loadMugenSoundFileWithReader() {
@@ -72,24 +81,21 @@ static MugenSounds loadMugenSoundFileWithReader() {
 
 	int i;
 	for (i = 0; i < (int)header.mNumberOfSounds; i++) {
-		loadSingleMugenSoundSubfile(&ret);
+		if (loadSingleMugenSoundSubfileAndReturnIfOver(&ret)) {
+			break;
+		}
 	}
 
 	return ret;
 }
 
-static void initMugenSoundFileReader(uint32_t tFileSize) {
-	if (tFileSize <= 1024 * 1024) {
-		gMugenSoundFileReaderData.mFileReader = getBufferFileReader();
-	}
-	else {
-		gMugenSoundFileReaderData.mFileReader = getFileFileReader();
-	}
+static void initMugenSoundFileReader() {
+	gMugenSoundFileReaderData.mFileReader = getFileFileReader();
 }
 
 MugenSounds loadMugenSoundFile(const char * tPath)
 {
-	initMugenSoundFileReader(getFileSize(tPath));
+	initMugenSoundFileReader();
 	gMugenSoundFileReaderData.mFileReader.mInit(&gMugenSoundFileReaderData.mFileReader, tPath);
 	MugenSounds ret = loadMugenSoundFileWithReader();
 	gMugenSoundFileReaderData.mFileReader.mDelete(&gMugenSoundFileReaderData.mFileReader);
@@ -126,15 +132,26 @@ MugenSounds createEmptyMugenSoundFile() {
 	return ret;
 }
 
-int playMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
-{
+static MugenSoundSample* getMugenSoundSample(MugenSounds* tSounds, int tGroup, int tSample) {
 	assert(int_map_contains(&tSounds->mGroups, tGroup));
 	MugenSoundGroup* group = (MugenSoundGroup*)int_map_get(&tSounds->mGroups, tGroup);
 
 	assert(int_map_contains(&group->mSamples, tSample));
-	MugenSoundSample* sample = (MugenSoundSample*)int_map_get(&group->mSamples, tSample);
+	return (MugenSoundSample*)int_map_get(&group->mSamples, tSample);
+}
 
+int playMugenSound(MugenSounds* tSounds, int tGroup, int tSample)
+{
+	const auto sample = getMugenSoundSample(tSounds, tGroup, tSample);
 	return playSoundEffect(sample->mSoundEffectID);
+}
+
+int playMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, double tVolume, int tChannel, double tFrequencyMultiplier, int tIsLooping, double tPanning)
+{
+	const auto sample = getMugenSoundSample(tSounds, tGroup, tSample);
+	int channel = playSoundEffectChannel(sample->mSoundEffectID, tChannel, tVolume, tFrequencyMultiplier, tIsLooping);
+	panSoundEffect(channel, tPanning);
+	return channel;
 }
 
 int tryPlayMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
@@ -144,6 +161,16 @@ int tryPlayMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 	}
 
 	playMugenSound(tSounds, tGroup, tSample);
+	return 1;
+}
+
+int tryPlayMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, double tVolume, int tChannel, double tFrequencyMultiplier, int tIsLooping, double tPanning)
+{
+	if (!hasMugenSound(tSounds, tGroup, tSample)) {
+		return 0;
+	}
+
+	playMugenSoundAdvanced(tSounds, tGroup, tSample, tVolume, tChannel, tFrequencyMultiplier, tIsLooping, tPanning);
 	return 1;
 }
 

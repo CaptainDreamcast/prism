@@ -12,6 +12,7 @@ build_develop: $(OBJS)
 	-s CASE_INSENSITIVE_FS=1 -s FORCE_FILESYSTEM=1 \
 	-s SDL2_IMAGE_FORMATS="[""png""]" \
 	-s USE_SDL_MIXER=2 -s USE_OGG=1 -s USE_VORBIS=1 \
+	-s BINARYEN_TRAP_MODE="clamp" \
 	-L$(PRISM_PATH)/bin -lprism \
 	-L$(PRISM_PATH)/web/lib -lzstd \
 	-o web/game.html

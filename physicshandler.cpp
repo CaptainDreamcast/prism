@@ -78,6 +78,11 @@ PhysicsObject* getPhysicsFromHandler(PhysicsHandlerElement* data) {
 	return &data->mObj;
 }
 
+Position getHandledPhysicsPosition(PhysicsHandlerElement* data)
+{
+	return data->mObj.mPosition;
+}
+
 Position* getHandledPhysicsPositionReference(PhysicsHandlerElement* data) {
 	return &data->mObj.mPosition;
 }

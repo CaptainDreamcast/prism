@@ -40,6 +40,10 @@ void recoverWrapperError();
 void gotoNextScreenAfterWrapperError();
 void disableWrapperErrorRecovery();
 
+void initPrismWrapperScreenForDebug(Screen* tScreen);
+void updatePrismWrapperScreenForDebugWithIterations(int tIterations);
+void unloadPrismWrapperScreenForDebug();
+
 #define EXPORT_TEST(ScreenName) { void func_##ScreenName(); }
 
 #define EXPORT_SCREEN_CLASS(tScreenName) \

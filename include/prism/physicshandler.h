@@ -21,6 +21,7 @@ void updatePhysicsHandler();
 PhysicsHandlerElement* addToPhysicsHandler(Position tPosition);
 void removeFromPhysicsHandler(PhysicsHandlerElement* tElement);
 PhysicsObject* getPhysicsFromHandler(PhysicsHandlerElement* tElement);
+Position getHandledPhysicsPosition(PhysicsHandlerElement* tElement);
 Position* getHandledPhysicsPositionReference(PhysicsHandlerElement* tElement);
 Velocity* getHandledPhysicsVelocityReference(PhysicsHandlerElement* tElement);
 Acceleration* getHandledPhysicsAccelerationReference(PhysicsHandlerElement* tElement);
