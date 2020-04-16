@@ -28,7 +28,7 @@ static struct {
 } gSoundEffectData;
 
 void initSoundEffects() {
-	
+	gSoundEffectData.mVolume = 20;
 }
 
 void setupSoundEffectHandler() {
@@ -89,6 +89,7 @@ void unloadSoundEffect(int tID) {
 }
 
 static void tryEraseChannelChunk(int tChannel) {
+	setProfilingSectionMarkerCurrentFunction();
 	if (stl_map_contains(gSoundEffectData.mChunks, tChannel)) {
 		Mix_FreeChunk(gSoundEffectData.mChunks[tChannel]);
 		gSoundEffectData.mChunks.erase(tChannel);
@@ -96,6 +97,7 @@ static void tryEraseChannelChunk(int tChannel) {
 }
 
 int playSoundEffect(int tID) {
+	setProfilingSectionMarkerCurrentFunction();
 	return playSoundEffectChannel(tID, -1, getSoundEffectVolume());
 }
 
@@ -105,6 +107,7 @@ static int parseVolume(double tVolume) {
 
 int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreqMul*/, int tIsLooping)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
 	SDL_RWops* rwOps = SDL_RWFromConstMem(e->mBuffer.mData, e->mBuffer.mLength);
 	Mix_Chunk* chunk = Mix_LoadWAV_RW(rwOps, 0);
@@ -117,26 +120,31 @@ int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreq
 }
 
 void stopSoundEffect(int tChannel) {
+	setProfilingSectionMarkerCurrentFunction();
 	Mix_HaltChannel(tChannel);
 	tryEraseChannelChunk(tChannel);
 }
 
 static void stopSingleSoundEffectCB(int tChannel, Mix_Chunk*& /*tChunk*/) {
+	setProfilingSectionMarkerCurrentFunction();
 	Mix_HaltChannel(tChannel);
 	tryEraseChannelChunk(tChannel);
 }
 
 void stopAllSoundEffects() {
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_map(gSoundEffectData.mChunks, stopSingleSoundEffectCB);
 }
 
 void panSoundEffect(int tChannel, double tPanning)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
 	Mix_SetPanning(tChannel, 255 - right, right);
 }
 
 int isSoundEffectPlayingOnChannel(int tChannel) {
+	setProfilingSectionMarkerCurrentFunction();
 	return Mix_Playing(tChannel);
 }
 
@@ -145,6 +153,7 @@ double getSoundEffectVolume() {
 }
 
 void setSoundEffectVolume(double tVolume) {
+	setProfilingSectionMarkerCurrentFunction();
 	gSoundEffectData.mVolume = parseVolume(tVolume);
 	Mix_Volume(-1, gSoundEffectData.mVolume);
 }

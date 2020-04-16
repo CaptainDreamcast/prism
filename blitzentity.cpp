@@ -30,11 +30,13 @@ static struct {
 
 static void loadBlitzMugenAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzEntityData.mEntities.clear();
 }
 
 static void unloadBlitzMugenAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzEntityData.mEntities.clear();
 }
 
@@ -75,6 +77,7 @@ static int updateSingleEntity(void* tCaller, BlitzEntity& tData) {
 
 static void updateBlitzMugenAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_remove_predicate(gBlitzEntityData.mEntities, updateSingleEntity);
 }
 

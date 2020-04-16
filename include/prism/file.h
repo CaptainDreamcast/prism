@@ -56,7 +56,9 @@ Buffer makeBuffer(void* tData, uint32_t tLength);
 Buffer makeBufferOwned(void* tData, uint32_t tLength);
 Buffer makeBufferEmptyOwned();
 Buffer copyBuffer(Buffer tBuffer);
+Buffer makeBufferOwnedIfNecessary(Buffer tBuffer);
 Buffer fileToBuffer(const char* path);
+Buffer copyStringToBuffer(const std::string& tString);
 void bufferToFile(const char* tPath, Buffer tBuffer);
 void freeBuffer(Buffer buffer);
 void appendTerminationSymbolToBuffer(Buffer* tBuffer);
@@ -105,3 +107,4 @@ void getPathToFile(char* tDest, const char* tPath);
 
 void printDirectory(const char* tPath);
 
+std::string sanitizeFileNameWithInvalidCharacters(const std::string& tPathWithInvalidCharacters);

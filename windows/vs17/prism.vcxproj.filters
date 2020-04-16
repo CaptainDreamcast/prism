@@ -218,6 +218,12 @@
     <ClInclude Include="..\..\include\prism\filereader.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugendefwriter.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\saveload.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\drawing_win.cpp">
@@ -438,6 +444,12 @@
     </ClCompile>
     <ClCompile Include="..\..\filereader.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugendefwriter.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\saveload_win.cpp">
+      <Filter>src\windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

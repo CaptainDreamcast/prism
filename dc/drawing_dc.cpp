@@ -24,6 +24,9 @@ static struct {
 	double r;
 	double g;
 	double b;
+	double rOffset;
+	double gOffset;
+	double bOffset;
 
 	Vector mMatrixStack;
 
@@ -34,8 +37,7 @@ static struct {
 	uint64_t mCurrentFrameTime;
 
     Vector3DI mInverted;
-	
-} gData;
+} gPrismDreamcastDrawingData;
 
 semaphore_t gPVRAccessSemaphore;
 
@@ -59,11 +61,11 @@ void initDrawing(){
 	logg("Initiate drawing.");
 	pvr_set_pal_format(PVR_PAL_ARGB8888);
 	setDrawingParametersToIdentity();
-	gData.mMatrixStack = new_vector();
-	gData.mIsDisabled = 0;
+	gPrismDreamcastDrawingData.mMatrixStack = new_vector();
+	gPrismDreamcastDrawingData.mIsDisabled = 0;
 
-	gData.mPreviousFrameTime = getSystemTicks();
-	gData.mCurrentFrameTime = getSystemTicks();
+	gPrismDreamcastDrawingData.mPreviousFrameTime = getSystemTicks();
+	gPrismDreamcastDrawingData.mCurrentFrameTime = getSystemTicks();
 
 	sem_init(&gPVRAccessSemaphore, 1);
 }
@@ -76,6 +78,8 @@ void initDrawing(){
 #define PVR_BLEND_INVSRCALPHA   5   /**< \brief Blend with inverse source alpha */
 #define PVR_BLEND_DESTALPHA     6   /**< \brief Blend with destination alpha */
 #define PVR_BLEND_INVDESTALPHA  7   /**< \brief Blend with inverse destination alpha */
+
+#define PVR_OARGB_FLAG_ACTIVE	4   /**< \brief Taken from: https://dcemulation.org/phpBB/viewtopic.php?f=29&t=104921 */
 
 static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pvr_vertex_t* vert) {
   //sem_wait(&gPVRAccessSemaphore);
@@ -97,7 +101,7 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
     cxt.blend.src_enable = PVR_BLEND_DISABLE;
     cxt.blend.dst_enable = PVR_BLEND_DISABLE;
 
-	switch(gData.mBlendType) {
+	switch(gPrismDreamcastDrawingData.mBlendType) {
 		case BLEND_TYPE_NORMAL:
 			cxt.blend.src = PVR_BLEND_SRCALPHA; 
 			cxt.blend.dst = PVR_BLEND_INVSRCALPHA;
@@ -116,12 +120,13 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
 			break;
 		default:
 			logError("Unrecognized blend type.");
-			logErrorInteger(gData.mBlendType);
+			logErrorInteger(gPrismDreamcastDrawingData.mBlendType);
 			abortSystem();
 			break;
 	}
 
   pvr_poly_compile(&hdr, &cxt);
+  hdr.cmd |= PVR_OARGB_FLAG_ACTIVE;
   pvr_prim(&hdr, sizeof(hdr));
 
   double left, right, up, down;
@@ -141,32 +146,32 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
     	down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y);
   }
 
-  vert[0].argb = PVR_PACK_COLOR(gData.a, gData.r, gData.g, gData.b);
-  vert[0].oargb = 0;
+  vert[0].argb = PVR_PACK_COLOR(gPrismDreamcastDrawingData.a, gPrismDreamcastDrawingData.r, gPrismDreamcastDrawingData.g, gPrismDreamcastDrawingData.b);
+  vert[0].oargb = PVR_PACK_COLOR(1, gPrismDreamcastDrawingData.rOffset, gPrismDreamcastDrawingData.gOffset, gPrismDreamcastDrawingData.bOffset);
   vert[0].flags = PVR_CMD_VERTEX;
   vert[0].u = left;
   vert[0].v = up;
 
   vert[1].argb = vert[0].argb;
-  vert[1].oargb = 0;
+  vert[1].oargb = vert[0].oargb;
   vert[1].flags = PVR_CMD_VERTEX;
   vert[1].u = right;
   vert[1].v = up;
 
   vert[2].argb = vert[0].argb;
-  vert[2].oargb = 0;
+  vert[2].oargb = vert[0].oargb;
   vert[2].flags = PVR_CMD_VERTEX;
   vert[2].u = left;
   vert[2].v = down;
 
  vert[3].argb = vert[0].argb;
-  vert[3].oargb = 0;
+  vert[3].oargb = vert[0].oargb;
   vert[3].flags = PVR_CMD_VERTEX_EOL;
   vert[3].u = right;
   vert[3].v = down;
 
   pvr_prim(&vert[0], sizeof(pvr_vertex_t));
-  if(gData.mInverted.x ^ gData.mInverted.y) {
+  if(gPrismDreamcastDrawingData.mInverted.x ^ gPrismDreamcastDrawingData.mInverted.y) {
       pvr_prim(&vert[2], sizeof(pvr_vertex_t));
       pvr_prim(&vert[1], sizeof(pvr_vertex_t));
   } else {
@@ -178,8 +183,16 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
   //sem_signal(&gPVRAccessSemaphore);
 }
 
-void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition) {
-  if(gData.mIsDisabled) return;
+void drawSprite(TextureData tTexture, const Position& tPos, const Rectangle& tTexturePosition) {
+	if (gPrismDreamcastDrawingData.mIsDisabled) return;
+
+	const auto sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
+	const auto sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
+	drawSpriteNoRectangle(tTexture, tPos, makePosition(tPos.x + sizeX, tPos.y, tPos.z), makePosition(tPos.x, tPos.y + sizeY, tPos.z), makePosition(tPos.x + sizeX, tPos.y + sizeY, tPos.z), tTexturePosition);
+}
+
+void drawSpriteNoRectangle(TextureData tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition) {
+  if(gPrismDreamcastDrawingData.mIsDisabled) return;
 
   debugLog("Draw Sprite");
   debugInteger(tTexture.mTextureSize.x);
@@ -193,33 +206,30 @@ void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition)
     return;
   }
 
-  int sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
-  int sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
-
   pvr_vertex_t vert[4];
   
-  vert[0].x = tPos.x;
-  vert[0].y = tPos.y;
-  vert[0].z = tPos.z;
+  vert[0].x = tTopLeft.x;
+  vert[0].y = tTopLeft.y;
+  vert[0].z = tTopLeft.z;
   applyDrawingMatrix(&vert[0]);
   forceToInteger(&vert[0]);
   
 
-  vert[1].x = tPos.x + sizeX;
-  vert[1].y = tPos.y;
-  vert[1].z = tPos.z;
+  vert[1].x = tTopRight.x;
+  vert[1].y = tTopRight.y;
+  vert[1].z = tTopRight.z;
   applyDrawingMatrix(&vert[1]);
   forceToInteger(&vert[1]);
 
-  vert[2].x = tPos.x;
-  vert[2].y = tPos.y + sizeY;
-  vert[2].z = tPos.z;
+  vert[2].x = tBottomLeft.x;
+  vert[2].y = tBottomLeft.y;
+  vert[2].z = tBottomLeft.z;
   applyDrawingMatrix(&vert[2]);
   forceToInteger(&vert[2]);
 
-  vert[3].x = tPos.x + sizeX;
-  vert[3].y = tPos.y + sizeY;
-  vert[3].z = tPos.z;
+  vert[3].x = tBottomRight.x;
+  vert[3].y = tBottomRight.y;
+  vert[3].z = tBottomRight.z;
   applyDrawingMatrix(&vert[3]);
   forceToInteger(&vert[3]);
 
@@ -253,10 +263,10 @@ void stopDrawing() {
 }
 
 void disableDrawing() {
-	gData.mIsDisabled = 1;
+	gPrismDreamcastDrawingData.mIsDisabled = 1;
 }
 void enableDrawing() {
-	gData.mIsDisabled = 0;
+	gPrismDreamcastDrawingData.mIsDisabled = 0;
 }
 
 void waitForScreen() {
@@ -264,14 +274,14 @@ void waitForScreen() {
   pvr_wait_ready();
   debugLog("Wait for screen done");
 
-  gData.mPreviousFrameTime = gData.mCurrentFrameTime;
-  gData.mCurrentFrameTime = getSystemTicks();
+  gPrismDreamcastDrawingData.mPreviousFrameTime = gPrismDreamcastDrawingData.mCurrentFrameTime;
+  gPrismDreamcastDrawingData.mCurrentFrameTime = getSystemTicks();
 }
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
 void drawMultilineText(const char* tText, const char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
-  if(gData.mIsDisabled) return;
+  if(gPrismDreamcastDrawingData.mIsDisabled) return;
 
   //sem_wait(&gPVRAccessSemaphore);
 
@@ -349,38 +359,46 @@ void scaleDrawing(double tFactor, Position tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor, tFactor, 1);
 	mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
-    gData.mInverted.x ^= tFactor < 0;
-    gData.mInverted.y ^= tFactor < 0;
+	gPrismDreamcastDrawingData.mInverted.x ^= tFactor < 0;
+	gPrismDreamcastDrawingData.mInverted.y ^= tFactor < 0;
 }
 
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor.x, tFactor.y, tFactor.z);
 	mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
-    gData.mInverted.x ^= tFactor.x < 0;
-    gData.mInverted.y ^= tFactor.y < 0;
+	gPrismDreamcastDrawingData.mInverted.x ^= tFactor.x < 0;
+	gPrismDreamcastDrawingData.mInverted.y ^= tFactor.y < 0;
+}
+
+void setDrawingBaseColorOffsetAdvanced(double r, double g, double b) {
+	gPrismDreamcastDrawingData.rOffset = r;
+	gPrismDreamcastDrawingData.gOffset = g;
+	gPrismDreamcastDrawingData.bOffset = b;
 }
 
 void setDrawingBaseColor(Color tColor){
-	getRGBFromColor(tColor, &gData.r, &gData.g, &gData.b);
+	getRGBFromColor(tColor, &gPrismDreamcastDrawingData.r, &gPrismDreamcastDrawingData.g, &gPrismDreamcastDrawingData.b);
 }
 
 void setDrawingBaseColorAdvanced(double r, double g, double b) {
-	gData.r = r;
-	gData.g = g;
-	gData.b = b;
+	gPrismDreamcastDrawingData.r = r;
+	gPrismDreamcastDrawingData.g = g;
+	gPrismDreamcastDrawingData.b = b;
 }
 
 void setDrawingColorSolidity(int /*tIsSolid*/) {} // Not implemented for Dreamcast
+void setDrawingColorInversed(int /*tIsInversed*/) {} // Not implemented for Dreamcast
+void setDrawingColorFactor(double /*tColorFactor*/) {} // Not implemented for Dreamcast
 
 void setDrawingTransparency(double tAlpha){
-	gData.a = tAlpha;
+	gPrismDreamcastDrawingData.a = tAlpha;
 }
 
 void setDrawingDestinationTransparency(double /*tAlpha*/) {} // Not implemented for Dreamcast
 
 void setDrawingBlendType(BlendType tBlendType) {
-	gData.mBlendType = tBlendType;
+	gPrismDreamcastDrawingData.mBlendType = tBlendType;
 }
 
 
@@ -392,22 +410,23 @@ void setDrawingRotationZ(double tAngle, Position tPosition){
 
 void setDrawingParametersToIdentity(){
 	mat_identity();
+	setDrawingBaseColorOffsetAdvanced(0, 0, 0);
 	setDrawingBaseColor(COLOR_WHITE);
 	setDrawingTransparency(1.0);
-	gData.mBlendType = BLEND_TYPE_NORMAL;
-    gData.mInverted.x = gData.mInverted.y = 0;
+	gPrismDreamcastDrawingData.mBlendType = BLEND_TYPE_NORMAL;
+	gPrismDreamcastDrawingData.mInverted.x = gPrismDreamcastDrawingData.mInverted.y = 0;
 }
 
 static void pushMatrixInternal() {
 	matrix_t* mat = (matrix_t*)allocMemory(sizeof(matrix_t));
 	mat_store(mat);
-	vector_push_back_owned(&gData.mMatrixStack, mat);
+	vector_push_back_owned(&gPrismDreamcastDrawingData.mMatrixStack, mat);
 }
 
 static void popMatrixInternal() {
-	matrix_t* mat = (matrix_t*)vector_get_back(&gData.mMatrixStack);
+	matrix_t* mat = (matrix_t*)vector_get_back(&gPrismDreamcastDrawingData.mMatrixStack);
 	mat_load(mat);
-	vector_pop_back(&gData.mMatrixStack);
+	vector_pop_back(&gPrismDreamcastDrawingData.mMatrixStack);
 }
 
 void pushDrawingTranslation(Vector3D tTranslation) {
@@ -479,6 +498,6 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer 
 }
 
 double getRealFramerate() {
-	uint64_t delta = gData.mCurrentFrameTime - gData.mPreviousFrameTime;
+	uint64_t delta = gPrismDreamcastDrawingData.mCurrentFrameTime - gPrismDreamcastDrawingData.mPreviousFrameTime;
 	return 1000.0 / delta;
 }

@@ -31,6 +31,8 @@ static struct {
 static void unloadTweening(void*);
 static void loadTweening(void*)
 {
+	setProfilingSectionMarkerCurrentFunction();
+
 	if (gTweening.mIsActive) {
 		unloadTweening(NULL);
 	}
@@ -40,6 +42,7 @@ static void loadTweening(void*)
 
 static void unloadTweening(void*)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	gTweening.mTweens.clear();
 	gTweening.mIsActive = 0;
 }
@@ -64,6 +67,7 @@ static int updateTween(void* tCaller,Tween& tData) {
 
 static void updateTweening(void*)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_remove_predicate(gTweening.mTweens, updateTween);
 }
 

@@ -449,16 +449,19 @@ int isStoryboard(char* tPath) {
 
 static void loadStoryboardsCB(void* tCaller) {
 	(void)tCaller;
+	setProfilingSectionMarkerCurrentFunction();
 	setupStoryboards();
 }
 
 static void unloadStoryboardsCB(void* tCaller) {
 	(void)tCaller;
+	setProfilingSectionMarkerCurrentFunction();
 	shutdownStoryboards();
 }
 
 static void updateStoryboardsCB(void* tCaller) {
 	(void)tCaller;
+	setProfilingSectionMarkerCurrentFunction();
 	updateStoryboards();
 }
 

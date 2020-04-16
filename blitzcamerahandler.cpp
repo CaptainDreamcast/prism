@@ -19,6 +19,8 @@ static struct {
 
 static void loadBlitzCameraHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
+
 	gBlitzCameraHandlerData.mCameraPosition = makePosition(0, 0, 0); 
 	gBlitzCameraHandlerData.mScale = makePosition(1, 1, 1);
 	gBlitzCameraHandlerData.mAngle = 0;

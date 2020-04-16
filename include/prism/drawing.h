@@ -46,7 +46,8 @@ typedef enum {
 typedef int TextSize;
 
 void initDrawing();
-void drawSprite(TextureData tTexture, Position tPos, Rectangle tTexturePosition);
+void drawSprite(TextureData tTexture, const Position& tPos, const Rectangle& tTexturePosition);
+void drawSpriteNoRectangle(TextureData tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition);
 void drawText(const char* tText, Position tPosition, TextSize tSize, Color tColor);
 void drawAdvancedText(const char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize);
 void drawMultilineText(const char* tText, const char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize);
@@ -60,9 +61,12 @@ void enableDrawing();
 
 void scaleDrawing(double tFactor, Position tScalePosition);
 void scaleDrawing3D(Vector3D tFactor, Position tScalePosition);
+void setDrawingBaseColorOffsetAdvanced(double r, double g, double b);
 void setDrawingBaseColor(Color tColor);
 void setDrawingBaseColorAdvanced(double r, double g, double b);
 void setDrawingColorSolidity(int tIsSolid);
+void setDrawingColorInversed(int tIsInversed);
+void setDrawingColorFactor(double tColorFactor);
 void setDrawingTransparency(double tAlpha);
 void setDrawingDestinationTransparency(double tAlpha);
 void setDrawingRotationZ(double tAngle, Position tPosition);

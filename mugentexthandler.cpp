@@ -23,14 +23,8 @@ typedef enum {
 } MugenFontType;
 
 typedef enum {
-	MUGEN_BITMAP_FONT_BANK_TYPE_PALETTE,
-
-} MugenBitmapFontBankType;
-
-typedef enum {
 	MUGEN_ELECBYTE_FONT_TYPE_VARIABLE,
 	MUGEN_ELECBYTE_FONT_TYPE_FIXED,
-
 } MugenElecbyteFontType;
 
 typedef struct {
@@ -53,7 +47,6 @@ typedef struct {
 
 typedef struct {
 	MugenSpriteFile mSprites;
-	MugenBitmapFontBankType mBankType;
 } MugenBitmapFont;
 
 typedef struct {
@@ -75,8 +68,6 @@ static void loadBitmapFont(MugenDefScript* tScript, MugenFont* tFont) {
 	char* path = getAllocatedMugenDefStringVariable(tScript, "Def", "file");
 	e->mSprites = loadMugenSpriteFileWithoutPalette(path);
 	freeMemory(path);
-
-	// TODO: banktype (https://dev.azure.com/captdc/DogmaRnDA/_workitems/edit/362)
 
 	tFont->mData = e;
 }
@@ -327,15 +318,15 @@ void addMugenFont(int tKey, const char* tPath) {
 
 }
 
-void loadMugenFontsFromScript(MugenDefScript* tScript) {
+void loadMugenFontsFromScript(MugenDefScript* tScript, const char* tGroupName) {
 	addMugenFont(-1, "font/f4x6.fnt");
 	
 	int i;
 	for (i = 0; i < 100; i++) {
 		char name[100];
 		sprintf(name, "font%d", i);
-		if (isMugenDefStringVariable(tScript, "Files", name)) {
-			char* path = getAllocatedMugenDefStringVariable(tScript, "Files", name);
+		if (isMugenDefStringVariable(tScript, tGroupName, name)) {
+			char* path = getAllocatedMugenDefStringVariable(tScript, tGroupName, name);
 			addMugenFont(i, path);
 			freeMemory(path);
 		}
@@ -437,11 +428,13 @@ static struct {
 
 static void loadMugenTextHandlerActor(void* tData) {
 	(void) tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gMugenTextHandler.mHandledTexts.clear();
 }
 
 static void unloadMugenTextHandlerActor(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gMugenTextHandler.mHandledTexts.clear();
 }
 
@@ -468,6 +461,7 @@ static void updateSingleText(void* tCaller, MugenText& tData) {
 
 static void updateMugenTextHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_map(gMugenTextHandler.mHandledTexts, updateSingleText);
 }
 
@@ -762,6 +756,7 @@ static void drawSingleText(void* tCaller, MugenText& tData) {
 
 static void drawMugenTextHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_map(gMugenTextHandler.mHandledTexts, drawSingleText);
 }
 
@@ -1008,6 +1003,12 @@ int isMugenTextBuiltUp(int tID)
 	return !strcmp(e->mText, e->mDisplayText);
 }
 
+int getMugenTextVisibility(int tID)
+{
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
+	return e->mIsVisible;
+}
+
 void setMugenTextVisibility(int tID, int tIsVisible)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
@@ -1026,6 +1027,18 @@ void setMugenTextScale(int tID, double tScale)
 	Position p = getMugenTextPosition(tID);
 	e->mScale = tScale;
 	setMugenTextPosition(tID, p);
+}
+
+const char* getMugenTextText(int tID)
+{
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
+	return e->mText;
+}
+
+const char* getMugenTextDisplayedText(int tID)
+{
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
+	return e->mDisplayText;
 }
 
 void changeMugenText(int tID, const char * tText)

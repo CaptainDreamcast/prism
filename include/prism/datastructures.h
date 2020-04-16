@@ -6,6 +6,8 @@
 void turnStringLowercase(char* tString);
 void turnStringLowercase(std::string& tString);
 void copyStringLowercase(char* tDst, const char* tSrc);
+void copyStringLowercase(std::string& tDst, const char* tSrc);
+void turnStringUppercase(std::string& tString);
 char* copyToAllocatedString(char* tSrc);
 void removeInvalidFileNameElementsFromString(std::string& tString);
 
@@ -154,5 +156,26 @@ void suffix_tree_push(SuffixTree* tTree, char* tKey, void* tData);
 int suffix_tree_contains(SuffixTree* tTree, char* tKey);
 
 void setPrismFlag(uint32_t& tFlag, uint32_t tValue);
+template<class C>
+inline void setPrismFlagDynamic(uint32_t& tFlag, C tValue)
+{
+	setPrismFlag(tFlag, uint32_t(tValue));
+}
+void setPrismFlagConditional(uint32_t& tFlag, uint32_t tValue, int tCondition);
+template<class C>
+inline void setPrismFlagConditionalDynamic(uint32_t& tFlag, C tValue, int tCondition)
+{
+	setPrismFlagConditional(tFlag, uint32_t(tValue), tCondition);
+}
 void removePrismFlag(uint32_t& tFlag, uint32_t tValue);
+template<class C>
+inline void removePrismFlagDynamic(uint32_t& tFlag, C tValue)
+{
+	removePrismFlag(tFlag, uint32_t(tValue));
+}
 int hasPrismFlag(const uint32_t& tFlag, uint32_t tValue);
+template<class C>
+inline int hasPrismFlagDynamic(uint32_t& tFlag, C tValue)
+{
+	return hasPrismFlag(tFlag, uint32_t(tValue));
+}

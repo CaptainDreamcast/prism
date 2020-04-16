@@ -36,7 +36,7 @@ typedef struct {
 
 typedef struct {
 	void* mCaller;
-	string(*mCB)(void*, string);
+	string(*mCB)(void*, const std::string&);
 } ConsoleCommand;
 
 typedef struct {
@@ -79,7 +79,7 @@ void setDevelopMode() {
 
 static void toggleVisibility();
 
-static string showConsoleCB(void* tCaller, string tCommand) {
+static string showConsoleCB(void* tCaller, const string& tCommand) {
 	(void)tCaller;
 	(void)tCommand;
 	toggleVisibility();
@@ -91,7 +91,7 @@ static void unloadUserScript() {
 	gPrismDebug.mConsole.mHasUserScript = 0;
 }
 
-static string abortscriptCB(void* tCaller, string tCommand) {
+static string abortscriptCB(void* tCaller, const string& tCommand) {
 	(void)tCaller;
 	(void)tCommand;
 	if (gPrismDebug.mConsole.mHasUserScript) {
@@ -100,7 +100,7 @@ static string abortscriptCB(void* tCaller, string tCommand) {
 	return "";
 }
 
-static string exitCB(void* tCaller, string tCommand) {
+static string exitCB(void* tCaller, const string& tCommand) {
 	(void)tCaller;
 	(void)tCommand;
 	abortScreenHandling();
@@ -126,6 +126,7 @@ void initDebug()
 
 static void loadPrismDebug(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 
 	ScreenSize sz = getScreenSize();
 	double offset = (sz.y / 480.0) * 20;
@@ -153,6 +154,8 @@ static void setConsoleInvisible();
 
 static void unloadPrismDebug(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
+
 	if (gPrismDebug.mConsole.mIsVisible) {
 		setConsoleInvisible();
 	}
@@ -190,7 +193,7 @@ static void updatePrismDebugSideDisplay() {
 	}
 }
 
-static void addConsoleText(string text) {
+static void addConsoleText(const string& text) {
 	for (int i = CONSOLE_ARCHIVE_AMOUNT - 1; i > 0; i--) {
 		gPrismDebug.mConsole.mConsoleArchiveText[i] = gPrismDebug.mConsole.mConsoleArchiveText[i - 1];
 	}
@@ -230,7 +233,8 @@ static void clearConsoleInput() {
 static void parseConsoleText() {
 	if (!gPrismDebug.mConsole.mConsoleText.size()) return;
 
-	string firstWord = gPrismDebug.mConsole.mConsoleText.substr(0, gPrismDebug.mConsole.mConsoleText.find(' '));
+	const auto firstWord = gPrismDebug.mConsole.mConsoleText.substr(0, gPrismDebug.mConsole.mConsoleText.find(' '));
+	if (firstWord.size() > 0 && firstWord[0] == '#') return;
 
 	auto it = gPrismDebug.mConsole.mConsoleCommands.find(firstWord);
 	if (it != gPrismDebug.mConsole.mConsoleCommands.end()) {
@@ -379,6 +383,7 @@ static void updatePrismUserScript() {
 
 static void updatePrismDebug(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 
 	updatePrismDebugSideDisplay();
 	updatePrismDebugConsole();
@@ -434,7 +439,7 @@ int isPrismDebugConsoleVisible()
 	return gPrismDebug.mConsole.mIsVisible;
 }
 
-void addPrismDebugConsoleCommand(std::string tCommand, std::string(*tCB)(void *tCaller, std::string tCommandInput), void* tCaller)
+void addPrismDebugConsoleCommand(const std::string& tCommand, std::string(*tCB)(void *tCaller, const std::string& tCommandInput), void* tCaller)
 {
 	ConsoleCommand e;
 	e.mCaller = tCaller;
@@ -442,6 +447,6 @@ void addPrismDebugConsoleCommand(std::string tCommand, std::string(*tCB)(void *t
 	gPrismDebug.mConsole.mConsoleCommands[tCommand] = e;
 }
 
-void submitToPrismDebugConsole(std::string tText) {
+void submitToPrismDebugConsole(const std::string& tText) {
 	addConsoleText(tText);
 }

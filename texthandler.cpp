@@ -205,21 +205,25 @@ void removeHandledText(int tID) {
 
 static void setupTextHandlerCB(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	setupTextHandler();
 }
 
 static void updateTextHandlerCB(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	updateTextHandler();
 }
 
 static void drawTextHandlerCB(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	drawHandledTexts();
 }
 
 static void shutdownTextHandlerCB(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	shutdownTextHandler();
 }
 

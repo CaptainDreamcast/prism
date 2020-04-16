@@ -164,21 +164,25 @@ void drawOptionHandler(){
 
 static void setupOptionHandlerBlueprint(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	setupOptionHandler();
 }
 
 static void updateOptionHandlerBlueprint(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	updateOptionHandler();
 }
 
 static void drawOptionHandlerBlueprint(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	drawOptionHandler();
 }
 
 static void shutdownOptionHandlerBlueprint(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	shutdownOptionHandler();
 }
 

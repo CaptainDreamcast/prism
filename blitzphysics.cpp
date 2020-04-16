@@ -29,6 +29,7 @@ static struct {
 
 static void loadBlitzPhysicsHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzPhysicsData.mEntries.clear();
 }
 
@@ -52,6 +53,7 @@ static void updateSinglePhysicsEntry(void* /*tCaller*/, PhysicsEntry& tData) {
 
 static void updateBlitzPhysicsHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_map(gBlitzPhysicsData.mEntries, updateSinglePhysicsEntry);
 }
 

@@ -3,6 +3,7 @@
 #include "prism/math.h"
 #include "prism/datastructures.h"
 #include "prism/blitzcamerahandler.h"
+#include "prism/profiling.h"
 
 typedef struct {
 	Position mPos;
@@ -26,6 +27,7 @@ static struct {
 
 static void loadParticleHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzParticlesData.mWhiteTexture = createWhiteTexture();
 	gBlitzParticlesData.mParticles = new_int_map();
 }
@@ -46,6 +48,7 @@ static int updateSingleParticle(void* tCaller, void* tData) {
 
 static void updateParticleHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	int_map_remove_predicate(&gBlitzParticlesData.mParticles, updateSingleParticle, NULL);
 }
 
@@ -64,6 +67,7 @@ static void drawSingleParticle(void* tCaller, void* tData) {
 
 static void drawParticleHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	int_map_map(&gBlitzParticlesData.mParticles, drawSingleParticle, NULL);
 }
 

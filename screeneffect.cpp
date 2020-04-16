@@ -77,11 +77,13 @@ void shutdownScreenEffects() {
 
 static void loadScreenEffectHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gScreenEffect.mFadeIns.clear();
 }
 
 static void unloadScreenEffectHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gScreenEffect.mFadeIns.clear();
 }
 
@@ -130,6 +132,7 @@ static int updateFadeIn(FadeIn& e) {
 
 static void updateScreenEffectHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_remove_predicate(gScreenEffect.mFadeIns, updateFadeIn);
 }
 

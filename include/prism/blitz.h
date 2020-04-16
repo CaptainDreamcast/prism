@@ -15,6 +15,7 @@
 
 #include "mugendefreader.h"
 #include "mugentexthandler.h"
+#include "mugensoundfilereader.h"
 
 #include "blitzcamerahandler.h"
 #include "blitzcollision.h"

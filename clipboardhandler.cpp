@@ -49,6 +49,7 @@ static void setClipboardLineTexts() {
 
 static void loadClipboardHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	initClipboardLines();
 	setClipboardLineTexts();
 }

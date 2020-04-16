@@ -33,6 +33,7 @@ ActorBlueprint makeActorBlueprint(LoadActorFunction tLoad, UnloadActorFunction t
 
 void setupActorHandler()
 {
+	setProfilingSectionMarkerCurrentFunction();
 	if (gPrismActorHandlerData.mIsInitialized) {
 		logWarning("Actor handling already initialized.");
 		shutdownActorHandler();
@@ -62,6 +63,7 @@ static int removeActorCB(void* tCaller, void* tData) {
 
 void shutdownActorHandler()
 {
+	setProfilingSectionMarkerCurrentFunction();
 	list_remove_predicate_inverted(&gPrismActorHandlerData.mSequentialActorList, removeActorCB, NULL);
 	delete_int_map(&gPrismActorHandlerData.mActors);
 	delete_list(&gPrismActorHandlerData.mSequentialActorList);
@@ -78,13 +80,13 @@ static int updateSingleActor(void* tCaller, void* tData) {
 		unloadActor(e);
 		return 1;
 	}
-
 	if(e->mBP.mUpdate) e->mBP.mUpdate(e->mData);
 	return 0;
 }
 
 void updateActorHandler()
 {
+	setProfilingSectionMarkerCurrentFunction();
 	list_remove_predicate(&gPrismActorHandlerData.mSequentialActorList, updateSingleActor, NULL);
 }
 
@@ -97,6 +99,7 @@ static void drawSingleActor(void* tCaller, void* tData) {
 
 void drawActorHandler()
 {
+	setProfilingSectionMarkerCurrentFunction();
 	list_map(&gPrismActorHandlerData.mSequentialActorList, drawSingleActor, NULL);
 }
 

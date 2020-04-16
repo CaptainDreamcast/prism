@@ -57,6 +57,9 @@
     <ClCompile Include="..\..\dc\thread_dc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dc\saveload_dc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Makefile.common" />

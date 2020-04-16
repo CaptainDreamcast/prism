@@ -164,6 +164,8 @@ int loadSoundEffectFromBuffer(Buffer tBuffer) {
 	if (gSoundEffectDreamcastData.mIsCompressing) {
 		b = downsampleBufferIfNecessary(b);
 	}
+	const auto header = (WaveHeader*)b.mData;
+	if (snd_mem_available() < header->mLen * 2) return -1; // final bailout check for non-compressed erroneous headers
 	bufferToFile(tempPath, b);
 	int ret = loadSoundEffect(tempPath);
 	fileUnlink(tempPath);

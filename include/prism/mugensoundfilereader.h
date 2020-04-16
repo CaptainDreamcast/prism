@@ -14,7 +14,6 @@ typedef struct {
 	IntMap mGroups;
 } MugenSounds;
 
-
 MugenSounds loadMugenSoundFile(const char* tPath);
 void unloadMugenSoundFile(MugenSounds* tSounds);
 MugenSounds createEmptyMugenSoundFile();

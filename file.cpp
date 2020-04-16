@@ -161,6 +161,12 @@ Buffer copyBuffer(Buffer tBuffer) {
 	return ret;
 }
 
+Buffer makeBufferOwnedIfNecessary(Buffer tBuffer)
+{
+	if (tBuffer.mIsOwned) return tBuffer;
+	else return copyBuffer(tBuffer);
+}
+
 Buffer fileToBuffer(const char* tFileDir) {
 	debugLog("Reading file to Buffer.");
 	Buffer ret;
@@ -198,6 +204,11 @@ Buffer fileToBuffer(const char* tFileDir) {
 	fileClose(file);
 
 	return ret;
+}
+
+Buffer copyStringToBuffer(const std::string& tString)
+{
+	return copyBuffer(makeBuffer((void*)tString.c_str(), tString.size()));
 }
 
 void bufferToFile(const char* tFileDir, Buffer tBuffer) {
@@ -365,4 +376,17 @@ void setActiveFileSystemOnStartup() {
 	else {
 		setFileSystem("/cd");
 	}
+}
+
+std::string sanitizeFileNameWithInvalidCharacters(const std::string& tPathWithInvalidCharacters)
+{
+	std::string ret;
+	for (auto& c : tPathWithInvalidCharacters)
+	{
+		if (c >= '0' && c <= '9') ret.push_back(c);
+		else if (c >= 'a' && c <= 'z') ret.push_back(c);
+		else if (c >= 'A' && c <= 'Z') ret.push_back(c);
+		else if (c == '/' || c == '\\' || c == '.') ret.push_back(c);
+	}
+	return ret;
 }

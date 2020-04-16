@@ -14,7 +14,7 @@ typedef enum {
 } MugenTextAlignment;
 
 void addMugenFont(int tKey, const char* tPath); 
-void loadMugenFontsFromScript(MugenDefScript* tScript);
+void loadMugenFontsFromScript(MugenDefScript* tScript, const char* tGroupName);
 void loadMugenTextHandler();
 void unloadMugenFonts();
 
@@ -38,11 +38,13 @@ void setMugenTextTextBoxWidth(int tID, double tWidth);
 void setMugenTextBuildup(int tID, Duration mBuildUpDurationPerLetter);
 void setMugenTextBuiltUp(int tID);
 int isMugenTextBuiltUp(int tID);
+int getMugenTextVisibility(int tID);
 void setMugenTextVisibility(int tID, int tIsVisible);
 double getMugenTextSizeX(int tID);
 void setMugenTextScale(int tID, double tScale); // only for bitmap fonts for now
 
-
+const char* getMugenTextText(int tID);
+const char* getMugenTextDisplayedText(int tID);
 void changeMugenText(int tID, const char* tText);
 
 Position getMugenTextPosition(int tID);

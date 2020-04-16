@@ -9,6 +9,18 @@
 
 using namespace std;
 
+Vector2D::Vector2D(double x, double y)
+	: x(x)
+	, y(y)
+{
+}
+
+GeoRectangle2D::GeoRectangle2D(double x, double y, double w, double h)
+	: mTopLeft(x, y)
+	, mBottomRight(x + w, y + h)
+{
+}
+
 double dot3D(Vector3D p1, Vector3D p2) {
 	return p1.x*p2.x + p1.y*p2.y + p1.z*p2.z;
 }
@@ -166,6 +178,11 @@ Vector3DI vecAddI(Vector3DI v1, Vector3DI v2) {
 	v1.y += v2.y;
 	v1.z += v2.z;
 	return v1;
+}
+
+Vector3DI vecScaleI(const Vector3DI& v, double tFactor)
+{
+	return makeVector3DI(int(v.x * tFactor), int(v.y * tFactor), int(v.z * tFactor));
 }
 
 int vecEqualsI(Vector3DI v1, Vector3DI v2) {
@@ -351,6 +368,16 @@ Vector3D interpolatePositionLinear(Position a, Position b, double t)
 	return ret;
 }
 
+Vector2D operator+(const Vector2D & a, const Vector2D & b)
+{
+	return Vector2D(a.x + b.x, a.y + b.y);
+}
+
+Vector3D operator+(const Vector3D & a, const Vector2D & b)
+{
+	return makePosition(a.x + b.x, a.y + b.y, a.z);
+}
+
 Vector3D operator+(const Vector3D& a, const Vector3D& b) {
 	return vecAdd(a, b);
 }
@@ -423,6 +450,15 @@ Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
 	return ret;
 }
 
+Vector3D operator-(const Vector3D& a, const Vector3DI & b)
+{
+	Vector3D ret = a;
+	ret.x -= b.x;
+	ret.y -= b.y;
+	ret.z -= b.z;
+	return ret;
+}
+
 Vector3D operator/(const Vector3DI& a, const double& b) {
 	return makePosition(a.x / b, a.y / b, a.z / b);
 }
@@ -451,5 +487,12 @@ GeoRectangle operator*(const GeoRectangle& a, const double& b) {
 	GeoRectangle ret;
 	ret.mTopLeft = a.mTopLeft*b;
 	ret.mBottomRight = a.mBottomRight*b;
+	return ret;
+}
+
+GeoRectangle operator+(const GeoRectangle& a, const Position& b) {
+	GeoRectangle ret;
+	ret.mTopLeft = a.mTopLeft + b;
+	ret.mBottomRight = a.mBottomRight + b;
 	return ret;
 }

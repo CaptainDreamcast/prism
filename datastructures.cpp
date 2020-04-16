@@ -37,6 +37,21 @@ void copyStringLowercase(char* tDst, const char* tSrc) {
 	}
 }
 
+void copyStringLowercase(std::string& tDst, const char* tSrc)
+{
+	int n = strlen(tSrc);
+	tDst.reserve(n);
+	int i;
+	for (i = 0; i <= n; i++) {
+		tDst.push_back((char)tolower((int)(tSrc[i])));
+	}
+}
+
+void turnStringUppercase(std::string& tString)
+{
+	transform(tString.begin(), tString.end(), tString.begin(), [](char c) {return (char)::toupper(c); });
+}
+
 char* copyToAllocatedString(char* tSrc) {
 	if (!tSrc) return NULL;
 
@@ -953,6 +968,13 @@ int suffix_tree_contains(SuffixTree * tTree, char * tKey)
 
 void setPrismFlag(uint32_t& tFlag, uint32_t tValue) { 
 	tFlag |= tValue; 
+}
+
+void setPrismFlagConditional(uint32_t& tFlag, uint32_t tValue, int tCondition)
+{
+	if (tCondition) {
+		setPrismFlag(tFlag, tValue);
+	}
 }
 
 void removePrismFlag(uint32_t& tFlag, uint32_t tValue) {

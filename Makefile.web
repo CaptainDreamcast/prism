@@ -2,7 +2,7 @@ include Makefile.common
 OBJS += windows/drawing_win.o windows/texture_win.o windows/input_win.o \
 windows/framerateselect_win.o windows/file_win.o windows/math_win.o windows/system_win.o windows/log_win.o \
 windows/soundeffect_win.o windows/sound_win.o windows/memoryhandler_win.o windows/romdisk_win.o \
-windows/screeneffect_win.o windows/logoscreen_win.o \
+windows/saveload_win.o windows/screeneffect_win.o windows/logoscreen_win.o \
 web/thread_web.o
 
 all: $(TARGET)

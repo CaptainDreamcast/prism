@@ -251,6 +251,7 @@ static void microphoneCB(void *userdata, Uint8 *stream, int len) {
 static void startMicrophone(void* tData)
 {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	SDL_AudioSpec want, have;
 
 	SDL_zero(want);
@@ -280,6 +281,7 @@ static void startMicrophone(void* tData)
 static void stopMicrophone(void* tData)
 {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	SDL_CloseAudioDevice(gPrismWindowsSoundData.mMicrophone.mMicrophone);
 
 	gPrismWindowsSoundData.mMicrophone.mIsMicrophoneActive = 0;

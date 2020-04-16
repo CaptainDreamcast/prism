@@ -57,12 +57,14 @@ static struct {
 
 static void loadBlitzCollisionHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzCollisionData.mEntries.clear();
 	gBlitzCollisionData.mActiveSolidCollisions.clear();
 }
 
 static void unloadBlitzCollisionHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzCollisionData.mEntries.clear();
 	gBlitzCollisionData.mActiveSolidCollisions.clear();
 }
@@ -140,7 +142,8 @@ static int updateSingleSolidCollision(void* , ActiveSolidCollision& tData) {
 
 static void updateBlitzCollisionHandler(void* tData) {
 	(void)tData;
-	
+	setProfilingSectionMarkerCurrentFunction();
+
 	stl_int_map_map(gBlitzCollisionData.mEntries, updateSingleBlitzCollisionEntry);
 	stl_list_remove_predicate(gBlitzCollisionData.mActiveSolidCollisions, updateSingleSolidCollision);
 }

@@ -1,5 +1,12 @@
 #pragma once
 
+struct Vector2D {
+	Vector2D() = default;
+	Vector2D(double x, double y);
+	double x;
+	double y;
+};
+
 typedef struct {
   double x;
   double y;
@@ -12,7 +19,15 @@ typedef struct {
   int z;
 } Vector3DI;
 
+using Position2D = Vector2D;
 typedef Vector3D Position;
+
+struct GeoRectangle2D {
+	GeoRectangle2D() = default;
+	GeoRectangle2D(double x, double y, double w, double h);
+	Position2D mTopLeft;
+	Position2D mBottomRight;
+};
 
 typedef struct {
   Position mTopLeft;
@@ -28,7 +43,6 @@ typedef struct{
 	Position mP1;
 	Position mP2;
 } Line;
-
 
 double dot3D(Vector3D p1, Vector3D p2);
 
@@ -54,6 +68,7 @@ GeoRectangle makeGeoRectangle(double x, double y, double w, double h);
 GeoRectangle makeGeoRectangle3D(double x, double y, double z, double w, double h);
 
 Vector3DI vecAddI(Vector3DI v1, Vector3DI v2);
+Vector3DI vecScaleI(const Vector3DI& v, double tFactor);
 int vecEqualsI(Vector3DI v1, Vector3DI v2);
 int vecEqualsI2D(Vector3DI v1, Vector3DI v2);
 
@@ -83,6 +98,9 @@ GeoRectangle scaleGeoRectangleByFactor2D(GeoRectangle tRect, Vector3D tFac);
 
 Vector3D interpolatePositionLinear(Position a, Position b, double t);
 
+Vector2D operator+(const Vector2D& a, const Vector2D& b);
+Vector3D operator+(const Vector3D& a, const Vector2D& b);
+
 Vector3D operator+(const Vector3D& a, const Vector3D& b);
 Vector3D operator-(const Vector3D& a, const Vector3D& b);
 Vector3D operator*(const double& a, const Vector3D& b);
@@ -101,6 +119,7 @@ Vector3DI operator+(const Vector3DI& a, const Vector3DI& b);
 Vector3D operator+(const Vector3DI& a, const Vector3D& b);
 Vector3D operator+(const Vector3D& a, const Vector3DI& b);
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b);
+Vector3D operator-(const Vector3D& a, const Vector3DI& b);
 Vector3D operator/(const Vector3DI& a, const double& b);
 Vector3DI operator/(const Vector3DI& a, const int& b);
 // pairwise multiplication
@@ -109,3 +128,4 @@ int operator==(const Vector3DI& a, const Vector3DI& b);
 int operator!=(const Vector3DI& a, const Vector3DI& b);
 
 GeoRectangle operator*(const GeoRectangle& a, const double& b);
+GeoRectangle operator+(const GeoRectangle& a, const Position& b);

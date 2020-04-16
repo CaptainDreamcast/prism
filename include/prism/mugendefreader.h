@@ -63,6 +63,9 @@ void loadMugenDefScript(MugenDefScript* oScript, const char* tPath);
 void loadMugenDefScriptFromBufferAndFreeBuffer(MugenDefScript* oScript, Buffer tBuffer);
 void unloadMugenDefScript(MugenDefScript tScript);
 
+int hasMugenDefScriptGroup(MugenDefScript* tScript, const char* tGroupName);
+MugenDefScriptGroup* getMugenDefScriptGroup(MugenDefScript* tScript, const char* tGroupName);
+
 int isMugenDefStringVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 std::string getSTLMugenDefStringVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);

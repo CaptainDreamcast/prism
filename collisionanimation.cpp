@@ -62,6 +62,7 @@ typedef struct {
 } HandledCollisionAnimation;
 
 static void loadCollisionAnimationHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	gPrismCollisionAnimationData.mList = new_list();
 }
 
@@ -78,6 +79,7 @@ static int removeAllCollisionAnimations(void* tCaller, void* tData) {
 }
 
 static void unloadCollisionAnimationHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	list_remove_predicate(&gPrismCollisionAnimationData.mList, removeAllCollisionAnimations, NULL);
 }
 
@@ -134,6 +136,7 @@ static int updateSingleCollisionAnimation(void* tCaller, void* tData) {
 }
 
 static void updateCollisionAnimationHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	list_remove_predicate(&gPrismCollisionAnimationData.mList, updateSingleCollisionAnimation, NULL);
 }
 

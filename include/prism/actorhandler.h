@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include "stlutil.h"
+#include "profiling.h"
 
 typedef void(*LoadActorFunction)(void* tOptionalData);
 typedef void(*UpdateActorFunction)(void* tOptionalData);

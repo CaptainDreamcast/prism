@@ -17,6 +17,7 @@ static struct {
 
 static void loadBlitzMugenSoundHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzMugenSoundData.mEntries = new_int_map();
 }
 

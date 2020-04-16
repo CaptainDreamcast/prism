@@ -63,6 +63,7 @@
     <ClCompile Include="..\..\dc\log_dc.cpp" />
     <ClCompile Include="..\..\dc\math_dc.cpp" />
     <ClCompile Include="..\..\dc\memoryhandler_dc.cpp" />
+    <ClCompile Include="..\..\dc\saveload_dc.cpp" />
     <ClCompile Include="..\..\dc\screeneffect_dc.cpp" />
     <ClCompile Include="..\..\dc\soundeffect_dc.cpp" />
     <ClCompile Include="..\..\dc\sound_dc.cpp" />

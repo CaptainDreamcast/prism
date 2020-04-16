@@ -76,6 +76,7 @@ static struct {
 } gPrismStageHandlerData;
 
 static void loadStageHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	gPrismStageHandlerData.mList = new_list();
 	gPrismStageHandlerData.mIsLoadingTexturesDirectly = 0;
 	gPrismStageHandlerData.mCameraRange = makeGeoRectangle(-INF, -INF, INF * 2, INF * 2);
@@ -92,6 +93,7 @@ static void emptyAll(void* tCaller, void* tData) {
 }
 
 static void unloadStageHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	list_map(&gPrismStageHandlerData.mList, emptyAll, NULL);
 	list_empty(&gPrismStageHandlerData.mList);
 }
@@ -226,6 +228,7 @@ static void updateCameraShake() {
 }
 
 static void updateStageHandler(void*) {
+	setProfilingSectionMarkerCurrentFunction();
 	updateCameraShake();
 	list_map(&gPrismStageHandlerData.mList, updateSingleStage, NULL);
 }

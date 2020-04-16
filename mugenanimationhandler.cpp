@@ -18,6 +18,7 @@ static struct {
 
 static void loadMugenAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_new_map(gMugenAnimationHandler.mAnimations);
 	gMugenAnimationHandler.mIsPaused = 0;
 }
@@ -33,6 +34,7 @@ static int unloadSingleMugenAnimationCB(void* tCaller, MugenAnimationHandlerElem
 
 static void unloadMugenAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_remove_predicate(gMugenAnimationHandler.mAnimations, unloadSingleMugenAnimationCB);
 	stl_delete_map(gMugenAnimationHandler.mAnimations);
 }
@@ -43,6 +45,11 @@ static MugenAnimationStep* getCurrentAnimationStep(MugenAnimationHandlerElement*
 	return (MugenAnimationStep*)vector_get(&e->mAnimation->mSteps, i);
 }
 
+static MugenAnimationStep* getNextAnimationStep(MugenAnimationHandlerElement* e) {
+	int i = min(e->mStep, vector_size(&e->mAnimation->mSteps) - 1);
+	i = (i + 1) % vector_size(&e->mAnimation->mSteps);
+	return (MugenAnimationStep*)vector_get(&e->mAnimation->mSteps, i);
+}
 
 static void passiveAnimationHitCB(void* tCaller, void* tCollisionData, int tOtherCollisionList) {
 	MugenAnimationHandlerElement* e = (MugenAnimationHandlerElement*)tCaller;
@@ -247,11 +254,13 @@ MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation,
 
 	e.mHasCameraPositionReference = 0;
 	e.mHasCameraScaleReference = 0;
+	e.mCameraScaleFactor = 1.0;
 	e.mHasCameraAngleReference = 0;
 	e.mHasCameraEffectPositionReference = 0;
 
 	e.mIsInvisible = 0;
 	e.mIsColorSolid = 0;
+	e.mIsColorInverted = 0;
 	e.mBaseDrawAngle = 0;
 
 	e.mHasBasePositionReference = 0;
@@ -265,10 +274,12 @@ MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation,
 	e.mTimeDilatationNow = 0.0;
 	e.mIsLooping = 1;
 	e.mHasLooped = 0;
+	e.mHasShear = 0;
+	e.mCoordinateSystemScale = 1.0;
 	e.mIsCollisionDebugActive = 0;
 
-	e.mR = e.mG = e.mB = e.mAlpha = e.mDestinationAlpha = 1;
-
+	e.mR = e.mG = e.mB = e.mAlpha = e.mDestinationAlpha = e.mColorFactor = 1;
+	e.mOffsetR = e.mOffsetG = e.mOffsetB = 0;
 
 	startNewAnimationWithStartStep(&e, 1);
 
@@ -384,6 +395,11 @@ void removeMugenAnimationCameraScaleReference(MugenAnimationHandlerElement* e)
 	e->mHasCameraScaleReference = 0;
 }
 
+void setMugenAnimationCameraScaleFactor(MugenAnimationHandlerElement* e, double tScaleFactor)
+{
+	e->mCameraScaleFactor = tScaleFactor;
+}
+
 void setMugenAnimationCameraAngleReference(MugenAnimationHandlerElement* e, double * tCameraAngle)
 {
 	e->mHasCameraAngleReference = 1;
@@ -458,6 +474,12 @@ void setMugenAnimationAngleReference(MugenAnimationHandlerElement* e, double * t
 {
 	e->mHasAngleReference = 1;
 	e->mAngleReference = tAngle;
+}
+
+void setMugenAnimationColorOffset(MugenAnimationHandlerElement* e, double tR, double tG, double tB) {
+	e->mOffsetR = tR;
+	e->mOffsetG = tG;
+	e->mOffsetB = tB;
 }
 
 void setMugenAnimationColor(MugenAnimationHandlerElement* e, double tR, double tG, double tB) {
@@ -700,6 +722,11 @@ int getMugenAnimationTimeWhenStepStarts(MugenAnimationHandlerElement* e, int tSt
 	return getTimeWhenStepStarts(e, tStep);
 }
 
+int getMugenAnimationIsLooping(MugenAnimationHandlerElement* e)
+{
+	return e->mIsLooping;
+}
+
 static int updateSingleMugenAnimation(MugenAnimationHandlerElement* e) {
 	if (e->mIsPaused) return 0;
 	e->mTimeDilatationNow += e->mTimeDilatation;
@@ -782,6 +809,36 @@ void unpauseMugenAnimation(MugenAnimationHandlerElement* e)
 	e->mIsPaused = 0;
 }
 
+void setMugenAnimationColorFactor(MugenAnimationHandlerElement* e, double tColorFactor) {
+	e->mColorFactor = tColorFactor;
+}
+
+void setMugenAnimationColorInverted(MugenAnimationHandlerElement* e, int tIsInverted) {
+	e->mIsColorInverted = tIsInverted;
+}
+
+double getMugenAnimationShearLowerOffsetX(MugenAnimationHandlerElement* e)
+{
+	if (!e->mHasShear) return 0;
+	return e->mShearLowerOffsetX;
+}
+
+void setMugenAnimationShearX(MugenAnimationHandlerElement* e, double tLowerScaleDeltaX, double tLowerScaleOffsetX)
+{
+	e->mHasShear = 1;
+	e->mShearLowerScaleDeltaX = tLowerScaleDeltaX;
+	e->mShearLowerOffsetX = tLowerScaleOffsetX;
+}
+
+void setMugenAnimationCoordinateSystemScale(MugenAnimationHandlerElement* e, double tCoordinateSystemScale)
+{
+	e->mCoordinateSystemScale = tCoordinateSystemScale;
+}
+
+void resetMugenAnimation(MugenAnimationHandlerElement* e) {
+	changeMugenAnimation(e, e->mAnimation);
+}
+
 void pauseMugenAnimationHandler() {
 	gMugenAnimationHandler.mIsPaused = 1;
 }
@@ -791,7 +848,7 @@ void unpauseMugenAnimationHandler() {
 
 static void updateMugenAnimationHandler(void* tData) {
 	(void)tData;
-
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_remove_predicate(gMugenAnimationHandler.mAnimations, updateSingleMugenAnimationCB);
 }
 
@@ -836,7 +893,13 @@ typedef struct {
 	MugenAnimationStep* mStep;
 	Position mScalePosition;
 	Vector3D mScale;
+	Vector3D mDelta;
 	double mAngle;
+	double mSrcBlendFactor;
+	double mDstBlendFactor;
+	double mStepScaleX;
+	double mStepScaleY;
+	double mStepAngleRad;
 
 	Position mBasePosition;
 
@@ -844,6 +907,8 @@ typedef struct {
 } DrawSingleMugenAnimationSpriteCaller;
 
 static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
+	setProfilingSectionMarkerCurrentFunction();
+
 	DrawSingleMugenAnimationSpriteCaller* caller = (DrawSingleMugenAnimationSpriteCaller*)tCaller;
 	MugenSpriteFileSubSprite* sprite = (MugenSpriteFileSubSprite*)tData;
 
@@ -895,7 +960,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	}
 
 	int isFacingRight = e->mIsFacingRight;
-	if (step->mIsFlippingHorizontally) isFacingRight ^= 1;
+	if (hasPrismFlagDynamic(step->mFlags, MugenAnimationStepFlags::IS_FLIPPING_HORIZONTALLY)) isFacingRight ^= 1;
 
 	if (!isFacingRight) {
 		Rectangle originalTexturePos = texturePos;
@@ -909,7 +974,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	}
 
 	int isFacingDown = e->mIsFacingDown;
-	if (step->mIsFlippingVertically) isFacingDown ^= 1;
+	if (hasPrismFlagDynamic(step->mFlags, MugenAnimationStepFlags::IS_FLIPPING_VERTICALLY)) isFacingDown ^= 1;
 
 	if (!isFacingDown) {
 		Rectangle originalTexturePos = texturePos;
@@ -922,7 +987,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		texturePos.bottomRight.y = originalTexturePos.topLeft.y;
 	}
 
-	Vector3D animationStepDelta = step->mDelta;
+	Vector3D animationStepDelta = caller->mDelta;
 	if (!e->mIsFacingRight) {
 		animationStepDelta.x = -animationStepDelta.x;
 	}
@@ -932,34 +997,67 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		p = vecSub(p, *e->mCameraPositionReference);
 	}
 
-	if (step->mIsAddition) {
+	if (hasPrismFlagDynamic(step->mFlags, MugenAnimationStepFlags::IS_ADDITION)) {
 		setDrawingBlendType(BLEND_TYPE_ADDITION);
+	}
+	else if (hasPrismFlagDynamic(step->mFlags, MugenAnimationStepFlags::IS_SUBTRACTION)) {
+		setDrawingBlendType(BLEND_TYPE_SUBTRACTION);
 	}
 	else if (e->mHasBlendType && e->mBlendType != BLEND_TYPE_NORMAL) {
 		setDrawingBlendType(e->mBlendType);
 	}
 
 	setDrawingColorSolidity(e->mIsColorSolid);
+	setDrawingColorInversed(e->mIsColorInverted);
+	setDrawingColorFactor(e->mColorFactor);
+	setDrawingBaseColorOffsetAdvanced(e->mOffsetR, e->mOffsetG, e->mOffsetB);
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
-	setDrawingTransparency(e->mAlpha);
-	setDrawingDestinationTransparency(e->mDestinationAlpha);
+	setDrawingTransparency(e->mAlpha * caller->mSrcBlendFactor);
+	setDrawingDestinationTransparency(e->mDestinationAlpha * caller->mDstBlendFactor);
 
 	if (e->mHasCameraScaleReference && *e->mCameraScaleReference != makePosition(1, 1, 1)) {
-		scaleDrawing3D(*e->mCameraScaleReference, caller->mCameraCenter + makePosition(0.5, 0.5, 0));
+		auto scaledCameraScale = *e->mCameraScaleReference;
+		if (e->mCameraScaleFactor != 1.0) {
+			const auto cameraScaleDelta = (*e->mCameraScaleReference) - makePosition(1.0, 1.0, 1.0);
+			scaledCameraScale = makePosition(1.0, 1.0, 1.0) + (cameraScaleDelta * e->mCameraScaleFactor);
+		}
+		scaleDrawing3D(scaledCameraScale, caller->mCameraCenter + makePosition(0.5, 0.5, 0));
 	}
 	if (e->mHasCameraAngleReference && *e->mCameraAngleReference) {
 		setDrawingRotationZ(*e->mCameraAngleReference, caller->mCameraCenter + makePosition(0.5, 0.5, 0));
 	}
 
-	if (caller->mScale != makePosition(1, 1, 1)) {
-		scaleDrawing3D(caller->mScale, caller->mScalePosition + makePosition(0.5, 0.5, 0));
+	if ((caller->mScale != makePosition(1, 1, 1)) || (caller->mStepScaleX != 1.0) || (caller->mStepScaleY != 1.0)) {
+		scaleDrawing3D(caller->mScale * makePosition(caller->mStepScaleX, caller->mStepScaleY, 1.0), caller->mScalePosition + makePosition(0.5, 0.5, 0));
 	}
 
-	if (caller->mAngle) {
-		setDrawingRotationZ(caller->mAngle, caller->mScalePosition + makePosition(0.5, 0.5, 0));
+	if (caller->mAngle || caller->mStepAngleRad) {
+		setDrawingRotationZ(caller->mAngle + caller->mStepAngleRad, caller->mScalePosition + makePosition(0.5, 0.5, 0));
 	}
 
-	drawSprite(sprite->mTexture, p, texturePos);
+	if (caller->e->mHasShear) {
+		const auto sizeX = abs(texturePos.bottomRight.x - texturePos.topLeft.x) + 1;
+		const auto sizeY = abs(texturePos.bottomRight.y - texturePos.topLeft.y) + 1;
+		const auto scaleCenterX = caller->mScalePosition.x + 0.5;
+		const auto dLeftTotalTop = (p.x - scaleCenterX);
+		const auto dRightTotalTop = ((p.x + sizeX) - scaleCenterX);
+		const auto dLeftTotalBottom = dLeftTotalTop * e->mShearLowerScaleDeltaX;
+		const auto dRightTotalBottom = dRightTotalTop * e->mShearLowerScaleDeltaX;
+		const auto parallaxTUp = sprite->mOffset.y / double(e->mSprite->mOriginalTextureSize.y);
+		const auto parallaxTDown = (sprite->mOffset.y + realSpriteSize.y) / double(e->mSprite->mOriginalTextureSize.y);
+		const auto dLeftDeltaPosTop = parallaxTUp * dLeftTotalBottom + (1.0 - parallaxTUp) * dLeftTotalTop;
+		const auto dRightDeltaPosTop = parallaxTUp * dRightTotalBottom + (1.0 - parallaxTUp) * dRightTotalTop;
+		const auto dLeftDeltaPosBottom = parallaxTDown * dLeftTotalBottom + (1.0 - parallaxTDown) * dLeftTotalTop;
+		const auto dRightDeltaPosBottom = parallaxTDown * dRightTotalBottom + (1.0 - parallaxTDown) * dRightTotalTop;
+		const auto leftTop = e->mShearLowerOffsetX * parallaxTUp + scaleCenterX + dLeftDeltaPosTop;
+		const auto rightTop = e->mShearLowerOffsetX * parallaxTUp + scaleCenterX + dRightDeltaPosTop;
+		const auto leftBottom = e->mShearLowerOffsetX * parallaxTDown + scaleCenterX + dLeftDeltaPosBottom;
+		const auto rightBottom = e->mShearLowerOffsetX * parallaxTDown + scaleCenterX + dRightDeltaPosBottom;
+		drawSpriteNoRectangle(sprite->mTexture, makePosition(leftTop, p.y, p.z), makePosition(rightTop, p.y, p.z), makePosition(leftBottom, p.y + sizeY, p.z), makePosition(rightBottom, p.y + sizeY, p.z), texturePos);
+	}
+	else {
+		drawSprite(sprite->mTexture, p, texturePos);
+	}
 	setDrawingParametersToIdentity();
 }
 
@@ -1003,6 +1101,7 @@ static void drawSingleAnimationDebugCollisionHitboxes(MugenAnimationHandlerEleme
 
 static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement& tData) {
 	(void)tCaller;
+	setProfilingSectionMarkerCurrentFunction();
 	MugenAnimationHandlerElement* e = &tData;
 
 	if (e->mIsCollisionDebugActive) {
@@ -1075,14 +1174,54 @@ static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement
 	caller.mAngle = angle;
 	caller.mCameraCenter = cameraCenter;
 	
+	double t = 1.0;
+	MugenAnimationStep* nextStep = step;
+	if (step->mInterpolateOffset || step->mInterpolateBlend || step->mInterpolateScale || step->mInterpolateAngle)
+	{
+		t = (e->mStepTime - 1) / double(step->mDuration - 1);
+		nextStep = getNextAnimationStep(e);
+	}
+
+	if (step->mInterpolateOffset) {
+		caller.mDelta = (((1 - t) * step->mDelta) + (t * nextStep->mDelta)) * e->mCoordinateSystemScale;
+	}
+	else {
+		caller.mDelta = step->mDelta * e->mCoordinateSystemScale;
+	}
+
+	if (step->mInterpolateBlend) {
+		caller.mSrcBlendFactor = ((1 - t) * step->mSrcBlendFactor) + (t * nextStep->mSrcBlendFactor);
+		caller.mDstBlendFactor = ((1 - t) * step->mDstBlendFactor) + (t * nextStep->mDstBlendFactor);
+	}
+	else {
+		caller.mSrcBlendFactor = step->mSrcBlendFactor;
+		caller.mDstBlendFactor = step->mDstBlendFactor;
+	}
+
+	if (step->mInterpolateScale) {
+		caller.mStepScaleX = ((1 - t) * step->mScaleX) + (t * nextStep->mScaleX);
+		caller.mStepScaleY = ((1 - t) * step->mScaleY) + (t * nextStep->mScaleY);
+	}
+	else {
+		caller.mStepScaleX = step->mScaleX;
+		caller.mStepScaleY = step->mScaleY;
+	}
+
+	if (step->mInterpolateAngle) {
+		caller.mStepAngleRad = ((1 - t) * step->mAngleRad) + (t * nextStep->mAngleRad);
+	}
+	else {
+		caller.mStepAngleRad = step->mAngleRad;
+	}
+
 	list_map(&e->mSprite->mTextures, drawSingleMugenAnimationSpriteCB, &caller);
 }
 
 static void drawMugenAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_map(gMugenAnimationHandler.mAnimations, drawSingleMugenAnimation);
 }
-
 
 ActorBlueprint getMugenAnimationHandler() {
 	return makeActorBlueprint(loadMugenAnimationHandler, unloadMugenAnimationHandler, updateMugenAnimationHandler, drawMugenAnimationHandler);

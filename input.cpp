@@ -2,6 +2,7 @@
 
 #include "prism/log.h"
 #include "prism/math.h"
+#include "prism/profiling.h"
 
 typedef struct {
 	uint8_t mPrev[CONTROLLER_BUTTON_AMOUNT_PRISM];
@@ -401,6 +402,7 @@ static void updateInputFlanks() {
 extern void updateInputPlatform();
 
 void updateInput() {
+	setProfilingSectionMarkerCurrentFunction();
 	updateInputPlatform();
 	updateInputSetting();
 	updateInputFlanks();

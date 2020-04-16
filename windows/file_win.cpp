@@ -267,4 +267,3 @@ void printDirectory(const char* tPath) {
 	FindClose(hFind);
 #endif
 }
-

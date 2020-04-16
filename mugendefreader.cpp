@@ -898,6 +898,15 @@ void unloadMugenDefScript(MugenDefScript tScript)
 	tScript.mGroups.clear();
 }
 
+int hasMugenDefScriptGroup(MugenDefScript* tScript, const char* tGroupName) {
+	return stl_string_map_contains_array(tScript->mGroups, tGroupName);
+}
+
+MugenDefScriptGroup* getMugenDefScriptGroup(MugenDefScript* tScript, const char* tGroupName) {
+	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
+	return &tScript->mGroups[tGroupName];
+}
+
 int isMugenDefStringVariable(MugenDefScript* tScript, const char * tGroupName, const char * tVariableName)
 {
 	if (!stl_string_map_contains_array(tScript->mGroups, tGroupName)) {

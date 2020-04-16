@@ -25,6 +25,7 @@
 #include "prism/geometry.h"
 #include "prism/math.h"
 #include "prism/wrapper.h"
+#include "prism/profiling.h"
 
 void abortSystem(){
  	assert(0);
@@ -191,6 +192,7 @@ static void checkFullscreen() {
 extern void receiveCharacterInputFromSDL(const std::string& tText);
 
 void updateSystem() {
+	setProfilingSectionMarkerCurrentFunction();
 	SDL_Event e;
 	while (SDL_PollEvent(&e) != 0) { 
 		switch (e.type) {

@@ -98,6 +98,10 @@ static int getAnimationID(MugenDefScriptGroup* tGroup) {
 typedef struct {
 	MugenAnimations* mAnimations;
 	int mGroupID;
+	int mInterpolateLastOffset;
+	int mInterpolateLastBlend;
+	int mInterpolateLastScale;
+	int mInterpolateLastAngle;
 } AnimationLoadCaller;
 
 static int isAnimationVector(const char* tVariableName) {
@@ -120,37 +124,42 @@ static void insertAnimationStepIntoAnimations(MugenAnimations* tAnimations, int 
 	insertAnimationStepIntoAnimation(e, tElement);
 }
 
-static void handleNewAnimationStepBlendFlags(MugenAnimationStep* e, const char* blendFlags) {
-	e->mIsAddition = blendFlags[0] == 'A';
-	e->mIsSubtraction = blendFlags[0] == 'S';
-	if (e->mIsAddition || e->mIsSubtraction) {
-		const char* sourcePos = strchr(blendFlags + 1, 'S');
+static void handleNewAnimationStepBlendFlags(MugenAnimationStep* e, const char* blendFlagsRandomCase) {
+	std::string blendFlags; 
+	copyStringLowercase(blendFlags, blendFlagsRandomCase);
+	
+	setPrismFlagConditionalDynamic(e->mFlags, MugenAnimationStepFlags::IS_ADDITION, blendFlags[0] == 'a');
+	setPrismFlagConditionalDynamic(e->mFlags, MugenAnimationStepFlags::IS_SUBTRACTION, blendFlags[0] == 's');
+	if (hasPrismFlagDynamic(e->mFlags, MugenAnimationStepFlags::IS_ADDITION) || hasPrismFlagDynamic(e->mFlags, MugenAnimationStepFlags::IS_SUBTRACTION)) {
+		const char* sourcePos = strchr(blendFlags.c_str() + 1, 's');
 		if (sourcePos == NULL) {
 			if (blendFlags[1] == '1') {
-				e->mSrcBlendValue = 256;
-				e->mDstBlendValue = 128;
+				e->mSrcBlendFactor = 256 / double(256);
+				e->mDstBlendFactor = 128 / double(256);
 			}
 			else {
-				e->mSrcBlendValue = 256;
-				e->mDstBlendValue = 256;
+				e->mSrcBlendFactor = 256 / double(256);
+				e->mDstBlendFactor = 256 / double(256);
 			}
 		}
 		else {
-			const char* dstPos = strchr(blendFlags + 1, 'D');
+			const char* dstPos = strchr(blendFlags.c_str() + 1, 'd');
 			assert(dstPos != NULL);
 
 			char text1[20];
 			char text2[20];
 
-			strcpy(text1, sourcePos);
-			*strchr(text1, 'D') = '\0';
+			strcpy(text1, sourcePos + 1);
+			*strchr(text1, 'd') = '\0';
 
-			strcpy(text2, dstPos);
+			strcpy(text2, dstPos + 1);
 
-			e->mSrcBlendValue = atoi(text1);
-			e->mDstBlendValue = atoi(text2);
+			e->mSrcBlendFactor = atoi(text1) / double(256);
+			e->mDstBlendFactor = atoi(text2) / double(256);
 		}
-
+	}
+	else {
+		e->mSrcBlendFactor = e->mDstBlendFactor = 1.0;
 	}
 }
 
@@ -175,7 +184,7 @@ static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, M
 	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	
 	MugenAnimationStep* e = (MugenAnimationStep*)allocMemory(sizeof(MugenAnimationStep));
-	
+	e->mFlags = uint32_t(MugenAnimationStepFlags::NONE);
 	if (gMugenAnimationState.mHasOwnHitbox1) {
 		e->mAttackHitboxes = copyHitboxList(gMugenAnimationState.mOwnHitbox1);
 	}
@@ -201,12 +210,8 @@ static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, M
 
 	if (vectorElement->mVector.mSize >= 6) {
 		turnStringLowercase(vectorElement->mVector.mElement[5]);
-		e->mIsFlippingHorizontally = strchr(vectorElement->mVector.mElement[5], 'h') != NULL;
-		e->mIsFlippingVertically = strchr(vectorElement->mVector.mElement[5], 'v') != NULL;
-	}
-	else {
-		e->mIsFlippingHorizontally = 0;
-		e->mIsFlippingVertically = 0;
+		setPrismFlagConditionalDynamic(e->mFlags, MugenAnimationStepFlags::IS_FLIPPING_HORIZONTALLY, strchr(vectorElement->mVector.mElement[5], 'h') != NULL);
+		setPrismFlagConditionalDynamic(e->mFlags, MugenAnimationStepFlags::IS_FLIPPING_VERTICALLY, strchr(vectorElement->mVector.mElement[5], 'v') != NULL);
 	}
 
 	if (vectorElement->mVector.mSize >= 7) {
@@ -215,6 +220,10 @@ static void handleNewAnimationStep(MugenAnimations* tAnimations, int tGroupID, M
 	else {
 		handleNewAnimationStepBlendFlags(e, "");
 	}
+
+	e->mScaleX = vectorElement->mVector.mSize >= 8 ? atof(vectorElement->mVector.mElement[7]) : 1.0;
+	e->mScaleY = vectorElement->mVector.mSize >= 9 ? atof(vectorElement->mVector.mElement[8]) : 1.0;
+	e->mAngleRad = vectorElement->mVector.mSize >= 10 ? degreesToRadians(double(atoi(vectorElement->mVector.mElement[9]))) : 0.0;
 
 	e->mInterpolateOffset = 0;
 	e->mInterpolateBlend = 0;
@@ -329,60 +338,74 @@ static int isInterpolation(const char* tVariableName) {
 	char text1[100], text2[100];
 	int items = sscanf(tVariableName, "%s %s", text1, text2);
 	if (items < 2) return 0;
-	
-	return !strcmp("Interpolate", text1);
+	turnStringLowercase(text1);
+	return !strcmp("interpolate", text1);
 }
 
-static void handleOffsetInterpolation(MugenAnimations* tAnimation, int tGroup) {
-	MugenAnimation* anim = getMugenAnimation(tAnimation, tGroup);
-	assert(vector_size(&anim->mSteps));
+static void handleOffsetInterpolation(AnimationLoadCaller* caller) {
+	MugenAnimation* anim = getMugenAnimation(caller->mAnimations, caller->mGroupID);
+	if (!vector_size(&anim->mSteps)) {
+		caller->mInterpolateLastOffset = 1;
+		return;
+	}
 	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
 
 	step->mInterpolateOffset = 1;
 }
 
-static void handleBlendInterpolation(MugenAnimations* tAnimation, int tGroup) {
-	MugenAnimation* anim = getMugenAnimation(tAnimation, tGroup);
-	assert(vector_size(&anim->mSteps));
+static void handleBlendInterpolation(AnimationLoadCaller* caller) {
+	MugenAnimation* anim = getMugenAnimation(caller->mAnimations, caller->mGroupID);
+	if (!vector_size(&anim->mSteps)) {
+		caller->mInterpolateLastBlend = 1;
+		return;
+	}
 	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
 
 	step->mInterpolateBlend = 1;
 }
 
-static void handleScaleInterpolation(MugenAnimations* tAnimation, int tGroup) {
-	MugenAnimation* anim = getMugenAnimation(tAnimation, tGroup);
-	assert(vector_size(&anim->mSteps));
+static void handleScaleInterpolation(AnimationLoadCaller* caller) {
+	MugenAnimation* anim = getMugenAnimation(caller->mAnimations, caller->mGroupID);
+	if (!vector_size(&anim->mSteps)) {
+		caller->mInterpolateLastScale = 1;
+		return;
+	}
 	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
 
 	step->mInterpolateScale = 1;
 }
 
-static void handleAngleInterpolation(MugenAnimations* tAnimation, int tGroup) {
-	MugenAnimation* anim = getMugenAnimation(tAnimation, tGroup);
-	assert(vector_size(&anim->mSteps));
+static void handleAngleInterpolation(AnimationLoadCaller* caller) {
+	MugenAnimation* anim = getMugenAnimation(caller->mAnimations, caller->mGroupID);
+	if (!vector_size(&anim->mSteps)) {
+		caller->mInterpolateLastAngle = 1;
+		return;
+	}
 	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&anim->mSteps, vector_size(&anim->mSteps) - 1);
 
 	step->mInterpolateAngle = 1;
 }
 
-static void handleInterpolation(MugenDefScriptGroupElement* e, MugenAnimations* tAnimation, int tGroup) {
+static void handleInterpolation(AnimationLoadCaller* caller, MugenDefScriptGroupElement* e) {
 	char text1[100], text2[100];
 	int items = sscanf(e->mName.data(), "%s %s", text1, text2);
 	(void)items;
 	assert(items == 2);
-	assert(!strcmp("Interpolate", text1));
+	turnStringLowercase(text1);
+	assert(!strcmp("interpolate", text1));
 
-	if (!strcmp("Offset", text2)) {
-		handleOffsetInterpolation(tAnimation, tGroup);
+	turnStringLowercase(text2);
+	if (!strcmp("offset", text2)) {
+		handleOffsetInterpolation(caller);
 	}
-	else if (!strcmp("Blend", text2)) {
-		handleBlendInterpolation(tAnimation, tGroup);
+	else if (!strcmp("blend", text2)) {
+		handleBlendInterpolation(caller);
 	}
-	else if (!strcmp("Scale", text2)) {
-		handleScaleInterpolation(tAnimation, tGroup);
+	else if (!strcmp("scale", text2)) {
+		handleScaleInterpolation(caller);
 	}
-	else if (!strcmp("Angle", text2)) {
-		handleAngleInterpolation(tAnimation, tGroup);
+	else if (!strcmp("angle", text2)) {
+		handleAngleInterpolation(caller);
 	}
 	else {
 		logError("Unrecognized interpolation type.");
@@ -407,7 +430,7 @@ static void loadSingleAnimationElementStatement(void* tCaller, void* tData) {
 		handleLoopStart();
 	}
 	else if (isInterpolation(element->mName.data())) {
-		handleInterpolation(element, caller->mAnimations, caller->mGroupID);
+		handleInterpolation(caller, element);
 	}
 	else {
 		logWarning("Unrecognized type.");
@@ -430,6 +453,15 @@ static int isAnimationGroup(MugenDefScriptGroup* tGroup) {
 	return 1;
 }
 
+static void setFinalAnimationElementInterpolation(AnimationLoadCaller* tCaller, MugenAnimation* tAnimation) {
+	if (!vector_size(&tAnimation->mSteps)) return;
+	MugenAnimationStep* step = (MugenAnimationStep*)vector_get(&tAnimation->mSteps, vector_size(&tAnimation->mSteps) - 1);
+	step->mInterpolateOffset = tCaller->mInterpolateLastOffset;
+	step->mInterpolateBlend = tCaller->mInterpolateLastBlend;
+	step->mInterpolateScale = tCaller->mInterpolateLastScale;
+	step->mInterpolateAngle = tCaller->mInterpolateLastAngle;
+}
+
 static void loadSingleAnimationGroup(MugenAnimations* tAnimations, MugenDefScriptGroup* tGroup) {
 	if (!isAnimationGroup(tGroup)) return;
 
@@ -444,7 +476,12 @@ static void loadSingleAnimationGroup(MugenAnimations* tAnimations, MugenDefScrip
 	AnimationLoadCaller caller;
 	caller.mAnimations = tAnimations;
 	caller.mGroupID = id;
+	caller.mInterpolateLastOffset = 0;
+	caller.mInterpolateLastBlend = 0;
+	caller.mInterpolateLastScale = 0;
+	caller.mInterpolateLastAngle = 0;
 	list_map(&tGroup->mOrderedElementList, loadSingleAnimationElementStatement, &caller);
+	setFinalAnimationElementInterpolation(&caller, anim);
 
 	unsetSingleAnimationState();
 	unsetGlobalAnimationState();
@@ -530,11 +567,11 @@ MugenAnimation * createOneFrameMugenAnimationForSprite(int tSpriteGroup, int tSp
 	step->mSpriteNumber = tSpriteItem;
 	step->mDelta = makePosition(0, 0, 0);
 	step->mDuration = INF;
-	step->mIsFlippingHorizontally = 0;
-	step->mIsFlippingVertically = 0;
+	step->mFlags = uint32_t(MugenAnimationStepFlags::NONE);
+	step->mSrcBlendFactor = step->mDstBlendFactor = 1.0;
 
-	step->mIsAddition = 0;
-	step->mIsSubtraction = 0;
+	step->mScaleX = step->mScaleY = 1.0;
+	step->mAngleRad = 0.0;
 
 	step->mInterpolateOffset = 0;
 	step->mInterpolateBlend = 0;

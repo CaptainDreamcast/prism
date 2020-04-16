@@ -34,6 +34,7 @@ static struct {
 
 static void loadBlitzTimelineAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzTimelineAnimationData.mEntries = new_int_map();
 }
 
@@ -175,6 +176,7 @@ static void updateSingleBlitzTimelineAnimationEntry(void* tCaller, void* tData) 
 
 static void updateBlitzTimelineAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	int_map_map(&gBlitzTimelineAnimationData.mEntries, updateSingleBlitzTimelineAnimationEntry, NULL);
 }
 

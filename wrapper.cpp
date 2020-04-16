@@ -14,6 +14,7 @@
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
 #include "prism/sound.h"
+#include "prism/profiling.h"
 
 #include "prism/timer.h"
 #include "prism/animation.h"
@@ -97,6 +98,10 @@ static void initBasicSystems() {
 	initSystem();
 	debugLog("Initiating memory handler.");
 	initMemoryHandler();
+#ifdef PRISM_PROFILING_ACTIVE
+	logg("Initiating profiling.");
+	initProfiling();
+#endif
 	debugLog("Initiating physics.");
 	initPhysics();
 	debugLog("Initiating file system.");
@@ -172,6 +177,9 @@ void shutdownPrismWrapper() {
 	shutdownThreading();
 	shutdownSound();
 	shutdownFileSystem();
+#ifdef PRISM_PROFILING_ACTIVE
+	shutdownProfiling();
+#endif
 	shutdownMemoryHandler();
 	shutdownSystem();
 
@@ -470,6 +478,7 @@ static void updateScreenAbort() {
 
 
 static void updateScreen() {
+	setProfilingSectionMarkerCurrentFunction();
 	updateSystem();
 	updateInput();
 
@@ -494,6 +503,7 @@ static void updateScreen() {
 }
 
 static void drawScreen() {
+	setProfilingSectionMarkerCurrentFunction();
 	setPrismDebugWaitingStartTime();
 	waitForScreen();
 
@@ -515,6 +525,7 @@ static int isPrismWrappedScreenOver() {
 }
 
 static void performScreenIteration() {
+	setProfilingSectionMarkerCurrentFunction();
 	setPrismDebugUpdateStartTime();
 
 	gPrismWrapperData.mUpdateTimeCounter += gPrismWrapperData.mGlobalTimeDilatation;
@@ -553,6 +564,7 @@ static Screen* showScreen() {
 #endif
 
 	while(!isPrismWrappedScreenOver()) {
+		setProfilingFrameMarker("Prism Frame");
 		performScreenIteration();
 	}
 

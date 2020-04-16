@@ -13,6 +13,13 @@ typedef enum {
 	FACE_DIRECTION_RIGHT
 } FaceDirection;
 
+enum class MugenAnimationStepFlags : uint32_t {
+	NONE =						0,
+	IS_FLIPPING_HORIZONTALLY =	(1 << 0),
+	IS_FLIPPING_VERTICALLY =	(1 << 1),
+	IS_ADDITION =				(1 << 2),
+	IS_SUBTRACTION =			(1 << 3),
+};
 
 typedef struct {
 	List mPassiveHitboxes; // contain CollisionRect
@@ -21,13 +28,14 @@ typedef struct {
 	int mSpriteNumber;
 	Vector3D mDelta;
 	int mDuration;
-	int mIsFlippingHorizontally;
-	int mIsFlippingVertically;
 
-	int mIsAddition;
-	int mIsSubtraction;
-	int mSrcBlendValue;
-	int mDstBlendValue;
+	uint32_t mFlags;
+	double mSrcBlendFactor;
+	double mDstBlendFactor;
+
+	double mScaleX;
+	double mScaleY;
+	double mAngleRad;
 
 	int mInterpolateOffset;
 	int mInterpolateBlend;

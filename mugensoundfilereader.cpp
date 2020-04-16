@@ -8,6 +8,7 @@
 #include <prism/soundeffect.h>
 #include <prism/log.h>
 #include <prism/system.h>
+#include <prism/profiling.h>
 
 typedef struct {
 	uint32_t mNextFileOffset;
@@ -148,6 +149,7 @@ int playMugenSound(MugenSounds* tSounds, int tGroup, int tSample)
 
 int playMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, double tVolume, int tChannel, double tFrequencyMultiplier, int tIsLooping, double tPanning)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	const auto sample = getMugenSoundSample(tSounds, tGroup, tSample);
 	int channel = playSoundEffectChannel(sample->mSoundEffectID, tChannel, tVolume, tFrequencyMultiplier, tIsLooping);
 	panSoundEffect(channel, tPanning);
@@ -166,6 +168,7 @@ int tryPlayMugenSound(MugenSounds * tSounds, int tGroup, int tSample)
 
 int tryPlayMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, double tVolume, int tChannel, double tFrequencyMultiplier, int tIsLooping, double tPanning)
 {
+	setProfilingSectionMarkerCurrentFunction();
 	if (!hasMugenSound(tSounds, tGroup, tSample)) {
 		return 0;
 	}

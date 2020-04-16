@@ -28,11 +28,13 @@ static struct {
 
 static void loadBlitzMugenAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzAnimationData.mEntities.clear();
 }
 
 static void unloadBlitzMugenAnimationHandler(void* tData) {
 	(void)tData;
+	setProfilingSectionMarkerCurrentFunction();
 	gBlitzAnimationData.mEntities.clear();
 }
 

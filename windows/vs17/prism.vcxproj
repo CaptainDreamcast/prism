@@ -74,11 +74,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -190,6 +190,7 @@
     <ClInclude Include="..\..\include\prism\mugenanimationhandler.h" />
     <ClInclude Include="..\..\include\prism\mugenanimationreader.h" />
     <ClInclude Include="..\..\include\prism\mugendefreader.h" />
+    <ClInclude Include="..\..\include\prism\mugendefwriter.h" />
     <ClInclude Include="..\..\include\prism\mugenscriptparser.h" />
     <ClInclude Include="..\..\include\prism\mugensoundfilereader.h" />
     <ClInclude Include="..\..\include\prism\mugenspritefilereader.h" />
@@ -198,6 +199,7 @@
     <ClInclude Include="..\..\include\prism\physics.h" />
     <ClInclude Include="..\..\include\prism\physicshandler.h" />
     <ClInclude Include="..\..\include\prism\profiling.h" />
+    <ClInclude Include="..\..\include\prism\saveload.h" />
     <ClInclude Include="..\..\include\prism\screeneffect.h" />
     <ClInclude Include="..\..\include\prism\script.h" />
     <ClInclude Include="..\..\include\prism\sound.h" />
@@ -253,6 +255,7 @@
     <ClCompile Include="..\..\mugenanimationhandler.cpp" />
     <ClCompile Include="..\..\mugenanimationreader.cpp" />
     <ClCompile Include="..\..\mugendefreader.cpp" />
+    <ClCompile Include="..\..\mugendefwriter.cpp" />
     <ClCompile Include="..\..\mugenscriptparser.cpp" />
     <ClCompile Include="..\..\mugensoundfilereader.cpp" />
     <ClCompile Include="..\..\mugenspritefilereader.cpp" />
@@ -283,6 +286,7 @@
     <ClCompile Include="..\math_win.cpp" />
     <ClCompile Include="..\memoryhandler_win.cpp" />
     <ClCompile Include="..\romdisk_win.cpp" />
+    <ClCompile Include="..\saveload_win.cpp" />
     <ClCompile Include="..\screeneffect_win.cpp" />
     <ClCompile Include="..\soundeffect_win.cpp" />
     <ClCompile Include="..\sound_win.cpp" />
