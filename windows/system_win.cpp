@@ -26,6 +26,7 @@
 #include "prism/math.h"
 #include "prism/wrapper.h"
 #include "prism/profiling.h"
+#include "prism/input.h"
 
 void abortSystem(){
  	assert(0);
@@ -76,8 +77,10 @@ void setIcon(const char * tPath)
 }
 
 #ifdef _WIN32
+#define Rectangle Rectangle2
 #include <windows.h>
 #include <direct.h>
+#undef Rectangle
 #endif
 
 static void setToProgramDirectory() {
@@ -172,19 +175,27 @@ Vector3D correctSDLWindowPosition(Vector3D v) {
 
 static void switchFullscreen() {
 	if (!gPrismWindowsSystemData.mIsFullscreen) {
-		SDL_SetWindowFullscreen(gSDLWindow, SDL_WINDOW_FULLSCREEN);
+		if (isOnWeb()) {
+			SDL_SetWindowFullscreen(gSDLWindow, SDL_WINDOW_FULLSCREEN_DESKTOP); // does not break window resizing, unlike the other one, probably due to https://github.com/emscripten-ports/SDL2/issues/8
+		}
+		else {
+			SDL_SetWindowFullscreen(gSDLWindow, SDL_WINDOW_FULLSCREEN);
+		}
 	}
 	else {
 		SDL_SetWindowFullscreen(gSDLWindow, 0);
+		if (isOnWeb()) {
+			setWindowSize(640, 480); // force real window size after fullscreen switch until (https://github.com/emscripten-ports/SDL2/issues/8) resolved
+		}
 	}
 
 	gPrismWindowsSystemData.mIsFullscreen ^= 1;
 }
 
 static void checkFullscreen() {
-	const Uint8* kstates = SDL_GetKeyboardState(NULL);
-
-	if (kstates[SDL_SCANCODE_RETURN] && kstates[SDL_SCANCODE_LALT]) {
+	const auto webInput = isOnWeb() && hasPressedKeyboardKeyFlank(KEYBOARD_F8_PRISM);
+	const auto nonWebInput = !isOnWeb() && hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_ALT_LEFT_PRISM, KEYBOARD_RETURN_PRISM);
+	if (webInput || nonWebInput) {
 		switchFullscreen();
 	}
 }

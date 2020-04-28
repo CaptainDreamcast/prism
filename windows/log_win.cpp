@@ -9,7 +9,9 @@ void logTextureMemoryState(){
 }
 
 #ifdef _WIN32
+#define Rectangle Rectangle2
 #include <Windows.h>
+#undef Rectangle
 #include <Psapi.h>
 void logMemoryState() {
 	if (!isInDevelopMode()) return;

@@ -1,6 +1,8 @@
 #include "prism/thread.h"
 
-#include <windows.h>
+#define Rectangle Rectangle2
+#include <Windows.h>
+#undef Rectangle
 
 #include "prism/datastructures.h"
 #include "prism/memoryhandler.h"

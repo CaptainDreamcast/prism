@@ -295,7 +295,9 @@ TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWid
 }
 
 #ifdef _WIN32
+#define Rectangle Rectangle2
 #include <Windows.h>
+#undef Rectangle
 // Get system font file path (Taken from https://stackoverflow.com/questions/11387564/get-a-font-filepath-from-name-and-style-in-c-windows)
 static std::string getSystemFontFile(const std::string& tFaceName) {
 
