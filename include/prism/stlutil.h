@@ -251,6 +251,17 @@ void stl_set_map(std::set<T> &tSet, void(*tFunc)(C* tCaller, T& tData), C* tCall
 }
 
 template <class T, class C>
+void stl_set_map(std::set<T*> &tSet, void(*tFunc)(C* tCaller, T* tData), C* tCaller = NULL) {
+	typename std::set<T*>::iterator it = tSet.begin();
+
+	while (it != tSet.end()) {
+		T *val = *it;
+		it++;
+		tFunc(tCaller, val);
+	}
+}
+
+template <class T, class C>
 void stl_set_remove_predicate(std::set<T> &tSet, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
 	typename std::set<T>::iterator it = tSet.begin();
 

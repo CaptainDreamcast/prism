@@ -28,8 +28,7 @@ static maple_device_t* getVMUDeviceOrNull(PrismSaveSlot& tSaveSlot) {
 	}
 }
 
-static vmu_pkg_t packVMUPackageHeader(Buffer& tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, Buffer tIconDataBuffer, Buffer tPaletteBuffer) {
-	tBuffer = copyBuffer(tBuffer);
+static vmu_pkg_t packVMUPackageHeader(Buffer& tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, const Buffer& tIconDataBuffer, const Buffer& tPaletteBuffer) {
 	compressBufferZSTD(&tBuffer);
 
 	assert(tIconDataBuffer.mLength == 512);
@@ -55,14 +54,15 @@ static std::string getSaveSlotPath(PrismSaveSlot tSaveSlot) {
 	return std::string(SAVE_SLOT_PATHS[int(tSaveSlot)]);
 }
 
-void savePrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName, Buffer tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, Buffer tIconDataBuffer, Buffer tPaletteBuffer) {
+void savePrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName, const Buffer& tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, const Buffer& tIconDataBuffer, const Buffer& tPaletteBuffer) {
 	auto dev = getVMUDeviceOrNull(tSaveSlot);
 	if (!dev) {
 		logErrorFormat("Writing VMU file %s to save slot %d failed, no device found. Aborting.\n", tFileName, int(tSaveSlot));
 		return;
 	}
 	
-	auto pkg = packVMUPackageHeader(tBuffer, tApplicationName, tShortDescription, tLongDescription, tIconDataBuffer, tPaletteBuffer);
+	auto bufferCopy = copyBuffer(tBuffer);
+	auto pkg = packVMUPackageHeader(bufferCopy, tApplicationName, tShortDescription, tLongDescription, tIconDataBuffer, tPaletteBuffer);
 
 	uint8* pkg_out;
 	int pkg_size;
@@ -82,7 +82,7 @@ void savePrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName, Buffer tB
 	fileClose(fileHandler);
 
 	free(pkg_out);
-	freeBuffer(tBuffer);
+	freeBuffer(bufferCopy);
 
 	logFormat("Successfully wrote save to path %s", path.c_str());
 }
@@ -148,14 +148,15 @@ size_t getAvailableSizeForSaveSlot(PrismSaveSlot tSaveSlot) {
 	return size_t(vmufs_free_blocks(dev) * MEM_BLOCK_SIZE);
 }
 
-size_t getPrismGameSaveSize(Buffer tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, Buffer tIconDataBuffer, Buffer tPaletteBuffer) {
-	auto pkg = packVMUPackageHeader(tBuffer, tApplicationName, tShortDescription, tLongDescription, tIconDataBuffer, tPaletteBuffer);
+size_t getPrismGameSaveSize(const Buffer& tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, const Buffer& tIconDataBuffer, const Buffer& tPaletteBuffer) {
+	auto bufferCopy = copyBuffer(tBuffer);
+	auto pkg = packVMUPackageHeader(bufferCopy, tApplicationName, tShortDescription, tLongDescription, tIconDataBuffer, tPaletteBuffer);
 
 	uint8* pkg_out;
 	int pkg_size;
 	vmu_pkg_build(&pkg, &pkg_out, &pkg_size);
 	free(pkg_out);
-	freeBuffer(tBuffer);
+	freeBuffer(bufferCopy);
 
 	return size_t(((pkg_size + MEM_BLOCK_SIZE - 1) / MEM_BLOCK_SIZE) * MEM_BLOCK_SIZE);
 }

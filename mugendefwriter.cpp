@@ -167,6 +167,8 @@ static void writeNewVariableLine(ModifiableMugenDefScript* tScript, BufferPointe
 }
 
 void saveMugenDefString(ModifiableMugenDefScript* tScript, const char* tGroupName, const char* tVariableName, const std::string& tValue) {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	auto sectionStart = findExistingVariablePositionOrNullIfNonExistant(tScript, tGroupName, tVariableName);
 	if (sectionStart) {
 		adaptValueAtPosition(tScript, sectionStart, tValue, tGroupName, tVariableName);

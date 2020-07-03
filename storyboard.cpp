@@ -194,17 +194,17 @@ static void loadStoryboardTextureTexture(Storyboard* e, StoryBoardTextureStruct*
 	rect.bottomRight.y = (int)tTexture->TexturePositionY2*e->mState.mTextures[slot].mTextures[0].mTextureSize.y;
 
 	if (tTexture->Loop) { 
-		e->mState.mTextures[slot].mElement = playAnimationLoop(makePosition(0, 0, 0), e->mState.mTextures[slot].mTextures, e->mState.mTextures[slot].mAnimation, rect);
+		e->mState.mTextures[slot].mElement = playAnimationLoop(Vector3D(0, 0, 0), e->mState.mTextures[slot].mTextures, e->mState.mTextures[slot].mAnimation, rect);
 	}
 	else {
-		e->mState.mTextures[slot].mElement = playAnimation(makePosition(0, 0, 0), e->mState.mTextures[slot].mTextures, e->mState.mTextures[slot].mAnimation, rect, NULL, NULL);
+		e->mState.mTextures[slot].mElement = playAnimation(Vector3D(0, 0, 0), e->mState.mTextures[slot].mTextures, e->mState.mTextures[slot].mAnimation, rect, NULL, NULL);
 	}
 
 	Position* pos = &getPhysicsFromHandler(e->mState.mTextures[slot].mPhysicsElement)->mPosition;
 	setAnimationBasePositionReference(e->mState.mTextures[slot].mElement, pos);
 	
-	Vector3D scale = makePosition(tTexture->SizeX / (double)e->mState.mTextures[slot].mTextures[0].mTextureSize.x, tTexture->SizeY / (double)e->mState.mTextures[slot].mTextures[0].mTextureSize.y, 1);
-	setAnimationScale(e->mState.mTextures[slot].mElement, scale, makePosition(0,0,0));
+	Vector3D scale = Vector3D(tTexture->SizeX / (double)e->mState.mTextures[slot].mTextures[0].mTextureSize.x, tTexture->SizeY / (double)e->mState.mTextures[slot].mTextures[0].mTextureSize.y, 1);
+	setAnimationScale(e->mState.mTextures[slot].mElement, scale, Vector3D(0,0,0));
 }
 
 static void loadStoryboardTexture(Storyboard* e, StoryBoardTextureStruct* tTexture) {
@@ -218,8 +218,8 @@ static void loadStoryboardTexture(Storyboard* e, StoryBoardTextureStruct* tTextu
 		e->mState.mTextures[slot].mPhysicsElement = NULL;
 	}
 
-	e->mState.mTextures[slot].mPhysicsElement = addToPhysicsHandler(makePosition(tTexture->PositionX, tTexture->PositionY, tTexture->PositionZ));
-	addAccelerationToHandledPhysics(e->mState.mTextures[slot].mPhysicsElement, makePosition(tTexture->MovementX, tTexture->MovementY, 0));
+	e->mState.mTextures[slot].mPhysicsElement = addToPhysicsHandler(Vector3D(tTexture->PositionX, tTexture->PositionY, tTexture->PositionZ));
+	addAccelerationToHandledPhysics(e->mState.mTextures[slot].mPhysicsElement, Vector3D(tTexture->MovementX, tTexture->MovementY, 0));
 
 	if (tTexture->TextureAction == StoryBoardLoadTextureIdentifier) {
 		loadStoryboardTextureTexture(e, tTexture);
@@ -269,8 +269,8 @@ static void loadStoryboardText(Storyboard* e, StoryBoardTextStruct* tText) {
 	}
 
 	tText->FontColor = parseDolmexicaColor(tText->FontColor);
-	if (tText->BuildUp) e->mState.mTexts[slot].mID = addHandledTextWithBuildup(makePosition(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, (Color)tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), makePosition(tText->BreakSizeX, tText->BreakSizeY, 0), makePosition(tText->SizeX, tText->SizeY, 0), INF, tText->BuildUpSpeed);
-	else e->mState.mTexts[slot].mID = addHandledText(makePosition(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, (Color)tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), makePosition(tText->BreakSizeX, tText->BreakSizeY, 0), makePosition(tText->SizeX, tText->SizeY, 0), INF);
+	if (tText->BuildUp) e->mState.mTexts[slot].mID = addHandledTextWithBuildup(Vector3D(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, (Color)tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), Vector3D(tText->BreakSizeX, tText->BreakSizeY, 0), Vector3D(tText->SizeX, tText->SizeY, 0), INF, tText->BuildUpSpeed);
+	else e->mState.mTexts[slot].mID = addHandledText(Vector3D(tText->PositionX, tText->PositionY, tText->PositionZ), tText->ActualText, tText->WhichFont, (Color)tText->FontColor, makeFontSize(tText->FontSizeX, tText->FontSizeY), Vector3D(tText->BreakSizeX, tText->BreakSizeY, 0), Vector3D(tText->SizeX, tText->SizeY, 0), INF);
 }
 
 static void loadStoryboardTexts(Storyboard* e, StoryBoardHeaderStruct* tHeader) {
@@ -401,11 +401,10 @@ static void resetStoryboard(Storyboard* e) {
 
 }
 
-static Storyboard* loadStoryboard(char* tPath) {
+static Storyboard* loadStoryboard(const char* tPath) {
 	Storyboard* e = (Storyboard*)allocMemory(sizeof(Storyboard));
 
 	mountRomdisk(tPath, "STORY");
-
 
 	e->mBuffer = fileToBuffer("$/STORY/STORYBOARD");
 	memcpy(&e->mHeader, e->mBuffer.mData, sizeof(StoryBoardUberHeaderStruct));
@@ -418,7 +417,7 @@ static Storyboard* loadStoryboard(char* tPath) {
 	return e;
 }
 
-int playStoryboard(char* tPath) {
+int playStoryboard(const char* tPath) {
 	if (list_size(&gPrismStoryboardData.mStoryboards)) {
 		logError("Unable to play more than one story board at a time.");
 		logErrorString(tPath);
@@ -435,7 +434,7 @@ void setStoryboardFinishedCB(int tID, StoryboardFinishedCB tCB, void* tCaller) {
 	e->mFinishedCaller = tCaller;
 }
 
-int isStoryboard(char* tPath) {
+int isStoryboard(const char* tPath) {
 	if (!strcmp("", tPath)) return 0;
 
 	int isBoard = isFile(tPath);

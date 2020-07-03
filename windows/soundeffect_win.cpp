@@ -69,14 +69,14 @@ static int addBufferToSoundEffectHandler(Buffer tBuffer) {
 	return stl_int_map_push_back(gSoundEffectData.mAllocatedChunks, e);
 }
 
-int loadSoundEffect(char* tPath) {
+int loadSoundEffect(const char* tPath) {
 	Buffer b = fileToBuffer(tPath);
 	return addBufferToSoundEffectHandler(b);
 }
 
 static int gDummy;
 
-int loadSoundEffectFromBuffer(Buffer tBuffer) {
+int loadSoundEffectFromBuffer(const Buffer& tBuffer) {
 
 	Buffer ownedBuffer = copyBuffer(tBuffer);
 	return addBufferToSoundEffectHandler(ownedBuffer);

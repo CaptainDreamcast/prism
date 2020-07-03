@@ -15,21 +15,92 @@ Vector2D::Vector2D(double x, double y)
 {
 }
 
+Vector3D Vector2D::xyz(double z) const
+{
+	return Vector3D(x, y, z);
+}
+
+Vector3D::Vector3D(double x, double y, double z)
+	: x(x)
+	, y(y)
+	, z(z)
+{
+}
+
+Vector2D Vector3D::xy() const
+{
+	return Vector2D(x, y);
+}
+
+Vector2DI::Vector2DI(int x, int y)
+	: x(x)
+	, y(y)
+{
+}
+
+Vector3DI Vector2DI::xyz(int z) const {
+	return Vector3DI(x, y, z);
+}
+
+Vector2D Vector2DI::f() const
+{
+	return Vector2D(double(x), double(y));
+}
+
+Vector3DI::Vector3DI(int x, int y, int z)
+	: x(x)
+	, y(y)
+	, z(z)
+{
+}
+
+Vector2DI Vector3DI::xy() const
+{
+	return Vector2DI(x, y);
+}
+
+Vector3D Vector3DI::f() const
+{
+	return Vector3D(double(x), double(y), double(z));
+}
+
 GeoRectangle2D::GeoRectangle2D(double x, double y, double w, double h)
 	: mTopLeft(x, y)
 	, mBottomRight(x + w, y + h)
 {
 }
 
-double dot3D(Vector3D p1, Vector3D p2) {
+GeoRectangle::GeoRectangle(double x, double y, double z, double w, double h)
+	: mTopLeft(x, y, z)
+	, mBottomRight(x + w, y + h, z)
+{
+}
+
+GeoRectangle2D GeoRectangle::rect2D() const
+{
+	GeoRectangle2D ret;
+	ret.mTopLeft = mTopLeft.xy();
+	ret.mBottomRight = mBottomRight.xy();
+	return ret;
+}
+
+double dot2D(const Vector2D& p1, const Vector2D& p2) {
+	return p1.x*p2.x + p1.y*p2.y;
+}
+
+double dot3D(const Vector3D& p1, const Vector3D& p2) {
 	return p1.x*p2.x + p1.y*p2.y + p1.z*p2.z;
 }
 
-double vecLength(Vector3D tVelocity) {
+double vecLength(const Vector2D& tVelocity) {
+	return fstsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y);
+}
+
+double vecLength(const Vector3D& tVelocity) {
 	return fstsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
 }
 
-Vector3D vecAdd(Vector3D v1, Vector3D v2) {
+Vector3D vecAdd(const Vector3D& v1, const Vector3D& v2) {
 	Vector3D ret;
 	ret.x = v1.x + v2.x;
 	ret.y = v1.y + v2.y;
@@ -37,12 +108,12 @@ Vector3D vecAdd(Vector3D v1, Vector3D v2) {
 	return ret;
 }
 
-Vector3D vecSub(Vector3D v1, Vector3D v2)
+Vector3D vecSub(const Vector3D& v1, const Vector3D& v2)
 {
 	return vecAdd(v1, vecScale(v2, -1));
 }
 
-Vector3D vecScale(Vector3D v, double tFactor) {
+Vector3D vecScale(const Vector3D& v, double tFactor) {
 	Vector3D ret;
 	ret.x = v.x*tFactor;
 	ret.y = v.y*tFactor;
@@ -50,7 +121,12 @@ Vector3D vecScale(Vector3D v, double tFactor) {
 	return ret;
 }
 
-Vector3D vecScale3D(Vector3D v, Vector3D tScale) {
+Vector3D vecScale2D(const Vector3D& v, const Vector2D& tScale)
+{
+	return Vector3D(v.x * tScale.x, v.y * tScale.y, v.z);
+}
+
+Vector3D vecScale3D(const Vector3D& v, const Vector3D& tScale) {
 	Vector3D ret;
 	ret.x = v.x*tScale.x;
 	ret.y = v.y*tScale.y;
@@ -58,18 +134,15 @@ Vector3D vecScale3D(Vector3D v, Vector3D tScale) {
 	return ret;
 }
 
-Vector3D vecNormalize(Vector3D tVector) {
+Vector3D vecNormalize(const Vector3D& tVector) {
 	double l = vecLength(tVector);
 	if (l == 0) {
 		return tVector;
 	}
-	tVector.x /= l;
-	tVector.y /= l;
-	tVector.z /= l;
-	return tVector;
+	return tVector / l;
 }
 
-Vector3D vecRotateZ(Vector3D tVector, double tAngle) {
+Vector3D vecRotateZ(const Vector3D& tVector, double tAngle) {
 	Vector3D ret;
 	ret.x = cos(tAngle)*tVector.x - sin(tAngle)*tVector.y;
 	ret.y = sin(tAngle)*tVector.x + cos(tAngle)*tVector.y;
@@ -77,45 +150,19 @@ Vector3D vecRotateZ(Vector3D tVector, double tAngle) {
 	return ret;
 }
 
-Vector3D vecRotateZAroundCenter(Vector3D tVector, double tAngle, Vector3D tCenter) {
-	tVector = vecSub(tVector, tCenter);
-	tVector = vecRotateZ(tVector, tAngle);
-	tVector = vecAdd(tVector, tCenter);
-	return tVector;
+Vector3D vecRotateZAroundCenter(const Vector3D& tVector, double tAngle, const Vector3D& tCenter) {
+	auto ret = vecSub(tVector, tCenter);
+	ret = vecRotateZ(ret, tAngle);
+	ret = vecAdd(ret, tCenter);
+	return ret;
 }
 
-Vector3D vecScaleToSize(Vector3D v, double tSize)
+Vector3D vecScaleToSize(const Vector3D& v, double tSize)
 {
-	v = vecNormalize(v);
-	v = vecScale(v, tSize);
-	return v;
+	return vecNormalize(v) * tSize;
 }
 
-Position makePosition(Vector3DI tOtherVector) {
-	Position pos;
-	pos.x = double(tOtherVector.x);
-	pos.y = double(tOtherVector.y);
-	pos.z = double(tOtherVector.z);
-	return pos;
-}
-
-Position makePosition(double x, double y, double z) {
-	Position pos;
-	pos.x = x;
-	pos.y = y;
-	pos.z = z;
-	return pos;
-}
-
-Vector3DI makeVector3DI(int x, int y, int z) {
-	Vector3DI v;
-	v.x = x;
-	v.y = y;
-	v.z = z;
-	return v;
-}
-
-Position variatePosition(Position tBase) {
+Position variatePosition(const Position& tBase) {
 	Position ret;
 	ret.x = randfrom(-tBase.x, tBase.x);
 	ret.y = randfrom(-tBase.y, tBase.y);
@@ -123,7 +170,7 @@ Position variatePosition(Position tBase) {
 	return ret;
 }
 
-void printPosition(char* tName, Position tPosition) {
+void printPosition(char* tName, const Position& tPosition) {
 	logString(tName);
 	logDouble(tPosition.x);
 	logDouble(tPosition.y);
@@ -131,7 +178,7 @@ void printPosition(char* tName, Position tPosition) {
 
 }
 
-Position getDirection(Position tFrom, Position tTo) {
+Position getDirection(const Position& tFrom, const Position& tTo) {
 	Position ret;
 	ret.x = tTo.x - tFrom.x;
 	ret.y = tTo.y - tFrom.y;
@@ -139,105 +186,98 @@ Position getDirection(Position tFrom, Position tTo) {
 	return ret;
 }
 
-double getDistance2D(Position tFrom, Position tTo)
+double getDistance2D(const Position& tFrom, const Position& tTo)
 {
-	tFrom.z = tTo.z = 0;
-	return vecLength(vecSub(tTo, tFrom));
+	return vecLength2D(vecSub(tTo, tFrom));
 }
 
-Line makeLine(Vector3D tStart, Vector3D tEnd) {
+Line2D makeLine2D(const Vector2D& tStart, const Vector2D& tEnd) {
+	Line2D ret;
+	ret.mP1 = tStart;
+	ret.mP2 = tEnd;
+	return ret;
+}
+
+Line makeLine(const Vector3D& tStart, const Vector3D& tEnd) {
 	Line ret;
 	ret.mP1 = tStart;
 	ret.mP2 = tEnd;
 	return ret;
 }
 
-GeoRectangle makeGeoRectangle(double x, double y, double w, double h)
-{
-	GeoRectangle ret;
-	ret.mTopLeft.x = x;
-	ret.mTopLeft.y = y;
-	ret.mBottomRight.x = x + w;
-	ret.mBottomRight.y = y + h;
-	return ret;
-}
-
-GeoRectangle makeGeoRectangle3D(double x, double y, double z, double w, double h) {
-	GeoRectangle ret;
-	ret.mTopLeft.x = x;
-	ret.mTopLeft.y = y;
-	ret.mTopLeft.z = z;
-	ret.mBottomRight.x = x + w;
-	ret.mBottomRight.y = y + h;
-	ret.mBottomRight.z = z;
-	return ret;
-}
-
-Vector3DI vecAddI(Vector3DI v1, Vector3DI v2) {
-	v1.x += v2.x;
-	v1.y += v2.y;
-	v1.z += v2.z;
-	return v1;
+Vector3DI vecAddI(const Vector3DI& v1, const Vector3DI& v2) {
+	return v1 + v2;
 }
 
 Vector3DI vecScaleI(const Vector3DI& v, double tFactor)
 {
-	return makeVector3DI(int(v.x * tFactor), int(v.y * tFactor), int(v.z * tFactor));
+	return Vector3DI(int(v.x * tFactor), int(v.y * tFactor), int(v.z * tFactor));
 }
 
-int vecEqualsI(Vector3DI v1, Vector3DI v2) {
+Vector2DI vecScaleI2D(const Vector2DI& v, double tFactor)
+{
+	return Vector2DI(int(v.x * tFactor), int(v.y * tFactor));
+}
+
+int vecEqualsI(const Vector3DI& v1, const Vector3DI& v2) {
 	return v1.x == v2.x && v1.y == v2.y && v1.z == v2.z;
 }
 
-int vecEqualsI2D(Vector3DI v1, Vector3DI v2) {
+int vecEqualsI2D(const Vector3DI& v1, const Vector3DI& v2) {
 	return v1.x == v2.x && v1.y == v2.y;
 }
 
-double vecLength2D(Vector3D v)
+double vecLength2D(const Vector3D& v)
 {
-	return vecLength(makePosition(v.x, v.y, 0));
+	return vecLength(Vector3D(v.x, v.y, 0));
 }
 
-Vector3D vecAdd2D(Vector3D v1, Vector3D v2)
+Vector3D vecAdd2D(const Vector3D& v1, const Vector3D& v2)
 {
-	v1.x += v2.x;
-	v1.y += v2.y;
-	return v1;
+	return Vector3D(v1.x + v2.x, v1.y + v2.y, v1.z);
 }
 
-Vector3D vecSub2D(Vector3D v1, Vector3D v2)
+Vector3D vecSub2D(const Vector3D& v1, const Vector3D& v2)
 {
-	v1.x -= v2.x;
-	v1.y -= v2.y;
-	return v1;
+	return Vector3D(v1.x - v2.x, v1.y - v2.y, v1.z);
 }
 
 Vector3D vecMin2D(const Vector3D& v1, const Vector3D& v2)
 {
-	return makePosition(std::min(v1.x, v2.x), std::min(v1.y, v2.y), 0);
+	return Vector3D(std::min(v1.x, v2.x), std::min(v1.y, v2.y), 0);
 }
 
 Vector3D vecMax2D(const Vector3D& v1, const Vector3D& v2)
 {
-	return makePosition(std::max(v1.x, v2.x), std::max(v1.y, v2.y), 0);
+	return Vector3D(std::max(v1.x, v2.x), std::max(v1.y, v2.y), 0);
+}
+
+Vector2DI vecMinI2D(const Vector2DI& v1, const Vector2DI& v2)
+{
+	return Vector2DI(std::min(v1.x, v2.x), std::min(v1.y, v2.y));
+}
+
+Vector2DI vecMaxI2D(const Vector2DI& v1, const Vector2DI& v2)
+{
+	return Vector2DI(std::max(v1.x, v2.x), std::max(v1.y, v2.y));
 }
 
 Vector3DI vecMinI2D(const Vector3DI& v1, const Vector3DI& v2)
 {
-	return makeVector3DI(std::min(v1.x, v2.x), std::min(v1.y, v2.y), 0);
+	return Vector3DI(std::min(v1.x, v2.x), std::min(v1.y, v2.y), 0);
 }
 
 Vector3DI vecMaxI2D(const Vector3DI& v1, const Vector3DI& v2)
 {
-	return makeVector3DI(std::max(v1.x, v2.x), std::max(v1.y, v2.y), 0);
+	return Vector3DI(std::max(v1.x, v2.x), std::max(v1.y, v2.y), 0);
 }
 
-double getAngleFromDirection(Vector3D tDirection) {
+double getAngleFromDirection(const Vector3D& tDirection) {
 	return -fatan2(tDirection.y, tDirection.x) + M_PI;
 }
 
 Vector3D getDirectionFromAngleZ(double tAngle) {
-	return makePosition(cos(tAngle), sin(tAngle), 0);
+	return Vector3D(cos(tAngle), sin(tAngle), 0);
 }
 
 double degreesToRadians(double tDegrees) {
@@ -248,16 +288,16 @@ double radiansToDegrees(double tRadians) {
 	return (tRadians / M_PI) * 180;
 }
 
-int checkIntersectLineCircle(Line tLine, Circle tCircle) {
+int checkIntersectLineCircle(const Line2D& tLine, const Circle2D& tCircle) {
 
 	double r = tCircle.mRadius;
 
-	Position d = getDirection(tLine.mP1, tLine.mP2);
-	Position f = getDirection(tCircle.mCenter, tLine.mP1);
+	const auto d = tLine.mP2 - tLine.mP1;
+	const auto f = tLine.mP1 - tCircle.mCenter;
 
-	double a = dot3D(d, d);
-	double b = 2 * dot3D(f, d);
-	double c = dot3D(f, f) - r*r;
+	double a = dot2D(d, d);
+	double b = 2 * dot2D(f, d);
+	double c = dot2D(f, f) - r*r;
 
 	double discriminant = b*b - 4 * a*c;
 	if (discriminant < 0)
@@ -307,27 +347,27 @@ int checkIntersectLineCircle(Line tLine, Circle tCircle) {
 	}
 }
 
-int checkPointInCircle(Circle tCirc, Position tPoint) {
-	Position d = getDirection(tCirc.mCenter, tPoint);
+int checkPointInCircle(const Circle2D& tCirc, const Position2D& tPoint) {
+	const auto d = tPoint - tCirc.mCenter;
 	double l = vecLength(d);
 	return l <= tCirc.mRadius;
 }
 
-int checkPointInRectangle(GeoRectangle tRect, Position tPoint) {
+int checkPointInRectangle(const GeoRectangle2D& tRect, const Position2D& tPoint) {
 	return tPoint.x >= tRect.mTopLeft.x && tPoint.x <= tRect.mBottomRight.x && tPoint.y >= tRect.mTopLeft.y && tPoint.y <= tRect.mBottomRight.y;
 }
 
-int checkIntersectCircRect(Circle tCirc, GeoRectangle tRect) {
-	Position p1 = tRect.mTopLeft;
-	Position p2 = makePosition(tRect.mTopLeft.x, tRect.mBottomRight.y, 0);
-	Position p3 = tRect.mBottomRight;
-	Position p4 = makePosition(tRect.mBottomRight.x, tRect.mTopLeft.y, 0);
+int checkIntersectCircRect(const Circle2D& tCirc, const GeoRectangle2D& tRect) {
+	const auto p1 = tRect.mTopLeft;
+	const auto p2 = Vector2D(tRect.mTopLeft.x, tRect.mBottomRight.y);
+	const auto p3 = tRect.mBottomRight;
+	const auto p4 = Vector2D(tRect.mBottomRight.x, tRect.mTopLeft.y);
 
 	return (checkPointInRectangle(tRect, tCirc.mCenter) ||
-		checkIntersectLineCircle(makeLine(p1, p2), tCirc) ||
-		checkIntersectLineCircle(makeLine(p2, p3), tCirc) ||
-		checkIntersectLineCircle(makeLine(p3, p4), tCirc) ||
-		checkIntersectLineCircle(makeLine(p4, p1), tCirc) ||
+		checkIntersectLineCircle(makeLine2D(p1, p2), tCirc) ||
+		checkIntersectLineCircle(makeLine2D(p2, p3), tCirc) ||
+		checkIntersectLineCircle(makeLine2D(p3, p4), tCirc) ||
+		checkIntersectLineCircle(makeLine2D(p4, p1), tCirc) ||
 		(checkPointInCircle(tCirc, p1) && 
 			checkPointInCircle(tCirc, p2) && 
 			checkPointInCircle(tCirc, p3)  && 
@@ -335,7 +375,17 @@ int checkIntersectCircRect(Circle tCirc, GeoRectangle tRect) {
 
 }
 
-Vector3D clampPositionToGeoRectangle(Vector3D v, GeoRectangle tRect)
+Vector2D clampPositionToGeoRectangle(const Vector2D& v, const GeoRectangle2D & tRect)
+{
+	Vector2D ret = v;
+	ret.x = fmax(ret.x, tRect.mTopLeft.x);
+	ret.y = fmax(ret.y, tRect.mTopLeft.y);
+	ret.x = fmin(ret.x, tRect.mBottomRight.x);
+	ret.y = fmin(ret.y, tRect.mBottomRight.y);
+	return ret;
+}
+
+Vector3D clampPositionToGeoRectangle(const Vector3D & v, const GeoRectangle2D & tRect)
 {
 	Vector3D ret = v;
 	ret.x = fmax(ret.x, tRect.mTopLeft.x);
@@ -345,21 +395,66 @@ Vector3D clampPositionToGeoRectangle(Vector3D v, GeoRectangle tRect)
 	return ret;
 }
 
-GeoRectangle scaleGeoRectangleByFactor(GeoRectangle tRect, double tFac)
+Vector3D clampPositionToGeoRectangle(const Vector3D& v, const GeoRectangle& tRect)
 {
-	return scaleGeoRectangleByFactor2D(tRect, makePosition(tFac, tFac, 1));
+	Vector3D ret = v;
+	ret.x = fmax(ret.x, tRect.mTopLeft.x);
+	ret.y = fmax(ret.y, tRect.mTopLeft.y);
+	ret.x = fmin(ret.x, tRect.mBottomRight.x);
+	ret.y = fmin(ret.y, tRect.mBottomRight.y);
+	return ret;
 }
 
-GeoRectangle scaleGeoRectangleByFactor2D(GeoRectangle tRect, Vector3D tFac)
+GeoRectangle2D scaleGeoRectangleByFactor(const GeoRectangle2D& tRect, double tFac)
 {
-	tRect.mTopLeft.x *= tFac.x;
-	tRect.mTopLeft.y *= tFac.y;
-	tRect.mBottomRight.x *= tFac.x;
-	tRect.mBottomRight.y *= tFac.y;
-	return tRect;
+	return scaleGeoRectangleByFactor2D(tRect, Vector2D(tFac, tFac));
 }
 
-Vector3D interpolatePositionLinear(Position a, Position b, double t)
+GeoRectangle scaleGeoRectangleByFactor(const GeoRectangle& tRect, double tFac)
+{
+	return scaleGeoRectangleByFactor2D(tRect, Vector2D(tFac, tFac));
+}
+
+GeoRectangle2D scaleGeoRectangleByFactor2D(const GeoRectangle2D& tRect, const Vector2D& tFac) {
+	GeoRectangle2D ret = tRect;
+	ret.mTopLeft.x *= tFac.x;
+	ret.mTopLeft.y *= tFac.y;
+	ret.mBottomRight.x *= tFac.x;
+	ret.mBottomRight.y *= tFac.y;
+	return ret;
+}
+
+GeoRectangle2D scaleGeoRectangleByFactor2D(const GeoRectangle2D& tRect, const Vector3D& tFac) 
+{
+	GeoRectangle2D ret = tRect;
+	ret.mTopLeft.x *= tFac.x;
+	ret.mTopLeft.y *= tFac.y;
+	ret.mBottomRight.x *= tFac.x;
+	ret.mBottomRight.y *= tFac.y;
+	return ret;
+}
+
+GeoRectangle scaleGeoRectangleByFactor2D(const GeoRectangle & tRect, const Vector2D& tFac)
+{
+	GeoRectangle ret = tRect;
+	ret.mTopLeft.x *= tFac.x;
+	ret.mTopLeft.y *= tFac.y;
+	ret.mBottomRight.x *= tFac.x;
+	ret.mBottomRight.y *= tFac.y;
+	return ret;
+}
+
+GeoRectangle scaleGeoRectangleByFactor2D(const GeoRectangle& tRect, const Vector3D& tFac)
+{
+	GeoRectangle ret = tRect;
+	ret.mTopLeft.x *= tFac.x;
+	ret.mTopLeft.y *= tFac.y;
+	ret.mBottomRight.x *= tFac.x;
+	ret.mBottomRight.y *= tFac.y;
+	return ret;
+}
+
+Vector3D interpolatePositionLinear(const Position& a, const Position& b, double t)
 {
 	Vector3D ret;
 	ret.x = interpolateLinear(a.x, b.x, t);
@@ -368,30 +463,88 @@ Vector3D interpolatePositionLinear(Position a, Position b, double t)
 	return ret;
 }
 
-Vector2D operator+(const Vector2D & a, const Vector2D & b)
+Vector2D operator+(const Vector2D& a, const Vector2D& b)
 {
 	return Vector2D(a.x + b.x, a.y + b.y);
 }
 
-Vector3D operator+(const Vector3D & a, const Vector2D & b)
+Vector2D operator+(const Vector2D& a, const Vector2DI& b)
 {
-	return makePosition(a.x + b.x, a.y + b.y, a.z);
+	return Vector2D(a.x + b.x, a.y + b.y);
+}
+
+Vector3D operator+(const Vector3D & a, const Vector2D& b)
+{
+	return Vector3D(a.x + b.x, a.y + b.y, a.z);
+}
+
+Vector2D operator-(const Vector2D& a, const Vector2D& b)
+{
+	return Vector2D(a.x - b.x, a.y - b.y);
+}
+
+Vector2D operator-(const Vector2D& a, const Vector2DI& b)
+{
+	return Vector2D(a.x - b.x, a.y - b.y);
+}
+
+Vector3D operator-(const Vector3D & a, const Vector2D& b)
+{
+	return Vector3D(a.x - b.x, a.y - b.y, a.z);
+}
+
+Vector2D operator*(const double & a, const Vector2D& b)
+{
+	return Vector2D(b.x * a, b.y * a);
+}
+
+Vector2D operator*(const Vector2D& a, const double & b)
+{
+	return Vector2D(a.x * b, a.y * b);
+}
+
+Vector2D operator*(const Vector2D& a, const Vector2D& b)
+{
+	return Vector2D(a.x * b.x, a.y * b.y);
+}
+
+Vector3D operator*(const Vector3D& a, const Vector2D& b)
+{
+	return Vector3D(a.x * b.x, a.y * b.y, a.z);
+}
+
+Vector2D operator/(const Vector2D& a, const double & b)
+{
+	return Vector2D(a.x / b, a.y / b);
+}
+
+Vector2D operator/(const double & a, const Vector2D& b)
+{
+	return Vector2D(a / b.x, a / b.y);
+}
+
+int operator==(const Vector2D& a, const Vector2D& b) {
+	return a.x == b.x && a.y == b.y;
+}
+
+int operator!=(const Vector2D& a, const Vector2D& b) {
+	return a.x != b.x || a.y != b.y;
 }
 
 Vector3D operator+(const Vector3D& a, const Vector3D& b) {
-	return vecAdd(a, b);
+	return Vector3D(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
 Vector3D operator-(const Vector3D& a, const Vector3D& b) {
-	return vecSub(a, b);
+	return Vector3D(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
 Vector3D operator*(const double & a, const Vector3D & b) {
-	return makePosition(b.x * a, b.y * a, b.z * a);
+	return Vector3D(b.x * a, b.y * a, b.z * a);
 }
 
 Vector3D operator*(const Vector3D& a, const double& b) {
-	return makePosition(a.x * b, a.y * b, a.z * b);
+	return Vector3D(a.x * b, a.y * b, a.z * b);
 }
 
 void operator*=(Vector3D & a, const double & b)
@@ -402,23 +555,27 @@ void operator*=(Vector3D & a, const double & b)
 }
 
 Vector3D operator/(const Vector3D& a, const double& b) {
-	return makePosition(a.x / b, a.y / b, a.z / b);
+	return Vector3D(a.x / b, a.y / b, a.z / b);
 }
 
 Vector3D operator/(const double& a, const Vector3D& b) {
-	return makePosition(a / b.x, a / b.y, a / b.z);
+	return Vector3D(a / b.x, a / b.y, a / b.z);
+}
+
+Vector2DI operator+(const Vector2DI& a, const Vector2DI& b) {
+	return Vector2DI(a.x + b.x, a.y + b.y);
 }
 
 Vector3DI operator+(const Vector3DI& a, const Vector3DI& b) {
-	return vecAddI(a, b);
+	return Vector3DI(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
 Vector3D operator+(const Vector3DI& a, const Vector3D& b) {
-	return makePosition(a.x + b.x, a.y + b.y, a.z + b.z);
+	return Vector3D(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
 Vector3D operator+(const Vector3D& a, const Vector3DI& b) {
-	return makePosition(a.x + b.x, a.y + b.y, a.z + b.z);
+	return Vector3D(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
 Vector3D operator*(const Vector3D& a, const Vector3D& b) {
@@ -437,9 +594,25 @@ int operator!=(const Vector3D& a, const Vector3D& b) {
 	return a.x != b.x || a.y != b.y || a.z != b.z;
 }
 
+Vector3D& operator+=(Vector3D& a, const Vector2D& b)
+{
+	a = a + b;
+	return a;
+}
+
 Vector3D& operator+=(Vector3D& a, const Vector3D& b) {
 	a = a + b;
 	return a;
+}
+
+Vector3D & operator-=(Vector3D & a, const Vector2D& b)
+{
+	a = a - b;
+	return a;
+}
+
+Vector2DI operator-(const Vector2DI& a, const Vector2DI& b) {
+	return Vector2DI(a.x - b.x, a.y - b.y);
 }
 
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
@@ -459,12 +632,17 @@ Vector3D operator-(const Vector3D& a, const Vector3DI & b)
 	return ret;
 }
 
+Vector2D operator*(const Vector2DI & a, const double & b)
+{
+	return Vector2D(a.x * b, a.y * b);
+}
+
 Vector3D operator/(const Vector3DI& a, const double& b) {
-	return makePosition(a.x / b, a.y / b, a.z / b);
+	return Vector3D(a.x / b, a.y / b, a.z / b);
 }
 
 Vector3DI operator/(const Vector3DI& a, const int& b) {
-	return makeVector3DI(a.x / b, a.y / b, a.z / b);
+	return Vector3DI(a.x / b, a.y / b, a.z / b);
 }
 
 Vector3DI operator*(const Vector3DI& a, const Vector3DI& b) {
@@ -475,12 +653,32 @@ Vector3DI operator*(const Vector3DI& a, const Vector3DI& b) {
 	return ret;
 }
 
+int operator==(const Vector2DI& a, const Vector2DI& b) {
+	return a.x == b.x && a.y == b.y;
+}
+
 int operator==(const Vector3DI& a, const Vector3DI& b) {
 	return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
 int operator!=(const Vector3DI& a, const Vector3DI& b) {
 	return a.x != b.x || a.y != b.y || a.z != b.z;
+}
+
+GeoRectangle2D operator*(const GeoRectangle2D & a, const double & b)
+{
+	GeoRectangle2D ret;
+	ret.mTopLeft = a.mTopLeft*b;
+	ret.mBottomRight = a.mBottomRight*b;
+	return ret;
+}
+
+GeoRectangle2D operator+(const GeoRectangle2D & a, const Position2D & b)
+{
+	GeoRectangle2D ret;
+	ret.mTopLeft = a.mTopLeft + b;
+	ret.mBottomRight = a.mBottomRight + b;
+	return ret;
 }
 
 GeoRectangle operator*(const GeoRectangle& a, const double& b) {

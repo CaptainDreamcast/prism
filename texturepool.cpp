@@ -44,14 +44,14 @@ void shutdownTexturePool() {
 	gTexturePool.mIsLoaded = 0;
 }
 
-static TextureData increaseCounterAndFetchTexture(char* tPath) {
+static TextureData increaseCounterAndFetchTexture(const char* tPath) {
 	TexturePoolEntry* e = (TexturePoolEntry*)string_map_get(&gTexturePool.mPathToLoadedTexture, tPath);
 	e->mCounter++;
 
 	return e->mTexture;
 }
 
-TextureData loadTextureFromPool(char* tPath) {
+TextureData loadTextureFromPool(const char* tPath) {
 	int isLoadNotNecessary = string_map_contains(&gTexturePool.mPathToLoadedTexture, tPath);
 
 	if (isLoadNotNecessary) {
@@ -71,7 +71,7 @@ TextureData loadTextureFromPool(char* tPath) {
 	return e->mTexture;
 }
 
-void unloadTextureFromPool(TextureData tTexture) {
+void unloadTextureFromPool(TextureData& tTexture) {
 	char hashString[100];
 	sprintf(hashString, "%d", getTextureHash(tTexture));
 

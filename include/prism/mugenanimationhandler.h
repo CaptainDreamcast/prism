@@ -59,7 +59,7 @@ struct MugenAnimationHandlerElement {
 
 	double mDrawScale;
 
-	Vector3D mBaseDrawScale;
+	Vector2D mBaseDrawScale;
 
 	Position mOffset;
 
@@ -80,7 +80,7 @@ struct MugenAnimationHandlerElement {
 	double* mCameraAngleReference;
 
 	int mHasCameraEffectPositionReference;
-	Position* mCameraEffectPositionReference;
+	Position2D* mCameraEffectPositionReference;
 
 	int mIsInvisible;
 	int mIsColorSolid;
@@ -101,7 +101,7 @@ struct MugenAnimationHandlerElement {
 	BlendType mBlendType;
 
 	int mHasConstraintRectangle;
-	GeoRectangle mConstraintRectangle;
+	GeoRectangle2D mConstraintRectangle;
 
 	int mIsPaused;
 	int mIsLooping;
@@ -123,13 +123,14 @@ struct MugenAnimationHandlerElement {
 	int mHasShear;
 	double mShearLowerScaleDeltaX;
 	double mShearLowerOffsetX;
+	int mIsSpriteOffsetForcedToCenter;
 
 	double mCoordinateSystemScale;
 
 	int mIsCollisionDebugActive;
 };
 
-MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites, Position tPosition);
+MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites, const Position& tPosition);
 void removeMugenAnimation(MugenAnimationHandlerElement* tElement);
 int isRegisteredMugenAnimation(MugenAnimationHandlerElement* tElement);
 
@@ -166,23 +167,23 @@ void removeMugenAnimationCameraScaleReference(MugenAnimationHandlerElement* tEle
 void setMugenAnimationCameraScaleFactor(MugenAnimationHandlerElement* tElement, double tScaleFactor);
 void setMugenAnimationCameraAngleReference(MugenAnimationHandlerElement* tElement, double* tCameraAngle);
 void removeMugenAnimationCameraAngleReference(MugenAnimationHandlerElement* tElement);
-void setMugenAnimationCameraEffectPositionReference(MugenAnimationHandlerElement* tElement, Position* tCameraEffectPosition);
+void setMugenAnimationCameraEffectPositionReference(MugenAnimationHandlerElement* tElement, Position2D* tCameraEffectPosition);
 void removeMugenAnimationCameraEffectPositionReference(MugenAnimationHandlerElement* tElement);
 
 void setMugenAnimationInvisible(MugenAnimationHandlerElement* tElement);
 void setMugenAnimationVisibility(MugenAnimationHandlerElement* tElement, int tIsVisible);
-void setMugenAnimationDrawScale(MugenAnimationHandlerElement* tElement, Vector3D tScale);
-void setMugenAnimationDrawSize(MugenAnimationHandlerElement* tElement, Vector3D tSize);
+void setMugenAnimationDrawScale(MugenAnimationHandlerElement* tElement, const Vector2D& tScale);
+void setMugenAnimationDrawSize(MugenAnimationHandlerElement* tElement, const Vector2D& tSize);
 void setMugenAnimationDrawAngle(MugenAnimationHandlerElement* tElement, double tAngle);
 void setMugenAnimationColorOffset(MugenAnimationHandlerElement* tElement, double tR, double tG, double tB);
 void setMugenAnimationColor(MugenAnimationHandlerElement* tElement, double tR, double tG, double tB);
 void setMugenAnimationColorSolid(MugenAnimationHandlerElement* tElement, double tR, double tG, double tB);
 void setMugenAnimationTransparency(MugenAnimationHandlerElement* tElement, double tOpacity);
 void setMugenAnimationDestinationTransparency(MugenAnimationHandlerElement* tElement, double tOpacity);
-void setMugenAnimationPosition(MugenAnimationHandlerElement* tElement, Position tPosition);
+void setMugenAnimationPosition(MugenAnimationHandlerElement* tElement, const Position& tPosition);
 void setMugenAnimationBlendType(MugenAnimationHandlerElement* tElement, BlendType tBlendType);
 void setMugenAnimationSprites(MugenAnimationHandlerElement* tElement, MugenSpriteFile* tSprites);
-void setMugenAnimationConstraintRectangle(MugenAnimationHandlerElement* tElement, GeoRectangle tConstraintRectangle);
+void setMugenAnimationConstraintRectangle(MugenAnimationHandlerElement* tElement, const GeoRectangle2D& tConstraintRectangle);
 
 void setMugenAnimationSpeed(MugenAnimationHandlerElement* tElement, double tSpeed);
 
@@ -190,7 +191,7 @@ Position getMugenAnimationPosition(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationIsFacingRight(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationIsFacingDown(MugenAnimationHandlerElement* tElement);
 int getMugenAnimationVisibility(MugenAnimationHandlerElement* tElement);
-Vector3D getMugenAnimationDrawScale(MugenAnimationHandlerElement* tElement);
+Vector2D getMugenAnimationDrawScale(MugenAnimationHandlerElement* tElement);
 BlendType getMugenAnimationBlendType(MugenAnimationHandlerElement* tElement);
 double getMugenAnimationTransparency(MugenAnimationHandlerElement* tElement);
 
@@ -237,6 +238,7 @@ void setMugenAnimationColorInverted(MugenAnimationHandlerElement* tElement, int 
 double getMugenAnimationShearLowerOffsetX(MugenAnimationHandlerElement* tElement);
 void setMugenAnimationShearX(MugenAnimationHandlerElement* tElement, double tLowerScaleDeltaX, double tLowerOffsetX);
 void setMugenAnimationCoordinateSystemScale(MugenAnimationHandlerElement* tElement, double tCoordinateSystemScale);
+void setMugenAnimationIsSpriteOffsetForcedToCenter(MugenAnimationHandlerElement* tElement, int tIsSpriteOffsetForcedToCenter);
 
 void resetMugenAnimation(MugenAnimationHandlerElement* tElement);
 

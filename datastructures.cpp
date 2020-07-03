@@ -13,6 +13,49 @@
 
 using namespace std;
 
+void convertIntegerToStringFast(std::string& oRet, int tValue)
+{
+	static const char FAST_CONVERSION_DIGITS[] =
+		"0001020304050607080910111213141516171819"
+		"2021222324252627282930313233343536373839"
+		"4041424344454647484950515253545556575859"
+		"6061626364656667686970717273747576777879"
+		"8081828384858687888990919293949596979899";
+
+	static const auto BUFFER_SIZE = std::numeric_limits<unsigned long long>::digits10 + 3;
+	char buffer[BUFFER_SIZE];
+	auto absoluteVal = static_cast<unsigned long long>(tValue);
+	const auto isNegative = tValue < 0;
+	if (isNegative) absoluteVal = 0 - absoluteVal;
+
+	char* ptr = buffer + (BUFFER_SIZE - 1);
+	while (absoluteVal >= 100) {
+		const auto index = static_cast<unsigned>((absoluteVal % 100) * 2);
+		absoluteVal /= 100;
+		*--ptr = FAST_CONVERSION_DIGITS[index + 1];
+		*--ptr = FAST_CONVERSION_DIGITS[index];
+	}
+	if (absoluteVal < 10) {
+		*--ptr = static_cast<char>('0' + absoluteVal);
+	}
+	else
+	{
+		auto index = static_cast<unsigned>(absoluteVal * 2);
+		*--ptr = FAST_CONVERSION_DIGITS[index + 1];
+		*--ptr = FAST_CONVERSION_DIGITS[index];
+	}
+
+	if (isNegative) *--ptr = '-';
+	oRet = std::string(ptr, buffer - ptr + BUFFER_SIZE - 1);
+}
+
+void convertFloatToStringFast(std::string& oRet, double tValue) {
+	static const auto BUFFER_SIZE = 50;
+	char buffer[BUFFER_SIZE];
+	sprintf(buffer, "%lf", tValue);
+	oRet = buffer;
+}
+
 void turnStringLowercase(char* tString) {
 	int n = strlen(tString);
 
@@ -104,7 +147,15 @@ int stringEqualCaseIndependent(const char * tString, const char * tOtherString)
 	return s == otherString;
 }
 
-vector<string> splitStringBySeparator(const string tString, char tSeparator)
+int isStringLowercase(const char* tString)
+{
+	for (size_t i = 0; tString[i]; i++) {
+		if (isupper(tString[i])) return 0;
+	}
+	return 1;
+}
+
+vector<string> splitStringBySeparator(const string& tString, char tSeparator)
 {
 	vector<string> ret;
 	size_t startPos = 0;

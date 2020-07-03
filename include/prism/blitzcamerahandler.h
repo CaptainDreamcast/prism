@@ -8,7 +8,7 @@ ActorBlueprint getBlitzCameraHandler();
 int isBlitzCameraHandlerEnabled();
 Position* getBlitzCameraHandlerPositionReference();
 Position getBlitzCameraHandlerPosition();
-void setBlitzCameraHandlerPosition(Position tPos);
+void setBlitzCameraHandlerPosition(const Position& tPos);
 void setBlitzCameraHandlerPositionX(double tX);
 void setBlitzCameraHandlerPositionY(double tY);
 
@@ -22,10 +22,10 @@ double* getBlitzCameraHandlerRotationZReference();
 double getBlitzCameraHandlerRotationZ();
 void setBlitzCameraHandlerRotationZ(double tAngle);
 
-Position* getBlitzCameraHandlerEffectPositionReference();
-void setBlitzCameraHandlerEffectPositionOffset(Position tPosition);
+Position2D* getBlitzCameraHandlerEffectPositionReference();
+void setBlitzCameraHandlerEffectPositionOffset(const Position2D& tPosition);
 
 int getBlitzCameraHandlerEntityID();
 
-void setBlitzCameraHandlerRange(GeoRectangle tRectangle);
-void setBlitzCameraPositionBasedOnCenterPoint(Position tCenter);
+void setBlitzCameraHandlerRange(const GeoRectangle2D& tRectangle);
+void setBlitzCameraPositionBasedOnCenterPoint(const Position& tCenter);

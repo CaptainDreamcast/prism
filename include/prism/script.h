@@ -18,19 +18,19 @@ typedef struct {
 
 } ScriptPosition;
 
-typedef ScriptPosition (*ScriptExecuteCB)(void* tCaller, ScriptPosition tPosition);
+typedef ScriptPosition (*ScriptExecuteCB)(void* tCaller, const ScriptPosition& tPosition);
 
-Script loadScript(char* tPath);
+Script loadScript(const char* tPath);
 
-void executeOnScriptRegion(ScriptRegion tRegion, ScriptExecuteCB tFunc, void* tCaller);
+void executeOnScriptRegion(const ScriptRegion& tRegion, ScriptExecuteCB tFunc, void* tCaller);
 
-ScriptPosition getNextScriptString(ScriptPosition tPos, char* tDest);
-ScriptPosition getNextScriptDouble(ScriptPosition tPos, double* tDest);
-ScriptPosition getNextScriptInteger(ScriptPosition tPos, int* tDest);
-ScriptRegion getScriptRegion(Script tScript, const char* tName);
-ScriptPosition getScriptRegionStart(ScriptRegion tRegion);
-ScriptPosition getPositionAfterScriptRegion(ScriptRegion tRegion, ScriptRegion tSkippedRegion);
-ScriptRegion getScriptRegionAtPosition(ScriptPosition tPos);
-int hasNextScriptWord(ScriptPosition tPos);
-ScriptPosition getNextScriptInstruction(ScriptPosition tPos);
+ScriptPosition getNextScriptString(const ScriptPosition& tPos, char* tDest);
+ScriptPosition getNextScriptDouble(const ScriptPosition& tPos, double* tDest);
+ScriptPosition getNextScriptInteger(const ScriptPosition& tPos, int* tDest);
+ScriptRegion getScriptRegion(const Script& tScript, const char* tName);
+ScriptPosition getScriptRegionStart(const ScriptRegion& tRegion);
+ScriptPosition getPositionAfterScriptRegion(const ScriptRegion& tRegion, const ScriptRegion& tSkippedRegion);
+ScriptRegion getScriptRegionAtPosition(const ScriptPosition& tPos);
+int hasNextScriptWord(const ScriptPosition& tPos);
+ScriptPosition getNextScriptInstruction(const ScriptPosition& tPos);
 

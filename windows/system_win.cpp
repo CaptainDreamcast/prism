@@ -42,9 +42,7 @@ static struct {
 	
 	int mDisplayedWindowSizeX;
 	int mDisplayedWindowSizeY;
-	
-	int mIsFullscreen;
-	
+		
 	char mGameName[100];
 } gPrismWindowsSystemData;
 
@@ -55,8 +53,6 @@ static void initScreenDefault() {
 	gPrismWindowsSystemData.mIsLoaded = 1;
 	gPrismWindowsSystemData.mScreenSizeX = gPrismWindowsSystemData.mDisplayedWindowSizeX = 640;
 	gPrismWindowsSystemData.mScreenSizeY = gPrismWindowsSystemData.mDisplayedWindowSizeY = 480; 
-
-	gPrismWindowsSystemData.mIsFullscreen = 0;
 }
 
 void setGameName(const char* tName) {
@@ -166,15 +162,16 @@ static void checkWindowEvents(SDL_Event* e) {
 	
 }
 
-Vector3D correctSDLWindowPosition(Vector3D v) {
+Vector3D correctSDLWindowPosition(const Vector3D& v) {
 	ScreenSize sz = getScreenSize();
 	double scaleX = gPrismWindowsSystemData.mDisplayedWindowSizeX / (double)sz.x;
 	double scaleY = gPrismWindowsSystemData.mDisplayedWindowSizeY / (double)sz.y;
-	return vecScale3D(v, makePosition(1 / scaleX, 1 / scaleY, 1));
+	return vecScale3D(v, Vector3D(1 / scaleX, 1 / scaleY, 1));
 }
 
 static void switchFullscreen() {
-	if (!gPrismWindowsSystemData.mIsFullscreen) {
+	const auto flags = SDL_GetWindowFlags(gSDLWindow);
+	if (!(flags & SDL_WINDOW_FULLSCREEN)) {
 		if (isOnWeb()) {
 			SDL_SetWindowFullscreen(gSDLWindow, SDL_WINDOW_FULLSCREEN_DESKTOP); // does not break window resizing, unlike the other one, probably due to https://github.com/emscripten-ports/SDL2/issues/8
 		}
@@ -188,8 +185,6 @@ static void switchFullscreen() {
 			setWindowSize(640, 480); // force real window size after fullscreen switch until (https://github.com/emscripten-ports/SDL2/issues/8) resolved
 		}
 	}
-
-	gPrismWindowsSystemData.mIsFullscreen ^= 1;
 }
 
 static void checkFullscreen() {

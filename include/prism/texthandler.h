@@ -9,12 +9,12 @@ void shutdownTextHandler();
 void updateTextHandler();
 void drawHandledTexts();
 
-int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration);
-int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize,Duration tDuration, Duration tBuildupDuration);
-int addHandledTextWithInfiniteDurationOnOneLine(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize);
-void setHandledText(int tID, char* tText);
-void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects);
-void setHandledTextPosition(int tID, Position tPosition);
+int addHandledText(const Position& tPosition, const char* tText, int tFont, Color tColor, const Vector3D& tFontSize, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize, Duration tDuration);
+int addHandledTextWithBuildup(const Position& tPosition, const char* tText, int tFont, Color tColor, const Vector3D& tFontSize, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize,Duration tDuration, Duration tBuildupDuration);
+int addHandledTextWithInfiniteDurationOnOneLine(const Position& tPosition, const char* tText, int tFont, Color tColor, const Vector3D& tFontSize);
+void setHandledText(int tID, const char* tText);
+void setHandledTextSoundEffects(int tID, const SoundEffectCollection& tSoundEffects);
+void setHandledTextPosition(int tID, const Position& tPosition);
 void setHandledTextBasePositionReference(int tID, Position* tPosition);
 void setHandledTextBuiltUp(int tID);
 int isHandledTextBuiltUp(int tID);

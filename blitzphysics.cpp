@@ -38,7 +38,7 @@ static void updateSinglePhysicsEntry(void* /*tCaller*/, PhysicsEntry& tData) {
 
 	e->mAcceleration = vecAdd(e->mAcceleration, e->mGravity);
 	e->mVelocity = vecAdd(e->mVelocity, e->mAcceleration);
-	e->mAcceleration = makePosition(0, 0, 0);
+	e->mAcceleration = Vector3D(0, 0, 0);
 	Position* pos = getBlitzEntityPositionReference(e->mEntityID);
 
 	if (hasBlitzCollidedBottom(e->mEntityID)) {
@@ -80,36 +80,36 @@ void addBlitzPhysicsComponent(int tEntityID)
 {
 	PhysicsEntry e;
 	e.mEntityID = tEntityID;
-	e.mVelocity = makePosition(0, 0, 0);
-	e.mAcceleration = makePosition(0, 0, 0);
-	e.mGravity = makePosition(0, 0, 0);
-	e.mOneMinusDragOnCollision = makePosition(1, 1, 1);
+	e.mVelocity = Vector3D(0, 0, 0);
+	e.mAcceleration = Vector3D(0, 0, 0);
+	e.mGravity = Vector3D(0, 0, 0);
+	e.mOneMinusDragOnCollision = Vector3D(1, 1, 1);
 
 	registerBlitzComponent(tEntityID, getBlitzPhysicsComponent());
 	gBlitzPhysicsData.mEntries[tEntityID] = e;
 }
 
-void setBlitzPhysicsGravity(int tEntityID, Acceleration tGravity)
+void setBlitzPhysicsGravity(int tEntityID, const Acceleration& tGravity)
 {
 	PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 	e->mGravity = tGravity;
 }
 
-void addBlitzPhysicsImpulse(int tEntityID, Acceleration tImpulse)
+void addBlitzPhysicsImpulse(int tEntityID, const Acceleration& tImpulse)
 {
 	PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 	e->mAcceleration = vecAdd(e->mAcceleration, tImpulse);
 }
 
-void setBlitzPhysicsDragFactorOnCollision(int tEntityID, Vector3D tDragFactor)
+void setBlitzPhysicsDragFactorOnCollision(int tEntityID, const Vector3D& tDragFactor)
 {
 	PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
-	e->mOneMinusDragOnCollision = vecSub(makePosition(1, 1, 1), tDragFactor);
+	e->mOneMinusDragOnCollision = vecSub(Vector3D(1, 1, 1), tDragFactor);
 }
 
 Velocity getBlitzPhysicsVelocity(int tEntityID)
 {
-	if (!stl_map_contains(gBlitzPhysicsData.mEntries, tEntityID)) return makePosition(0, 0, 0);
+	if (!stl_map_contains(gBlitzPhysicsData.mEntries, tEntityID)) return Vector3D(0, 0, 0);
 	
 	PhysicsEntry* e = &gBlitzPhysicsData.mEntries[tEntityID];
 	return e->mVelocity;
@@ -126,7 +126,7 @@ Velocity* getBlitzPhysicsVelocityReference(int tEntityID)
 	return &e->mVelocity;
 }
 
-void setBlitzPhysicsVelocity(int tEntityID, Velocity tVelocity)
+void setBlitzPhysicsVelocity(int tEntityID, const Velocity& tVelocity)
 {
 	PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 	e->mVelocity = tVelocity;
@@ -138,7 +138,7 @@ void setBlitzPhysicsVelocityX(int tEntityID, double tX)
 	e->mVelocity.x = tX;
 }
 
-void addBlitzPhysicsVelocity(int tEntityID, Velocity tVelocity)
+void addBlitzPhysicsVelocity(int tEntityID, const Velocity& tVelocity)
 {
 	PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 	e->mVelocity += tVelocity;

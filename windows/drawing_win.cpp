@@ -22,6 +22,7 @@
 #include "prism/math.h"
 #include "prism/stlutil.h"
 #include "prism/debug.h"
+#include "prism/geometry.h"
 
 static const GLchar *gVertexShader =
 "uniform mat4 ProjMtx;\n"
@@ -116,10 +117,10 @@ typedef struct {
 
 struct DrawListSpriteElement{
 	TextureData mTexture;
-	Position mTopLeft;
-	Position mTopRight;
-	Position mBottomLeft;
-	Position mBottomRight;
+	Position2D mTopLeft;
+	Position2D mTopRight;
+	Position2D mBottomLeft;
+	Position2D mBottomRight;
 	Rectangle mTexturePosition;
 
 	DrawingData mData;
@@ -129,11 +130,11 @@ struct DrawListSpriteElement{
 struct DrawListTruetypeElement{
 	char mText[1024];
 	TTF_Font* mFont;
-	Position mPos;
+	Position2D mPos;
 	Vector3DI mTextSize;
 	Vector3D mColor;
 	double mTextBoxWidth;
-	GeoRectangle mDrawRectangle;
+	GeoRectangle2D mDrawRectangle;
 
 	DrawingData mData;
 	double mZ;
@@ -480,9 +481,9 @@ static int isCulledOutsideScreen(const Position& tPos, const Rectangle& tTexture
 	const auto sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
 	std::vector<Position> corners;
 	corners.push_back(rotateScaleTranslatePositionByMatrix4D(gPrismWindowsDrawingData.mTransformationMatrix, tPos));
-	corners.push_back(rotateScaleTranslatePositionByMatrix4D(gPrismWindowsDrawingData.mTransformationMatrix, tPos + makePosition(sizeX, 0, 0)));
-	corners.push_back(rotateScaleTranslatePositionByMatrix4D(gPrismWindowsDrawingData.mTransformationMatrix, tPos + makePosition(0, sizeY, 0)));
-	corners.push_back(rotateScaleTranslatePositionByMatrix4D(gPrismWindowsDrawingData.mTransformationMatrix, tPos + makePosition(sizeX, sizeY, 0)));
+	corners.push_back(rotateScaleTranslatePositionByMatrix4D(gPrismWindowsDrawingData.mTransformationMatrix, tPos + Vector3D(sizeX, 0, 0)));
+	corners.push_back(rotateScaleTranslatePositionByMatrix4D(gPrismWindowsDrawingData.mTransformationMatrix, tPos + Vector3D(0, sizeY, 0)));
+	corners.push_back(rotateScaleTranslatePositionByMatrix4D(gPrismWindowsDrawingData.mTransformationMatrix, tPos + Vector3D(sizeX, sizeY, 0)));
 	const auto minX = min(corners[0].x, min(corners[1].x, min(corners[2].x, corners[3].x)));
 	const auto maxX = max(corners[0].x, max(corners[1].x, max(corners[2].x, corners[3].x)));
 	const auto minY = min(corners[0].y, min(corners[1].y, min(corners[2].y, corners[3].y)));
@@ -495,18 +496,18 @@ static int isCulledOutsideScreen(const Position& tPos, const Rectangle& tTexture
 	return 0;
 }
 
-void drawSprite(TextureData tTexture, const Position& tPos, const Rectangle& tTexturePosition) {
+void drawSprite(const TextureData& tTexture, const Position& tPos, const Rectangle& tTexturePosition) {
 	setProfilingSectionMarkerCurrentFunction();
 	if (gPrismWindowsDrawingData.mIsDisabled) return;
 	if (isCulledOutsideScreen(tPos, tTexturePosition)) return;
 
 	const auto sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
 	const auto sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
-	drawSpriteNoRectangle(tTexture, tPos, makePosition(tPos.x + sizeX, tPos.y, tPos.z), makePosition(tPos.x, tPos.y + sizeY, tPos.z), makePosition(tPos.x + sizeX, tPos.y + sizeY, tPos.z), tTexturePosition);
+	drawSpriteNoRectangle(tTexture, tPos, Vector3D(tPos.x + sizeX, tPos.y, tPos.z), Vector3D(tPos.x, tPos.y + sizeY, tPos.z), Vector3D(tPos.x + sizeX, tPos.y + sizeY, tPos.z), tTexturePosition);
 }
 
 
-void drawSpriteNoRectangle(TextureData tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition)
+void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition)
 {
 	setProfilingSectionMarkerCurrentFunction();
 	if (gPrismWindowsDrawingData.mIsDisabled) return;
@@ -524,10 +525,10 @@ void drawSpriteNoRectangle(TextureData tTexture, const Position& tTopLeft, const
 
 	DrawListSpriteElement e;
 	e.mTexture = tTexture;
-	e.mTopLeft = tTopLeft;
-	e.mTopRight = tTopRight;
-	e.mBottomLeft = tBottomLeft;
-	e.mBottomRight = tBottomRight;
+	e.mTopLeft = tTopLeft.xy();
+	e.mTopRight = tTopRight.xy();
+	e.mBottomLeft = tBottomLeft.xy();
+	e.mBottomRight = tBottomRight.xy();
 	e.mTexturePosition = tTexturePosition;
 	e.mData = gPrismWindowsDrawingData;
 	e.mZ = tTopLeft.z;
@@ -562,7 +563,7 @@ static bool cmpZ(const DrawListElement& tData1, const DrawListElement& tData2) {
 	return z1 < z2;
 }
 
-static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double tV, const Position& tColor, double tAlpha, const Position& tColorOffset) {
+static void setSingleVertex(GLfloat* tDst, const Position2D& tPosition, double tU, double tV, const Position& tColor, double tAlpha, const Position& tColorOffset) {
 	tDst[0] = (GLfloat)tPosition.x;
 	tDst[1] = (GLfloat)tPosition.y;
 	tDst[2] = (GLfloat)tU;
@@ -577,7 +578,7 @@ static void setSingleVertex(GLfloat* tDst, Position tPosition, double tU, double
 }
 
 // tSrcRect in relative coords to texturesize, tDstRect in pixels
-static void drawOpenGLTextureUniversal(int tTextureID, int tPaletteID, GeoRectangle tSrcRect, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, DrawingData* tData, ShaderBlendType tShaderBlendType, int tHasPalette) {
+static void drawOpenGLTextureUniversal(int tTextureID, int tPaletteID, const GeoRectangle2D& tSrcRect, const Position2D& tTopLeft, const Position2D& tTopRight, const Position2D& tBottomLeft, const Position2D& tBottomRight, DrawingData* tData, ShaderBlendType tShaderBlendType, int tHasPalette) {
 	const auto& shader = getActivePrismShaderReference();
 	Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
@@ -600,10 +601,10 @@ static void drawOpenGLTextureUniversal(int tTextureID, int tPaletteID, GeoRectan
 	glUniform3i(shader.mAttribLocationPaletteSolidityInversionUsed, (GLsizei)tHasPalette, (GLsizei)tData->mIsColorSolid, (GLsizei)tData->mIsColorInversed);
 
 	GLfloat vertices[4 * 11];
-	setSingleVertex(&vertices[0 * 11], tTopLeft, tSrcRect.mTopLeft.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a, makePosition(tData->rOffset, tData->gOffset, tData->bOffset));
-	setSingleVertex(&vertices[1 * 11], tTopRight, tSrcRect.mBottomRight.x, tSrcRect.mTopLeft.y, makePosition(tData->r, tData->g, tData->b), tData->a, makePosition(tData->rOffset, tData->gOffset, tData->bOffset));
-	setSingleVertex(&vertices[2 * 11], tBottomRight, tSrcRect.mBottomRight.x, tSrcRect.mBottomRight.y, makePosition(tData->r, tData->g, tData->b), tData->a, makePosition(tData->rOffset, tData->gOffset, tData->bOffset));
-	setSingleVertex(&vertices[3 * 11], tBottomLeft, tSrcRect.mTopLeft.x, tSrcRect.mBottomRight.y, makePosition(tData->r, tData->g, tData->b), tData->a, makePosition(tData->rOffset, tData->gOffset, tData->bOffset));
+	setSingleVertex(&vertices[0 * 11], tTopLeft, tSrcRect.mTopLeft.x, tSrcRect.mTopLeft.y, Vector3D(tData->r, tData->g, tData->b), tData->a, Vector3D(tData->rOffset, tData->gOffset, tData->bOffset));
+	setSingleVertex(&vertices[1 * 11], tTopRight, tSrcRect.mBottomRight.x, tSrcRect.mTopLeft.y, Vector3D(tData->r, tData->g, tData->b), tData->a, Vector3D(tData->rOffset, tData->gOffset, tData->bOffset));
+	setSingleVertex(&vertices[2 * 11], tBottomRight, tSrcRect.mBottomRight.x, tSrcRect.mBottomRight.y, Vector3D(tData->r, tData->g, tData->b), tData->a, Vector3D(tData->rOffset, tData->gOffset, tData->bOffset));
+	setSingleVertex(&vertices[3 * 11], tBottomLeft, tSrcRect.mTopLeft.x, tSrcRect.mBottomRight.y, Vector3D(tData->r, tData->g, tData->b), tData->a, Vector3D(tData->rOffset, tData->gOffset, tData->bOffset));
 
 	int stride = sizeof(GLfloat) * 11;
 	glBufferData(GL_ARRAY_BUFFER, 4 * stride, vertices, GL_STREAM_DRAW);
@@ -619,7 +620,7 @@ static void drawOpenGLTextureUniversal(int tTextureID, int tPaletteID, GeoRectan
 }
 
 static void drawSortedSprite(DrawListSpriteElement* e) {
-	GeoRectangle srcRect;
+	GeoRectangle2D srcRect;
 	if (e->mTexturePosition.topLeft.x < e->mTexturePosition.bottomRight.x) {
 		srcRect.mTopLeft.x = e->mTexturePosition.topLeft.x / (double)(e->mTexture.mTextureSize.x);
 		srcRect.mBottomRight.x = (e->mTexturePosition.bottomRight.x + 1) / (double)(e->mTexture.mTextureSize.x);
@@ -678,11 +679,11 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	drawOpenGLTextureUniversal(texture->mTexture, e->mTexture.mPaletteID, srcRect, e->mTopLeft, e->mTopRight, e->mBottomLeft, e->mBottomRight, &e->mData, shaderBlendType, e->mTexture.mHasPalette);
 }
 
-static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle& tSrcRect, const GeoRectangle& tDstRect, DrawingData* tData, ShaderBlendType tShaderBlendType) {
+static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle2D& tSrcRect, const GeoRectangle2D& tDstRect, DrawingData* tData, ShaderBlendType tShaderBlendType) {
 	drawOpenGLTextureUniversal(tTextureID, 0, tSrcRect, 
 		tDstRect.mTopLeft, 
-		makePosition(tDstRect.mBottomRight.x, tDstRect.mTopLeft.y, tDstRect.mTopLeft.z), 
-		makePosition(tDstRect.mTopLeft.x, tDstRect.mBottomRight.y, tDstRect.mTopLeft.z),
+		Position2D(tDstRect.mBottomRight.x, tDstRect.mTopLeft.y), 
+		Position2D(tDstRect.mTopLeft.x, tDstRect.mBottomRight.y),
 		tDstRect.mBottomRight, 
 		tData, tShaderBlendType, 0);
 }
@@ -704,7 +705,7 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	Position pos = e->mPos;
+	auto pos = e->mPos;
 	int i;
 	for (i = 0; i < l;) {
 		char text[1024];
@@ -731,18 +732,18 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 
 		SDL_Surface* surface = TTF_RenderText_Blended(e->mFont, text, color);
 
-		GeoRectangle noCulled;
+		GeoRectangle2D noCulled;
 		noCulled.mTopLeft = pos;
-		noCulled.mBottomRight = vecAdd(pos, makePosition(surface->w, surface->h, 0));
+		noCulled.mBottomRight = pos + Position2D(surface->w, surface->h);
 
-		GeoRectangle rect;
+		GeoRectangle2D rect;
 		rect.mTopLeft = clampPositionToGeoRectangle(noCulled.mTopLeft, e->mDrawRectangle);
 		rect.mBottomRight = clampPositionToGeoRectangle(noCulled.mBottomRight, e->mDrawRectangle);
 
-		const Position topLeftSrc = makePosition((rect.mTopLeft.x - noCulled.mTopLeft.x) / surface->w, (rect.mTopLeft.y - noCulled.mTopLeft.y) / surface->h, 0.0);
-		const Position bottomRightSrc = makePosition((rect.mBottomRight.x - noCulled.mTopLeft.x) / surface->w, (rect.mBottomRight.y - noCulled.mTopLeft.y) / surface->h, 0.0);
+		const auto topLeftSrc = Position2D((rect.mTopLeft.x - noCulled.mTopLeft.x) / surface->w, (rect.mTopLeft.y - noCulled.mTopLeft.y) / surface->h);
+		const auto bottomRightSrc = Position2D((rect.mBottomRight.x - noCulled.mTopLeft.x) / surface->w, (rect.mBottomRight.y - noCulled.mTopLeft.y) / surface->h);
 
-		GeoRectangle src = makeGeoRectangle(topLeftSrc.x, topLeftSrc.y, bottomRightSrc.x - topLeftSrc.x, bottomRightSrc.y - topLeftSrc.y);
+		GeoRectangle2D src = GeoRectangle2D(topLeftSrc.x, topLeftSrc.y, bottomRightSrc.x - topLeftSrc.x, bottomRightSrc.y - topLeftSrc.y);
 		pos.y += surface->h;
 
 		// must be converted because otherwise WebGL freezes up
@@ -790,9 +791,9 @@ static void drawSorted(void* tCaller, DrawListElement& tData) {
 #ifndef __EMSCRIPTEN__
 static void drawFBOToScreen() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	const auto srcRect = makeGeoRectangle(0, 1, 1, -1);
+	const auto srcRect = GeoRectangle2D(0, 1, 1, -1);
 	const auto sz = getScreenSize();
-	const auto dstRect = makeGeoRectangle(0, 0, sz.x, sz.y);
+	const auto dstRect = GeoRectangle2D(0, 0, sz.x, sz.y);
 	setDrawingParametersToIdentity();
 	drawOpenGLTexture(gOpenGLData.mFBOColorAttachment, srcRect, dstRect, &gPrismWindowsDrawingData, SHADER_BLEND_TYPE_NORMAL);
 	glBindFramebuffer(GL_FRAMEBUFFER, gOpenGLData.mFBO);
@@ -837,7 +838,7 @@ void waitForScreen() {
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
-void drawMultilineText(const char* tText, const char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+void drawMultilineText(const char* tText, const char* tFullText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize) {
 	int current = 0;
 
 	setDrawingBaseColor(tColor);
@@ -856,7 +857,7 @@ void drawMultilineText(const char* tText, const char* tFullText, Position tPosit
 
 		double dx = (double)abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x);
 		double dy = (double)abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y);
-		Vector3D scale = makePosition(1 / dx, 1 / dy, 1);
+		Vector3D scale = Vector3D(1 / dx, 1 / dy, 1);
 		scaleDrawing3D(vecScale3D(tFontSize, scale), pos);
 
 		drawSprite(fontData, pos, tTexturePosition);
@@ -873,12 +874,12 @@ void drawMultilineText(const char* tText, const char* tFullText, Position tPosit
 	setDrawingParametersToIdentity();
 }
 
-void drawTruetypeText(const char * tText, TruetypeFont tFont, Position tPosition, Vector3DI tTextSize, Vector3D tColor, double tTextBoxWidth, GeoRectangle tDrawRectangle)
+void drawTruetypeText(const char * tText, TruetypeFont tFont, const Position& tPosition, const Vector3DI& tTextSize, const Vector3D& tColor, double tTextBoxWidth, const GeoRectangle2D& tDrawRectangle)
 {
 	DrawListTruetypeElement e;
 	strcpy(e.mText, tText);
 	e.mFont = (TTF_Font*)tFont;
-	e.mPos = tPosition;
+	e.mPos = tPosition.xy();
 	e.mTextSize = tTextSize;
 	e.mColor = tColor;
 	e.mTextBoxWidth = tTextBoxWidth;
@@ -889,14 +890,19 @@ void drawTruetypeText(const char * tText, TruetypeFont tFont, Position tPosition
 	gDrawVector.push_back(DrawListElement(e));
 }
 
-void scaleDrawing(double tFactor, Position tScalePosition) {
-	scaleDrawing3D(makePosition(tFactor, tFactor, 1), tScalePosition);
+void scaleDrawing(double tFactor, const Position& tScalePosition) {
+	scaleDrawing3D(Vector3D(tFactor, tFactor, 1), tScalePosition);
 }
 
-void scaleDrawing3D(Vector3D tFactor, Position tScalePosition) {
+void scaleDrawing2D(const Vector2D& tFactor, const Position2D& tScalePosition) {
+	setProfilingSectionMarkerCurrentFunction();
+	scaleDrawing3D(tFactor.xyz(1.0), tScalePosition.xyz(0.0));
+}
+
+void scaleDrawing3D(const Vector3D& tFactor, const Position& tScalePosition) {
 	setProfilingSectionMarkerCurrentFunction();
 	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(tScalePosition));
-	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createScaleMatrix4D(makePosition(tFactor.x, tFactor.y, tFactor.z)));
+	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createScaleMatrix4D(Vector3D(tFactor.x, tFactor.y, tFactor.z)));
 	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tScalePosition, -1)));
 }
 
@@ -938,7 +944,12 @@ void setDrawingDestinationTransparency(double tAlpha) {
 	gPrismWindowsDrawingData.mDestAlpha = tAlpha;
 }
 
-void setDrawingRotationZ(double tAngle, Position tPosition) {
+void setDrawingRotationZ(double tAngle, const Position2D& tPosition) {
+	setProfilingSectionMarkerCurrentFunction();
+	setDrawingRotationZ(tAngle, tPosition.xyz(0.0));
+}
+
+void setDrawingRotationZ(double tAngle, const Position& tPosition) {
 	setProfilingSectionMarkerCurrentFunction();
 	tAngle = (2 * M_PI - tAngle);
 	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(tPosition));
@@ -957,10 +968,10 @@ void setDrawingParametersToIdentity() {
 	setDrawingColorFactor(1.0);
 
 	ScreenSize sz = getScreenSize();
-	Vector3D realScreenSize = makePosition(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
+	Vector3D realScreenSize = Vector3D(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
 	gPrismWindowsDrawingData.mTransformationMatrix = createOrthographicProjectionMatrix4D(0, realScreenSize.x, 0, realScreenSize.y, 0, 100);
-	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(makePosition(0, realScreenSize.y - gOpenGLData.mScreenScale.y*sz.y, 0)));
-	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createScaleMatrix4D(makePosition(gOpenGLData.mScreenScale.x, gOpenGLData.mScreenScale.y, 1)));
+	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(Vector3D(0, realScreenSize.y - gOpenGLData.mScreenScale.y*sz.y, 0)));
+	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createScaleMatrix4D(Vector3D(gOpenGLData.mScreenScale.x, gOpenGLData.mScreenScale.y, 1)));
 }
 
 void setDrawingBlendType(BlendType tBlendType)
@@ -978,7 +989,7 @@ typedef struct {
 
 } TranslationEffect;
 
-void pushDrawingTranslation(Vector3D tTranslation) {
+void pushDrawingTranslation(const Vector3D& tTranslation) {
 
 	gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(tTranslation));
 
@@ -986,7 +997,7 @@ void pushDrawingTranslation(Vector3D tTranslation) {
 	e->mTranslation = tTranslation;
 	vector_push_back_owned(&gPrismWindowsDrawingData.mEffectStack, e);
 }
-void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
+void pushDrawingRotationZ(double tAngle, const Vector3D& tCenter) {
 	setDrawingRotationZ(tAngle, tCenter);
 
 	RotationZEffect* e = (RotationZEffect*)allocMemory(sizeof(RotationZEffect));
@@ -1022,17 +1033,17 @@ void enableDrawing() {
 
 void setDrawingScreenScale(double tScaleX, double tScaleY) {
 
-	gOpenGLData.mScreenScale = makePosition(tScaleX, tScaleY, 1);
+	gOpenGLData.mScreenScale = Vector3D(tScaleX, tScaleY, 1);
 
 	ScreenSize sz = getScreenSize();
-	gOpenGLData.mRealScreenSize = makePosition(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
+	gOpenGLData.mRealScreenSize = Vector3D(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
 	glViewport(0, 0, (GLsizei)gOpenGLData.mRealScreenSize.x, (GLsizei)gOpenGLData.mRealScreenSize.y);
 #ifndef __EMSCRIPTEN__
 	recreateFBOs();
 #endif
 }
 
-void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
+void setPaletteFromARGB256Buffer(int tPaletteID, const Buffer& tBuffer) {
 	assert(tBuffer.mLength == 256 * 4);
 
 	uint8_t* src = (uint8_t*)tBuffer.mData;
@@ -1055,7 +1066,7 @@ void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
 	glBindTexture(GL_TEXTURE_2D, last_texture);
 }
 
-void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer tBuffer)
+void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, const Buffer& tBuffer)
 {
 	assert(tBuffer.mLength == 256 * 3);
 

@@ -275,6 +275,7 @@ static void parseGroup(Buffer* b, BufferPointer* p) {
 	char* val = makeMugenDefStringFromEndPoint(*p, end);
 	MugenDefToken* groupToken = makeMugenDefToken(val);
 	destroyMugenDefString(val);
+	turnStringLowercase(groupToken->mValue);
 
 	gTokenReader.mCurrentGroupToken = groupToken;
 	addTokenToTokenReader(groupToken);
@@ -335,28 +336,36 @@ static int isInterpolationStatement(Buffer* b, BufferPointer p) {
 	return ret;
 }
 
-static int isTextStatement() {
+static int isGroupOverridingTextStatement() {
 	if (!gTokenReader.mCurrentGroupToken) return 0;
-	char* text = gTokenReader.mCurrentGroupToken->mValue;
+	const auto text = gTokenReader.mCurrentGroupToken->mValue;
 
 	int ret = 0;
-	ret |= !strcmp("[Infobox Text]", text);
-	ret |= !strcmp("[ja.Infobox Text]", text);
-	ret |= !strcmp("[ExtraStages]", text);
-	ret |= !strcmp("[Stories]", text);
-	ret |= !strcmp("[Map]", text);
-	ret |= !strcmp("[HitObjects]", text); 
+	ret |= !strcmp("[map]", text);
+	return ret;
+}
+
+static int isTextStatement() {
+	if (!gTokenReader.mCurrentGroupToken) return 0;
+	const auto text = gTokenReader.mCurrentGroupToken->mValue;
+
+	int ret = 0;
+	ret |= !strcmp("[infobox text]", text);
+	ret |= !strcmp("[ja.infobox text]", text);
+	ret |= !strcmp("[extrastages]", text);
+	ret |= !strcmp("[stories]", text);
+	ret |= !strcmp("[hitobjects]", text); 
 
 	return ret;
 }
 
-static int isSpecialStatement(Buffer* b, BufferPointer p) {
-	char* text = getLineAsAllocatedString(b, p);
-	turnStringLowercase(text);
-	int ret = 0;
-	ret |= !strcmp("randomselect", text);
+static int isPotentialTextStatement() {
+	if (!gTokenReader.mCurrentGroupToken) return 0;
+	const auto text = gTokenReader.mCurrentGroupToken->mValue;
 
-	destroyMugenDefString(text);
+	int ret = 0;
+	ret |= !strcmp("[characters]", text);
+
 	return ret;
 }
 
@@ -369,6 +378,7 @@ static void parseSingleToken(Buffer* b, BufferPointer* p) {
 	}
 
 	if (isComment(*p)) parseComment(b, p);
+	else if (isGroupOverridingTextStatement()) parseTextStatement(b, p);
 	else if (isGroup(*p)) parseGroup(b, p);
 	else if (isTextStatement()) parseTextStatement(b, p);
 	else if(isAssignment(b, *p, '=')) parseAssignment(b, p, '=');
@@ -376,7 +386,7 @@ static void parseSingleToken(Buffer* b, BufferPointer* p) {
 	else if (isVectorStatement(b, *p)) parseVectorStatement(b, p);
 	else if (isLoopStartStatement(b, *p)) parseLoopStartStatement(b, p);
 	else if (isInterpolationStatement(b, *p)) parseInterpolationStatement(b, p);
-	else if (isSpecialStatement(b, *p)) parseTextStatement(b, p);
+	else if (isPotentialTextStatement()) parseTextStatement(b, p);
 	else {
 		logWarningFormat("Unable to parse token:\n%.100s\n", (char*)(*p));
 		parseComment(b, p);
@@ -761,12 +771,12 @@ static int isInterpolationStatementToken(MugenDefToken* tToken) {
 
 static int isTextStatementToken() {
 
-	if (gScriptMaker.mGroup == "Infobox Text") return 1;
-	if (gScriptMaker.mGroup == "ja.Infobox Text") return 1;
-	if (gScriptMaker.mGroup == "ExtraStages") return 1;
-	if (gScriptMaker.mGroup == "Stories") return 1;
-	if (gScriptMaker.mGroup == "Map") return 1;
-	if (gScriptMaker.mGroup == "HitObjects") return 1;
+	if (gScriptMaker.mGroup == "infobox text") return 1;
+	if (gScriptMaker.mGroup == "ja.infobox text") return 1;
+	if (gScriptMaker.mGroup == "extrastages") return 1;
+	if (gScriptMaker.mGroup == "stories") return 1;
+	if (gScriptMaker.mGroup == "map") return 1;
+	if (gScriptMaker.mGroup == "hitobjects") return 1;
 
 	return 0;
 }
@@ -825,7 +835,7 @@ void loadMugenDefScript(MugenDefScript* oScript, const char * tPath)
 	loadMugenDefScriptFromBufferAndFreeBuffer(oScript, b);
 }
 
-void loadMugenDefScriptFromBufferAndFreeBuffer(MugenDefScript* oScript, Buffer tBuffer) {
+void loadMugenDefScriptFromBufferAndFreeBuffer(MugenDefScript* oScript, Buffer& tBuffer) {
 	MugenDefToken* root = parseTokens(&tBuffer);
 	*oScript = makeEmptyMugenDefScript();
 	freeBuffer(tBuffer);
@@ -841,12 +851,7 @@ static void unloadMugenDefScriptNumberElement(MugenDefScriptNumberElement* e) {
 }
 
 static void unloadMugenDefScriptVectorElement(MugenDefScriptVectorElement* e) {
-	int i;
-	for (i = 0; i < e->mVector.mSize; i++) {
-		freeMemory(e->mVector.mElement[i]);
-	}
-
-	freeMemory(e->mVector.mElement);
+	destroyMugenStringVector(e->mVector);
 }
 
 static void unloadMugenDefScriptStringElement(MugenDefScriptStringElement* e) {
@@ -885,9 +890,9 @@ static void unloadMugenDefScriptGroup(MugenDefScriptGroup* tGroup) {
 	delete_list(&tGroup->mOrderedElementList);
 }
 
-void unloadMugenDefScript(MugenDefScript tScript)
+void unloadMugenDefScript(MugenDefScript* tScript)
 {
-	MugenDefScriptGroup* group = tScript.mFirstGroup;
+	MugenDefScriptGroup* group = tScript->mFirstGroup;
 	while (group != NULL) {
 		MugenDefScriptGroup* next = group->mNext;
 		unloadMugenDefScriptGroup(group);
@@ -895,20 +900,43 @@ void unloadMugenDefScript(MugenDefScript tScript)
 		group = next;
 	}
 
-	tScript.mGroups.clear();
+	tScript->mGroups.clear();
 }
 
 int hasMugenDefScriptGroup(MugenDefScript* tScript, const char* tGroupName) {
+	assert(isStringLowercase(tGroupName));
 	return stl_string_map_contains_array(tScript->mGroups, tGroupName);
 }
 
 MugenDefScriptGroup* getMugenDefScriptGroup(MugenDefScript* tScript, const char* tGroupName) {
+	assert(isStringLowercase(tGroupName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	return &tScript->mGroups[tGroupName];
 }
 
+MugenStringVector createAllocatedMugenStringVectorFromString(const char* tString)
+{
+	MugenStringVector ret;
+	ret.mSize = 1;
+	ret.mElement = (char**)allocMemory(sizeof(char*));
+	ret.mElement[0] = (char*)allocMemory(strlen(tString) + 3);
+	strcpy(ret.mElement[0], tString);
+	return ret;
+}
+
+void destroyMugenStringVector(MugenStringVector& tStringVector)
+{
+	for (int i = 0; i < tStringVector.mSize; i++) {
+		freeMemory(tStringVector.mElement[i]);
+	}
+
+	freeMemory(tStringVector.mElement);
+}
+
 int isMugenDefStringVariable(MugenDefScript* tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	if (!stl_string_map_contains_array(tScript->mGroups, tGroupName)) {
 		return 0;
 	}
@@ -919,6 +947,8 @@ int isMugenDefStringVariable(MugenDefScript* tScript, const char * tGroupName, c
 
 char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
 
@@ -927,6 +957,8 @@ char* getAllocatedMugenDefStringVariable(MugenDefScript* tScript, const char * t
 
 string getSTLMugenDefStringVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
 
@@ -1049,11 +1081,15 @@ std::string getSTLMugenDefStringVariableAsElement(MugenDefScriptGroupElement * t
 
 int isMugenDefVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	return isMugenDefStringVariable(tScript, tGroupName, tVariableName);
 }
 
 int isMugenDefFloatVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	if (!stl_string_map_contains_array(tScript->mGroups, tGroupName)) {
 		return 0;
 	}
@@ -1064,6 +1100,8 @@ int isMugenDefFloatVariable(MugenDefScript * tScript, const char * tGroupName, c
 
 double getMugenDefFloatVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
 
@@ -1089,12 +1127,12 @@ double getMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, const char* 
 
 int isMugenDefFloatVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
-	return tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT;
+	return tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT;
 }
 
 double getMugenDefFloatVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
-	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT);
+	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
 
 	double ret;
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
@@ -1104,6 +1142,10 @@ double getMugenDefFloatVariableAsElement(MugenDefScriptGroupElement * tElement)
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
 		MugenDefScriptFloatElement* floatElement = (MugenDefScriptFloatElement*)tElement->mData;
 		ret = floatElement->mValue;
+	}
+	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
+		ret = atof(vectorElement->mVector.mElement[0]);
 	}
 	else {
 		ret = 0;
@@ -1115,9 +1157,10 @@ double getMugenDefFloatVariableAsElement(MugenDefScriptGroupElement * tElement)
 	return ret;
 }
 
-
 int isMugenDefNumberVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	if (!stl_string_map_contains_array(tScript->mGroups, tGroupName)) {
 		return 0;
 	}
@@ -1129,6 +1172,8 @@ int isMugenDefNumberVariable(MugenDefScript * tScript, const char * tGroupName, 
 
 int getMugenDefNumberVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
 
@@ -1155,17 +1200,25 @@ int getMugenDefNumberVariableAsGroup(MugenDefScriptGroup * tGroup, const char * 
 
 int isMugenDefNumberVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
-	return tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT;
+	return tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT;
 }
 
 int getMugenDefNumberVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
-	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT);
+	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT || tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
 
 	int ret;
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
 		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)tElement->mData;
 		ret = numberElement->mValue;
+	}
+	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
+		MugenDefScriptFloatElement* floatElement = (MugenDefScriptFloatElement*)tElement->mData;
+		ret = int(floatElement->mValue);
+	}
+	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
+		ret = atoi(vectorElement->mVector.mElement[0]);
 	}
 	else {
 		ret = 0;
@@ -1179,6 +1232,8 @@ int getMugenDefNumberVariableAsElement(MugenDefScriptGroupElement * tElement)
 
 int isMugenDefVectorVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	if (!stl_string_map_contains_array(tScript->mGroups, tGroupName)) {
 		return 0;
 	}
@@ -1189,6 +1244,8 @@ int isMugenDefVectorVariable(MugenDefScript * tScript, const char * tGroupName, 
 
 Vector3D getMugenDefVectorVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
 
@@ -1205,7 +1262,6 @@ int isMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, const char * tV
 
 	return isMugenDefVectorVariableAsElement(element);
 }
-
 
 Vector3D getMugenDefVectorVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName) {
 	assert(stl_string_map_contains_array(tGroup->mElements, tVariableName));
@@ -1227,23 +1283,68 @@ Vector3D getMugenDefVectorVariableAsElement(MugenDefScriptGroupElement * tElemen
 		double x = atof(vectorElement->mVector.mElement[0]);
 		double y = vectorElement->mVector.mSize >= 2 ? atof(vectorElement->mVector.mElement[1]) : 0;
 		double z = vectorElement->mVector.mSize >= 3 ? atof(vectorElement->mVector.mElement[2]) : 0;
-		ret = makePosition(x, y, z);
+		ret = Vector3D(x, y, z);
 	} else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
 		MugenDefScriptFloatElement* floatElement = (MugenDefScriptFloatElement*)tElement->mData;
 		double x = floatElement->mValue;
 		double y = 0;
 		double z = 0;
-		ret = makePosition(x, y, z);
+		ret = Vector3D(x, y, z);
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
 		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)tElement->mData;
 		double x = numberElement->mValue;
 		double y = 0;
 		double z = 0;
-		ret = makePosition(x, y, z);
+		ret = Vector3D(x, y, z);
 	}
 	else {
-		ret = makePosition(0, 0, 0);
+		ret = Vector3D(0, 0, 0);
+		logError("Unknown type.");
+		logErrorInteger(tElement->mType);
+		recoverFromError();
+	}
+
+	return ret;
+}
+
+Vector2D getMugenDefVector2DVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
+{
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
+	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
+	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
+	return getMugenDefVector2DVariableAsGroup(e, tVariableName);
+}
+
+Vector2D getMugenDefVector2DVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName) {
+	assert(stl_string_map_contains_array(tGroup->mElements, tVariableName));
+	MugenDefScriptGroupElement* element = &tGroup->mElements[tVariableName];
+
+	return getMugenDefVector2DVariableAsElement(element);
+}
+
+Vector2D getMugenDefVector2DVariableAsElement(MugenDefScriptGroupElement * tElement)
+{
+	Vector2D ret;
+	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
+		double x = atof(vectorElement->mVector.mElement[0]);
+		double y = vectorElement->mVector.mSize >= 2 ? atof(vectorElement->mVector.mElement[1]) : 0;
+		ret = Vector2D(x, y);
+	}
+	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT) {
+		MugenDefScriptFloatElement* floatElement = (MugenDefScriptFloatElement*)tElement->mData;
+		double x = floatElement->mValue;
+		ret = Vector2D(x, 0);
+	}
+	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
+		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)tElement->mData;
+		double x = numberElement->mValue;
+		ret = Vector2D(x, 0);
+	}
+	else {
+		ret = Vector2D(0, 0);
 		logError("Unknown type.");
 		logErrorInteger(tElement->mType);
 		recoverFromError();
@@ -1254,6 +1355,8 @@ Vector3D getMugenDefVectorVariableAsElement(MugenDefScriptGroupElement * tElemen
 
 int isMugenDefVectorIVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	if (!stl_string_map_contains_array(tScript->mGroups, tGroupName)) {
 		return 0;
 	}
@@ -1282,17 +1385,17 @@ Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, const c
 		int x = atoi(vectorElement->mVector.mElement[0]);
 		int y = vectorElement->mVector.mSize >= 2 ? atoi(vectorElement->mVector.mElement[1]) : 0;
 		int z = vectorElement->mVector.mSize >= 3 ? atoi(vectorElement->mVector.mElement[2]) : 0;
-		ret = makeVector3DI(x, y, z);
+		ret = Vector3DI(x, y, z);
 	}
 	else if (element->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
 		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)element->mData;
 		int x = numberElement->mValue;
 		int y = 0;
 		int z = 0;
-		ret = makeVector3DI(x, y, z);
+		ret = Vector3DI(x, y, z);
 	}
 	else {
-		ret = makeVector3DI(0, 0, 0);
+		ret = Vector3DI(0, 0, 0);
 		logError("Unknown type.");
 		logErrorInteger(element->mType);
 		recoverFromError();
@@ -1303,10 +1406,59 @@ Vector3DI getMugenDefVectorIVariableAsGroup(MugenDefScriptGroup* tGroup, const c
 
 Vector3DI getMugenDefVectorIVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
 {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
 
 	return getMugenDefVectorIVariableAsGroup(e, tVariableName);
+}
+
+int isMugenDefVector2DIVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName)
+{
+	return isMugenDefVectorIVariable(tScript, tGroupName, tVariableName);
+}
+
+int isMugenDefVector2DIVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName)
+{
+	return isMugenDefVectorIVariableAsGroup(tGroup, tVariableName);
+}
+
+Vector2DI getMugenDefVector2DIVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName)
+{
+	assert(stl_string_map_contains_array(tGroup->mElements, tVariableName));
+	MugenDefScriptGroupElement* element = &tGroup->mElements[tVariableName];
+
+	Vector2DI ret;
+	if (element->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
+		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)element->mData;
+		int x = atoi(vectorElement->mVector.mElement[0]);
+		int y = vectorElement->mVector.mSize >= 2 ? atoi(vectorElement->mVector.mElement[1]) : 0;
+		ret = Vector2DI(x, y);
+	}
+	else if (element->mType == MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT) {
+		MugenDefScriptNumberElement* numberElement = (MugenDefScriptNumberElement*)element->mData;
+		int x = numberElement->mValue;
+		int y = 0;
+		ret = Vector2DI(x, y);
+	}
+	else {
+		ret = Vector2DI(0, 0);
+		logError("Unknown type.");
+		logErrorInteger(element->mType);
+		recoverFromError();
+	}
+
+	return ret;
+}
+
+Vector2DI getMugenDefVector2DIVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName)
+{
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
+	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
+	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
+	return getMugenDefVector2DIVariableAsGroup(e, tVariableName);
 }
 
 int isMugenDefStringVectorVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName) {
@@ -1324,6 +1476,8 @@ int isMugenDefStringVectorVariableAsElement(MugenDefScriptGroupElement * tElemen
 }
 
 MugenStringVector getMugenDefStringVectorVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName) {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
 
@@ -1344,49 +1498,52 @@ MugenStringVector getMugenDefStringVectorVariableAsElement(MugenDefScriptGroupEl
 	return vectorElement->mVector;
 }
 
-int isMugenDefGeoRectangleVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName) {
+int isMugenDefGeoRectangle2DVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName) {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	if (!stl_string_map_contains_array(tScript->mGroups, tGroupName)) {
 		return 0;
 	}
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
-	return isMugenDefGeoRectangleVariableAsGroup(e, tVariableName);
+	return isMugenDefGeoRectangle2DVariableAsGroup(e, tVariableName);
 }
 
-int isMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName) {
+int isMugenDefGeoRectangle2DVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName) {
 	if (!stl_string_map_contains_array(tGroup->mElements, tVariableName)) {
 		return 0;
 	}
 	MugenDefScriptGroupElement* element = &tGroup->mElements[tVariableName];
-	return isMugenDefGeoRectangleVariableAsElement(element);
+	return isMugenDefGeoRectangle2DVariableAsElement(element);
 }
 
-int isMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement) {
+int isMugenDefGeoRectangle2DVariableAsElement(MugenDefScriptGroupElement * tElement) {
 	if (tElement->mType != MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) return 0;
 
 	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	return vectorElement->mVector.mSize >= 4;
 }
 
-GeoRectangle getMugenDefGeoRectangleVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName) {
+GeoRectangle2D getMugenDefGeoRectangle2DVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName) {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	assert(stl_string_map_contains_array(tScript->mGroups, tGroupName));
 	MugenDefScriptGroup* e = &tScript->mGroups[tGroupName];
-	return getMugenDefGeoRectangleVariableAsGroup(e, tVariableName);
+	return getMugenDefGeoRectangle2DVariableAsGroup(e, tVariableName);
 }
-GeoRectangle getMugenDefGeoRectangleVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName) {
+GeoRectangle2D getMugenDefGeoRectangle2DVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName) {
 	assert(stl_string_map_contains_array(tGroup->mElements, tVariableName));
 	MugenDefScriptGroupElement* element = &tGroup->mElements[tVariableName];
-	return getMugenDefGeoRectangleVariableAsElement(element);
+	return getMugenDefGeoRectangle2DVariableAsElement(element);
 }
-GeoRectangle getMugenDefGeoRectangleVariableAsElement(MugenDefScriptGroupElement * tElement) {
+GeoRectangle2D getMugenDefGeoRectangle2DVariableAsElement(MugenDefScriptGroupElement * tElement) {
 	assert(tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT);
 	MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 	assert(vectorElement->mVector.mSize >= 4);
-	GeoRectangle ret;
+	GeoRectangle2D ret;
 	ret.mTopLeft.x = atof(vectorElement->mVector.mElement[0]);
 	ret.mTopLeft.y = atof(vectorElement->mVector.mElement[1]);
 	ret.mBottomRight.x = atof(vectorElement->mVector.mElement[2]);
 	ret.mBottomRight.y = atof(vectorElement->mVector.mElement[3]);
-
 	return ret;
 }
 
@@ -1409,6 +1566,8 @@ MugenStringVector copyMugenDefStringVectorVariableAsElement(MugenDefScriptGroupE
 }
 
 void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, const char* tGroup, const char* tVariable, const char* tDefault) {
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
 	if (isMugenDefStringVariable(s, tGroup, tVariable)) {
 		char* res = getAllocatedMugenDefStringVariable(s, tGroup, tVariable);
 		strcpy(tDst, res);
@@ -1426,6 +1585,8 @@ static char* createAllocatedString(const char* tString) {
 }
 
 char* getAllocatedMugenDefStringOrDefault(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName, const char* tDefault) {
+	assert(isStringLowercase(tGroupName));
+	assert(isStringLowercase(tVariableName));
 	if (isMugenDefStringVariable(tScript, tGroupName, tVariableName)) return getAllocatedMugenDefStringVariable(tScript, tGroupName, tVariableName);
 	else return createAllocatedString(tDefault);
 }
@@ -1437,6 +1598,8 @@ char* getAllocatedMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, co
 
 std::string getSTLMugenDefStringOrDefault(MugenDefScript * s, const char * tGroup, const char * tVariable, const char * tDefault)
 {
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
 	if (isMugenDefStringVariable(s, tGroup, tVariable)) {
 		return getSTLMugenDefStringVariable(s, tGroup, tVariable);
 	}
@@ -1456,6 +1619,8 @@ std::string getSTLMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup * tGroup, c
 }
 
 double getMugenDefFloatOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, double tDefault) {
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
 	if (isMugenDefFloatVariable(s, tGroup, tVariable)) {
 		return getMugenDefFloatVariable(s, tGroup, tVariable);
 	}
@@ -1474,6 +1639,8 @@ double getMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char*
 }
 
 int getMugenDefIntegerOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, int tDefault) {
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
 	if (isMugenDefNumberVariable(s, tGroup, tVariable)) {
 		return getMugenDefNumberVariable(s, tGroup, tVariable);
 	}
@@ -1491,7 +1658,9 @@ int getMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* 
 	}
 }
 
-Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, Vector3D tDefault) {
+Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const Vector3D& tDefault) {
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
 	if (isMugenDefVectorVariable(s, tGroup, tVariable)) {
 		return getMugenDefVectorVariable(s, tGroup, tVariable);
 	}
@@ -1500,7 +1669,7 @@ Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, const char* tGroup, const
 	}
 }
 
-Vector3D getMugenDefVectorOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, Vector3D tDefault) {
+Vector3D getMugenDefVectorOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const Vector3D& tDefault) {
 	if (isMugenDefVectorVariableAsGroup(tGroup, tVariable)) {
 		return getMugenDefVectorVariableAsGroup(tGroup, tVariable);
 	}
@@ -1509,7 +1678,31 @@ Vector3D getMugenDefVectorOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const ch
 	}
 }
 
-Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, Vector3DI tDefault) {
+Vector2D getMugenDefVector2DOrDefault(MugenDefScript * s, const char * tGroup, const char * tVariable, const Vector2D & tDefault)
+{
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
+	if (isMugenDefVectorVariable(s, tGroup, tVariable)) {
+		return getMugenDefVector2DVariable(s, tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+Vector2D getMugenDefVector2DOrDefaultAsGroup(MugenDefScriptGroup * tGroup, const char * tVariable, const Vector2D & tDefault)
+{
+	if (isMugenDefVectorVariableAsGroup(tGroup, tVariable)) {
+		return getMugenDefVector2DVariableAsGroup(tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const Vector3DI& tDefault) {
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
 	if (isMugenDefVectorIVariable(s, tGroup, tVariable)) {
 		return getMugenDefVectorIVariable(s, tGroup, tVariable);
 	}
@@ -1518,8 +1711,7 @@ Vector3DI getMugenDefVectorIOrDefault(MugenDefScript* s, const char* tGroup, con
 	}
 }
 
-
-Vector3DI getMugenDefVectorIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, Vector3DI tDefault) {
+Vector3DI getMugenDefVectorIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const Vector3DI& tDefault) {
 	if (isMugenDefVectorIVariableAsGroup(tGroup, tVariable)) {
 		return getMugenDefVectorIVariableAsGroup(tGroup, tVariable);
 	}
@@ -1528,20 +1720,42 @@ Vector3DI getMugenDefVectorIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const 
 	}
 }
 
-
-
-GeoRectangle getMugenDefGeoRectangleOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, GeoRectangle tDefault) {
-	if (isMugenDefGeoRectangleVariable(s, tGroup, tVariable)) {
-		return getMugenDefGeoRectangleVariable(s, tGroup, tVariable);
+Vector2DI getMugenDefVector2DIOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const Vector2DI& tDefault)
+{
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
+	if (isMugenDefVector2DIVariable(s, tGroup, tVariable)) {
+		return getMugenDefVector2DIVariable(s, tGroup, tVariable);
 	}
 	else {
 		return tDefault;
 	}
 }
 
-GeoRectangle getMugenDefGeoRectangleOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, GeoRectangle tDefault) {
-	if (isMugenDefGeoRectangleVariableAsGroup(tGroup, tVariable)) {
-		return getMugenDefGeoRectangleVariableAsGroup(tGroup, tVariable);
+Vector2DI getMugenDefVector2DIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const Vector2DI& tDefault)
+{
+	if (isMugenDefVector2DIVariableAsGroup(tGroup, tVariable)) {
+		return getMugenDefVector2DIVariableAsGroup(tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+GeoRectangle2D getMugenDefGeoRectangle2DOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const GeoRectangle2D& tDefault) {
+	assert(isStringLowercase(tGroup));
+	assert(isStringLowercase(tVariable));
+	if (isMugenDefGeoRectangle2DVariable(s, tGroup, tVariable)) {
+		return getMugenDefGeoRectangle2DVariable(s, tGroup, tVariable);
+	}
+	else {
+		return tDefault;
+	}
+}
+
+GeoRectangle2D getMugenDefGeoRectangle2DOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const GeoRectangle2D& tDefault) {
+	if (isMugenDefGeoRectangle2DVariableAsGroup(tGroup, tVariable)) {
+		return getMugenDefGeoRectangle2DVariableAsGroup(tGroup, tVariable);
 	}
 	else {
 		return tDefault;

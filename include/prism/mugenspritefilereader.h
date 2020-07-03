@@ -7,7 +7,7 @@
 
 
 typedef struct {
-	Vector3DI mOffset;
+	Vector2DI mOffset;
 	TextureData mTexture;
 } MugenSpriteFileSubSprite;
 
@@ -17,7 +17,7 @@ typedef struct {
 	int mIsLinked;
 	int mIsLinkedTo;
 
-	Vector3D mAxisOffset;
+	Vector2D mAxisOffset;
 } MugenSpriteFileSprite;
 
 typedef struct {
@@ -40,23 +40,23 @@ typedef struct {
 	int mPaletteMappedItem;
 } MugenSpriteFile;
 
-MugenSpriteFile loadMugenSpriteFile(char * tPath, int tHasPaletteFile, char* tOptionalPaletteFile);
-MugenSpriteFile loadMugenSpriteFilePortraits(char * tPath, int tHasPaletteFile, char* tOptionalPaletteFile);
+MugenSpriteFile loadMugenSpriteFile(const char * tPath, int tHasPaletteFile, const char* tOptionalPaletteFile);
+MugenSpriteFile loadMugenSpriteFilePortraits(const char * tPath, int tHasPaletteFile, const char* tOptionalPaletteFile);
 
 void unloadMugenSpriteFile(MugenSpriteFile* tFile);
 void unloadMugenSpriteFileSprite(MugenSpriteFileSprite* tSprite);
-MugenSpriteFile loadMugenSpriteFileWithoutPalette(std::string tPath);
-MugenSpriteFile loadMugenSpriteFileWithoutPalette(char* tPath);
+MugenSpriteFile loadMugenSpriteFileWithoutPalette(const std::string& tPath);
+MugenSpriteFile loadMugenSpriteFileWithoutPalette(const char* tPath);
 MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite);
 
-MugenSpriteFileSprite* loadSingleTextureFromPCXBuffer(Buffer tBuffer);
+MugenSpriteFileSprite* loadSingleTextureFromPCXBuffer(const Buffer& tBuffer);
 
 void setMugenSpriteFileReaderToBuffer();
 void setMugenSpriteFileReaderToFileOperations();
 void setMugenSpriteFileReaderToUsePalette(int tPaletteID);
 void setMugenSpriteFileReaderToNotUsePalette();
-void setMugenSpriteFileReaderCustomFunctionsAndForceARGB16(TextureData(*mCustomLoadTextureFromARGB16Buffer)(Buffer, int, int), TextureData(*mCustomLoadTextureFromARGB32Buffer)(Buffer, int, int), TextureData(*mCustomLoadPalettedTextureFrom8BitBuffer)(Buffer, int, int, int));
+void setMugenSpriteFileReaderCustomFunctionsAndForceARGB16(TextureData(*mCustomLoadTextureFromARGB16Buffer)(const Buffer&, int, int), TextureData(*mCustomLoadTextureFromARGB32Buffer)(const Buffer&, int, int), TextureData(*mCustomLoadPalettedTextureFrom8BitBuffer)(const Buffer&, int, int, int));
 void setMugenSpriteFileReaderSubTextureSplit(int tSubTextureSplitMin, int tSubTextureSplitMax);
 
 int hasMugenSprite(MugenSpriteFile* tSprites, int tGroup, int tSprite);
-void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector3DI& tSource, const Vector3DI& tDestination, int tPaletteID);
+void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector2DI& tSource, const Vector2DI& tDestination, int tPaletteID);

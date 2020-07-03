@@ -139,7 +139,7 @@ FileHandler fileOpen(const char* tPath, int tFlags){
 			recoverFromError();
 	}
 
-	if (isInDevelopMode() && strchr(path, '-')) {
+	if (isInDevelopMode() && isDebugMinusCheckEnabled() && strchr(path, '-')) {
 		logErrorFormat("Illegal character '-' in path %s. Aborting.", path);
 		recoverFromError();
 	}
@@ -211,7 +211,7 @@ void createDirectory(const char * tPath)
 #endif
 }
 
-void mountRomdiskFromBuffer(Buffer b, const char * tMountPath)
+void mountRomdiskFromBuffer(const Buffer& b, const char * tMountPath)
 {
 	mountRomdiskWindowsFromBuffer(b, tMountPath);
 }

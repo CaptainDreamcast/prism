@@ -53,12 +53,12 @@ void updatePhysicsHandler() {
 	stl_int_map_map(gPhysicsHandler.mList, handleSinglePhysicsObjectInList);
 }
 
-PhysicsHandlerElement* addToPhysicsHandler(Position tPosition) {
+PhysicsHandlerElement* addToPhysicsHandler(const Position& tPosition) {
 	PhysicsHandlerElement data;
 	resetPhysicsObject(&data.mObj);
 	data.mObj.mPosition = tPosition;
 	data.mMaxVelocity = INFINITY;
-	data.mDragCoefficient = makePosition(0,0,0);
+	data.mDragCoefficient = Vector3D(0,0,0);
 	data.mGravity = getGravity();
 	data.mIsPaused = 0;
 	data.mTimeDilatation = 1.0;
@@ -97,7 +97,7 @@ Acceleration* getHandledPhysicsAccelerationReference(PhysicsHandlerElement* data
 	return &data->mObj.mAcceleration;
 }
 
-void addAccelerationToHandledPhysics(PhysicsHandlerElement* data, Acceleration tAccel) {
+void addAccelerationToHandledPhysics(PhysicsHandlerElement* data, const Acceleration& tAccel) {
 	if (data->mIsPaused) return;
 	PhysicsObject* obj = &data->mObj;
 	obj->mAcceleration = vecAdd(obj->mAcceleration, tAccel);
@@ -105,7 +105,7 @@ void addAccelerationToHandledPhysics(PhysicsHandlerElement* data, Acceleration t
 
 void stopHandledPhysics(PhysicsHandlerElement* data) {
 	PhysicsObject* obj = &data->mObj;
-	obj->mVelocity = makePosition(0, 0, 0);
+	obj->mVelocity = Vector3D(0, 0, 0);
 }
 
 void pauseHandledPhysics(PhysicsHandlerElement* data)
@@ -122,11 +122,11 @@ void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* data, double tVelocity)
 	data->mMaxVelocity = tVelocity;
 }
 
-void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* data, Vector3D tDragCoefficient) {
+void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* data, const Vector3D& tDragCoefficient) {
 	data->mDragCoefficient = tDragCoefficient;
 }
 
-void setHandledPhysicsGravity(PhysicsHandlerElement* data, Vector3D tGravity) {
+void setHandledPhysicsGravity(PhysicsHandlerElement* data, const Vector3D& tGravity) {
 	data->mGravity = tGravity;
 }
 

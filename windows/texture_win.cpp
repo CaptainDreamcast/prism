@@ -102,7 +102,7 @@ typedef struct kmg_header {
 #define KMG_MAGIC	0x00474d4b /* 'KMG\0' */
 
 
-static SDL_Surface* makeSurfaceFromUntwiddledTexture(Buffer b, KMGHeader tHeader) {
+static SDL_Surface* makeSurfaceFromUntwiddledTexture(const Buffer& b, const KMGHeader& tHeader) {
 
 	uint32_t rmask = 0x0f00;
 	uint32_t gmask = 0x00f0;
@@ -114,7 +114,7 @@ static SDL_Surface* makeSurfaceFromUntwiddledTexture(Buffer b, KMGHeader tHeader
 	return SDL_CreateRGBSurfaceFrom(b.mData, tHeader.width, tHeader.height, depth, pitch, rmask, gmask, bmask, amask);
 }
 
-static Buffer untwiddleBuffer(Buffer tBuffer, uint32_t tWidth, uint32_t tHeight) {
+static Buffer untwiddleBuffer(const Buffer& tBuffer, uint32_t tWidth, uint32_t tHeight) {
 	uint16_t* dst = (uint16_t*)allocMemory(tBuffer.mLength);
 	uint32_t dstLength = tBuffer.mLength;
 
@@ -195,11 +195,11 @@ TextureData loadTexture(const char* tFileDir) {
 	}
 }
 
-void unloadTexture(TextureData tTexture) {
+void unloadTexture(TextureData& tTexture) {
 	freeTextureMemory(tTexture.mTexture);
 }
 
-int getTextureHash(TextureData tTexture) {
+int getTextureHash(const TextureData& tTexture) {
 	return (int)tTexture.mTexture;
 }
 
@@ -217,7 +217,7 @@ int canLoadTexture(const char* tPath) {
 	return 0;
 }
 
-TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight)
+TextureData loadTextureFromARGB16Buffer(const Buffer& b, int tWidth, int tHeight)
 {
 	uint32_t amask = 0x0000f000;
 	uint32_t rmask = 0x00000f00;
@@ -231,14 +231,14 @@ TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight)
 	return textureFromSurface(surface);
 }
 
-TextureData loadTextureFromTwiddledARGB16Buffer(Buffer b, int tWidth, int tHeight) {
+TextureData loadTextureFromTwiddledARGB16Buffer(const Buffer& b, int tWidth, int tHeight) {
 	Buffer untwiddled = untwiddleBuffer(b, (uint32_t)tWidth, (uint32_t)tHeight);
 	TextureData ret = loadTextureFromARGB16Buffer(untwiddled, tWidth, tHeight);
 	freeBuffer(untwiddled);
 	return ret;
 }
 
-TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
+TextureData loadTextureFromARGB32Buffer(const Buffer& b, int tWidth, int tHeight) {
 	uint32_t amask = 0xff000000;
 	uint32_t rmask = 0x00ff0000;
 	uint32_t gmask = 0x0000ff00;
@@ -251,7 +251,7 @@ TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 	return textureFromSurface(surface);
 }
 
-TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
+TextureData loadTextureFromRawPNGBuffer(const Buffer& b, int tWidth, int tHeight) {
 	(void)tWidth;
 	(void)tHeight;
 	SDL_RWops* memStream = SDL_RWFromMem(b.mData, b.mLength);
@@ -271,7 +271,7 @@ TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight) {
 	return textureFromSurface(surface);
 }
 
-TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight) {
+TextureData loadPalettedTextureFrom8BitBuffer(const Buffer& b, int tPaletteID, int tWidth, int tHeight) {
 	TextureData returnData;
 	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
 	returnData.mTextureSize.x = tWidth;

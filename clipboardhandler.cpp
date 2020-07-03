@@ -25,12 +25,12 @@ void initClipboardForGame() {
 }
 
 static void initClipboardLines() {
-	int font = isOnDreamcast() ? 1 : -1;
-	double deltaY = getMugenFontSizeY(font) + getMugenFontSpacingY(font);
-	Position pos = makePosition(20, 20, 90);
+	static const auto CLIPBOARD_FONT = -1;
+	double deltaY = getMugenFontSizeY(CLIPBOARD_FONT) + getMugenFontSpacingY(CLIPBOARD_FONT);
+	Position pos = Vector3D(20, 20, 90);
 	int i;
 	for (i = 0; i < CLIPBOARD_LINE_AMOUNT; i++) {
-		gPrismClipboardHandlerData.mTextIDs[i] = addMugenText("", pos, font);
+		gPrismClipboardHandlerData.mTextIDs[i] = addMugenText("", pos, CLIPBOARD_FONT);
 		pos.y += deltaY;
 	}
 }

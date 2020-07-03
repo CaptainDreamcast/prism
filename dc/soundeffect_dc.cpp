@@ -30,7 +30,7 @@ void setSoundEffectCompression(int tIsEnabled) {
 	gSoundEffectDreamcastData.mIsCompressing = tIsEnabled;
 }
 
-int loadSoundEffect(char* tPath) {
+int loadSoundEffect(const char* tPath) {
     char fullPath[1024];
 	getFullPath(fullPath, tPath);
 	if (snd_mem_available() >= getFileSize(tPath) * 2) {
@@ -54,7 +54,7 @@ typedef struct {
 	uint32_t mLen; // 44
 } WaveHeader;
 
-static Buffer downsampleBuffer8Bit(Buffer tBuffer) {
+static Buffer downsampleBuffer8Bit(const Buffer& tBuffer) {
 	auto header = (WaveHeader*)tBuffer.mData;
 	uint32_t totalLength = sizeof(WaveHeader) + header->mLen / 2;
 	if (snd_mem_available() < totalLength * 2) return tBuffer; // don't bother compressing if it doesn't fit
@@ -81,7 +81,7 @@ static Buffer downsampleBuffer8Bit(Buffer tBuffer) {
 	return makeBufferOwned(fullData, totalLength);
 }
 
-static Buffer downsampleBuffer16Bit(Buffer tBuffer) {
+static Buffer downsampleBuffer16Bit(const Buffer& tBuffer) {
 	auto header = (WaveHeader*)tBuffer.mData;
 	uint32_t totalLength = sizeof(WaveHeader) + header->mLen / 4;
 	if (snd_mem_available() < totalLength * 2) return tBuffer; // don't bother compressing if it doesn't fit
@@ -110,7 +110,7 @@ static Buffer downsampleBuffer16Bit(Buffer tBuffer) {
 	return makeBufferOwned(fullData, totalLength);
 }
 
-static Buffer downsampleBuffer32Bit(Buffer tBuffer) {
+static Buffer downsampleBuffer32Bit(const Buffer& tBuffer) {
 	auto header = (WaveHeader*)tBuffer.mData;
 	uint32_t totalLength = sizeof(WaveHeader) + header->mLen / 8;
 	if (snd_mem_available() < totalLength * 2) return tBuffer; // don't bother compressing if it doesn't fit
@@ -141,7 +141,7 @@ static Buffer downsampleBuffer32Bit(Buffer tBuffer) {
 	return makeBufferOwned(fullData, totalLength);
 }
 
-static Buffer downsampleBufferIfNecessary(Buffer tBuffer) {
+static Buffer downsampleBufferIfNecessary(const Buffer& tBuffer) {
 
 	auto header = (WaveHeader*)tBuffer.mData;
 	switch (header->mBitSize) {
@@ -156,7 +156,7 @@ static Buffer downsampleBufferIfNecessary(Buffer tBuffer) {
 	}	
 }
 
-int loadSoundEffectFromBuffer(Buffer tBuffer) {
+int loadSoundEffectFromBuffer(const Buffer& tBuffer) {
 	char tempPath[1024];
 	strcpy(tempPath, "$/ram/tempsound.wav");
 

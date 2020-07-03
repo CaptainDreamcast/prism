@@ -188,14 +188,14 @@ TextureData loadTexture(const char* tFileDir) {
 	}
 }
 
-TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight) {
+TextureData loadTextureFromARGB16Buffer(const Buffer& b, int tWidth, int tHeight) {
 	Buffer twiddledBuffer = twiddleTextureBuffer16(b, tWidth, tHeight);
 	TextureData ret = loadTextureFromTwiddledARGB16Buffer(twiddledBuffer, tWidth, tHeight);
 	freeBuffer(twiddledBuffer);
 	return ret;
 }
 
-TextureData loadTextureFromTwiddledARGB16Buffer(Buffer b, int tWidth, int tHeight) {
+TextureData loadTextureFromTwiddledARGB16Buffer(const Buffer& b, int tWidth, int tHeight) {
 	TextureData returnData;
 	returnData.mHasPalette = 0;
 	returnData.mTextureSize.x = tWidth;
@@ -209,7 +209,7 @@ TextureData loadTextureFromTwiddledARGB16Buffer(Buffer b, int tWidth, int tHeigh
 	return returnData;
 }
 
-TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
+TextureData loadTextureFromARGB32Buffer(const Buffer& b, int tWidth, int tHeight) {
 	Buffer argb16Buffer = turnARGB32BufferIntoARGB16Buffer(b);
 	Buffer twiddledBuffer = twiddleTextureBuffer16(argb16Buffer, tWidth, tHeight);	
 	freeBuffer(argb16Buffer);
@@ -228,7 +228,7 @@ TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight) {
 	return returnData;
 } 
 
-TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight) {
+TextureData loadPalettedTextureFrom8BitBuffer(const Buffer& b, int tPaletteID, int tWidth, int tHeight) {
 	Buffer twiddledBuffer = twiddleTextureBuffer8(b, tWidth, tHeight);
 
 	TextureData returnData;
@@ -246,11 +246,11 @@ TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWid
 	return returnData;
 }
 
-void unloadTexture(TextureData tTexture) {
+void unloadTexture(TextureData& tTexture) {
   freeTextureMemory(tTexture.mTexture);
 }
 
-int getTextureHash(TextureData tTexture) {
+int getTextureHash(const TextureData& tTexture) {
 	return (int)tTexture.mTexture;
 }
 

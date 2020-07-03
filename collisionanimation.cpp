@@ -4,7 +4,6 @@
 #include "prism/log.h"
 #include "prism/system.h"
 
-
 CollisionAnimation makeEmptyCollisionAnimation() {
 	CollisionAnimation ret;
 
@@ -12,7 +11,6 @@ CollisionAnimation makeEmptyCollisionAnimation() {
 	ret.mAnimation = createEmptyAnimation();
 	return ret;
 }
-
 
 static void destroyCollisionAnimationFrame(void* tCaller, void* tData) {
 	(void) tCaller;
@@ -33,7 +31,6 @@ AnimationResult updateCollisionAnimation(CollisionAnimation* tAnimation) {
 void resetCollisionAnimation(CollisionAnimation* tAnimation) {
 	resetAnimation(&tAnimation->mAnimation);
 }	
-
 
 Collider getCollisionAnimationCollider(CollisionAnimation* tAnimation) {
 	Collider* col = (Collider*)vector_get(&tAnimation->mFrames, tAnimation->mAnimation.mFrame);
@@ -84,11 +81,9 @@ static void unloadCollisionAnimationHandler(void*) {
 }
 
 
-static void invertPositionRect(HandledCollisionAnimation* tData, CollisionRect tRect) {
+static void invertPositionRect(HandledCollisionAnimation* tData, const CollisionRect& tRect) {
 	double nposX = tRect.mBottomRight.x;
-
 	double dx = nposX - tData->mCenter.x;
-
 	double cx = (tData->mCenter.x - dx) - tRect.mTopLeft.x;
 
 	tData->mPosition.x += cx;
@@ -98,7 +93,7 @@ static void invertPosition(HandledCollisionAnimation* tData) {
 	Collider col = getCollisionAnimationCollider(&tData->mAnimation);
 	
 	if(col.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)col;
+		const auto rect = (const CollisionRect*)col;
 		invertPositionRect(tData, *rect);
 	} else {
 		logError("Unsupported collision type");
@@ -145,17 +140,17 @@ ActorBlueprint getCollisionAnimationHandler()
 	return makeActorBlueprint(loadCollisionAnimationHandler, unloadCollisionAnimationHandler, updateCollisionAnimationHandler);
 }
 
-int addHandledCollisionAnimation(CollisionListData* tListID, Position* tBasePosition, CollisionAnimation tAnimation, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
+int addHandledCollisionAnimation(CollisionListData* tListID, Position* tBasePosition, const CollisionAnimation& tAnimation, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
 	HandledCollisionAnimation* e = (HandledCollisionAnimation*)allocMemory(sizeof(HandledCollisionAnimation));
 
 	e->mAnimation = tAnimation;
 	e->mCollisionHandlerList = tListID;
-	e->mCenter = makePosition(0,0,0);
+	e->mCenter = Vector3D(0,0,0);
 	e->mIsInverted = 0;
 	e->mPosition = *tBasePosition;
 	e->mBasePosition = tBasePosition;
 	
-	Collider* firstCollider = (Collider*)vector_get(&tAnimation.mFrames, 0);
+	Collider* firstCollider = (Collider*)vector_get(&e->mAnimation.mFrames, 0);
 
 	e->mCollisionHandlerElement = addColliderToCollisionHandler(tListID, &e->mPosition, *firstCollider, tCB, tCaller, tCollisionData);
 
@@ -179,9 +174,8 @@ void invertCollisionAnimationVertical(int tID) {
 	}
 }
 
-void setCollisionAnimationCenter(int tID, Position tCenter) {
+void setCollisionAnimationCenter(int tID, const Position& tCenter) {
 	HandledCollisionAnimation* e = (HandledCollisionAnimation*)list_get(&gPrismCollisionAnimationData.mList, tID);
-
 	e->mCenter = tCenter;
 }
 

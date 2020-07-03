@@ -9,27 +9,27 @@ ActorBlueprint getStageHandler();
 void setStageHandlerNoDelayedLoading();
 void setStageHandlerAccelerationPhysics();
 void setStageHandlerTweening();
-void setStageCameraRange(GeoRectangle tRange);
+void setStageCameraRange(const GeoRectangle2D& tRange);
 
 int addScrollingBackground(double tScrollingFactor, double tZ);
 int addScrollingBackgroundWithMovementIn2D(double tDeltaX, double tDeltaY, double tZ);
-int addBackgroundElement(int tBackgroundID, Position tPosition, char* tPath, Animation tAnimation);
-int addBackgroundElementWithTextureData(int tBackgroundID, Position tPosition, TextureData* tTextureData, Animation tAnimation);
+int addBackgroundElement(int tBackgroundID, const Position& tPosition, char* tPath, const Animation& tAnimation);
+int addBackgroundElementWithTextureData(int tBackgroundID, const Position& tPosition, TextureData* tTextureData, const Animation& tAnimation);
 TextureData* getBackgroundElementTextureData(int tBackgroundID, int tElementID);
 
-Position getRealScreenPosition(int tBackgroundID, Position tPos);
+Position getRealScreenPosition(int tBackgroundID, const Position& tPos);
 void scrollBackgroundRight(double tAccel);
 void scrollBackgroundDown(double tAccel);
 
 Position* getScrollingBackgroundPositionReference(int tID);
-void setScrollingBackgroundPosition(int tID, Position tPos);
+void setScrollingBackgroundPosition(int tID, const Position& tPos);
 void setScrollingBackgroundMaxVelocity(int tID, double tVel);
 PhysicsObject* getScrollingBackgroundPhysics(int tID);
-void setScrollingBackgroundPhysics(int tID, PhysicsObject tPhysics);
+void setScrollingBackgroundPhysics(int tID, const PhysicsObject& tPhysics);
 void setScrollingBackgroundInvisible(int tID);
 void setScrollingBackgroundVisible(int tID);
 
 void addStageHandlerScreenShake(double tStrength);
 void setStageHandlerMaximumScreenShake(double tStrength);
 
-void loadStageFromScript(char* tPath);
+void loadStageFromScript(const char* tPath);

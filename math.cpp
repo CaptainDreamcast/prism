@@ -35,7 +35,7 @@ int randfromInteger(int tMin, int tMax)
 
 Position randPositionInGeoRectangle(const GeoRectangle& tRectangle)
 {
-	return makePosition(randfrom(tRectangle.mTopLeft.x, tRectangle.mBottomRight.x), randfrom(tRectangle.mTopLeft.y, tRectangle.mBottomRight.y), randfrom(tRectangle.mTopLeft.z, tRectangle.mBottomRight.z));
+	return Vector3D(randfrom(tRectangle.mTopLeft.x, tRectangle.mBottomRight.x), randfrom(tRectangle.mTopLeft.y, tRectangle.mBottomRight.y), randfrom(tRectangle.mTopLeft.z, tRectangle.mBottomRight.z));
 }
 
 #define PI_FLOAT     3.14159265f
@@ -101,7 +101,7 @@ Matrix4D makeIdentityMatrix4D()
 	return ret;
 }
 
-Matrix4D matMult4D(Matrix4D tA, Matrix4D tB)
+Matrix4D matMult4D(const Matrix4D& tA, const Matrix4D& tB)
 {
 	Matrix4D ret;
 	
@@ -118,7 +118,12 @@ Matrix4D matMult4D(Matrix4D tA, Matrix4D tB)
 	return ret;
 }
 
-Matrix4D createScaleMatrix4D(Vector3D tScale)
+Matrix4D createScaleMatrix4D(const Vector2D& tScale)
+{
+	return createScaleMatrix4D(tScale.xyz(1.0));
+}
+
+Matrix4D createScaleMatrix4D(const Vector3D& tScale)
 {
 	Matrix4D ret;
 	ret.m[0][0] = tScale.x;
@@ -144,7 +149,12 @@ Matrix4D createScaleMatrix4D(Vector3D tScale)
 	return ret;
 }
 
-Matrix4D createTranslationMatrix4D(Vector3D tTranslation)
+Matrix4D createTranslationMatrix4D(const Vector2D& tTranslation)
+{
+	return createTranslationMatrix4D(tTranslation.xyz(0.0));
+}
+
+Matrix4D createTranslationMatrix4D(const Vector3D& tTranslation)
 {
 	Matrix4D ret;
 	ret.m[0][0] = 1;

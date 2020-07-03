@@ -117,26 +117,26 @@ static void setColliderOwned(CollisionListElement* e) {
 	e->mIsColliderOwned = 1;
 }
 
-CollisionListElement* addCollisionRectangleToCollisionHandler(CollisionListData* tList, Position* tBasePosition, CollisionRect tRect, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
+CollisionListElement* addCollisionRectangleToCollisionHandler(CollisionListData* tList, Position* tBasePosition, const CollisionRect& tRect, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
 	Collider collider = makeColliderFromRect(tRect);
 	auto element = addColliderToCollisionHandler(tList, tBasePosition, collider, tCB, tCaller, tCollisionData);
 	setColliderOwned(element);
 	return element;
 }
 
-void changeCollisionRectangleInCollisionHandler(CollisionListElement* e, CollisionRect tRect)
+void changeCollisionRectangleInCollisionHandler(CollisionListElement* e, const CollisionRect& tRect)
 {
 	e->mCollider.mImpl.mRect = tRect;
 }
 
-CollisionListElement* addCollisionCircleToCollisionHandler(CollisionListData* tList, Position* tBasePosition, CollisionCirc tCirc, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
+CollisionListElement* addCollisionCircleToCollisionHandler(CollisionListData* tList, Position* tBasePosition, const CollisionCirc& tCirc, CollisionCallback tCB, void* tCaller, void* tCollisionData) {
 	Collider collider = makeColliderFromCirc(tCirc);
 	auto element = addColliderToCollisionHandler(tList, tBasePosition, collider, tCB, tCaller, tCollisionData);
 	setColliderOwned(element);
 	return element;
 }
 
-CollisionListElement* addColliderToCollisionHandler(CollisionListData* tList, Position* tBasePosition, Collider tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData) {	
+CollisionListElement* addColliderToCollisionHandler(CollisionListData* tList, Position* tBasePosition, const Collider& tCollider, CollisionCallback tCB, void* tCaller, void* tCollisionData) {	
 	CollisionListElement e;
 	e.mCollider = tCollider;
 	e.mIsColliderOwned = 0;
@@ -178,7 +178,7 @@ void removeFromCollisionHandler(CollisionListElement* e) {
 	e->mIsScheduledForDeletion = 1;
 }
 
-void updateColliderForCollisionHandler(CollisionListElement* e, Collider tCollider) {
+void updateColliderForCollisionHandler(CollisionListElement* e, const Collider& tCollider) {
 	if (e->mIsColliderOwned) {
 		destroyCollider(&e->mCollider);
 	}
@@ -190,7 +190,7 @@ void setCollisionHandlerOwningColliders() {
 	gCollisionHandler.mIsOwningColliders = 1;
 }
 
-void resolveHandledCollisionMovableStatic(CollisionListElement* e1, CollisionListElement* e2, Position* tPos1, Velocity tVel1)
+void resolveHandledCollisionMovableStatic(CollisionListElement* e1, CollisionListElement* e2, Position* tPos1, const Velocity& tVel1)
 {
 	resolveCollisionColliderColliderMovableStatic(tPos1, tVel1, e1->mCollider, e2->mCollider);
 }
@@ -235,17 +235,17 @@ int isHandledCollisionScheduledForDeletion(CollisionListElement* e)
 
 #define DEBUG_Z 99
 
-static void drawCollisionRect(CollisionRect tRect, Position tBasePosition, Position tScreenPositionOffset, Vector3D tColor, double tAlpha){
+static void drawCollisionRect(const CollisionRect& tRect, const Position& tBasePosition, const Position& tScreenPositionOffset, const Vector3D& tColor, double tAlpha){
 	double dx = tRect.mBottomRight.x -  tRect.mTopLeft.x;
 	double dy = tRect.mBottomRight.y -  tRect.mTopLeft.y;
 	
 	if(dx < 0 || dy < 0) return;
 
-	Position position = vecAdd(tRect.mTopLeft, tBasePosition);
+	Position position = tBasePosition + tRect.mTopLeft;
 	position = vecSub(position, tScreenPositionOffset);
 	position.z = DEBUG_Z;
 	
-	Vector3D scale = makePosition(dx / 16.0, dy / 16.0, 1);
+	Vector3D scale = Vector3D(dx / 16.0, dy / 16.0, 1);
 	scaleDrawing3D(scale, position);
 	
 	setDrawingBaseColorAdvanced(tColor.x, tColor.y, tColor.z);
@@ -256,18 +256,18 @@ static void drawCollisionRect(CollisionRect tRect, Position tBasePosition, Posit
 	setDrawingParametersToIdentity();
 }
 
-static void drawCollisionCirc(CollisionCirc tCirc, Position tBasePosition, Position tScreenPositionOffset, Vector3D tColor, double tAlpha) {
+static void drawCollisionCirc(const CollisionCirc& tCirc, const Position& tBasePosition, const Position& tScreenPositionOffset, const Vector3D& tColor, double tAlpha) {
 	double r = tCirc.mRadius;
 	double d = r * 2;
 
 	if (r < 0) return;
 
-	Position position = vecAdd(tCirc.mCenter, tBasePosition);
-	position = vecAdd(position, vecScale(makePosition(r, r, 0), -1));
+	Position position = tBasePosition + tCirc.mCenter;
+	position = vecAdd(position, vecScale(Vector3D(r, r, 0), -1));
 	position = vecSub(position, tScreenPositionOffset);
 	position.z = DEBUG_Z;
 
-	Vector3D scale = makePosition(d / 16.0, d / 16.0, 1);
+	Vector3D scale = Vector3D(d / 16.0, d / 16.0, 1);
 	scaleDrawing3D(scale, position);
 	
 	setDrawingBaseColorAdvanced(tColor.x, tColor.y, tColor.z);
@@ -277,19 +277,19 @@ static void drawCollisionCirc(CollisionCirc tCirc, Position tBasePosition, Posit
 	setDrawingParametersToIdentity();
 }
 
-void drawColliderSolid(Collider tCollider, Position tOffset, Position tScreenPositionOffset, Vector3D tColor, double tAlpha) {
+void drawColliderSolid(const Collider& tCollider, const Position& tOffset, const Position& tScreenPositionOffset, const Vector3D& tColor, double tAlpha) {
 	Position basePosition;
 	if (tCollider.mBasePosition) basePosition = *tCollider.mBasePosition;
-	else basePosition = makePosition(0, 0, 0);
+	else basePosition = Vector3D(0, 0, 0);
 
 	basePosition = vecAdd(basePosition, tOffset);
 
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider;
+		const auto rect = (const CollisionRect*)tCollider;
 		drawCollisionRect(*rect, basePosition, tScreenPositionOffset, tColor, tAlpha);
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider;
+		const auto circ = (const CollisionCirc*)tCollider;
 		drawCollisionCirc(*circ, basePosition, tScreenPositionOffset, tColor, tAlpha);
 	}
 	else {
@@ -306,9 +306,9 @@ static void drawCollisionElement(CollisionListElement& tData) {
 
 	Position screenOffset;
 	if (gCollisionHandler.mDebug.mScreenPositionReference) screenOffset = *gCollisionHandler.mDebug.mScreenPositionReference;
-	else screenOffset = makePosition(0, 0, 0);
+	else screenOffset = Vector3D(0, 0, 0);
 
-	drawColliderSolid(col, makePosition(0, 0, 0), screenOffset, makePosition(1, 1, 1), 1);
+	drawColliderSolid(col, Vector3D(0, 0, 0), screenOffset, Vector3D(1, 1, 1), 1);
 }
 
 static void drawCollisionList(CollisionListData& tData) {

@@ -8,15 +8,15 @@
 ActorBlueprint getBlitzPhysicsHandler();
 
 void addBlitzPhysicsComponent(int tEntityID);
-void setBlitzPhysicsGravity(int tEntityID, Acceleration tGravity);
-void addBlitzPhysicsImpulse(int tEntityID, Acceleration tImpulse);
-void setBlitzPhysicsDragFactorOnCollision(int tEntityID, Vector3D tDragFactor);
+void setBlitzPhysicsGravity(int tEntityID, const Acceleration& tGravity);
+void addBlitzPhysicsImpulse(int tEntityID, const Acceleration& tImpulse);
+void setBlitzPhysicsDragFactorOnCollision(int tEntityID, const Vector3D& tDragFactor);
 
 Velocity getBlitzPhysicsVelocity(int tEntityID);
 Velocity* getBlitzPhysicsVelocityReference(int tEntityID);
-void setBlitzPhysicsVelocity(int tEntityID, Velocity tVelocity);
+void setBlitzPhysicsVelocity(int tEntityID, const Velocity& tVelocity);
 void setBlitzPhysicsVelocityX(int tEntityID, double tX);
-void addBlitzPhysicsVelocity(int tEntityID, Velocity tVelocity);
+void addBlitzPhysicsVelocity(int tEntityID, const Velocity& tVelocity);
 void addBlitzPhysicsVelocityX(int tEntityID, double tX);
 double getBlitzPhysicsVelocityY(int tEntityID);
 void setBlitzPhysicsVelocityY(int tEntityID, double tY);

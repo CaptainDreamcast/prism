@@ -6,12 +6,12 @@
 
 ActorBlueprint getBlitzEntityHandler();
 
-int addBlitzEntity(Position tPos);
+int addBlitzEntity(const Position& tPos);
 void removeBlitzEntity(int tID);
 
-void registerBlitzComponent(int tID, BlitzComponent tComponent);
+void registerBlitzComponent(int tID, const BlitzComponent& tComponent);
 
-void setBlitzEntityPosition(int tID, Position tPos);
+void setBlitzEntityPosition(int tID, const Position& tPos);
 void setBlitzEntityPositionX(int tID, double tX);
 void setBlitzEntityPositionY(int tID, double tY);
 void addBlitzEntityPositionX(int tID, double tX);

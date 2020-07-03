@@ -85,12 +85,12 @@ ActorBlueprint getBlitzEntityHandler() {
 	return makeActorBlueprint(loadBlitzMugenAnimationHandler, unloadBlitzMugenAnimationHandler, updateBlitzMugenAnimationHandler);
 }
 
-int addBlitzEntity(Position tPos)
+int addBlitzEntity(const Position& tPos)
 {
 	int id = stl_int_map_push_back(gBlitzEntityData.mEntities, BlitzEntity());
 	BlitzEntity& e = gBlitzEntityData.mEntities[id];
 	e.mPosition = tPos;
-	e.mScale = makePosition(1, 1, 1);
+	e.mScale = Vector3D(1, 1, 1);
 	e.mAngle = 0;
 	e.mIsMarkedForDeletion = 0;
 	e.mHasParent = 0;
@@ -118,7 +118,7 @@ void removeBlitzEntity(int tID)
 	e->mIsMarkedForDeletion = 1;
 }
 
-void registerBlitzComponent(int tID, BlitzComponent tComponent)
+void registerBlitzComponent(int tID, const BlitzComponent& tComponent)
 {
 	if (tID == getBlitzCameraHandlerEntityID()) return;
 
@@ -126,7 +126,7 @@ void registerBlitzComponent(int tID, BlitzComponent tComponent)
 	e->mComponents.push_back(tComponent);
 }
 
-void setBlitzEntityPosition(int tID, Position tPos)
+void setBlitzEntityPosition(int tID, const Position& tPos)
 {
 	if (tID == getBlitzCameraHandlerEntityID()) {
 		setBlitzCameraHandlerPosition(tPos);
@@ -177,7 +177,7 @@ void setBlitzEntityScale2D(int tID, double tScale)
 	}
 
 	BlitzEntity* e = getBlitzEntity(tID);
-	e->mScale = makePosition(tScale, tScale, 1);
+	e->mScale = Vector3D(tScale, tScale, 1);
 }
 
 void setBlitzEntityScaleX(int tID, double tScaleX)

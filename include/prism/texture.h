@@ -28,12 +28,12 @@ typedef void* TruetypeFont;
 TextureData loadTexturePNG(const char* tFileDir);
 TextureData loadTexturePKG(const char* tFileDir);
 TextureData loadTexture(const char* tFileDir);
-TextureData loadTextureFromARGB16Buffer(Buffer b, int tWidth, int tHeight);
-TextureData loadTextureFromTwiddledARGB16Buffer(Buffer b, int tWidth, int tHeight);
-TextureData loadTextureFromARGB32Buffer(Buffer b, int tWidth, int tHeight);
-TextureData loadTextureFromRawPNGBuffer(Buffer b, int tWidth, int tHeight);
-TextureData loadPalettedTextureFrom8BitBuffer(Buffer b, int tPaletteID, int tWidth, int tHeight);
-void unloadTexture(TextureData tTexture);
+TextureData loadTextureFromARGB16Buffer(const Buffer& b, int tWidth, int tHeight);
+TextureData loadTextureFromTwiddledARGB16Buffer(const Buffer& b, int tWidth, int tHeight);
+TextureData loadTextureFromARGB32Buffer(const Buffer& b, int tWidth, int tHeight);
+TextureData loadTextureFromRawPNGBuffer(const Buffer& b, int tWidth, int tHeight);
+TextureData loadPalettedTextureFrom8BitBuffer(const Buffer& b, int tPaletteID, int tWidth, int tHeight);
+void unloadTexture(TextureData& tTexture);
 
 void loadConsecutiveTextures(TextureData* tDst, const char* tBaseFileDir, int tAmount);
 TextureData getFontTexture();
@@ -42,16 +42,16 @@ void setFont(const char* tFileDirHeader, const char* tFileDirTexture);
 TruetypeFont loadTruetypeFont(const char* tName, double tSize);
 void unloadTruetypeFont(TruetypeFont tFont);
 
-int getTextureHash(TextureData tTexture); 
+int getTextureHash(const TextureData& tTexture); 
 int canLoadTexture(const char* tPath);
 
 TextureSize makeTextureSize(int x, int y);
 TextureData createWhiteTexture();
 TextureData createWhiteCircleTexture();
 
-Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc);
-Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight);
-Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight);
+Buffer turnARGB32BufferIntoARGB16Buffer(const Buffer& tSrc);
+Buffer twiddleTextureBuffer8(const Buffer& tBuffer, int tWidth, int tHeight);
+Buffer twiddleTextureBuffer16(const Buffer& tBuffer, int tWidth, int tHeight);
 
 void saveScreenShot(const char* tFileDir);
-void saveRGB32ToPNG(Buffer b, int tWidth, int tHeight, const char* tFileDir);
+void saveRGB32ToPNG(const Buffer& b, int tWidth, int tHeight, const char* tFileDir);

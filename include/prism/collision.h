@@ -3,8 +3,8 @@
 #include "physics.h"
 #include "geometry.h"
 
-typedef GeoRectangle CollisionRect;
-typedef Circle CollisionCirc;
+typedef GeoRectangle2D CollisionRect;
+typedef Circle2D CollisionCirc;
 
 typedef enum {
 	COLLISION_CIRC,
@@ -27,11 +27,11 @@ typedef struct {
 	CollisionType mType;
 	Position* mBasePosition;
 
-	operator CollisionCirc*() {
+	operator const CollisionCirc*() const {
 		return &mImpl.mCirc;
 	}
 
-	operator CollisionRect*() {
+	operator const CollisionRect*() const {
 		return &mImpl.mRect;
 	}
 
@@ -42,33 +42,31 @@ typedef struct {
 	} mImpl;
 } Collider;
 
-void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVel1, Collider tCollider1, Collider tCollider2);
-void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect);
-int checkCollision(CollisionRect tRect1, CollisionRect tRect2);
-int checkCollisionCirc(CollisionCirc tCirc1, CollisionCirc tCirc2);
-int checkCollisionCircRect(CollisionCirc tCirc1, CollisionRect tCirc2);
-int checkCollisionCollider(Collider tCollider1, Collider tCollider2);
+void resolveCollisionColliderColliderMovableStatic(Position* tPos1, const Velocity& tVel1, const Collider& tCollider1, const Collider& tCollider2);
+int checkCollision(const CollisionRect& tRect1, const CollisionRect& tRect2);
+int checkCollisionCirc(const CollisionCirc& tCirc1, const CollisionCirc& tCirc2);
+int checkCollisionCircRect(const CollisionCirc& tCirc, const CollisionRect& tRect);
+int checkCollisionCollider(const Collider& tCollider1, const Collider& tCollider2);
 
-CollisionObjectRect makeCollisionObjectRect(Position tTopLeft, Position tBottomRight, PhysicsObject* tPhysics);
-CollisionObjectCirc makeCollisionObjectCirc(Position tCenter, double tRadius, PhysicsObject* tPhysics);
+CollisionObjectRect makeCollisionObjectRect(const Position2D& tTopLeft, const Position2D& tBottomRight, PhysicsObject* tPhysics);
+CollisionObjectCirc makeCollisionObjectCirc(const Position2D& tCenter, double tRadius, PhysicsObject* tPhysics);
 CollisionRect adjustCollisionObjectRect(CollisionObjectRect* tObj);
 CollisionCirc adjustCollisionObjectCirc(CollisionObjectCirc* tObj);
 
 
-CollisionRect makeCollisionRect(Position tTopLeft, Position tBottomRight);
-CollisionCirc makeCollisionCirc(Position tCenter, double tRadius);
+CollisionRect makeCollisionRect(const Position2D& tTopLeft, const Position2D& tBottomRight);
+CollisionCirc makeCollisionCirc(const Position& tCenter, double tRadius);
 
-int checkCollisionObjectCirc(CollisionObjectCirc tObj1, CollisionObjectCirc tObj2);
-int checkCollisionObjectRect(CollisionObjectRect tObj1, CollisionObjectRect tObj2);
-int checkCollisionObjectCircRect(CollisionObjectCirc tObj1, CollisionObjectRect tObj2);
+int checkCollisionObjectCirc(const CollisionObjectCirc& tObj1, const CollisionObjectCirc& tObj2);
+int checkCollisionObjectRect(const CollisionObjectRect& tObj1, const CollisionObjectRect& tObj2);
+int checkCollisionObjectCircRect(const CollisionObjectCirc& tObj1, const CollisionObjectRect& tObj2);
 
-Collider makeColliderFromRect(CollisionRect tRect);
-Collider makeColliderFromCirc(CollisionCirc tCirc);
+Collider makeColliderFromRect(const CollisionRect& tRect);
+Collider makeColliderFromCirc(const CollisionCirc& tCirc);
 void setColliderBasePosition(Collider* tCollider, Position* tBasePosition);
 void destroyCollider(Collider* tCollider);
 
-double getColliderUp(Collider tCollider);
-double getColliderDown(Collider tCollider);
-double getColliderRight(Collider tCollider);
-double getColliderLeft(Collider tCollider);
-
+double getColliderUp(const Collider& tCollider);
+double getColliderDown(const Collider& tCollider);
+double getColliderRight(const Collider& tCollider);
+double getColliderLeft(const Collider& tCollider);

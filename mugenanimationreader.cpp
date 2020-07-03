@@ -282,8 +282,8 @@ static void handleCollisionHitboxAssignment(List* tHitboxes, MugenDefScriptGroup
 	double x2 = atof(vectorElement->mVector.mElement[2]);
 	double y2 = atof(vectorElement->mVector.mElement[3]);
 
-	Position topLeft = makePosition(min(x1, x2), min(y1, y2), 0);
-	Position bottomRight = makePosition(max(x1, x2), max(y1, y2), 0);
+	const auto topLeft = Vector2D(min(x1, x2), min(y1, y2));
+	const auto bottomRight = Vector2D(max(x1, x2), max(y1, y2));
 
 	CollisionRect* e = (CollisionRect*)allocMemory(sizeof(CollisionRect));
 	*e = makeCollisionRect(topLeft, bottomRight);
@@ -505,7 +505,7 @@ static MugenAnimations createEmptyMugenAnimationFile() {
 	return ret;
 }
 
-MugenAnimations loadMugenAnimationFile(std::string tPath) {
+MugenAnimations loadMugenAnimationFile(const std::string& tPath) {
 	return loadMugenAnimationFile(tPath.data());
 }
 
@@ -517,7 +517,7 @@ MugenAnimations loadMugenAnimationFile(const char * tPath)
 	loadMugenDefScript(&defScript, tPath);
 
 	loadAnimationFileFromDefScript(&ret, &defScript);
-	unloadMugenDefScript(defScript);
+	unloadMugenDefScript(&defScript);
 
 	return ret;
 }
@@ -565,7 +565,7 @@ MugenAnimation * createOneFrameMugenAnimationForSprite(int tSpriteGroup, int tSp
 	step->mAttackHitboxes = new_list();
 	step->mGroupNumber = tSpriteGroup;
 	step->mSpriteNumber = tSpriteItem;
-	step->mDelta = makePosition(0, 0, 0);
+	step->mDelta = Vector2D(0, 0);
 	step->mDuration = INF;
 	step->mFlags = uint32_t(MugenAnimationStepFlags::NONE);
 	step->mSrcBlendFactor = step->mDstBlendFactor = 1.0;
@@ -584,29 +584,29 @@ MugenAnimation * createOneFrameMugenAnimationForSprite(int tSpriteGroup, int tSp
 	return e;
 }
 
-void destroyMugenAnimation(MugenAnimation * tAnimation)
+void destroyMugenAnimation(MugenAnimation* tAnimation)
 {
 	unloadSingleMugenAnimation(tAnimation);
 	freeMemory(tAnimation);
 }
 
-Vector3DI getAnimationFirstElementSpriteSize(MugenAnimation * tAnimation, MugenSpriteFile* tSprites)
+Vector2DI getAnimationFirstElementSpriteSize(MugenAnimation* tAnimation, MugenSpriteFile* tSprites)
 {
 	assert(vector_size(&tAnimation->mSteps));
 	MugenAnimationStep* firstStep = (MugenAnimationStep*)vector_get(&tAnimation->mSteps, 0);
 	
 	MugenSpriteFileSprite* sprite = getMugenSpriteFileTextureReference(tSprites, firstStep->mGroupNumber, firstStep->mSpriteNumber);
-	if(!sprite)	return makeVector3DI(0, 0, 0);
-	return makeVector3DI(sprite->mOriginalTextureSize.x, sprite->mOriginalTextureSize.y, 0);
+	if(!sprite)	return Vector2DI(0, 0);
+	return Vector2DI(sprite->mOriginalTextureSize.x, sprite->mOriginalTextureSize.y);
 }
 
-Vector3D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, MugenSpriteFile* tSprites)
+Vector2D getAnimationFirstElementSpriteOffset(MugenAnimation* tAnimation, MugenSpriteFile* tSprites)
 {
 	assert(vector_size(&tAnimation->mSteps));
 	MugenAnimationStep* firstStep = (MugenAnimationStep*)vector_get(&tAnimation->mSteps, 0);
 
 	MugenSpriteFileSprite* sprite = getMugenSpriteFileTextureReference(tSprites, firstStep->mGroupNumber, firstStep->mSpriteNumber);
-	if (!sprite) return makePosition(0, 0, 0);
+	if (!sprite) return Vector2D(0, 0);
 	return sprite->mAxisOffset;
 }
 

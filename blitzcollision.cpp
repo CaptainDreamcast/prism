@@ -233,7 +233,7 @@ int addBlitzCollisionAttackMugen(int tEntityID, CollisionListData* tList) {
 	return collisionID;
 }
 
-int addBlitzCollisionRect(int tEntityID, CollisionListData* tList, CollisionRect tRectangle)
+int addBlitzCollisionRect(int tEntityID, CollisionListData* tList, const CollisionRect& tRectangle)
 {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
 	int collisionObjectID = addEmptyCollisionObject(e, tList, 1);
@@ -243,13 +243,13 @@ int addBlitzCollisionRect(int tEntityID, CollisionListData* tList, CollisionRect
 	return collisionObjectID;
 }
 
-void changeBlitzCollisionRect(int tEntityID, int tCollisionID, CollisionRect tRectangle) {
+void changeBlitzCollisionRect(int tEntityID, int tCollisionID, const CollisionRect& tRectangle) {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
 	BlitzCollisionObject* object = &e->mCollisionObjects[tCollisionID];
 	changeCollisionRectangleInCollisionHandler(object->mCollisionHandlerElement, tRectangle);
 }
 
-int addBlitzCollisionCirc(int tEntityID, CollisionListData* tList, CollisionCirc tCircle)
+int addBlitzCollisionCirc(int tEntityID, CollisionListData* tList, const CollisionCirc& tCircle)
 {
 	CollisionEntry* e = getBlitzCollisionEntry(tEntityID);
 	int collisionObjectID = addEmptyCollisionObject(e, tList, 1);

@@ -8,6 +8,10 @@
 #include "prism/system.h"
 #include "prism/debug.h"
 
+static struct {
+	int mIsMinusDebugCheckEnabled;
+} gPrismFileGeneralData;
+
 using namespace std;
 
 const char* getPureFileName(const char* path) {
@@ -102,6 +106,17 @@ void getPathToFile(char * tDest, const char * tPath)
 	if (pathEnd != NULL) pathEnd[1] = '\0';
 }
 
+void getPathToFile(std::string& oDest, const char* tPath)
+{
+	const auto pathEnd = strrchr(tPath, '/');
+	if (!pathEnd) {
+		oDest = tPath;
+		return;
+	}
+	const auto n = pathEnd - tPath + 1;
+	oDest = std::string(tPath, n);
+}
+
 static int isFileMemoryMapped(FileHandler tFile) {
 	void* data = fileMemoryMap(tFile);
 	return data != NULL;
@@ -151,7 +166,7 @@ Buffer makeBufferEmptyOwned() {
 	return makeBufferInternal(NULL, 0, 1);
 }
 
-Buffer copyBuffer(Buffer tBuffer) {
+Buffer copyBuffer(const Buffer& tBuffer) {
 	Buffer ret;
 	ret.mIsOwned = 1;
 	ret.mLength = tBuffer.mLength;
@@ -161,7 +176,7 @@ Buffer copyBuffer(Buffer tBuffer) {
 	return ret;
 }
 
-Buffer makeBufferOwnedIfNecessary(Buffer tBuffer)
+Buffer makeBufferOwnedIfNecessary(const Buffer& tBuffer)
 {
 	if (tBuffer.mIsOwned) return tBuffer;
 	else return copyBuffer(tBuffer);
@@ -211,13 +226,13 @@ Buffer copyStringToBuffer(const std::string& tString)
 	return copyBuffer(makeBuffer((void*)tString.c_str(), tString.size()));
 }
 
-void bufferToFile(const char* tFileDir, Buffer tBuffer) {
+void bufferToFile(const char* tFileDir, const Buffer& tBuffer) {
 	FileHandler file = fileOpen(tFileDir, O_WRONLY);
 	fileWrite(file, tBuffer.mData, tBuffer.mLength);
 	fileClose(file);
 }
 
-void freeBuffer(Buffer buffer) {
+void freeBuffer(Buffer& buffer) {
 	debugLog("Freeing buffer.");
 	if (buffer.mIsOwned) {
 		debugLog("Freeing owned memory");
@@ -240,7 +255,6 @@ void appendTerminationSymbolToBuffer(Buffer* tBuffer) {
 		tBuffer->mData = reallocMemory(tBuffer->mData, tBuffer->mLength + 1);
 	}
 
-
 	char* buf = (char*)tBuffer->mData;
 	buf[tBuffer->mLength] = '\0';
 	tBuffer->mLength++;
@@ -260,7 +274,7 @@ void fileToMemory(void* tDst, int tSize, const char* tPath) {
 	freeBuffer(b);
 }
 
-BufferPointer getBufferPointer(Buffer tBuffer)
+BufferPointer getBufferPointer(const Buffer& tBuffer)
 {
 	return (BufferPointer)tBuffer.mData;
 }
@@ -320,7 +334,7 @@ string readLineFromTextStreamBufferPointer(BufferPointer * tPointer)
 	return s;
 }
 
-std::string readLineOrEOFFromTextStreamBufferPointer(BufferPointer * tPointer, Buffer tBuffer)
+std::string readLineOrEOFFromTextStreamBufferPointer(BufferPointer * tPointer, const Buffer& tBuffer)
 {
 	string s;
 	while (!isBufferPointerOver(*tPointer, tBuffer) && **tPointer != '\n') {
@@ -331,7 +345,7 @@ std::string readLineOrEOFFromTextStreamBufferPointer(BufferPointer * tPointer, B
 	return s;
 }
 
-int isBufferPointerOver(BufferPointer tPointer, Buffer tBuffer)
+int isBufferPointerOver(BufferPointer tPointer, const Buffer& tBuffer)
 {
 	return tPointer >= ((char*)tBuffer.mData + tBuffer.mLength);
 }
@@ -365,7 +379,7 @@ void appendBufferString(Buffer* tBuffer, const char* tString, int tLength) {
 	memcpy(pos, tString, tLength);
 }
 
-void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer) {
+void appendBufferBuffer(Buffer* tBuffer, const Buffer& tInputBuffer) {
 	appendBufferString(tBuffer, (char*)tInputBuffer.mData, tInputBuffer.mLength);
 }
 
@@ -389,4 +403,14 @@ std::string sanitizeFileNameWithInvalidCharacters(const std::string& tPathWithIn
 		else if (c == '/' || c == '\\' || c == '.') ret.push_back(c);
 	}
 	return ret;
+}
+
+int isDebugMinusCheckEnabled()
+{
+	return gPrismFileGeneralData.mIsMinusDebugCheckEnabled;
+}
+
+void setDebugMinusCheckEnabled(int tIsEnabled)
+{
+	gPrismFileGeneralData.mIsMinusDebugCheckEnabled = tIsEnabled;
 }

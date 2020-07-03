@@ -55,22 +55,22 @@ void createDirectory(const char* tPath);
 Buffer makeBuffer(void* tData, uint32_t tLength);
 Buffer makeBufferOwned(void* tData, uint32_t tLength);
 Buffer makeBufferEmptyOwned();
-Buffer copyBuffer(Buffer tBuffer);
-Buffer makeBufferOwnedIfNecessary(Buffer tBuffer);
+Buffer copyBuffer(const Buffer& tBuffer);
+Buffer makeBufferOwnedIfNecessary(const Buffer& tBuffer);
 Buffer fileToBuffer(const char* path);
 Buffer copyStringToBuffer(const std::string& tString);
-void bufferToFile(const char* tPath, Buffer tBuffer);
-void freeBuffer(Buffer buffer);
+void bufferToFile(const char* tPath, const Buffer& tBuffer);
+void freeBuffer(Buffer& buffer);
 void appendTerminationSymbolToBuffer(Buffer* tBuffer);
 void fileToMemory(void* tDst, int tSize, const char* tPath);
-BufferPointer getBufferPointer(Buffer tBuffer);
+BufferPointer getBufferPointer(const Buffer& tBuffer);
 void readFromBufferPointer(void* tDst, BufferPointer* tPointer, uint32_t tSize);
 int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer);
 double readFloatFromTextStreamBufferPointer(BufferPointer* tPointer);
 std::string readStringFromTextStreamBufferPointer(BufferPointer* tPointer);
 std::string readLineFromTextStreamBufferPointer(BufferPointer* tPointer);
-std::string readLineOrEOFFromTextStreamBufferPointer(BufferPointer* tPointer, Buffer tBuffer);
-int isBufferPointerOver(BufferPointer tPointer, Buffer tBuffer);
+std::string readLineOrEOFFromTextStreamBufferPointer(BufferPointer* tPointer, const Buffer& tBuffer);
+int isBufferPointerOver(BufferPointer tPointer, const Buffer& tBuffer);
 
 void appendBufferChar(Buffer* tBuffer, char tChar);
 void appendBufferUint32(Buffer* tBuffer, uint32_t tInteger);
@@ -78,7 +78,7 @@ void appendBufferInt32(Buffer* tBuffer, int32_t tInteger);
 void appendBufferInteger(Buffer* tBuffer, int tInteger);
 void appendBufferFloat(Buffer* tBuffer, float tFloat);
 void appendBufferString(Buffer* tBuffer, const char* tString, int tLength);
-void appendBufferBuffer(Buffer* tBuffer, Buffer tInputBuffer);
+void appendBufferBuffer(Buffer* tBuffer, const Buffer& tInputBuffer);
 
 void setActiveFileSystemOnStartup();
 void initFileSystem();
@@ -88,7 +88,7 @@ void setWorkingDirectory(const char* path);
 const char* getFileSystem();
 const char* getWorkingDirectory();
 
-void mountRomdiskFromBuffer(Buffer b, const char* tMountPath);
+void mountRomdiskFromBuffer(const Buffer& b, const char* tMountPath);
 void mountRomdisk(const char* tFilePath, const char* tMountPath);
 void unmountRomdisk(const char* tMountPath);
 
@@ -104,7 +104,10 @@ void cleanPathSlashes(char* tPath);
 void cleanPathSlashes(std::string& tPath);
 void getFullPath(char* tDest, const char* tPath);
 void getPathToFile(char* tDest, const char* tPath);
+void getPathToFile(std::string& oDest, const char* tPath);
 
 void printDirectory(const char* tPath);
 
 std::string sanitizeFileNameWithInvalidCharacters(const std::string& tPathWithInvalidCharacters);
+int isDebugMinusCheckEnabled();
+void setDebugMinusCheckEnabled(int tIsEnabled);

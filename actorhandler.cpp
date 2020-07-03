@@ -103,12 +103,12 @@ void drawActorHandler()
 	list_map(&gPrismActorHandlerData.mSequentialActorList, drawSingleActor, NULL);
 }
 
-int instantiateActor(ActorBlueprint tBP)
+int instantiateActor(const ActorBlueprint& tBP)
 {
 	return instantiateActorWithData(tBP, NULL, 0);
 }
 
-int instantiateActorWithData(ActorBlueprint tBP, void * tData, int tIsOwned)
+int instantiateActorWithData(const ActorBlueprint& tBP, void * tData, int tIsOwned)
 {
 	Actor* e = (Actor*)allocMemory(sizeof(Actor));
 	e->mBP = tBP;

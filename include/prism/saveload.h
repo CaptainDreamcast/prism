@@ -20,10 +20,10 @@ enum class PrismSaveSlot : int32_t {
 #define DREAMCAST_SAVE_ICON_PALETTE_SIZE	32
 #define DREAMCAST_SAVE_ICON_BUFFER_SIZE		512
 
-void savePrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName, Buffer tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, Buffer tIconDataBuffer, Buffer tPaletteBuffer);
+void savePrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName, const Buffer& tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, const Buffer& tIconDataBuffer, const Buffer& tPaletteBuffer);
 Buffer loadPrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName);
 void deletePrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName);
 int isPrismSaveSlotActive(PrismSaveSlot tSaveSlot);
 int hasPrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName);
 size_t getAvailableSizeForSaveSlot(PrismSaveSlot tSaveSlot);
-size_t getPrismGameSaveSize(Buffer tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, Buffer tIconDataBuffer, Buffer tPaletteBuffer);
+size_t getPrismGameSaveSize(const Buffer& tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, const Buffer& tIconDataBuffer, const Buffer& tPaletteBuffer);

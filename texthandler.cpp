@@ -113,7 +113,7 @@ void drawHandledTexts() {
 	list_map(&gPrismTextHandlerData.mTexts, drawSingleText, NULL);
 }
 
-int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration) {
+int addHandledText(const Position& tPosition, const char* tText, int tFont, Color tColor, const Vector3D& tFontSize, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize, Duration tDuration) {
 	HandledText* e = (HandledText*)allocMemory(sizeof(HandledText));
 
 	strcpy(e->mText, tText);
@@ -142,7 +142,7 @@ int addHandledText(Position tPosition, char* tText, int tFont, Color tColor, Vec
 	return list_push_front_owned(&gPrismTextHandlerData.mTexts, e);
 }
 
-int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color tColor, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize, Duration tDuration, Duration tBuildupDuration) {
+int addHandledTextWithBuildup(const Position& tPosition, const char* tText, int tFont, Color tColor, const Vector3D& tFontSize, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize, Duration tDuration, Duration tBuildupDuration) {
 	int id = addHandledText(tPosition, tText, tFont, tColor, tFontSize, tBreakSize, tTextBoxSize, tDuration);
 	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, id);
 	e->mSingleLetterBuildupDuration = tBuildupDuration / strlen(tText);
@@ -150,9 +150,9 @@ int addHandledTextWithBuildup(Position tPosition, char* tText, int tFont, Color 
 	return id;
 }
 
-int addHandledTextWithInfiniteDurationOnOneLine(Position tPosition, char * tText, int tFont, Color tColor, Vector3D tFontSize)
+int addHandledTextWithInfiniteDurationOnOneLine(const Position& tPosition, const char * tText, int tFont, Color tColor, const Vector3D& tFontSize)
 {
-	return addHandledText(tPosition, tText, tFont, tColor, tFontSize, makePosition(0, 0, 0), makePosition(INF, INF, INF), INF);
+	return addHandledText(tPosition, tText, tFont, tColor, tFontSize, Vector3D(0, 0, 0), Vector3D(INF, INF, INF), INF);
 }
 
 void setHandledText(int tID, char * tText)
@@ -162,14 +162,14 @@ void setHandledText(int tID, char * tText)
 	strcpy(e->mDrawnText, tText);
 }
 
-void setHandledTextSoundEffects(int tID, SoundEffectCollection tSoundEffects)
+void setHandledTextSoundEffects(int tID, const SoundEffectCollection& tSoundEffects)
 {
 	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, tID);
 	e->mHasSoundEffects = 1;
 	e->mSoundEffects = tSoundEffects;
 }
 
-void setHandledTextPosition(int tID, Position tPosition)
+void setHandledTextPosition(int tID, const Position& tPosition)
 {
 	HandledText* e = (HandledText*)list_get(&gPrismTextHandlerData.mTexts, tID);
 	e->mPosition = tPosition;

@@ -150,7 +150,7 @@ FileReader getFileFileReader() {
 	return ret;
 }
 
-void initBufferFileReaderReadOnlyBuffer(FileReader* tReader, Buffer tBuffer) {
+void initBufferFileReaderReadOnlyBuffer(FileReader* tReader, const Buffer& tBuffer) {
 	MugenSpriteFileBufferReaderData* data = (MugenSpriteFileBufferReaderData*)allocMemory(sizeof(MugenSpriteFileBufferReaderData));
 	data->b = tBuffer;
 	data->p = getBufferPointer(data->b);

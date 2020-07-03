@@ -14,7 +14,7 @@ static struct {
 	Vector3D mOneMinusDragCoefficient;
 } gPrismPhysicsData;
 
-void setMaxVelocity(Velocity tVelocity) {
+void setMaxVelocity(const Velocity& tVelocity) {
   gPrismPhysicsData.mMaxVelocity = tVelocity;
 }
 
@@ -31,15 +31,15 @@ void resetMaxVelocity() {
   setMaxVelocityDouble(INFINITY);
 }
 
-void setDragCoefficient(Vector3D tDragCoefficient) {
-  gPrismPhysicsData.mOneMinusDragCoefficient = vecAdd(makePosition(1, 1, 1), vecScale(tDragCoefficient, -1));
+void setDragCoefficient(const Vector3D& tDragCoefficient) {
+  gPrismPhysicsData.mOneMinusDragCoefficient = vecAdd(Vector3D(1, 1, 1), vecScale(tDragCoefficient, -1));
 }
 
 void resetDragCoefficient() {
-	gPrismPhysicsData.mOneMinusDragCoefficient = makePosition(1,1,1);
+	gPrismPhysicsData.mOneMinusDragCoefficient = Vector3D(1,1,1);
 }
 
-void setGravity(Gravity tGravity) {
+void setGravity(const Gravity& tGravity) {
   gPrismPhysicsData.mGravity = tGravity;
 }
 
@@ -110,10 +110,10 @@ void resumePhysics() {
 	gPrismPhysicsData.mIsPaused = 0;
 }
 
-int isEmptyVelocity(Velocity tVelocity) {
+int isEmptyVelocity(const Velocity& tVelocity) {
   return tVelocity.x == 0 && tVelocity.y == 0 && tVelocity.z == 0;
 }
-Velocity normalizeVelocity(Velocity tVelocity) {
+Velocity normalizeVelocity(const Velocity& tVelocity) {
 	return vecNormalize(tVelocity);
 }
 

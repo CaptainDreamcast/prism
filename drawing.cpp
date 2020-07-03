@@ -62,7 +62,7 @@ void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
 	}
 }
 
-int hasToLinebreak(const char* tText, int tCurrent, Position tTopLeft, Position tPos, Vector3D tFontSize, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+int hasToLinebreak(const char* tText, int tCurrent, const Position& tTopLeft, const Position& tPos, const Vector3D& tFontSize, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize) {
 
 	if (tText[0] == ' ') return 0;
 	if (tText[0] == '\n') return 1;
@@ -72,37 +72,39 @@ int hasToLinebreak(const char* tText, int tCurrent, Position tTopLeft, Position 
 	int items = sscanf(tText + tCurrent, "%1023s%n", word, &positionsRead);
 	if (items != 1) return 0;
 
-	Position delta = makePosition(positionsRead * tFontSize.x + (positionsRead - 1) * tBreakSize.x, 0, 0);
+	Position delta = Vector3D(positionsRead * tFontSize.x + (positionsRead - 1) * tBreakSize.x, 0, 0);
 	Position after = vecAdd(tPos, delta);
 	Position bottomRight = vecAdd(tTopLeft, tTextBoxSize);
 
 	return (after.x > bottomRight.x);
 }
 
-Rectangle makeRectangleFromTexture(TextureData tTexture) {
+Rectangle makeRectangleFromTexture(const TextureData& tTexture) {
 	return makeRectangle(0, 0, tTexture.mTextureSize.x - 1, tTexture.mTextureSize.y - 1);
 }
 
-Rectangle scaleRectangle(Rectangle tRect, Vector3D tScale) {
-	tRect.topLeft.x = (int)(tRect.topLeft.x*tScale.x);
-	tRect.topLeft.y = (int)(tRect.topLeft.y*tScale.y);
+Rectangle scaleRectangle(const Rectangle& tRect, const Vector3D& tScale) {
+	Rectangle ret;
+	ret.topLeft.x = (int)(tRect.topLeft.x*tScale.x);
+	ret.topLeft.y = (int)(tRect.topLeft.y*tScale.y);
 
-	tRect.bottomRight.x = (int)(tRect.bottomRight.x*tScale.x);
-	tRect.bottomRight.y = (int)(tRect.bottomRight.y*tScale.y);
-	return tRect;
+	ret.bottomRight.x = (int)(tRect.bottomRight.x*tScale.x);
+	ret.bottomRight.y = (int)(tRect.bottomRight.y*tScale.y);
+	return ret;
 }
 
-Rectangle translateRectangle(Rectangle tRect, Position tOffset) {
-	tRect.topLeft.x += (int)tOffset.x;
-	tRect.topLeft.y += (int)tOffset.y;
+Rectangle translateRectangle(const Rectangle& tRect, const Position& tOffset) {
+	Rectangle ret = tRect;
+	ret.topLeft.x += (int)tOffset.x;
+	ret.topLeft.y += (int)tOffset.y;
 
-	tRect.bottomRight.x += (int)tOffset.x;
-	tRect.bottomRight.y += (int)tOffset.y;
-	return tRect;
+	ret.bottomRight.x += (int)tOffset.x;
+	ret.bottomRight.y += (int)tOffset.y;
+	return ret;
 }
 
-Position getTextureMiddlePosition(TextureData tTexture) {
-	return makePosition(tTexture.mTextureSize.x / 2, tTexture.mTextureSize.y / 2, 0);
+Position getTextureMiddlePosition(const TextureData& tTexture) {
+	return Vector3D(tTexture.mTextureSize.x / 2, tTexture.mTextureSize.y / 2, 0);
 }
 
 Rectangle makeRectangle(int x, int y, int w, int h) {
@@ -114,7 +116,7 @@ Rectangle makeRectangle(int x, int y, int w, int h) {
 	return ret;
 }
 
-void printRectangle(Rectangle r) {
+void printRectangle(const Rectangle& r) {
 	logg("Rectangle");
 	logDouble(r.topLeft.x);
 	logDouble(r.topLeft.y);
@@ -123,12 +125,12 @@ void printRectangle(Rectangle r) {
 
 }
 
-void drawText(const char* tText, Position tPosition, TextSize tSize, Color tColor) {
+void drawText(const char* tText, const Position& tPosition, TextSize tSize, Color tColor) {
 	drawAdvancedText(tText, tPosition, makeFontSize(tSize, tSize), tColor, 0);
 }
 
-void drawAdvancedText(const char* tText, Position tPosition, Vector3D tFontSize, Color tColor, TextSize tBreakSize) {
-	drawMultilineText(tText, tText, tPosition, tFontSize, tColor, makeFontSize(tBreakSize, 0), makePosition(INF, INF, INF));
+void drawAdvancedText(const char* tText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, TextSize tBreakSize) {
+	drawMultilineText(tText, tText, tPosition, tFontSize, tColor, makeFontSize(tBreakSize, 0), Vector3D(INF, INF, INF));
 }
 
 Vector3D makeFontSize(int x, int y) {

@@ -27,8 +27,8 @@ void updateActorHandler();
 void drawActorHandler();
 
 ActorBlueprint makeActorBlueprint(LoadActorFunction tLoad, UnloadActorFunction tUnload = NULL, UpdateActorFunction tUpdate = NULL, DrawActorFunction tDraw = NULL, IsActorActiveFunction tIsActive = NULL);
-int instantiateActor(ActorBlueprint tBP);
-int instantiateActorWithData(ActorBlueprint tBP, void* tData, int tIsOwned);
+int instantiateActor(const ActorBlueprint& tBP);
+int instantiateActorWithData(const ActorBlueprint& tBP, void* tData, int tIsOwned);
 void performOnActor(int tID, ActorInteractionFunction tFunc, void* tCaller);
 void setActorUnpausable(int tID);
 void removeActor(int tID);

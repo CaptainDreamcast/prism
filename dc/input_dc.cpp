@@ -283,10 +283,10 @@ int hasShotGunSingle(int i)  {
 
 Vector3D getShotPositionSingle(int i) {
 	(void)i; // TODO: light gun multiplayer
-	if(!gData.mLightGuns[i].mIsActive) return makePosition(0,0,0);
+	if(!gData.mLightGuns[i].mIsActive) return Vector3D(0,0,0);
 	int x, y;
 	maple_gun_read_pos(&x, &y);
-	return makePosition(x, y, 0);
+	return Vector3D(x, y, 0);
 }
 
 void forceMouseCursorToWindow() {}

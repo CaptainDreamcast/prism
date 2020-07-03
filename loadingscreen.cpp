@@ -21,7 +21,7 @@ static void drawLoadingText() {
 	int i;
 	for(i = 0; i < gPrismLoadingScreenData.mTicks; i++) text[pos++] = '.';
 	text[pos] = '\0';
-	drawMugenText(text, makePosition(20, 20, 10), -1);
+	drawMugenText(text, Vector3D(20, 20, 10), -1);
 }
 
 static void loadScreenLoop() {

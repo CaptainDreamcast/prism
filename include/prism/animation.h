@@ -73,34 +73,34 @@ double getDurationPercentage(Duration tNow, Duration tDuration);
 void setupAnimationHandler();
 void updateAnimationHandler();
 void drawHandledAnimations();
-AnimationHandlerElement* playAnimation(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller);
-AnimationHandlerElement* playAnimationLoop(Position tPosition, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
-AnimationHandlerElement* playOneFrameAnimationLoop(Position tPosition, TextureData* tTextures);
+AnimationHandlerElement* playAnimation(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller);
+AnimationHandlerElement* playAnimationLoop(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition);
+AnimationHandlerElement* playOneFrameAnimationLoop(const Position& tPosition, TextureData* tTextures);
 
-void changeAnimation(AnimationHandlerElement* tElement, TextureData* tTextures, Animation tAnimation, Rectangle tTexturePosition);
+void changeAnimation(AnimationHandlerElement* tElement, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition);
 
 
 void setAnimationScreenPositionReference(AnimationHandlerElement* tElement, Position* tScreenPositionReference);
 void setAnimationBasePositionReference(AnimationHandlerElement* tElement, Position* tBasePositionReference);
-void setAnimationScale(AnimationHandlerElement* tElement, Vector3D tScale, Position tCenter);
-void setAnimationSize(AnimationHandlerElement* tElement, Vector3D tSize, Position tCenter);
-void setAnimationRotationZ(AnimationHandlerElement* tElement, double tAngle, Position tCenter);
+void setAnimationScale(AnimationHandlerElement* tElement, const Vector3D& tScale, const Position& tCenter);
+void setAnimationSize(AnimationHandlerElement* tElement, const Vector3D& tSize, const Position& tCenter);
+void setAnimationRotationZ(AnimationHandlerElement* tElement, double tAngle, const Position& tCenter);
 void setAnimationColor(AnimationHandlerElement* tElement, double r, double g, double b);
 void setAnimationColorType(AnimationHandlerElement* tElement, Color tColor);
 void setAnimationTransparency(AnimationHandlerElement* tElement, double a);
 void setAnimationVisibility(AnimationHandlerElement* tElement, int tIsVisible);
 void setAnimationCB(AnimationHandlerElement* tElement, AnimationPlayerCB tCB, void* tCaller);
-void setAnimationPosition(AnimationHandlerElement* tElement, Position tPosition);
-void setAnimationTexturePosition(AnimationHandlerElement* tElement, Rectangle tTexturePosition);
+void setAnimationPosition(AnimationHandlerElement* tElement, const Position& tPosition);
+void setAnimationTexturePosition(AnimationHandlerElement* tElement, const Rectangle& tTexturePosition);
 void setAnimationLoop(AnimationHandlerElement* tElement, int tIsLooping);
 void removeAnimationCB(AnimationHandlerElement* tElement);
 void fadeInAnimation(AnimationHandlerElement* tElement, Duration tDuration);
-void setAnimationCenter(AnimationHandlerElement* tElement, Position tCenter);
+void setAnimationCenter(AnimationHandlerElement* tElement, const Position& tCenter);
 void inverseAnimationVertical(AnimationHandlerElement* tElement);
 void inverseAnimationHorizontal(AnimationHandlerElement* tElement);
 void setAnimationVerticalInversion(AnimationHandlerElement* tElement, int tValue);
 void setAnimationHorizontalInversion(AnimationHandlerElement* tElement, int tValue);
-void setAnimationHandlerScreenRotationZ(double tAngle, Vector3D tCenter);
+void setAnimationHandlerScreenRotationZ(double tAngle, const Vector3D& tCenter);
 void setAnimationHandlerScreenTint(double r, double g, double b);
 void resetAnimationHandlerScreenTint();
 

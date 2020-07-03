@@ -119,14 +119,14 @@ FramerateSelectReturnType selectFramerate() {
     startDrawing();
 
     for (i = 0; i < FRAMERATE_AMOUNT; i++) {
-      drawText(selectableArray[i].ArrayToBePrinted, makePosition(selectableArray[i].PositionX, selectableArray[i].PositionY, 1), selectableArray[i].FontSize, COLOR_WHITE);
+      drawText(selectableArray[i].ArrayToBePrinted, Vector3D(selectableArray[i].PositionX, selectableArray[i].PositionY, 1), selectableArray[i].FontSize, COLOR_WHITE);
     }
-    drawText(selectableArray[whichArraySelected].ArrayToBePrinted, makePosition(selectableArray[whichArraySelected].PositionX, selectableArray[whichArraySelected].PositionY, 2), selectableArray[whichArraySelected].FontSize, COLOR_GREEN);
-    drawText(currentOptionArray.ArrayToBePrinted, makePosition(currentOptionArray.PositionX, currentOptionArray.PositionY, 1), currentOptionArray.FontSize, COLOR_WHITE);
+    drawText(selectableArray[whichArraySelected].ArrayToBePrinted, Vector3D(selectableArray[whichArraySelected].PositionX, selectableArray[whichArraySelected].PositionY, 2), selectableArray[whichArraySelected].FontSize, COLOR_GREEN);
+    drawText(currentOptionArray.ArrayToBePrinted, Vector3D(currentOptionArray.PositionX, currentOptionArray.PositionY, 1), currentOptionArray.FontSize, COLOR_WHITE);
 
     if (whichArraySelected == PAL_INDEX) {
       for (i = 0; i < FRAMERATE_WARNING_ARRAY_AMOUNT; i++)
-        drawText(warningArray[i].ArrayToBePrinted, makePosition(warningArray[i].PositionX, warningArray[i].PositionY, 1), warningArray[i].FontSize, COLOR_RED);
+        drawText(warningArray[i].ArrayToBePrinted, Vector3D(warningArray[i].PositionX, warningArray[i].PositionY, 1), warningArray[i].FontSize, COLOR_RED);
     }
 
     stopDrawing();

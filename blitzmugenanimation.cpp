@@ -64,7 +64,7 @@ void addBlitzMugenAnimationComponentGeneral(int tEntityID, MugenSpriteFile * tSp
 	e.mEntityID = tEntityID;
 	e.mSprites = tSprites;
 	e.mAnimations = tAnimations;
-	e.mAnimationElement = addMugenAnimation(tStartAnimation, tSprites, makePosition(0, 0, 0));
+	e.mAnimationElement = addMugenAnimation(tStartAnimation, tSprites, Vector3D(0, 0, 0));
 	e.mIsStatic = tIsStatic;
 	e.mCB = NULL;
 	setMugenAnimationBasePosition(e.mAnimationElement, getBlitzEntityPositionReference(tEntityID));
@@ -192,7 +192,7 @@ int getBlitzMugenAnimationVisibility(int tEntityID)
 	return getMugenAnimationVisibility(e->mAnimationElement);
 }
 
-Vector3D getBlitzMugenAnimationDrawScale(int tEntityID)
+Vector2D getBlitzMugenAnimationDrawScale(int tEntityID)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 	return getMugenAnimationDrawScale(e->mAnimationElement);
@@ -326,7 +326,7 @@ void setBlitzMugenAnimationBlendType(int tEntityID, BlendType tBlendType)
 	setMugenAnimationBlendType(e->mAnimationElement, tBlendType);
 }
 
-void setBlitzMugenAnimationConstraintRectangle(int tEntityID, GeoRectangle tConstraintRectangle)
+void setBlitzMugenAnimationConstraintRectangle(int tEntityID, const GeoRectangle2D& tConstraintRectangle)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 	setMugenAnimationConstraintRectangle(e->mAnimationElement, tConstraintRectangle);
@@ -344,7 +344,7 @@ void setBlitzMugenAnimationBaseDrawScale(int tEntityID, double tScale)
 	setMugenAnimationBaseDrawScale(e->mAnimationElement, tScale);
 }
 
-void setBlitzMugenAnimationDrawSize(int tEntityID, Vector3D tSize)
+void setBlitzMugenAnimationDrawSize(int tEntityID, const Vector2D& tSize)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 	setMugenAnimationDrawSize(e->mAnimationElement, tSize);

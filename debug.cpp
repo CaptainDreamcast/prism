@@ -132,17 +132,17 @@ static void loadPrismDebug(void* tData) {
 	double offset = (sz.y / 480.0) * 20;
 	int dy = 10;
 
-	gPrismDebug.mSideDisplay.mFPSCounterTextID = addMugenTextMugenStyle("00.0", makePosition(sz.x - offset, offset, 95), makeVector3DI(-1, 1, -1));
+	gPrismDebug.mSideDisplay.mFPSCounterTextID = addMugenTextMugenStyle("00.0", Vector3D(sz.x - offset, offset, 95), Vector3DI(-1, 1, -1));
 
 	gPrismDebug.mSideDisplay.mStartDrawingTime = gPrismDebug.mSideDisplay.mEndDrawingTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID = addMugenTextMugenStyle("000", makePosition(sz.x - offset, offset + dy, 95), makeVector3DI(-1, 1, -1));
+	gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy, 95), Vector3DI(-1, 1, -1));
 
 	gPrismDebug.mSideDisplay.mStartUpdateTime = gPrismDebug.mSideDisplay.mEndUpdateTime = getSystemTicks();
 	gPrismDebug.mSideDisplay.mPreviousStartUpdateTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID = addMugenTextMugenStyle("000", makePosition(sz.x - offset, offset + dy * 2, 95), makeVector3DI(-1, 1, -1));
+	gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy * 2, 95), Vector3DI(-1, 1, -1));
 
 	gPrismDebug.mSideDisplay.mStartWaitingTime = gPrismDebug.mSideDisplay.mEndWaitingTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID = addMugenTextMugenStyle("000", makePosition(sz.x - offset, offset + dy * 3, 95), makeVector3DI(-1, 1, -1));
+	gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy * 3, 95), Vector3DI(-1, 1, -1));
 
 	gPrismDebug.mConsole.mWhiteTexture = createWhiteTexture();
 	gPrismDebug.mConsole.mIsVisible = 0;
@@ -218,7 +218,7 @@ static void updateConsoleText()
 		offset = getMugenTextSizeX(gPrismDebug.mConsole.mConsoleTextID) + 1;
 	}
 	changeMugenText(gPrismDebug.mConsole.mConsoleTextID, gPrismDebug.mConsole.mConsoleText.data());
-	setAnimationPosition(gPrismDebug.mConsole.mConsolePointerAnimationElement, makePosition(20 + offset, 90, CONSOLE_Z + 1));
+	setAnimationPosition(gPrismDebug.mConsole.mConsolePointerAnimationElement, Vector3D(20 + offset, 90, CONSOLE_Z + 1));
 }
 
 static void clearConsoleInput() {
@@ -313,21 +313,21 @@ static void keyboardInputReceived(void* tCaller, KeyboardKeyPrism tKey) {
 }
 
 static void setConsoleVisible() {
-	gPrismDebug.mConsole.mBackgroundAnimationElement = playOneFrameAnimationLoop(makePosition(0, 0, CONSOLE_Z), &gPrismDebug.mConsole.mWhiteTexture);
+	gPrismDebug.mConsole.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, CONSOLE_Z), &gPrismDebug.mConsole.mWhiteTexture);
 	ScreenSize sz = getScreenSize();
-	setAnimationSize(gPrismDebug.mConsole.mBackgroundAnimationElement, makePosition(sz.x, 100, 1), makePosition(0, 0, 0));
+	setAnimationSize(gPrismDebug.mConsole.mBackgroundAnimationElement, Vector3D(sz.x, 100, 1), Vector3D(0, 0, 0));
 	setAnimationColor(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.3, 0.3, 0.3);
 	setAnimationTransparency(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.7);
 
 	for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
 	{
-		gPrismDebug.mConsole.mConsoleArchiveTextID[i] = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleArchiveText[i].data(), makePosition(20, 75 - 10 * i, CONSOLE_Z + 1), makeVector3DI(-2, 4, 1));
+		gPrismDebug.mConsole.mConsoleArchiveTextID[i] = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleArchiveText[i].data(), Vector3D(20, 75 - 10 * i, CONSOLE_Z + 1), Vector3DI(-2, 4, 1));
 	}
 
-	gPrismDebug.mConsole.mConsoleTextID = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleText.data(), makePosition(20, 91, CONSOLE_Z + 1), makeVector3DI(-2, 0, 1));
+	gPrismDebug.mConsole.mConsoleTextID = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleText.data(), Vector3D(20, 91, CONSOLE_Z + 1), Vector3DI(-2, 0, 1));
 
-	gPrismDebug.mConsole.mConsolePointerAnimationElement = playOneFrameAnimationLoop(makePosition(20, 90, CONSOLE_Z + 1), &gPrismDebug.mConsole.mWhiteTexture);
-	setAnimationSize(gPrismDebug.mConsole.mConsolePointerAnimationElement, makePosition(6, 1, 1), makePosition(0, 0, 0));
+	gPrismDebug.mConsole.mConsolePointerAnimationElement = playOneFrameAnimationLoop(Vector3D(20, 90, CONSOLE_Z + 1), &gPrismDebug.mConsole.mWhiteTexture);
+	setAnimationSize(gPrismDebug.mConsole.mConsolePointerAnimationElement, Vector3D(6, 1, 1), Vector3D(0, 0, 0));
 	setAnimationColor(gPrismDebug.mConsole.mConsolePointerAnimationElement, 1, 1, 1);
 	updateConsoleText();
 

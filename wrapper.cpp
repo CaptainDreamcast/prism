@@ -152,25 +152,25 @@ void initPrismWrapperWithConfigFile(const char* tPath) {
 
 	MugenDefScript configFile;
 	loadMugenDefScript(&configFile, tPath);
-	gPrismWrapperData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "texthandler", 0);
-	gPrismWrapperData.mIsUsingStageHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "stagehandler", 0);
-	gPrismWrapperData.mIsUsingCollisionAnimationHandler = getMugenDefIntegerOrDefault(&configFile, "Modules", "collisionanimationhandler", 0);
-	gPrismWrapperData.mIsUsingMugen = getMugenDefIntegerOrDefault(&configFile, "Modules", "mugen", 0);
+	gPrismWrapperData.mIsUsingBasicTextHandler = getMugenDefIntegerOrDefault(&configFile, "modules", "texthandler", 0);
+	gPrismWrapperData.mIsUsingStageHandler = getMugenDefIntegerOrDefault(&configFile, "modules", "stagehandler", 0);
+	gPrismWrapperData.mIsUsingCollisionAnimationHandler = getMugenDefIntegerOrDefault(&configFile, "modules", "collisionanimationhandler", 0);
+	gPrismWrapperData.mIsUsingMugen = getMugenDefIntegerOrDefault(&configFile, "modules", "mugen", 0);
 	if (gPrismWrapperData.mIsUsingMugen) {
 		debugLog("Setting up Mugen Module for game");
 		loadMugenTextHandler();
 	}
-	gPrismWrapperData.mIsUsingClipboard = getMugenDefIntegerOrDefault(&configFile, "Modules", "clipboard", 0);
+	gPrismWrapperData.mIsUsingClipboard = getMugenDefIntegerOrDefault(&configFile, "modules", "clipboard", 0);
 	if (gPrismWrapperData.mIsUsingClipboard) {
 		debugLog("Setting up Clipboard for game");
-		char* fontName = getAllocatedMugenDefStringVariable(&configFile, "Clipboard", "font");
+		char* fontName = getAllocatedMugenDefStringVariable(&configFile, "clipboard", "font");
 		addMugenFont(-1, fontName);
 		freeMemory(fontName);
 		initClipboardForGame();
 	}
-	gPrismWrapperData.mIsUsingBlitzModule = getMugenDefIntegerOrDefault(&configFile, "Modules", "blitz", 0);
+	gPrismWrapperData.mIsUsingBlitzModule = getMugenDefIntegerOrDefault(&configFile, "modules", "blitz", 0);
 
-	unloadMugenDefScript(configFile);
+	unloadMugenDefScript(&configFile);
 }
 
 void shutdownPrismWrapper() {
@@ -474,8 +474,6 @@ static void updateScreenAbort() {
 		}
 	}
 }
-
-
 
 static void updateScreen() {
 	setProfilingSectionMarkerCurrentFunction();

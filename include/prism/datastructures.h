@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 
+void convertIntegerToStringFast(std::string& oRet, int tValue);
+void convertFloatToStringFast(std::string& oRet, double tValue);
+
 void turnStringLowercase(char* tString);
 void turnStringLowercase(std::string& tString);
 void copyStringLowercase(char* tDst, const char* tSrc);
@@ -14,8 +17,9 @@ void removeInvalidFileNameElementsFromString(std::string& tString);
 int stringBeginsWithSubstring(const char* tString, const char* tSubstring);
 int stringBeginsWithSubstringCaseIndependent(const char* tString, const char* tSubstring);
 int stringEqualCaseIndependent(const char* tString, const char* tOtherString);
+int isStringLowercase(const char* tString);
 
-std::vector<std::string> splitStringBySeparator(const std::string tString, char tSeparator);
+std::vector<std::string> splitStringBySeparator(const std::string& tString, char tSeparator);
 
 typedef struct ListElement_internal {
 

@@ -152,9 +152,9 @@ void setupStoryboards();
 void shutdownStoryboards();
 void updateStoryboards();
 
-int playStoryboard(char* tPath);
+int playStoryboard(const char* tPath);
 void setStoryboardFinishedCB(int tID, StoryboardFinishedCB tCB, void* tCaller);
 
-int isStoryboard(char* tPath);
+int isStoryboard(const char* tPath);
 
 ActorBlueprint getStoryboardHandlerActorBlueprint();

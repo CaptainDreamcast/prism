@@ -252,7 +252,7 @@ BlitzTimelineAnimations loadBlitzTimelineAnimations(const char * tPath)
 
 	loadAnimationsFromScript(&ret, &script);
 
-	unloadMugenDefScript(script);
+	unloadMugenDefScript(&script);
 	return ret;
 }
 

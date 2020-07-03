@@ -134,7 +134,7 @@ TextureData createWhiteCircleTexture()
 	return ret;
 }
 
-Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc) {
+Buffer turnARGB32BufferIntoARGB16Buffer(const Buffer& tSrc) {
 	int dstSize = tSrc.mLength / 2;
 	char* dst = (char*)allocMemory(dstSize);
 	char* src = (char*)tSrc.mData;
@@ -167,7 +167,7 @@ Buffer turnARGB32BufferIntoARGB16Buffer(Buffer tSrc) {
 /* This twiddling code is copied from pvr_texture.c, and the original
 algorithm was written by Vincent Penne. */
 
-Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
+Buffer twiddleTextureBuffer8(const Buffer& tBuffer, int tWidth, int tHeight) {
     int w = tWidth;
     int h = tHeight;
     int mini = min(w, h);
@@ -188,7 +188,7 @@ Buffer twiddleTextureBuffer8(Buffer tBuffer, int tWidth, int tHeight) {
     return makeBufferOwned(vtex, tBuffer.mLength);
 }
 
-Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight) {
+Buffer twiddleTextureBuffer16(const Buffer& tBuffer, int tWidth, int tHeight) {
 	int w = tWidth;
 	int h = tHeight;
 	int mini = min(w, h);
@@ -216,7 +216,7 @@ Buffer twiddleTextureBuffer16(Buffer tBuffer, int tWidth, int tHeight) {
 #pragma warning(push)
 #pragma warning(disable: 4611)
 #endif
-void saveRGB32ToPNG(Buffer b, int tWidth, int tHeight, const char* tFileDir) {
+void saveRGB32ToPNG(const Buffer& b, int tWidth, int tHeight, const char* tFileDir) {
 	char fullPath[1024];
 	getFullPath(fullPath, tFileDir);
 	FILE *fp = fopen(fullPath, "wb");

@@ -25,7 +25,7 @@ Vector3DI getBlitzMugenAnimationSprite(int tEntityID);
 int getBlitzMugenAnimationIsFacingRight(int tEntityID);
 int getBlitzMugenAnimationIsFacingDown(int tEntityID);
 int getBlitzMugenAnimationVisibility(int tEntityID);
-Vector3D getBlitzMugenAnimationDrawScale(int tEntityID);
+Vector2D getBlitzMugenAnimationDrawScale(int tEntityID);
 
 double getBlitzMugenAnimationDrawAngle(int tEntityID);
 double getBlitzMugenAnimationColorRed(int tEntityID);
@@ -51,13 +51,13 @@ void setBlitzMugenAnimationPositionY(int tEntityID, double tX);
 void setBlitzMugenAnimationVisibility(int tEntityID, int tVisibility);
 void setBlitzMugenAnimationColor(int tEntityID, double tR, double tG, double tB);
 void setBlitzMugenAnimationBaseDrawScale(int tEntityID, double tScale);
-void setBlitzMugenAnimationDrawSize(int tEntityID, Vector3D tSize);
+void setBlitzMugenAnimationDrawSize(int tEntityID, const Vector2D& tSize);
 void setBlitzMugenAnimationAngle(int tEntityID, double tRotation);
 void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void*), void* tCaller);
 void setBlitzMugenAnimationInvisible(int tEntityID);
 void setBlitzMugenAnimationVisibility(int tEntityID, int tIsVisible);
 void setBlitzMugenAnimationBlendType(int tEntityID, BlendType tBlendType);
-void setBlitzMugenAnimationConstraintRectangle(int tEntityID, GeoRectangle tConstraintRectangle);
+void setBlitzMugenAnimationConstraintRectangle(int tEntityID, const GeoRectangle2D& tConstraintRectangle);
 
 void setBlitzMugenAnimationNoLoop(int tEntityID);
 void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void*), void* tCaller);

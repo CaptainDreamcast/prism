@@ -38,9 +38,11 @@ double interpolateLinear(double a, double b, double t);
 double fstsqrt(double x);
 
 Matrix4D makeIdentityMatrix4D();
-Matrix4D matMult4D(Matrix4D tA, Matrix4D tB);
-Matrix4D createScaleMatrix4D(Vector3D tScale);
-Matrix4D createTranslationMatrix4D(Vector3D tTranslation);
+Matrix4D matMult4D(const Matrix4D& tA, const Matrix4D& tB);
+Matrix4D createScaleMatrix4D(const Vector2D& tScale);
+Matrix4D createScaleMatrix4D(const Vector3D& tScale);
+Matrix4D createTranslationMatrix4D(const Vector2D& tTranslation);
+Matrix4D createTranslationMatrix4D(const Vector3D& tTranslation);
 Matrix4D createRotationZMatrix4D(double tAngle);
 Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, double tUp, double tBottom, double tNear, double tFar);
 

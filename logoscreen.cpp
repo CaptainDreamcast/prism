@@ -55,7 +55,7 @@ static void loadWrapperLogoScreen() {
 		return;
 	}
 	gPrismLogoScreenData.mBGTexture = loadTexture(bgPath);
-	gPrismLogoScreenData.mBG = playOneFrameAnimationLoop(makePosition(0,0,1), &gPrismLogoScreenData.mBGTexture);
+	gPrismLogoScreenData.mBG = playOneFrameAnimationLoop(Vector3D(0,0,1), &gPrismLogoScreenData.mBGTexture);
 
 	addFadeIn(20, logoFadeInOver, NULL);
 }

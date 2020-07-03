@@ -24,4 +24,4 @@ struct FileReader {
 FileReader getBufferFileReader();
 FileReader getFileFileReader();
 
-void initBufferFileReaderReadOnlyBuffer(FileReader* tReader, Buffer tBuffer);
+void initBufferFileReaderReadOnlyBuffer(FileReader* tReader, const Buffer& tBuffer);

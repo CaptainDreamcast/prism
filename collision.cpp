@@ -7,13 +7,13 @@
 #include "prism/system.h"
 #include "prism/math.h"
 
-Vector3D getColliderColliderMovableStaticDelta(Velocity tVel1, Collider tCollider1, Collider tCollider2) {
-	if (isEmptyVelocity(tVel1)) return makePosition(INF, INF, 0);
+static Vector3D getColliderColliderMovableStaticDelta(const Velocity& tVel1, const Collider& tCollider1, const Collider& tCollider2) {
+	if (isEmptyVelocity(tVel1)) return Vector3D(INF, INF, 0);
 
 	Position tempPos = *tCollider1.mBasePosition;
 	Collider temp = tCollider1;
 	temp.mBasePosition = &tempPos;
-	Position delta = makePosition(0, 0, 0);
+	Position delta = Vector3D(0, 0, 0);
 	while (checkCollisionCollider(temp, tCollider2)) {
 		delta = vecSub(delta, tVel1);
 		tempPos = vecSub(tempPos, tVel1);
@@ -21,20 +21,20 @@ Vector3D getColliderColliderMovableStaticDelta(Velocity tVel1, Collider tCollide
 	return delta;
 }
 
-void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVel1, Collider tCollider1, Collider tCollider2) {
+void resolveCollisionColliderColliderMovableStatic(Position* tPos1, const Velocity& tVel1, const Collider& tCollider1, const Collider& tCollider2) {
 	if (isEmptyVelocity(tVel1)) return;
 	double scale = 0.01;
-	tVel1 = vecScale(normalizeVelocity(tVel1), scale);
+	const auto scaledVel = vecScale(normalizeVelocity(tVel1), scale);
 	
 	Position deltas[8];
-	deltas[0] = getColliderColliderMovableStaticDelta(tVel1, tCollider1, tCollider2);
-	deltas[1] = getColliderColliderMovableStaticDelta(vecScale(tVel1, -1), tCollider1, tCollider2);
-	deltas[2] = getColliderColliderMovableStaticDelta(makePosition(-tVel1.x, tVel1.y, 0), tCollider1, tCollider2);
-	deltas[3] = getColliderColliderMovableStaticDelta(makePosition(tVel1.x, -tVel1.y, 0), tCollider1, tCollider2);
-	deltas[4] = getColliderColliderMovableStaticDelta(makePosition(scale, 0, 0), tCollider1, tCollider2);
-	deltas[5] = getColliderColliderMovableStaticDelta(makePosition(-scale, 0, 0), tCollider1, tCollider2);
-	deltas[6] = getColliderColliderMovableStaticDelta(makePosition(0, scale, 0), tCollider1, tCollider2);
-	deltas[7] = getColliderColliderMovableStaticDelta(makePosition(0, -scale, 0), tCollider1, tCollider2);
+	deltas[0] = getColliderColliderMovableStaticDelta(scaledVel, tCollider1, tCollider2);
+	deltas[1] = getColliderColliderMovableStaticDelta(vecScale(scaledVel, -1), tCollider1, tCollider2);
+	deltas[2] = getColliderColliderMovableStaticDelta(Vector3D(-scaledVel.x, scaledVel.y, 0), tCollider1, tCollider2);
+	deltas[3] = getColliderColliderMovableStaticDelta(Vector3D(scaledVel.x, -scaledVel.y, 0), tCollider1, tCollider2);
+	deltas[4] = getColliderColliderMovableStaticDelta(Vector3D(scale, 0, 0), tCollider1, tCollider2);
+	deltas[5] = getColliderColliderMovableStaticDelta(Vector3D(-scale, 0, 0), tCollider1, tCollider2);
+	deltas[6] = getColliderColliderMovableStaticDelta(Vector3D(0, scale, 0), tCollider1, tCollider2);
+	deltas[7] = getColliderColliderMovableStaticDelta(Vector3D(0, -scale, 0), tCollider1, tCollider2);
 
 	int i;
 	int smallestIndex = 0;
@@ -47,39 +47,7 @@ void resolveCollisionColliderColliderMovableStatic(Position* tPos1, Velocity tVe
 	*tPos1 = vecAdd(*tPos1, deltas[smallestIndex]);
 }
 
-void resolveCollsion(PhysicsObject* tObject, CollisionRect tObjectRect, CollisionRect tOtherRect) {
-  Velocity vel = tObject->mVelocity;
-
-  if (isEmptyVelocity(vel)) {
-    logError("Resolving collision with no velocity");
-    vel.x = 1;
-  } else {
-    vel = normalizeVelocity(vel);
-  }
-
-  Position delta;
-  delta.x = delta.y = delta.z = 0;
-  CollisionRect temp = tObjectRect;
-
-  while (checkCollision(temp, tOtherRect)) {
-    delta.x -= vel.x;
-    delta.y -= vel.y;
-    delta.z -= vel.z;
-
-    temp.mTopLeft.x -= vel.x;
-    temp.mBottomRight.x -= vel.x;
-    temp.mTopLeft.y -= vel.y;
-    temp.mBottomRight.y -= vel.y;
-    temp.mTopLeft.z -= vel.z;
-    temp.mBottomRight.z -= vel.z;
-  }
-
-  tObject->mPosition.x += delta.x;
-  tObject->mPosition.y += delta.x;
-  tObject->mPosition.z += delta.x;
-}
-
-int checkCollision(CollisionRect tRect1, CollisionRect tRect2) {
+int checkCollision(const CollisionRect& tRect1, const CollisionRect& tRect2) {
 
   if(tRect1.mTopLeft.x > tRect1.mBottomRight.x) return 0;
   if(tRect1.mTopLeft.y > tRect1.mBottomRight.y) return 0;
@@ -100,7 +68,7 @@ int checkCollision(CollisionRect tRect1, CollisionRect tRect2) {
 }
 
 
-int checkCollisionCirc(CollisionCirc tCirc1, CollisionCirc tCirc2){
+int checkCollisionCirc(const CollisionCirc& tCirc1, const CollisionCirc& tCirc2){
 	Vector3D delta;
 	delta.x = tCirc1.mCenter.x - tCirc2.mCenter.x;
 	delta.y = tCirc1.mCenter.y - tCirc2.mCenter.y;
@@ -110,11 +78,11 @@ int checkCollisionCirc(CollisionCirc tCirc1, CollisionCirc tCirc2){
 	return l < tCirc1.mRadius+tCirc2.mRadius;
 }
 
-int checkCollisionCircRect(CollisionCirc tCirc, CollisionRect tRect){
+int checkCollisionCircRect(const CollisionCirc& tCirc, const CollisionRect& tRect){
 	return checkIntersectCircRect(tCirc, tRect);
 }
 
-CollisionObjectRect makeCollisionObjectRect(Position tTopLeft, Position tBottomRight, PhysicsObject* tPhysics){
+CollisionObjectRect makeCollisionObjectRect(const Position2D& tTopLeft, const Position2D& tBottomRight, PhysicsObject* tPhysics){
 	CollisionObjectRect ret;
 
 	ret.mIsPositionInColRelative = 1;	
@@ -125,7 +93,7 @@ CollisionObjectRect makeCollisionObjectRect(Position tTopLeft, Position tBottomR
 	return ret;
 }
 
-CollisionObjectCirc makeCollisionObjectCirc(Position tCenter, double tRadius, PhysicsObject* tPhysics){
+CollisionObjectCirc makeCollisionObjectCirc(const Position2D& tCenter, double tRadius, PhysicsObject* tPhysics){
 	CollisionObjectCirc ret;
 
 	ret.mIsPositionInColRelative = 1;	
@@ -138,90 +106,89 @@ CollisionObjectCirc makeCollisionObjectCirc(Position tCenter, double tRadius, Ph
 
 }
 
-CollisionRect makeCollisionRect(Position tTopLeft, Position tBottomRight){
+CollisionRect makeCollisionRect(const Position2D& tTopLeft, const Position2D& tBottomRight){
 	CollisionRect ret;
 	ret.mTopLeft = tTopLeft; 
 	ret.mBottomRight = tBottomRight;
 	return ret;
 }
 
-CollisionCirc makeCollisionCirc(Position tCenter, double tRadius){
+CollisionCirc makeCollisionCirc(const Position2D& tCenter, double tRadius){
 	CollisionCirc ret;
 	ret.mCenter = tCenter; 
 	ret.mRadius = tRadius;
 	return ret;
 }
 
-CollisionCirc adjustCollisionObjectCirc(CollisionObjectCirc* tObj){
+CollisionCirc adjustCollisionObjectCirc(const CollisionObjectCirc* tObj){
 	CollisionCirc c = tObj->mCol;
 	if(tObj->mIsPositionInColRelative) {
-		c.mCenter = vecAdd(tObj->mCol.mCenter, tObj->mPhysics->mPosition);
+		c.mCenter = tObj->mCol.mCenter + tObj->mPhysics->mPosition.xy();
 	}
 	return c;
 }
 
-int checkCollisionObjectCirc(CollisionObjectCirc tObj1, CollisionObjectCirc tObj2){
+int checkCollisionObjectCirc(const CollisionObjectCirc& tObj1, const CollisionObjectCirc& tObj2){
 
-	CollisionCirc c1 = adjustCollisionObjectCirc(&tObj1);
-	CollisionCirc c2 = adjustCollisionObjectCirc(&tObj2);
+	const auto c1 = adjustCollisionObjectCirc(&tObj1);
+	const auto c2 = adjustCollisionObjectCirc(&tObj2);
 
 	return checkCollisionCirc(c1, c2);
 }
 
-CollisionRect adjustCollisionObjectRect(CollisionObjectRect* tObj){
+CollisionRect adjustCollisionObjectRect(const CollisionObjectRect* tObj){
 	CollisionRect c = tObj->mCol;
 	if(tObj->mIsPositionInColRelative) {
-		c.mTopLeft = vecAdd(tObj->mCol.mTopLeft, tObj->mPhysics->mPosition);
-		c.mBottomRight = vecAdd(tObj->mCol.mBottomRight, tObj->mPhysics->mPosition);
+		c.mTopLeft = tObj->mCol.mTopLeft + tObj->mPhysics->mPosition.xy();
+		c.mBottomRight = tObj->mCol.mBottomRight + tObj->mPhysics->mPosition.xy();
 	}
 	return c;
 }
 
-int checkCollisionObjectRect(CollisionObjectRect tObj1, CollisionObjectRect tObj2){
+int checkCollisionObjectRect(const CollisionObjectRect& tObj1, const CollisionObjectRect& tObj2){
 
-	CollisionRect c1 = adjustCollisionObjectRect(&tObj1);
-	CollisionRect c2 = adjustCollisionObjectRect(&tObj2);
+	const auto c1 = adjustCollisionObjectRect(&tObj1);
+	const auto c2 = adjustCollisionObjectRect(&tObj2);
 
 	return checkCollision(c1, c2);
 }
 
 
-int checkCollisionObjectCircRect(CollisionObjectCirc tObj1, CollisionObjectRect tObj2){
+int checkCollisionObjectCircRect(const CollisionObjectCirc& tObj1, const CollisionObjectRect& tObj2){
 
-	CollisionCirc c1 = adjustCollisionObjectCirc(&tObj1);
-	CollisionRect c2 = adjustCollisionObjectRect(&tObj2);
+	const auto c1 = adjustCollisionObjectCirc(&tObj1);
+	const auto c2 = adjustCollisionObjectRect(&tObj2);
 
 	return checkCollisionCircRect(c1, c2);
 }
 
-static void adjustRectByPosition(CollisionRect* tRect, Position tPos) {
-	tRect->mTopLeft = vecAdd(tRect->mTopLeft, tPos);
-	tRect->mBottomRight = vecAdd(tRect->mBottomRight, tPos);
+static void adjustRectByPosition(CollisionRect* tRect, const Position& tPos) {
+	tRect->mTopLeft = tRect->mTopLeft + tPos.xy();
+	tRect->mBottomRight = tRect->mBottomRight + tPos.xy();
 }
 
-static void adjustCircByPosition(CollisionCirc* tCirc, Position tPos) {
-	tCirc->mCenter = vecAdd(tCirc->mCenter, tPos);
+static void adjustCircByPosition(CollisionCirc* tCirc, const Position& tPos) {
+	tCirc->mCenter = tCirc->mCenter + tPos.xy();
 }
 
-
-int checkCollisionCollider(Collider tCollider1, Collider tCollider2) {
+int checkCollisionCollider(const Collider& tCollider1, const Collider& tCollider2) {
 	if(tCollider1.mType == COLLISION_RECT && tCollider2.mType == COLLISION_RECT) {
-		CollisionRect r1 = *((CollisionRect*)tCollider1);
-		CollisionRect r2 = *((CollisionRect*)tCollider2);
+		CollisionRect r1 = *((const CollisionRect*)tCollider1);
+		CollisionRect r2 = *((const CollisionRect*)tCollider2);
 		adjustRectByPosition(&r1, *tCollider1.mBasePosition);
 		adjustRectByPosition(&r2, *tCollider2.mBasePosition);
 		return checkCollision(r1, r2);
 	} else if(tCollider1.mType == COLLISION_CIRC && tCollider2.mType == COLLISION_RECT) {
-		CollisionCirc c1 = *((CollisionCirc*)tCollider1);
-		CollisionRect r2 = *((CollisionRect*)tCollider2);
+		CollisionCirc c1 = *((const CollisionCirc*)tCollider1);
+		CollisionRect r2 = *((const CollisionRect*)tCollider2);
 		adjustCircByPosition(&c1, *tCollider1.mBasePosition);
 		adjustRectByPosition(&r2, *tCollider2.mBasePosition);
 		return checkCollisionCircRect(c1, r2);
 	} else if(tCollider1.mType == COLLISION_RECT && tCollider2.mType == COLLISION_CIRC) {
 		return checkCollisionCollider(tCollider2, tCollider1);
 	}  else if(tCollider1.mType == COLLISION_CIRC && tCollider2.mType == COLLISION_CIRC) {
-		CollisionCirc c1 = *((CollisionCirc*)tCollider1);
-		CollisionCirc c2 = *((CollisionCirc*)tCollider2);
+		CollisionCirc c1 = *((const CollisionCirc*)tCollider1);
+		CollisionCirc c2 = *((const CollisionCirc*)tCollider2);
 		adjustCircByPosition(&c1, *tCollider1.mBasePosition);
 		adjustCircByPosition(&c2, *tCollider2.mBasePosition);
 		return checkCollisionCirc(c1, c2);
@@ -235,7 +202,7 @@ int checkCollisionCollider(Collider tCollider1, Collider tCollider2) {
 
 }
 
-Collider makeColliderFromRect(CollisionRect tRect) {
+Collider makeColliderFromRect(const CollisionRect& tRect) {
 	Collider c;
 	c.mType = COLLISION_RECT;
 	c.mBasePosition = NULL;
@@ -243,7 +210,7 @@ Collider makeColliderFromRect(CollisionRect tRect) {
 	return c;
 }
 
-Collider makeColliderFromCirc(CollisionCirc tCirc) {
+Collider makeColliderFromCirc(const CollisionCirc& tCirc) {
 	Collider c;
 	c.mType = COLLISION_CIRC;
 	c.mBasePosition = NULL;
@@ -259,16 +226,16 @@ void destroyCollider(Collider* tCollider) {
 	(void)tCollider;
 }
 
-double getColliderUp(Collider tCollider)
+double getColliderUp(const Collider& tCollider)
 {
 	Position pos = *tCollider.mBasePosition;
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider;
-		pos = vecAdd(pos, rect->mTopLeft);
+		const auto rect = (const CollisionRect*)tCollider;
+		pos = pos + rect->mTopLeft;
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider;
-		pos = vecAdd(pos, circ->mCenter);
+		const auto circ = (const CollisionCirc*)tCollider;
+		pos = pos + circ->mCenter;
 		pos.y -= circ->mRadius;
 	}
 	else {
@@ -279,16 +246,16 @@ double getColliderUp(Collider tCollider)
 	return pos.y;
 }
 
-double getColliderDown(Collider tCollider)
+double getColliderDown(const Collider& tCollider)
 {
 	Position pos = *tCollider.mBasePosition;
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider;
-		pos = vecAdd(pos, rect->mBottomRight);
+		const auto rect = (const CollisionRect*)tCollider;
+		pos = pos + rect->mBottomRight;
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider;
-		pos = vecAdd(pos, circ->mCenter);
+		const auto circ = (const CollisionCirc*)tCollider;
+		pos = pos + circ->mCenter;
 		pos.y += circ->mRadius;
 	}
 	else {
@@ -299,16 +266,16 @@ double getColliderDown(Collider tCollider)
 	return pos.y;
 }
 
-double getColliderRight(Collider tCollider)
+double getColliderRight(const Collider& tCollider)
 {
 	Position pos = *tCollider.mBasePosition;
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider;
-		pos = vecAdd(pos, rect->mBottomRight);
+		const auto rect = (const CollisionRect*)tCollider;
+		pos = pos + rect->mBottomRight;
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider;
-		pos = vecAdd(pos, circ->mCenter);
+		const auto circ = (const CollisionCirc*)tCollider;
+		pos = pos + circ->mCenter;
 		pos.x += circ->mRadius;
 	}
 	else {
@@ -319,16 +286,16 @@ double getColliderRight(Collider tCollider)
 	return pos.x;
 }
 
-double getColliderLeft(Collider tCollider)
+double getColliderLeft(const Collider& tCollider)
 {
 	Position pos = *tCollider.mBasePosition;
 	if (tCollider.mType == COLLISION_RECT) {
-		CollisionRect* rect = (CollisionRect*)tCollider;
-		pos = vecAdd(pos, rect->mTopLeft);
+		const auto rect = (const CollisionRect*)tCollider;
+		pos = pos + rect->mTopLeft;
 	}
 	else if (tCollider.mType == COLLISION_CIRC) {
-		CollisionCirc* circ = (CollisionCirc*)tCollider;
-		pos = vecAdd(pos, circ->mCenter);
+		const auto circ = (const CollisionCirc*)tCollider;
+		pos = pos + circ->mCenter;
 		pos.x -= circ->mRadius;
 	}
 	else {

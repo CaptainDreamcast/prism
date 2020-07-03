@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <memory>
 
 typedef void (*LoadScreenFunction)();
 typedef void (*UpdateScreenFunction)();

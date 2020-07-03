@@ -295,6 +295,4 @@ ActorBlueprint getMicrophoneHandlerActorBlueprint()
 double getMicrophoneVolume()
 {
 	return gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume / 255.0;
-
-
 }

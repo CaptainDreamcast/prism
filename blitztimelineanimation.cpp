@@ -221,8 +221,6 @@ void addBlitzTimelineComponent(int tEntityID, BlitzTimelineAnimations* tAnimatio
 	int_map_push_owned(&gBlitzTimelineAnimationData.mEntries, tEntityID, e);
 }
 
-
-
 static void unregisterEntity(int tEntityID) {
 	BlitzTimelineAnimationEntry* e = getBlitzTimelineAnimationEntry(tEntityID);
 	int_map_remove_predicate(&e->mActiveAnimations, unloadSingleActiveAnimationCB, NULL);

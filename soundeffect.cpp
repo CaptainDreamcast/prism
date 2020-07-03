@@ -4,7 +4,7 @@
 #include "prism/file.h"
 #include "prism/math.h"
 
-SoundEffectCollection loadConsecutiveSoundEffectsToCollection(char* tPath, int tAmount) {
+SoundEffectCollection loadConsecutiveSoundEffectsToCollection(const char* tPath, int tAmount) {
 	SoundEffectCollection ret;
 	ret.mAmount = tAmount;
 	ret.mSoundEffects = (int*)allocMemory(tAmount*sizeof(int));
@@ -12,7 +12,7 @@ SoundEffectCollection loadConsecutiveSoundEffectsToCollection(char* tPath, int t
 	return ret;
 }
 
-void loadConsecutiveSoundEffects(int * tDst, char * tPath, int tAmount)
+void loadConsecutiveSoundEffects(int * tDst, const char * tPath, int tAmount)
 {
 	int i;
 	for (i = 0; i < tAmount; i++) {
@@ -22,7 +22,7 @@ void loadConsecutiveSoundEffects(int * tDst, char * tPath, int tAmount)
 	}
 }
 
-int playRandomSoundEffectFromCollection(SoundEffectCollection tCollection)
+int playRandomSoundEffectFromCollection(const SoundEffectCollection& tCollection)
 {
 	int i;
 	i = randfromInteger(0, tCollection.mAmount - 1);

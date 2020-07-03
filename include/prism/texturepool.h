@@ -5,5 +5,5 @@
 void setupTexturePool();
 void shutdownTexturePool();
 
-TextureData loadTextureFromPool(char* tPath);
-void unloadTextureFromPool(TextureData tTexture);
+TextureData loadTextureFromPool(const char* tPath);
+void unloadTextureFromPool(TextureData& tTexture);

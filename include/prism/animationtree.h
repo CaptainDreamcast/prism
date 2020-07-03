@@ -30,6 +30,6 @@ void drawAnimationTreeHandling();
 
 AnimationTree loadAnimationTree(char* tPath);
 
-int playAnimationTreeLoop(Position tPosition, AnimationTree tTree, char* tAnimation);
+int playAnimationTreeLoop(const Position& tPosition, const AnimationTree& tTree, char* tAnimation);
 void setAnimationTreeAnimation(AnimationTree* tTree, char* tAnimation);
 void setHandledAnimationTreeAnimation(int tID, char* tAnimation);

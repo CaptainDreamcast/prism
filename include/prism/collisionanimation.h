@@ -21,8 +21,8 @@ Collider getCollisionAnimationCollider(CollisionAnimation* tAnimation);
 
 ActorBlueprint getCollisionAnimationHandler();
 
-int addHandledCollisionAnimation(CollisionListData* tListID, Position* tBasePosition, CollisionAnimation tAnimation, CollisionCallback tCB, void* tCaller, void* tCollisionData);
+int addHandledCollisionAnimation(CollisionListData* tListID, Position* tBasePosition, const CollisionAnimation& tAnimation, CollisionCallback tCB, void* tCaller, void* tCollisionData);
 void removeHandledCollisionAnimation(int tID);
 
 void invertCollisionAnimationVertical(int tID);
-void setCollisionAnimationCenter(int tID, Position tCenter);
+void setCollisionAnimationCenter(int tID, const Position& tCenter);

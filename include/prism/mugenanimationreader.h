@@ -26,7 +26,7 @@ typedef struct {
 	List mAttackHitboxes;
 	int mGroupNumber;
 	int mSpriteNumber;
-	Vector3D mDelta;
+	Vector2D mDelta;
 	int mDuration;
 
 	uint32_t mFlags;
@@ -55,7 +55,7 @@ typedef struct {
 
 } MugenAnimations;
 
-MugenAnimations loadMugenAnimationFile(std::string tPath);
+MugenAnimations loadMugenAnimationFile(const std::string& tPath);
 MugenAnimations loadMugenAnimationFile(const char* tPath);
 void unloadMugenAnimationFile(MugenAnimations* tAnimations);
 
@@ -64,6 +64,6 @@ MugenAnimation* getMugenAnimation(MugenAnimations* tAnimations, int i);
 MugenAnimation* createOneFrameMugenAnimationForSprite(int tSpriteGroup, int tSpriteItem);
 void destroyMugenAnimation(MugenAnimation* tAnimation);
 
-Vector3DI  getAnimationFirstElementSpriteSize(MugenAnimation* tAnimation, MugenSpriteFile* tSprites);
-Vector3D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, MugenSpriteFile* tSprites);
+Vector2DI getAnimationFirstElementSpriteSize(MugenAnimation* tAnimation, MugenSpriteFile* tSprites);
+Vector2D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, MugenSpriteFile* tSprites);
 int isMugenAnimationStepDurationInfinite(int tDuration);

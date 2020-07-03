@@ -36,6 +36,10 @@ void shutdownProfiling();
 #define setProfilingFrameMarker(tThreadName) OPTICK_FRAME(tThreadName);
 #define setProfilingSectionMarker(tSectionName) OPTICK_EVENT(tSectionName);
 #define setProfilingSectionMarkerCurrentFunction() OPTICK_EVENT();
+
+#define startProfilingCapture() OPTICK_START_CAPTURE();
+#define stopProfilingCapture() OPTICK_STOP_CAPTURE();
+#define saveProfilingCapture(name) OPTICK_SAVE_CAPTURE(name);
 #else
 inline void initProfiling() {}
 inline void shutdownProfiling() {}
@@ -43,4 +47,8 @@ inline void shutdownProfiling() {}
 inline void setProfilingFrameMarker(const char*) {}
 inline void setProfilingSectionMarker(const char*) {}
 #define setProfilingSectionMarkerCurrentFunction() {}
+
+#define startProfilingCapture() {}
+#define stopProfilingCapture() {}
+inline void saveProfilingCapture(const char*) {}
 #endif

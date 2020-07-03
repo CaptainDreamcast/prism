@@ -45,7 +45,7 @@ void setupOptionHandler(){
 	gPrismOptionHandlerData.mBreakSize = 0;
 	gPrismOptionHandlerData.mIsActive = 1;
 
-	gPrismOptionHandlerData.mSelectorBasePosition = makePosition(0, 0, 10);
+	gPrismOptionHandlerData.mSelectorBasePosition = Vector3D(0, 0, 10);
 }
 
 
@@ -137,7 +137,7 @@ static void drawOption(void* tCaller, void* tRaw) {
 	(void) tCaller;
 	HandledOption* data = (HandledOption*)tRaw;
 
-	drawAdvancedText(data->mText, data->mPosition, makePosition(gPrismOptionHandlerData.mTextSize, gPrismOptionHandlerData.mTextSize, 1), gPrismOptionHandlerData.mColor, gPrismOptionHandlerData.mBreakSize);
+	drawAdvancedText(data->mText, data->mPosition, Vector3D(gPrismOptionHandlerData.mTextSize, gPrismOptionHandlerData.mTextSize, 1), gPrismOptionHandlerData.mColor, gPrismOptionHandlerData.mBreakSize);
 
 	if(data->mNumber == gPrismOptionHandlerData.mSelectedOption) {
 		gPrismOptionHandlerData.mSelectorBasePosition = data->mPosition;
@@ -149,7 +149,7 @@ static void drawSelector() {
 	Position p = gPrismOptionHandlerData.mSelectorBasePosition;
 	double selectorFactor =  gPrismOptionHandlerData.mTextSize / (double)gPrismOptionHandlerData.mSelector.mTextureSize.x;
 
-	p = vecAdd(p, makePosition(-gPrismOptionHandlerData.mTextSize, 0, 0));
+	p = vecAdd(p, Vector3D(-gPrismOptionHandlerData.mTextSize, 0, 0));
 	Rectangle r = makeRectangleFromTexture(gPrismOptionHandlerData.mSelector);
 	scaleDrawing(selectorFactor, p);
 	drawSprite(gPrismOptionHandlerData.mSelector, p, r);

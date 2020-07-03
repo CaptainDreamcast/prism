@@ -410,12 +410,12 @@ int hasShotGunSingle(int /*i*/)
 	return mask & SDL_BUTTON(SDL_BUTTON_LEFT);
 }
 
-extern Vector3D correctSDLWindowPosition(Vector3D v);
+extern Vector3D correctSDLWindowPosition(const Vector3D& v);
 
 Vector3D getShotPositionSingle(int /*i*/) {
 	int x, y;
 	SDL_GetMouseState(&x, &y);
-	Vector3D ret = makePosition(x, y, 0);
+	Vector3D ret = Vector3D(x, y, 0);
 	return correctSDLWindowPosition(ret);
 }
 

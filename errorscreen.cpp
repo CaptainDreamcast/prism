@@ -16,14 +16,14 @@ static Color getColorFromLogEntryType(LogEntry* e) {
 static void loadLogEntryText() {
 	Vector logEntries = getLogEntries();
 
-	int id = addMugenText("An error has occured. Log output:", makePosition(20, 20, 1), -1);
+	int id = addMugenText("An error has occured. Log output:", Vector3D(20, 20, 1), -1);
 	setMugenTextColor(id, COLOR_RED);
 
 	double y = 40;
 	int i;
 	for (i = 0; i < vector_size(&logEntries); i++) {
 		LogEntry* entry = (LogEntry*)vector_get(&logEntries, i);
-		id = addMugenText(strchr(entry->mText, ']') + 2, makePosition(20, y, 1), -1);
+		id = addMugenText(strchr(entry->mText, ']') + 2, Vector3D(20, y, 1), -1);
 		setMugenTextColor(id, getColorFromLogEntryType(entry));
 		y += 10;
 	}

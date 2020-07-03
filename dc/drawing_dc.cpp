@@ -81,7 +81,7 @@ void initDrawing(){
 
 #define PVR_OARGB_FLAG_ACTIVE	4   /**< \brief Taken from: https://dcemulation.org/phpBB/viewtopic.php?f=29&t=104921 */
 
-static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pvr_vertex_t* vert) {
+static void sendSpriteToPVR(const TextureData& tTexture, const Rectangle& tTexturePosition, pvr_vertex_t* vert) {
   //sem_wait(&gPVRAccessSemaphore);
 
   referenceTextureMemory(tTexture.mTexture);
@@ -183,15 +183,15 @@ static void sendSpriteToPVR(TextureData tTexture, Rectangle tTexturePosition, pv
   //sem_signal(&gPVRAccessSemaphore);
 }
 
-void drawSprite(TextureData tTexture, const Position& tPos, const Rectangle& tTexturePosition) {
+void drawSprite(const TextureData& tTexture, const Position& tPos, const Rectangle& tTexturePosition) {
 	if (gPrismDreamcastDrawingData.mIsDisabled) return;
 
 	const auto sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
 	const auto sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
-	drawSpriteNoRectangle(tTexture, tPos, makePosition(tPos.x + sizeX, tPos.y, tPos.z), makePosition(tPos.x, tPos.y + sizeY, tPos.z), makePosition(tPos.x + sizeX, tPos.y + sizeY, tPos.z), tTexturePosition);
+	drawSpriteNoRectangle(tTexture, tPos, Vector3D(tPos.x + sizeX, tPos.y, tPos.z), Vector3D(tPos.x, tPos.y + sizeY, tPos.z), Vector3D(tPos.x + sizeX, tPos.y + sizeY, tPos.z), tTexturePosition);
 }
 
-void drawSpriteNoRectangle(TextureData tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition) {
+void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition) {
   if(gPrismDreamcastDrawingData.mIsDisabled) return;
 
   debugLog("Draw Sprite");
@@ -280,7 +280,7 @@ void waitForScreen() {
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
 
-void drawMultilineText(const char* tText, const char* tFullText, Position tPosition, Vector3D tFontSize, Color tColor, Vector3D tBreakSize, Vector3D tTextBoxSize) {
+void drawMultilineText(const char* tText, const char* tFullText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize) {
   if(gPrismDreamcastDrawingData.mIsDisabled) return;
 
   //sem_wait(&gPVRAccessSemaphore);
@@ -353,9 +353,9 @@ void drawMultilineText(const char* tText, const char* tFullText, Position tPosit
 }
 
 // not on dreamcast
-void drawTruetypeText(const char* /*tText*/, TruetypeFont /*tFont*/, Position /*tPosition*/, Vector3DI /*tTextSize*/, Vector3D /*tColor*/, double /*tTextBoxWidth*/, GeoRectangle /*tDrawRectangle*/) { }
+void drawTruetypeText(const char* /*tText*/, TruetypeFont /*tFont*/, const Position& /*tPosition*/, const Vector3DI& /*tTextSize*/, const Vector3D& /*tColor*/, double /*tTextBoxWidth*/, const GeoRectangle2D& /*tDrawRectangle*/) { }
 
-void scaleDrawing(double tFactor, Position tScalePosition){
+void scaleDrawing(double tFactor, const Position& tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor, tFactor, 1);
 	mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
@@ -363,7 +363,15 @@ void scaleDrawing(double tFactor, Position tScalePosition){
 	gPrismDreamcastDrawingData.mInverted.y ^= tFactor < 0;
 }
 
-void scaleDrawing3D(Vector3D tFactor, Position tScalePosition){
+void scaleDrawing2D(const Vector2D& tFactor, const Position2D& tScalePosition) {
+	mat_translate(tScalePosition.x, tScalePosition.y, 0);
+	mat_scale(tFactor.x, tFactor.y, 1);
+	mat_translate(-tScalePosition.x, -tScalePosition.y, 0);
+	gPrismDreamcastDrawingData.mInverted.x ^= tFactor.x < 0;
+	gPrismDreamcastDrawingData.mInverted.y ^= tFactor.y < 0;
+}
+
+void scaleDrawing3D(const Vector3D& tFactor, const Position& tScalePosition){
 	mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
   	mat_scale(tFactor.x, tFactor.y, tFactor.z);
 	mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
@@ -401,8 +409,13 @@ void setDrawingBlendType(BlendType tBlendType) {
 	gPrismDreamcastDrawingData.mBlendType = tBlendType;
 }
 
+void setDrawingRotationZ(double tAngle, const Position2D& tPosition) {
+	mat_translate(tPosition.x, tPosition.y, 0);
+	mat_rotate_z(tAngle);
+	mat_translate(-tPosition.x, -tPosition.y, 0);
+}
 
-void setDrawingRotationZ(double tAngle, Position tPosition){
+void setDrawingRotationZ(double tAngle, const Position& tPosition){
 	mat_translate(tPosition.x, tPosition.y, tPosition.z);
 	mat_rotate_z(tAngle);
 	mat_translate(-tPosition.x, -tPosition.y, -tPosition.z);
@@ -429,12 +442,12 @@ static void popMatrixInternal() {
 	vector_pop_back(&gPrismDreamcastDrawingData.mMatrixStack);
 }
 
-void pushDrawingTranslation(Vector3D tTranslation) {
+void pushDrawingTranslation(const Vector3D& tTranslation) {
 	pushMatrixInternal();
 	mat_translate(tTranslation.x, tTranslation.y, tTranslation.z);
 }
 
-void pushDrawingRotationZ(double tAngle, Vector3D tCenter) {
+void pushDrawingRotationZ(double tAngle, const Vector3D& tCenter) {
 	pushMatrixInternal();
 
 	mat_translate(tCenter.x, tCenter.y, tCenter.z);
@@ -455,7 +468,7 @@ static uint32_t packPaletteEntry(uint8_t a, uint8_t r, uint8_t g, uint8_t b) {
 	return ((a) << 24) | ((r) << 16) | ((g) << 8) | ((b) << 0);
 }
 
-void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
+void setPaletteFromARGB256Buffer(int tPaletteID, const Buffer& tBuffer) {
 	assert(tBuffer.mLength >= 256*4);
 	//sem_wait(&gPVRAccessSemaphore);
 
@@ -475,7 +488,7 @@ void setPaletteFromARGB256Buffer(int tPaletteID, Buffer tBuffer) {
 	//sem_signal(&gPVRAccessSemaphore);
 }
 
-void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, Buffer tBuffer) {
+void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, const Buffer& tBuffer) {
 	assert(tBuffer.mLength >= 256*3);
 	//sem_wait(&gPVRAccessSemaphore);
 

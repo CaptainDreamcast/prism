@@ -26,51 +26,51 @@ typedef struct {
 
 static void initTreeNode(TreeNode* e) {
 	e->mSubElements = new_string_map();
-	e->mAnchor = makePosition(0, 0, 0);
-	e->mTranslation = makePosition(0, 0, 0);
+	e->mAnchor = Vector3D(0, 0, 0);
+	e->mTranslation = Vector3D(0, 0, 0);
 	e->mRotationZ = 0;
 }
 
-static ScriptPosition loadTreeAnimation(TreeNode* e, ScriptPosition tPos) {
+static ScriptPosition loadTreeAnimation(TreeNode* e, const ScriptPosition& tPos) {
 	e->mAnimation = createEmptyAnimation();
 
 	int v;
-	tPos = getNextScriptInteger(tPos, &v);
+	auto ret = getNextScriptInteger(tPos, &v);
 	e->mAnimation.mDuration = v;
-	tPos = getNextScriptInteger(tPos, &v);
+	ret = getNextScriptInteger(ret, &v);
 	e->mAnimation.mFrameAmount = v;
 
 	e->mTextures = (TextureData*)allocMemory(e->mAnimation.mFrameAmount*sizeof(TextureData));
 	char name[1024];
 	int i;
 	for (i = 0; i < (int)e->mAnimation.mFrameAmount; i++) {
-		tPos = getNextScriptString(tPos, name);
+		ret = getNextScriptString(ret, name);
 		e->mTextures[i] = loadTexture(name);
 	}
 
-	return tPos;
+	return ret;
 }
 
-static ScriptPosition loadTree(void* tCaller, ScriptPosition tPos) {
+static ScriptPosition loadTree(void* tCaller, const ScriptPosition& tPos) {
 	TreeNode* e = (TreeNode*)tCaller;
 
 	char word[100];
-	tPos = getNextScriptString(tPos, word);
+	auto ret = getNextScriptString(tPos, word);
 
 	if (!strcmp("SUB", word)) {
 		char name[100];
-		tPos = getNextScriptString(tPos, name);
+		ret = getNextScriptString(ret, name);
 
 		TreeNode* newNode = (TreeNode*)allocMemory(sizeof(TreeNode));
 		initTreeNode(newNode);
 		string_map_push_owned(&e->mSubElements, name, newNode);
 
-		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		ScriptRegion reg = getScriptRegionAtPosition(ret);
 		executeOnScriptRegion(reg, loadTree, newNode);
-		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+		ret = getPositionAfterScriptRegion(ret.mRegion, reg);
 	}
 	else if (!strcmp("ANIMATION", word)) {
-		tPos = loadTreeAnimation(e, tPos);
+		ret = loadTreeAnimation(e, ret);
 	}
 	else {
 		logError("Unrecognized token.");
@@ -78,37 +78,37 @@ static ScriptPosition loadTree(void* tCaller, ScriptPosition tPos) {
 		recoverFromError();
 	}
 
-	return tPos;
+	return ret;
 }
 
-static ScriptPosition loadSingleAnimationTree(void* tCaller, ScriptPosition tPos) {
+static ScriptPosition loadSingleAnimationTree(void* tCaller, const ScriptPosition& tPos) {
 	TreeNode* e = (TreeNode*)tCaller;
 
 	char word[100];
-	tPos = getNextScriptString(tPos, word);
+	auto ret = getNextScriptString(tPos, word);
 
 	if (!strcmp("SUB", word)) {
 		char name[100];
-		tPos = getNextScriptString(tPos, name);
+		ret = getNextScriptString(ret, name);
 
 		TreeNode* newNode = (TreeNode*)allocMemory(sizeof(TreeNode));
 		initTreeNode(newNode);
 		string_map_push_owned(&e->mSubElements, name, newNode);
 
-		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		ScriptRegion reg = getScriptRegionAtPosition(ret);
 		executeOnScriptRegion(reg, loadSingleAnimationTree, newNode);
-		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+		ret = getPositionAfterScriptRegion(ret.mRegion, reg);
 		
 	} else if (!strcmp("ANCHOR", word)) {
-		tPos = getNextScriptDouble(tPos, &e->mAnchor.x);
-		tPos = getNextScriptDouble(tPos, &e->mAnchor.y);
-		tPos = getNextScriptDouble(tPos, &e->mAnchor.z);
+		ret = getNextScriptDouble(ret, &e->mAnchor.x);
+		ret = getNextScriptDouble(ret, &e->mAnchor.y);
+		ret = getNextScriptDouble(ret, &e->mAnchor.z);
 	} else if (!strcmp("TRANSLATION", word)) {
-		tPos = getNextScriptDouble(tPos, &e->mTranslation.x);
-		tPos = getNextScriptDouble(tPos, &e->mTranslation.y);
-		tPos = getNextScriptDouble(tPos, &e->mTranslation.z);
+		ret = getNextScriptDouble(ret, &e->mTranslation.x);
+		ret = getNextScriptDouble(ret, &e->mTranslation.y);
+		ret = getNextScriptDouble(ret, &e->mTranslation.z);
 	} else if (!strcmp("ROTATION", word)) {
-		tPos = getNextScriptDouble(tPos, &e->mRotationZ);
+		ret = getNextScriptDouble(ret, &e->mRotationZ);
 		e->mRotationZ = (e->mRotationZ*M_PI) / 180.0;
 	}
 	else {
@@ -117,24 +117,24 @@ static ScriptPosition loadSingleAnimationTree(void* tCaller, ScriptPosition tPos
 		recoverFromError();
 	}
 
-	return tPos;
+	return ret;
 }
 
-static ScriptPosition loadFrame(void* tCaller, ScriptPosition tPos) {
+static ScriptPosition loadFrame(void* tCaller, const ScriptPosition& tPos) {
 	AnimationTreeFrame* e = (AnimationTreeFrame*)tCaller;
 
 	char word[100];
-	tPos = getNextScriptString(tPos, word);
+	auto ret = getNextScriptString(tPos, word);
 
 	if (!strcmp("DURATION", word)) {
 		int v;
-		tPos = getNextScriptInteger(tPos, &v);
+		ret = getNextScriptInteger(ret, &v);
 		e->mDuration = v;
 	} else if (!strcmp("TREE", word)) {
 		initTreeNode(&e->mTree);
-		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		ScriptRegion reg = getScriptRegionAtPosition(ret);
 		executeOnScriptRegion(reg, loadSingleAnimationTree, &e->mTree);
-		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+		ret = getPositionAfterScriptRegion(ret.mRegion, reg);
 	}
 	else {
 		logError("Unrecognized token.");
@@ -142,26 +142,26 @@ static ScriptPosition loadFrame(void* tCaller, ScriptPosition tPos) {
 		recoverFromError();
 	}
 
-	return tPos;
+	return ret;
 }
 
 static void initTreeFrame(AnimationTreeFrame* e) {
 	e->mDuration = 100000;
 }
 
-static ScriptPosition loadSingleAnimation(void* tCaller, ScriptPosition tPos) {
+static ScriptPosition loadSingleAnimation(void* tCaller, const ScriptPosition& tPos) {
 	AnimationNode* e = (AnimationNode*)tCaller;
 
 	char word[100];
-	tPos = getNextScriptString(tPos, word);
+	auto ret = getNextScriptString(tPos, word);
 
 	if (!strcmp("FRAME", word)) {
 		AnimationTreeFrame* newFrame = (AnimationTreeFrame*)allocMemory(sizeof(AnimationTreeFrame));
 		initTreeFrame(newFrame);
-		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		ScriptRegion reg = getScriptRegionAtPosition(ret);
 		executeOnScriptRegion(reg, loadFrame, newFrame);
 		vector_push_back_owned(&e->mFrames, newFrame);
-		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+		ret = getPositionAfterScriptRegion(ret.mRegion, reg);
 	}
 	else {
 		logError("Unrecognized token.");
@@ -169,30 +169,30 @@ static ScriptPosition loadSingleAnimation(void* tCaller, ScriptPosition tPos) {
 		recoverFromError();
 	}
 
-	return tPos;
+	return ret;
 }
 
 static void initAnimationNode(AnimationNode* e) {
 	e->mFrames = new_vector();
 }
 
-static ScriptPosition loadAnimations(void* tCaller, ScriptPosition tPos) {
+static ScriptPosition loadAnimations(void* tCaller, const ScriptPosition& tPos) {
 	StringMap* animations = (StringMap*)tCaller;
 
 	char word[100];
-	tPos = getNextScriptString(tPos, word);
+	auto ret = getNextScriptString(tPos, word);
 
 	if (!strcmp("ANIMATION", word)) {
 		char name[100];
-		tPos = getNextScriptString(tPos, name);
+		ret = getNextScriptString(ret, name);
 		AnimationNode* newNode = (AnimationNode*)allocMemory(sizeof(AnimationNode));
 		initAnimationNode(newNode);
 
 		string_map_push_owned(animations, name, newNode);
 
-		ScriptRegion reg = getScriptRegionAtPosition(tPos);
+		ScriptRegion reg = getScriptRegionAtPosition(ret);
 		executeOnScriptRegion(reg, loadSingleAnimation, newNode);
-		tPos = getPositionAfterScriptRegion(tPos.mRegion, reg);
+		ret = getPositionAfterScriptRegion(ret.mRegion, reg);
 	}
 	else {
 		logError("Unrecognized token.");
@@ -200,7 +200,7 @@ static ScriptPosition loadAnimations(void* tCaller, ScriptPosition tPos) {
 		recoverFromError();
 	}
 
-	return tPos;
+	return ret;
 }
 
 AnimationTree loadAnimationTree(char* tPath) {
@@ -216,8 +216,6 @@ AnimationTree loadAnimationTree(char* tPath) {
 
 	return ret;
 }
-
-
 
 typedef struct {
 	AnimationTree mTree;
@@ -242,8 +240,6 @@ void updateAnimationTreeHandling() {
 
 }
 
-
-
 static void drawTreeNode(void* tCaller, char* tKey, void* tData) {
 	(void)tCaller;
 	(void)tKey;
@@ -254,7 +250,7 @@ static void drawTreeNode(void* tCaller, char* tKey, void* tData) {
 	pushDrawingTranslation(tNode->mTranslation);
 	pushDrawingRotationZ(tNode->mRotationZ, tNode->mAnchor);
 
-	drawSprite(currentTexture, makePosition(100,100,1), makeRectangleFromTexture(currentTexture));
+	drawSprite(currentTexture, Vector3D(100,100,1), makeRectangleFromTexture(currentTexture));
 
 	string_map_map(&tNode->mSubElements, drawTreeNode, NULL);
 
@@ -306,7 +302,7 @@ void setAnimationTreeAnimation(AnimationTree* tTree, char* tAnimation) {
 	setAnimationTreeFrame(tTree, 0);
 }
 
-int playAnimationTreeLoop(Position tPosition, AnimationTree tTree, char* tAnimation) {
+int playAnimationTreeLoop(const Position& tPosition, const AnimationTree& tTree, char* tAnimation) {
 	AnimationTreeHandlerEntry* e = (AnimationTreeHandlerEntry*)allocMemory(sizeof(AnimationTreeHandlerEntry));
 
 	e->mTree = tTree;
@@ -320,9 +316,3 @@ void setHandledAnimationTreeAnimation(int tID, char* tAnimation) {
 	AnimationTreeHandlerEntry* e = (AnimationTreeHandlerEntry*)list_get(&gPrismAnimationTreeData.mAnimationTreeList, tID);
 	setAnimationTreeAnimation(&e->mTree, tAnimation);
 }
-
-
-
-
-
-
