@@ -422,6 +422,7 @@ static void updateScreenDebug() {
 	}
 
 	if (!isPrismDebugConsoleVisible() && hasPressedKeyboardKeyFlank(KEYBOARD_R_PRISM)) {
+		gPrismWrapperData.mHasBetweenScreensCB = 0;
 		setNewScreen(gPrismWrapperData.mScreen);
 	}
 

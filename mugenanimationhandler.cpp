@@ -13,8 +13,14 @@ using namespace std;
 
 static struct {
 	map<int, MugenAnimationHandlerElement> mAnimations;
+	Vector2D mPixelCenter = Vector2D(0.5, 0.5);
 	int mIsPaused;
 } gMugenAnimationHandler;
+
+void setMugenAnimationHandlerPixelCenter(const Vector2D& tPixelCenter)
+{
+	gMugenAnimationHandler.mPixelCenter = tPixelCenter;
+}
 
 static void loadMugenAnimationHandler(void* tData) {
 	(void)tData;
@@ -1027,24 +1033,24 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 			const auto cameraScaleDelta = (*e->mCameraScaleReference) - Vector3D(1.0, 1.0, 1.0);
 			scaledCameraScale = Vector3D(1.0, 1.0, 1.0) + (cameraScaleDelta * e->mCameraScaleFactor);
 		}
-		scaleDrawing2D(scaledCameraScale.xy(), caller->mCameraCenter + Vector2D(0.5, 0.5));
+		scaleDrawing2D(scaledCameraScale.xy(), caller->mCameraCenter + gMugenAnimationHandler.mPixelCenter);
 	}
 	if (e->mHasCameraAngleReference && *e->mCameraAngleReference) {
-		setDrawingRotationZ(*e->mCameraAngleReference, caller->mCameraCenter + Vector2D(0.5, 0.5));
+		setDrawingRotationZ(*e->mCameraAngleReference, caller->mCameraCenter + gMugenAnimationHandler.mPixelCenter);
 	}
 
 	if ((caller->mScale != Vector2D(1, 1)) || (caller->mStepScaleX != 1.0) || (caller->mStepScaleY != 1.0)) {
-		scaleDrawing2D(caller->mScale * Vector2D(caller->mStepScaleX, caller->mStepScaleY), caller->mScalePosition + Vector2D(0.5, 0.5));
+		scaleDrawing2D(caller->mScale * Vector2D(caller->mStepScaleX, caller->mStepScaleY), caller->mScalePosition + gMugenAnimationHandler.mPixelCenter);
 	}
 
 	if (caller->mAngle || caller->mStepAngleRad) {
-		setDrawingRotationZ(caller->mAngle + caller->mStepAngleRad, caller->mScalePosition + Vector2D(0.5, 0.5));
+		setDrawingRotationZ(caller->mAngle + caller->mStepAngleRad, caller->mScalePosition + gMugenAnimationHandler.mPixelCenter);
 	}
 
 	if (caller->e->mHasShear) {
 		const auto sizeX = abs(texturePos.bottomRight.x - texturePos.topLeft.x) + 1;
 		const auto sizeY = abs(texturePos.bottomRight.y - texturePos.topLeft.y) + 1;
-		const auto scaleCenterX = caller->mScalePosition.x + 0.5;
+		const auto scaleCenterX = caller->mScalePosition.x + gMugenAnimationHandler.mPixelCenter.x;
 		const auto dLeftTotalTop = (p.x - scaleCenterX);
 		const auto dRightTotalTop = ((p.x + sizeX) - scaleCenterX);
 		const auto dLeftTotalBottom = dLeftTotalTop * e->mShearLowerScaleDeltaX;

@@ -130,6 +130,8 @@ struct MugenAnimationHandlerElement {
 	int mIsCollisionDebugActive;
 };
 
+void setMugenAnimationHandlerPixelCenter(const Vector2D& tPixelCenter);
+
 MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation, MugenSpriteFile* tSprites, const Position& tPosition);
 void removeMugenAnimation(MugenAnimationHandlerElement* tElement);
 int isRegisteredMugenAnimation(MugenAnimationHandlerElement* tElement);
