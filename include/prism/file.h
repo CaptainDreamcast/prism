@@ -67,6 +67,7 @@ BufferPointer getBufferPointer(const Buffer& tBuffer);
 void readFromBufferPointer(void* tDst, BufferPointer* tPointer, uint32_t tSize);
 int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer);
 double readFloatFromTextStreamBufferPointer(BufferPointer* tPointer);
+int hasStringFromTextStreamBufferPointer(BufferPointer tPointer);
 std::string readStringFromTextStreamBufferPointer(BufferPointer* tPointer);
 std::string readLineFromTextStreamBufferPointer(BufferPointer* tPointer);
 std::string readLineOrEOFFromTextStreamBufferPointer(BufferPointer* tPointer, const Buffer& tBuffer);

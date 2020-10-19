@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+
 #include "log.h"
 #include "system.h"
 #include "math.h"

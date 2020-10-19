@@ -247,6 +247,7 @@ static void parseLoopStartStatement(Buffer* b, BufferPointer* p) {
 static void parseInterpolationStatement(Buffer* b, BufferPointer* p) {
 
 	char* text = getLineAsAllocatedString(b, *p);
+	turnStringLowercase(text);
 	MugenDefToken* interpolationToken = makeMugenDefToken(text);
 	destroyMugenDefString(text);
 
@@ -325,12 +326,13 @@ static int isLoopStartStatement(Buffer* b, BufferPointer p) {
 
 static int isInterpolationStatement(Buffer* b, BufferPointer p) {
 	char* text = getLineAsAllocatedString(b, p);
+	turnStringLowercase(text);
 
 	int ret = 0;
-	ret |= !strcmp("Interpolate Offset", text);
-	ret |= !strcmp("Interpolate Blend", text);
-	ret |= !strcmp("Interpolate Scale", text);
-	ret |= !strcmp("Interpolate Angle", text);
+	ret |= !strcmp("interpolate offset", text);
+	ret |= !strcmp("interpolate blend", text);
+	ret |= !strcmp("interpolate scale", text);
+	ret |= !strcmp("interpolate angle", text);
 
 	destroyMugenDefString(text);
 	return ret;
@@ -761,10 +763,10 @@ static int isLoopStartStatementToken(MugenDefToken* tToken) {
 
 static int isInterpolationStatementToken(MugenDefToken* tToken) {
 	
-	if (!strcmp(tToken->mValue, "Interpolate Scale")) return 1;
-	if (!strcmp(tToken->mValue, "Interpolate Angle")) return 1;
-	if (!strcmp(tToken->mValue, "Interpolate Blend")) return 1;
-	if (!strcmp(tToken->mValue, "Interpolate Offset")) return 1;
+	if (!strcmp(tToken->mValue, "interpolate scale")) return 1;
+	if (!strcmp(tToken->mValue, "interpolate angle")) return 1;
+	if (!strcmp(tToken->mValue, "interpolate blend")) return 1;
+	if (!strcmp(tToken->mValue, "interpolate offset")) return 1;
 
 	return 0;
 }

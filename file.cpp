@@ -310,6 +310,16 @@ double readFloatFromTextStreamBufferPointer(BufferPointer * tPointer)
 	return value;
 }
 
+int hasStringFromTextStreamBufferPointer(BufferPointer tPointer)
+{
+	char value[1000];
+	int items = sscanf(tPointer, "%s", value);
+	if (items != 1) {
+		return 0;
+	}
+	return 1;
+}
+
 std::string readStringFromTextStreamBufferPointer(BufferPointer * tPointer)
 {
 	char value[1000];
