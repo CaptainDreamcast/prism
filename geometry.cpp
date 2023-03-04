@@ -96,7 +96,15 @@ double vecLength(const Vector2D& tVelocity) {
 	return fstsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y);
 }
 
+double vecLength(const Vector2DI& tVelocity) {
+	return fstsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y);
+}
+
 double vecLength(const Vector3D& tVelocity) {
+	return fstsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
+}
+
+double vecLength(const Vector3DI& tVelocity) {
 	return fstsqrt(tVelocity.x * tVelocity.x + tVelocity.y * tVelocity.y + tVelocity.z * tVelocity.z);
 }
 
@@ -132,6 +140,30 @@ Vector3D vecScale3D(const Vector3D& v, const Vector3D& tScale) {
 	ret.y = v.y*tScale.y;
 	ret.z = v.z*tScale.z;
 	return ret;
+}
+
+Vector2D vecNormalize(const Vector2DI& tVector) {
+	double l = vecLength(tVector);
+	if (l == 0) {
+		return Vector2D(tVector.x, tVector.y);
+	}
+	return tVector / l;
+}
+
+Vector2D vecNormalize(const Vector2D& tVector) {
+	double l = vecLength(tVector);
+	if (l == 0) {
+		return tVector;
+	}
+	return tVector / l;
+}
+
+Vector3D vecNormalize(const Vector3DI& tVector) {
+	double l = vecLength(tVector);
+	if (l == 0) {
+		return Vector3D(tVector.x, tVector.y, tVector.z);
+	}
+	return tVector / l;
 }
 
 Vector3D vecNormalize(const Vector3D& tVector) {
@@ -635,6 +667,10 @@ Vector3D operator-(const Vector3D& a, const Vector3DI & b)
 Vector2D operator*(const Vector2DI & a, const double & b)
 {
 	return Vector2D(a.x * b, a.y * b);
+}
+
+Vector2D operator/(const Vector2DI& a, const double& b) {
+	return Vector2D(a.x / b, a.y / b);
 }
 
 Vector3D operator/(const Vector3DI& a, const double& b) {

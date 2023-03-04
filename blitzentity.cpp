@@ -162,6 +162,24 @@ void setBlitzEntityPositionY(int tID, double tY)
 	else e->mPosition.y = tY;
 }
 
+void setBlitzEntityPositionZ(int tID, double tZ)
+{
+	if (tID == getBlitzCameraHandlerEntityID()) {
+		logWarning("[BlitzEntity] Trying to set z position of 2D camera. Ignoring.");
+		return;
+	}
+
+	BlitzEntity* e = getBlitzEntity(tID);
+	if (e->mHasParent) e->mPosition.z = tZ + e->mParent->mPosition.z;
+	else e->mPosition.z = tZ;
+}
+
+void addBlitzEntityPosition(int tID, const Vector2D& tPos) {
+	setBlitzEntityPosition(tID, getBlitzEntityPosition(tID) + tPos);
+}
+void addBlitzEntityPosition(int tID, const Position& tPos) {
+	setBlitzEntityPosition(tID, getBlitzEntityPosition(tID) + tPos);
+}
 void addBlitzEntityPositionX(int tID, double tX) {
 	setBlitzEntityPositionX(tID, getBlitzEntityPositionX(tID) + tX);
 }

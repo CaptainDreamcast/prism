@@ -84,12 +84,17 @@ Position variatePosition(const Position& tBase);
 void printPosition(char* tName, const Position& tPosition);
 
 double vecLength(const Vector2D& v);
+double vecLength(const Vector2DI& v);
 double vecLength(const Vector3D& v);
+double vecLength(const Vector3DI& v);
 Vector3D vecAdd(const Vector3D& v1, const Vector3D& v2);
 Vector3D vecSub(const Vector3D& v1, const Vector3D& v2);
 Vector3D vecScale(const Vector3D& v, double tFactor);
 Vector3D vecScale2D(const Vector3D& v, const Vector2D& tScale);
 Vector3D vecScale3D(const Vector3D& v, const Vector3D& tScale);
+Vector2D vecNormalize(const Vector2DI& tVector);
+Vector2D vecNormalize(const Vector2D& tVector);
+Vector3D vecNormalize(const Vector3DI& tVector);
 Vector3D vecNormalize(const Vector3D& tVector);
 Vector3D vecRotateZ(const Vector3D& tVector, double tAngle);
 Vector3D vecRotateZAroundCenter(const Vector3D& tVector, double tAngle, const Vector3D& tCenter);
@@ -177,6 +182,7 @@ Vector2DI operator-(const Vector2DI& a, const Vector2DI& b);
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b);
 Vector3D operator-(const Vector3D& a, const Vector3DI& b);
 Vector2D operator*(const Vector2DI& a, const double& b);
+Vector2D operator/(const Vector2DI& a, const double& b);
 Vector3D operator/(const Vector3DI& a, const double& b);
 Vector3DI operator/(const Vector3DI& a, const int& b);
 // pairwise multiplication

@@ -362,7 +362,10 @@ static std::string getSystemFontFile(const std::string& tFaceName) {
 	ss << winDir << "\\Fonts\\" << wsFontFile;
 	wsFontFile = ss.str();
 
+#pragma warning( push )
+#pragma warning( disable : 4244 ) // implicit conversion from wstring element to string element, but it's intended
 	return std::string(wsFontFile.begin(), wsFontFile.end());
+#pragma warning( pop )
 }
 #else 
 static std::string getSystemFontFile(const std::string &tFaceName) {

@@ -270,6 +270,15 @@ Position* getBlitzMugenAnimationPositionReference(int tEntityID)
 	return getMugenAnimationPositionReference(e->mAnimationElement);
 }
 
+void setBlitzMugenAnimationIndependentOfCamera(int tEntityID)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	removeMugenAnimationCameraPositionReference(e->mAnimationElement);
+	removeMugenAnimationCameraScaleReference(e->mAnimationElement);
+	removeMugenAnimationCameraAngleReference(e->mAnimationElement);
+	removeMugenAnimationCameraEffectPositionReference(e->mAnimationElement);
+}
+
 void setBlitzMugenAnimationTransparency(int tEntityID, double tTransparency) {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 	setMugenAnimationTransparency(e->mAnimationElement, tTransparency);

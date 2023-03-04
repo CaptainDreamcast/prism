@@ -13,7 +13,7 @@
 
 using namespace std;
 
-typedef struct {
+typedef struct SideDisplay_t {
 	double mPreviousFPS[PREVIOUS_FPS_AMOUNT];
 	int mFPSCounterTextID;
 

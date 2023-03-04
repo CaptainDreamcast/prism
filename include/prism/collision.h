@@ -23,7 +23,7 @@ typedef struct {
 	int mIsPositionInColRelative;
 } CollisionObjectRect;
 
-typedef struct {
+typedef struct Collider_t {
 	CollisionType mType;
 	Position* mBasePosition;
 

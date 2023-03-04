@@ -88,6 +88,12 @@ static const GLchar* gFragmentShader =
 "	}\n"
 "}\n";
 
+#ifndef __EMSCRIPTEN__
+#define Rectangle Rectangle2
+#include <Windows.h>
+#undef Rectangle
+#endif
+
 using namespace std;
 
 typedef struct {
@@ -438,12 +444,6 @@ static void initOpenGL() {
 }
 
 void setDrawingScreenScale(double tScaleX, double tScaleY);
-
-#ifndef __EMSCRIPTEN__
-#define Rectangle Rectangle2
-#include <Windows.h>
-#undef Rectangle
-#endif
 
 void initDrawing() {
 	if (gSDLWindow == NULL) {

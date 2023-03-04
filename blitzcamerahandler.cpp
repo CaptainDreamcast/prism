@@ -66,7 +66,6 @@ void setBlitzCameraHandlerPositionY(double tY)
 {
 	gBlitzCameraHandlerData.mCameraPosition.y = tY;
 	gBlitzCameraHandlerData.mCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mCameraPosition, gBlitzCameraHandlerData.mCameraRange);
-
 }
 
 Vector3D * getBlitzCameraHandlerScaleReference()

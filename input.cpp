@@ -4,7 +4,7 @@
 #include "prism/math.h"
 #include "prism/profiling.h"
 
-typedef struct {
+typedef struct InputStatus_t {
 	uint8_t mPrev[CONTROLLER_BUTTON_AMOUNT_PRISM];
 	uint8_t mCurrent[CONTROLLER_BUTTON_AMOUNT_PRISM];
 	uint8_t mAbortPrev = 0;

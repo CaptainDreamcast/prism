@@ -40,6 +40,7 @@ double* getBlitzMugenAnimationScaleXReference(int tEntityID);
 double* getBlitzMugenAnimationScaleYReference(int tEntityID);
 double* getBlitzMugenAnimationBaseScaleReference(int tEntityID);
 Position* getBlitzMugenAnimationPositionReference(int tEntityID);
+void setBlitzMugenAnimationIndependentOfCamera(int tEntityID);
 
 void setBlitzMugenAnimationTransparency(int tEntityID, double tTransparency);
 void setBlitzMugenAnimationFaceDirection(int tEntityID, int tIsFacingRight);
