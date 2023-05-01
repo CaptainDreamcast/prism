@@ -22,7 +22,7 @@ typedef struct {
 } SoundEffectEntry;
 
 static struct {
-	int mVolume;
+	double mVolume;
 	map<int, SoundEffectEntry> mAllocatedChunks;
 	map<int, Mix_Chunk*> mChunks;
 } gSoundEffectData;
@@ -154,6 +154,6 @@ double getSoundEffectVolume() {
 
 void setSoundEffectVolume(double tVolume) {
 	setProfilingSectionMarkerCurrentFunction();
-	gSoundEffectData.mVolume = parseVolume(tVolume);
-	Mix_Volume(-1, gSoundEffectData.mVolume);
+	gSoundEffectData.mVolume = tVolume;
+	Mix_Volume(-1, parseVolume(gSoundEffectData.mVolume));
 }

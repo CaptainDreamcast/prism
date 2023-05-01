@@ -17,6 +17,7 @@ int addBlitzCollisionCirc(int tEntityID, CollisionListData* tList, const Collisi
 void addBlitzCollisionCB(int tEntityID, int tCollisionID, void(*tCB)(void *, void*), void* tCaller);
 void setBlitzCollisionCollisionData(int tEntityID, int tCollisionID, void* tCollisionData);
 void setBlitzCollisionSolid(int tEntityID, int tCollisionID, int tIsMovable);
+void setBlitzCollisionUnsolid(int tEntityID, int tCollisionID);
 
 int hasBlitzCollidedTop(int tEntityID);
 int hasBlitzCollidedBottom(int tEntityID);

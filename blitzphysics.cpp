@@ -47,6 +47,20 @@ static void updateSinglePhysicsEntry(void* /*tCaller*/, PhysicsEntry& tData) {
 	if (hasBlitzCollidedTop(e->mEntityID)) {
 		e->mVelocity.y = max(0.0, e->mVelocity.y);
 	}
+	if (hasBlitzCollidedRight(e->mEntityID)) {
+		e->mVelocity.x = min(0.0, e->mVelocity.x);
+	}
+	if (hasBlitzCollidedLeft(e->mEntityID)) {
+		e->mVelocity.x = max(0.0, e->mVelocity.x);
+	}
+	if (e->mOneMinusDragOnCollision.x != 1)
+	{
+		if (hasBlitzCollidedBottom(e->mEntityID) || hasBlitzCollidedTop(e->mEntityID)) e->mVelocity.x *= e->mOneMinusDragOnCollision.x;
+	}
+	if (e->mOneMinusDragOnCollision.y != 1)
+	{
+		if (hasBlitzCollidedLeft(e->mEntityID) || hasBlitzCollidedRight(e->mEntityID)) e->mVelocity.y *= e->mOneMinusDragOnCollision.y;
+	}
 
 	*pos = vecAdd(*pos, e->mVelocity);	
 }

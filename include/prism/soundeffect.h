@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "file.h"
 
 typedef struct {
@@ -18,6 +19,7 @@ int loadSoundEffectFromBuffer(const Buffer& tBuffer);
 void unloadSoundEffect(int tID);
 int playSoundEffect(int tID);
 int playSoundEffectChannel(int tID, int tChannel, double tVolume, double tFreqMul = 1.0, int tIsLooping = 0);
+int playSoundEffectFile(const std::string& tPath);
 void stopSoundEffect(int tChannel);
 void stopAllSoundEffects();
 void panSoundEffect(int tChannel, double tPanning);

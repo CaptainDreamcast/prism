@@ -285,6 +285,17 @@ void setBlitzCollisionSolid(int tEntityID, int tCollisionID, int tIsMovable)
 	e->mIsSolid = 1;
 }
 
+void setBlitzCollisionUnsolid(int tEntityID, int tCollisionID)
+{
+	BlitzCollisionObject* e = getBlitzCollisionObject(tEntityID, tCollisionID);
+	if (!e->mOwnsCollisionHandlerObject) {
+		logErrorFormat("Unable to set entity %d collision id %d solid, does not own collision handler entry.", tEntityID, tCollisionID);
+		recoverFromError();
+	}
+
+	e->mIsSolid = 0;
+}
+
 int hasBlitzCollidedTop(int tEntityID)
 {
 	if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) return 0;
@@ -329,8 +340,15 @@ static int removeSingleCollisionObject(void* , BlitzCollisionObject& tData) {
 	return 1;
 }
 
+static int checkSingleActiveSolidCollisionForRemoval(CollisionEntry* tCaller, ActiveSolidCollision& tData) {
+	return tData.a->mEntityID == tCaller->mEntityID || tData.b->mEntityID == tCaller->mEntityID;
+}
+
+
+
 static void unregisterEntity(int tEntityID) {
 	CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
+	stl_list_remove_predicate(gBlitzCollisionData.mActiveSolidCollisions, checkSingleActiveSolidCollisionForRemoval, e);
 	stl_int_map_remove_predicate(e->mCollisionObjects, removeSingleCollisionObject);
 	gBlitzCollisionData.mEntries.erase(tEntityID);
 }
