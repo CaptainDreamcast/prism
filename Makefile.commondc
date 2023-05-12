@@ -68,9 +68,9 @@ build_romdisk: $(OBJS)
 	$(KOS_OBJCOPY) -O binary $(TARGET).elf $(TARGET).BIN
 
 run:
-	/opt/toolchains/dc/bin/dc-tool-ip -t 192.168.0.4 -c . -x 1ST_READ.BIN 
+	sudo /opt/toolchains/dc/bin/dc-tool-ip -t 192.168.0.4 -c . -x 1ST_READ.BIN 
 	
 run_in_assets:
-	/opt/toolchains/dc/bin/dc-tool-ip -t 192.168.0.4 -c ./assets -x 1ST_READ.BIN 
+	sudo /opt/toolchains/dc/bin/dc-tool-ip -t 192.168.0.4 -c ./assets -x 1ST_READ.BIN 
 	
 include $(KOS_BASE)/Makefile.rules

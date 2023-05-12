@@ -4,7 +4,10 @@
 #include <assert.h>
 
 #include <stdlib.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <vitaGL.h>
+
 #ifdef __EMSCRIPTEN__
 #define GL3_PROTOTYPES 1
 #include <GL/glew.h>
@@ -120,27 +123,33 @@ static void initOpenGL() {
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
 	gGLContext = SDL_GL_CreateContext(gSDLWindow);
+	printf("sdl context: %X\n", (void*)gGLContext);
 }
 
+/*
 static void initGlew() {
 	glewExperimental = GL_TRUE;
 	glewInit();
 }
+*/
 
 void initSystem() {
 
 	setToProgramDirectory();
+	SDL_setenv("VITA_PVR_OGL", "1", 1);
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 	
 	if (gPrismWindowsSystemData.mGameName[0] == '\0') {
 		sprintf(gPrismWindowsSystemData.mGameName, "Unnamed libtari game port");
 	}
-	gSDLWindow = SDL_CreateWindow(gPrismWindowsSystemData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+	SDL_setenv("VITA_PVR_OGL", "1", 1);
+	gSDLWindow = SDL_CreateWindow(gPrismWindowsSystemData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 960, 544, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	printf("sdl window: %X\n", (void*)gSDLWindow);
 
 	initOpenGL();
 
-	initGlew();
+	//initGlew();
 }
 
 void shutdownSystem() {
@@ -276,21 +285,17 @@ int isOnDreamcast()
 
 int isOnWindows()
 {
-#ifdef __EMSCRIPTEN__
 	return 0;
-#else
-	return 1;
-#endif
 }
 
 int isOnWeb()
 {
-	return !isOnWindows();
+	return 0;
 }
 
 int isOnVita()
 {
-	return 0;
+	return 1;
 }
 
 uint64_t getSystemTicks() {

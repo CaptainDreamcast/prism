@@ -41,6 +41,16 @@ set cur_file=%target_dir%\windows\TemplateWeb.vcxproj.filters
 powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
 set cur_file=%target_dir%\windows\TemplateWeb.vcxproj.user
 powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
+set cur_file=%target_dir%\windows\TemplateVita.sln
+powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
+set cur_file=%target_dir%\windows\TemplateVita.vcxproj
+powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
+set cur_file=%target_dir%\windows\TemplateVita.vcxproj.filters
+powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
+set cur_file=%target_dir%\windows\TemplateVita.vcxproj.user
+powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
+set cur_file=%target_dir%\vita\CmakeLists.txt
+powershell -Command "(gc %cur_file%) -replace 'TemplateVita', '%1' | Out-File %cur_file%"
 set cur_file=%target_dir%\windows\TemplateAll.sln
 powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
 
@@ -59,6 +69,10 @@ rename %target_dir%\windows\TemplateWeb.sln %1Web.sln
 rename %target_dir%\windows\TemplateWeb.vcxproj %1Web.vcxproj
 rename %target_dir%\windows\TemplateWeb.vcxproj.filters %1Web.vcxproj.filters
 rename %target_dir%\windows\TemplateWeb.vcxproj.user %1Web.vcxproj.user
+rename %target_dir%\windows\TemplateVita.sln %1Vita.sln
+rename %target_dir%\windows\TemplateVita.vcxproj %1Vita.vcxproj
+rename %target_dir%\windows\TemplateVita.vcxproj.filters %1Vita.vcxproj.filters
+rename %target_dir%\windows\TemplateVita.vcxproj.user %1Vita.vcxproj.user
 rename %target_dir%\windows\TemplateAll.sln %1All.sln
 
 md %target_dir%\concept
@@ -66,5 +80,9 @@ md %target_dir%\concept
 powershell -Command "Get-Content %target_dir%\main.cpp | Set-Content -Encoding ascii %target_dir%\maintemp.cpp"
 del -f %target_dir%\main.cpp
 move %target_dir%\maintemp.cpp %target_dir%\main.cpp
+
+powershell -Command "Get-Content %target_dir%\vita\CmakeLists.txt | Set-Content -Encoding ascii %target_dir%\vita\CmakeListsTemp.txt"
+del -f %target_dir%\vita\CmakeLists.txt
+move %target_dir%\vita\CmakeListsTemp.txt %target_dir%\vita\CmakeLists.txt
 
 :over

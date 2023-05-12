@@ -1,0 +1,45 @@
+include Makefile.common
+
+OBJS += vita/drawing_vita.o vita/texture_vita.o vita/input_vita.o \
+vita/framerateselect_vita.o vita/file_vita.o vita/math_vita.o vita/system_vita.o vita/log_vita.o \
+vita/saveload_vita.o vita/soundeffect_vita.o vita/sound_vita.o vita/memoryhandler_vita.o \
+vita/screeneffect_vita.o vita/logoscreen_vita.o vita/thread_vita.o vita/romdisk_vita.o
+
+
+PHONY := all package clean
+rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
+
+PREFIX := arm-vita-eabi
+CC := arm-vita-eabi-gcc
+CXX := arm-vita-eabi-g++
+STRIP := arm-vita-eabi-strip
+AR := arm-vita-eabi-ar
+
+PROJECT_TITLE := Prism
+PROJECT_TITLEID := VSDK00006
+
+PROJECT := prism
+CXXFLAGS += -std=c++11 -Wl,-q -O2 -g -mtune=cortex-a9 -mfpu=neon -ftree-vectorize -I ./include -DVITA -DDEBUG
+
+
+all: $(TARGET) install
+
+$(TARGET): $(OBJS)
+	$(AR) -rc $@ $^
+
+install: $(TARGET)
+	mv $(TARGET) $(VITASDK)/$(PREFIX)/lib/$(TARGET)
+	@mkdir -p $(VITASDK)/$(PREFIX)/include/prism
+	cp include/prism/*.h $(VITASDK)/$(PREFIX)/include/prism
+
+%.o : %.cpp
+	arm-vita-eabi-g++ -c $(CXXFLAGS) -o $@ $<
+
+%.o : %.c
+	arm-vita-eabi-g++ -c -o $@ $<
+
+clean:
+	rm -f $(PROJECT)
+	rm -r *.o
+	rm -r vita/*.o
+

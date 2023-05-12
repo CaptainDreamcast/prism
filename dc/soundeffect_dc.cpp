@@ -179,13 +179,13 @@ void unloadSoundEffect(int tID) {
 	snd_sfx_unload(tID);
 }
 
-int playSoundEffect(int tID) {
-	if (tID == -1) return -1;
-	return snd_sfx_play(tID, gSoundEffectDreamcastData.mVolume, 128);
-}
-
 static int parseVolume(double tVolume) {
 	return (int)(tVolume * 254);  // using 255 for volume results in sound effects glitching out);
+}
+
+int playSoundEffect(int tID) {
+	if (tID == -1) return -1;
+	return snd_sfx_play(tID, parseVolume(gSoundEffectDreamcastData.mVolume), 128);
 }
 
 int playSoundEffectChannel(int tID, int tChannel, double tVolume, double tFreqMul, int tIsLooping) {
@@ -212,5 +212,9 @@ int isSoundEffectPlayingOnChannel(int tChannel) {
 }
 
 void setSoundEffectVolume(double tVolume) {
-	gSoundEffectDreamcastData.mVolume = parseVolume(tVolume);
+	gSoundEffectDreamcastData.mVolume = tVolume;
+}
+
+double getSoundEffectVolume() {
+	return gSoundEffectDreamcastData.mVolume;
 }

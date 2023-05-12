@@ -37,6 +37,21 @@ void freeSDLTexture(void* tData) {
 #define allocTextureHW malloc
 #define freeTextureHW freeSDLTexture
 
+#elif defined VITA
+
+#include <zstd.h>
+#include <SDL2/SDL.h>
+#include "prism/texture.h"
+
+void freeSDLTexture(void* tData) {
+	SDLTextureData* e = (SDLTextureData*)tData;
+	glDeleteTextures(1, &e->mTexture);
+	free(tData);
+}
+
+#define allocTextureHW malloc
+#define freeTextureHW freeSDLTexture
+
 #endif
 
 static void addToUsageQueueFront(TextureMemory tMem);

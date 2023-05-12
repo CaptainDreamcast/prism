@@ -17,6 +17,17 @@ typedef struct {
 
 typedef SDLTextureData* Texture;
 
+#elif defined VITA
+
+#include <SDL2/SDL.h>
+#include <vitaGL.h>
+
+typedef struct {
+	GLuint mTexture;
+} SDLTextureData;
+
+typedef SDLTextureData* Texture;
+
 #endif
 
 struct TextureMemory_internal {

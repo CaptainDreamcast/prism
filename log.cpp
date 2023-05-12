@@ -35,7 +35,7 @@ void logprintf(const char* tFormatString, ...) {
 
 static void logToFile() {
 	if (!isInDevelopMode()) return;
-	if (isOnDreamcast() || isOnWeb()) return;
+	if (isOnDreamcast() || isOnWeb() || isOnVita()) return;
 
 	if (gPrismLogData.mLogFile == FILEHND_INVALID) {
 		createDirectory("$pc/debug");

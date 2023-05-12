@@ -53,6 +53,7 @@ void setVGA();
 int isOnDreamcast();
 int isOnWindows();
 int isOnWeb();
+int isOnVita();
 
 
 uint64_t getSystemTicks();

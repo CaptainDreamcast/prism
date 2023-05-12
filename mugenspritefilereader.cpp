@@ -1359,6 +1359,7 @@ MugenSpriteFile loadMugenSpriteFileWithoutPalette(const std::string& tPath)
 
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(const char * tPath)
 {
+	logFormat("Loading sprite file: %s", tPath);
 	return loadMugenSpriteFile(tPath, 0, NULL);
 }
 
