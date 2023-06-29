@@ -56,7 +56,7 @@ static int isEmpty(BufferPointer p) {
 
 static int increaseAndCheckIfOver(Buffer* b, BufferPointer* p) {
 	(*p)++;
-	return ((uint32_t)*p == (uint32_t)b->mData + b->mLength);
+	return ((uintptr_t)*p == (uintptr_t)b->mData + b->mLength);
 }
 
 static int decreaseAndCheckIfOver(Buffer* b, BufferPointer* p) {
@@ -96,7 +96,7 @@ static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char
 
 	int depth = 1;
 
-	while ((depth > 0 || *p != end) && (uint32_t)p < ((uint32_t)b->mData)+b->mLength) {
+	while ((depth > 0 || *p != end) && (uintptr_t)p < ((uintptr_t)b->mData)+b->mLength) {
 		if (increaseAndCheckIfOver(b, &p)) {
 			logError("Token reached end in wrong place.");
 			logErrorString(p);
@@ -163,7 +163,7 @@ static BufferPointer removeCommentFromToken(BufferPointer s, BufferPointer e) {
 }
 
 static void parseAssignment(Buffer* b, BufferPointer* p, char tAssignmentToken) {
-	debugLog("Parse assignment token.");
+	verboseLog("Parse assignment token.");
 
 	BufferPointer equal = getNextDefCharPosition(b, *p, tAssignmentToken);
 	MugenDefToken* equalToken = makeMugenDefToken("=");
@@ -191,8 +191,8 @@ static void parseAssignment(Buffer* b, BufferPointer* p, char tAssignmentToken) 
 	MugenDefToken* valueToken = makeMugenDefToken(text);
 	destroyMugenDefString(text);
 
-	debugString(variableToken->mValue);
-	debugString(valueToken->mValue);
+	verboseString(variableToken->mValue);
+	verboseString(valueToken->mValue);
 
 	addTokenToTokenReader(equalToken);
 	addTokenToTokenReader(variableToken);
@@ -270,7 +270,7 @@ static void parseTextStatement(Buffer* b, BufferPointer* p) {
 }
 
 static void parseGroup(Buffer* b, BufferPointer* p) {
-	debugLog("Parse group.");
+	verboseLog("Parse group.");
 	BufferPointer end = findEndOfToken(b, *p, '[', ']', 0);
 
 	char* val = makeMugenDefStringFromEndPoint(*p, end);
@@ -281,7 +281,7 @@ static void parseGroup(Buffer* b, BufferPointer* p) {
 	gTokenReader.mCurrentGroupToken = groupToken;
 	addTokenToTokenReader(groupToken);
 
-	debugString(groupToken->mValue);
+	verboseString(groupToken->mValue);
 
 	if (increasePointerToNextLine(b, p)) {
 		setTokenReaderOver();
@@ -432,7 +432,7 @@ static struct {
 
 
 static void setGroup(MugenDefScript* tScript, MugenDefToken* t) {
-	debugLog("Setting group.");
+	verboseLog("Setting group.");
 
 	MugenDefScriptGroup* prev;
 	if (stl_map_contains(tScript->mGroups, gScriptMaker.mGroup)) {
@@ -467,7 +467,7 @@ static void setGroup(MugenDefScript* tScript, MugenDefToken* t) {
 		tScript->mFirstGroup = &tScript->mGroups[gScriptMaker.mGroup];
 	}
 
-	debugString(gScriptMaker.mGroup);
+	verboseString(gScriptMaker.mGroup);
 }
 
 static int isStringToken(MugenDefToken* t) {
@@ -524,7 +524,7 @@ static int isFloatToken(MugenDefToken* t) {
 }
 
 static void setStringElement(MugenDefScriptGroupElement* element, MugenDefToken* t) {
-	debugLog("Setting string element.");
+	verboseLog("Setting string element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT;
 	
 	MugenDefScriptStringElement* e = (MugenDefScriptStringElement*)allocMemory(sizeof(MugenDefScriptStringElement));
@@ -532,35 +532,35 @@ static void setStringElement(MugenDefScriptGroupElement* element, MugenDefToken*
 	strcpy(e->mString, t->mValue);
 	element->mData = e;
 
-	debugString(e->mString);
+	verboseString(e->mString);
 }
 
 static void setNumberElement(MugenDefScriptGroupElement* element, MugenDefToken* t) {
-	debugLog("Setting number element.");
+	verboseLog("Setting number element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_NUMBER_ELEMENT;
 
 	MugenDefScriptNumberElement* e = (MugenDefScriptNumberElement*)allocMemory(sizeof(MugenDefScriptNumberElement));
 	e->mValue = atoi(t->mValue);
 	element->mData = e;
 
-	debugInteger(e->mValue);
+	verboseInteger(e->mValue);
 }
 
 static void setFloatElement(MugenDefScriptGroupElement* element, MugenDefToken* t) {
-	debugLog("Setting float element.");
+	verboseLog("Setting float element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_FLOAT_ELEMENT;
 
 	MugenDefScriptFloatElement* e = (MugenDefScriptFloatElement*)allocMemory(sizeof(MugenDefScriptFloatElement));
 	e->mValue = atof(t->mValue);
 	element->mData = e;
 
-	debugDouble(e->mValue);
+	verboseDouble(e->mValue);
 }
 
 
 
 static void setVectorElement(MugenDefScriptGroupElement* element, MugenDefToken* t) {
-	debugLog("Setting vector element.");
+	verboseLog("Setting vector element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT;
 
 	MugenDefScriptVectorElement* e = (MugenDefScriptVectorElement*)allocMemory(sizeof(MugenDefScriptVectorElement));
@@ -600,7 +600,7 @@ static void setVectorElement(MugenDefScriptGroupElement* element, MugenDefToken*
 }
 
 static void setRawElement(MugenDefScriptGroupElement* element, MugenDefToken* t) {
-	debugLog("Setting raw element.");
+	verboseLog("Setting raw element.");
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT;
 
 	MugenDefScriptStringElement* e = (MugenDefScriptStringElement*)allocMemory(sizeof(MugenDefScriptStringElement));
@@ -608,13 +608,13 @@ static void setRawElement(MugenDefScriptGroupElement* element, MugenDefToken* t)
 	strcpy(e->mString, t->mValue);
 	element->mData = e;
 
-	debugString(e->mString);
+	verboseString(e->mString);
 }
 
 static void unloadMugenDefElement(void* tCaller, void* tData);
 
 static void addGroupElementToGroup(MugenDefScript* tScript, MugenDefScriptGroupElement tElement, char* tVariableName) {
-	debugString(gScriptMaker.mGroup);
+	verboseString(gScriptMaker.mGroup);
 	if (!stl_map_contains(tScript->mGroups, gScriptMaker.mGroup)) {
 		logWarning("Unable to add element to group, no group declared yet. Ignoring element.");
 		unloadMugenDefElement(NULL, &tElement);
@@ -640,7 +640,7 @@ static void addGroupElementToGroup(MugenDefScript* tScript, MugenDefScriptGroupE
 }
 
 static void setAssignment(MugenDefScript* tScript, MugenDefToken** tToken) {
-	debugLog("Setting assignment.");
+	verboseLog("Setting assignment.");
 
 	assert(*tToken != NULL);
 	assert(!strcmp("=", (*tToken)->mValue));
@@ -649,12 +649,12 @@ static void setAssignment(MugenDefScript* tScript, MugenDefToken** tToken) {
 	MugenDefToken* variableToken = *tToken;
 	*tToken = (*tToken)->mNext;
 	assert(variableToken != NULL);
-	debugString(variableToken->mValue);
+	verboseString(variableToken->mValue);
 	turnStringLowercase(variableToken->mValue);
 
 	MugenDefToken* valueToken = *tToken;
 	assert(valueToken != NULL);
-	debugString(valueToken->mValue);
+	verboseString(valueToken->mValue);
 
 	MugenDefScriptGroupElement element;
 	if (isStringToken(valueToken)) {
@@ -673,14 +673,14 @@ static void setAssignment(MugenDefScript* tScript, MugenDefToken** tToken) {
 		setRawElement(&element, valueToken);
 	}
 
-	debugLog("Adding assignment to group.");
+	verboseLog("Adding assignment to group.");
 	addGroupElementToGroup(tScript, element, variableToken->mValue);
 }
 
 static int gVectorStatementCounter;
 
 static void setVectorStatement(MugenDefScript* tScript, MugenDefToken** tToken) {
-	debugLog("Setting vector statement.");
+	verboseLog("Setting vector statement.");
 
 	assert(*tToken != NULL);
 	assert(!strcmp("vector_statement", (*tToken)->mValue));
@@ -688,13 +688,13 @@ static void setVectorStatement(MugenDefScript* tScript, MugenDefToken** tToken) 
 
 	MugenDefToken* valueToken = *tToken;
 	assert(valueToken != NULL);
-	debugString(valueToken->mValue);
+	verboseString(valueToken->mValue);
 
 	MugenDefScriptGroupElement element;
 	assert(isVectorToken(*tToken));
 	setVectorElement(&element, valueToken);
 	
-	debugLog("Adding vector statement to group.");
+	verboseLog("Adding vector statement to group.");
 	char key[100];
 	sprintf(key, "vector_statement %d", gVectorStatementCounter++);
 	addGroupElementToGroup(tScript, element, key);
@@ -703,7 +703,7 @@ static void setVectorStatement(MugenDefScript* tScript, MugenDefToken** tToken) 
 static int gLoopStartStatementCounter;
 
 static void setLoopStartStatement(MugenDefScript* tScript, MugenDefToken** tToken) {
-	debugLog("Setting loop start.");
+	verboseLog("Setting loop start.");
 
 	assert(*tToken != NULL);
 	assert(!strcmp("Loopstart", (*tToken)->mValue));
@@ -711,7 +711,7 @@ static void setLoopStartStatement(MugenDefScript* tScript, MugenDefToken** tToke
 	MugenDefScriptGroupElement element;
 	setRawElement(&element, *tToken);
 
-	debugLog("Adding loop start to group.");
+	verboseLog("Adding loop start to group.");
 	char key[100];
 	sprintf(key, "Loopstart %d", gLoopStartStatementCounter++);
 	addGroupElementToGroup(tScript, element, key);
@@ -720,7 +720,7 @@ static void setLoopStartStatement(MugenDefScript* tScript, MugenDefToken** tToke
 static int gInterpolationStatementCounter;
 
 static void setInterpolationStatement(MugenDefScript* tScript, MugenDefToken** tToken) {
-	debugLog("Setting interpolation.");
+	verboseLog("Setting interpolation.");
 	
 	MugenDefToken* interpolationToken = *tToken;
 	assert(interpolationToken != NULL);
@@ -728,21 +728,21 @@ static void setInterpolationStatement(MugenDefScript* tScript, MugenDefToken** t
 	MugenDefScriptGroupElement element;
 	setRawElement(&element, *tToken);
 
-	debugLog("Adding interpolation to group.");
+	verboseLog("Adding interpolation to group.");
 	char key[100];
 	sprintf(key, "%s %d", interpolationToken->mValue, gInterpolationStatementCounter++);
 	addGroupElementToGroup(tScript, element, key);
 }
 
 static void setTextStatement(MugenDefScript* tScript, MugenDefToken** tToken) {
-	debugLog("Setting text.");
+	verboseLog("Setting text.");
 
 	assert(*tToken != NULL);
 
 	MugenDefScriptGroupElement element;
 	setRawElement(&element, *tToken);
 
-	debugLog("Adding text to group.");
+	verboseLog("Adding text to group.");
 	char key[100];
 	sprintf(key, "Text %d", gInterpolationStatementCounter++);
 	addGroupElementToGroup(tScript, element, key);
@@ -832,7 +832,6 @@ void loadMugenDefScript(MugenDefScript* oScript, const char * tPath)
 {
 	debugLog("Start loading script.");
 	debugString(tPath);
-	logFormat("loading file %s", tPath);
 	Buffer b = fileToBuffer(tPath);
 	loadMugenDefScriptFromBufferAndFreeBuffer(oScript, b);
 }

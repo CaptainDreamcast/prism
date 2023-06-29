@@ -233,10 +233,10 @@ void bufferToFile(const char* tFileDir, const Buffer& tBuffer) {
 }
 
 void freeBuffer(Buffer& buffer) {
-	debugLog("Freeing buffer.");
+	verboseLog("Freeing buffer.");
 	if (buffer.mIsOwned) {
-		debugLog("Freeing owned memory");
-		debugInteger(buffer.mLength);
+		verboseLog("Freeing owned memory");
+		verboseInteger(buffer.mLength);
 		freeMemory(buffer.mData);
 	}
 	buffer.mData = NULL;

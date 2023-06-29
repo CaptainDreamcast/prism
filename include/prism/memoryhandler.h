@@ -7,26 +7,33 @@
 
 typedef pvr_ptr_t Texture;
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__
-#include <SDL.h>
-#include <GL/glew.h>
+#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined(VITA)
 
-typedef struct {
-	GLuint mTexture;
-} SDLTextureData;
-
-typedef SDLTextureData* Texture;
-
-#elif defined VITA
-
+#ifdef VITA
 #include <SDL2/SDL.h>
 #include <vitaGL.h>
+#else
+#include <SDL.h>
+#include <GL/glew.h>
+#endif
+
+#ifdef VITA
+typedef struct {
+	int mWidth;
+	int mHeight;
+	int mFormat;
+	void* mCpuData;
+} GLTextureAllocationData;
+#endif
 
 typedef struct {
+#ifdef VITA
+	GLTextureAllocationData mAllocationData;
+#endif
 	GLuint mTexture;
-} SDLTextureData;
+} GLTextureData;
 
-typedef SDLTextureData* Texture;
+typedef GLTextureData* Texture;
 
 #endif
 
@@ -48,7 +55,11 @@ void* allocMemory(int tSize);
 void* allocClearedMemory(int tBlockAmount, int tBlockSize);
 void freeMemory(void* tData);
 void* reallocMemory(void* tData, int tSize);
+#ifdef VITA
+TextureMemory allocTextureMemory(int tSize, void* userData);
+#else
 TextureMemory allocTextureMemory(int tSize);
+#endif
 void freeTextureMemory(TextureMemory tMem);
 void referenceTextureMemory(TextureMemory tMem);
 

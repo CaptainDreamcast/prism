@@ -5,18 +5,11 @@
 #include "prism/log.h"
 #include "prism/wrapper.h"
 
-void abortSystem(){
-	arch_exit();
-}	
-
-void returnToMenu() {
-	arch_menu();
-}
-
 static struct {
 
 	int mIsLoaded;
-	
+	int mIsExitDisabled;
+
 	int mScreenSizeX;
 	int mScreenSizeY;
 
@@ -24,6 +17,17 @@ static struct {
 	int mIsVGA;
 
 } gSystem;
+
+void abortSystem(){
+	arch_exit();
+}	
+
+void returnToMenu() {
+	if (!gSystem.mIsExitDisabled)
+	{
+		arch_menu();
+	}
+}
 
 static void initiatePVR() {
 	pvr_init_params_t params = {
@@ -51,6 +55,7 @@ void updateSystem() {}
 
 static void initScreenDefault() {
 	gSystem.mIsLoaded = 1;
+	gSystem.mIsExitDisabled = 0;
 	gSystem.mScreenSizeX = 640;
 	gSystem.mScreenSizeY = 480;
 	gSystem.mFramerate = 60;
@@ -162,4 +167,9 @@ uint64_t getSystemTicks() {
     uint32 s_s, s_ms;
     timer_ms_gettime(&s_s, &s_ms);
     return s_s*1000 + s_ms;
+}
+
+void setSystemExitDisabled(int tIsExitDisabled)
+{
+	gSystem.mIsExitDisabled = tIsExitDisabled;
 }

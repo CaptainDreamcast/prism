@@ -32,7 +32,7 @@ static void readPNGDataFromInputStream(png_structp png_ptr, png_bytep outBytes, 
 	}
 
 	PNGReadCaller* caller = (PNGReadCaller*)io_ptr;
-	if (((uint32_t)caller->p) + byteCountToRead > ((uint32_t)caller->b.mData) + caller->b.mLength) {
+	if (((uintptr_t)caller->p) + byteCountToRead > ((uintptr_t)caller->b.mData) + caller->b.mLength) {
 		logError("Trying to read outside buffer");
 		recoverFromError();
 	}

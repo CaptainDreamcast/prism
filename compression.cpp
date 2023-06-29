@@ -16,9 +16,9 @@ void compressBufferZSTD(Buffer * tBuffer)
 	}
 
 	char* src = (char*)tBuffer->mData;
-	int dstBufferSize = tBuffer->mLength + COMPRESSION_BUFFER;
+	auto dstBufferSize = size_t(tBuffer->mLength + COMPRESSION_BUFFER);
 	char* dst = (char*)allocMemory(dstBufferSize);
-	int dstLength = ZSTD_compress(dst, dstBufferSize, src, tBuffer->mLength, 1);
+	auto dstLength = ZSTD_compress(dst, dstBufferSize, src, tBuffer->mLength, 1);
 	dst = (char*)reallocMemory(dst, dstLength);
 
 	freeBuffer(*tBuffer);

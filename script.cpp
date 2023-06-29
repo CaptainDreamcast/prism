@@ -95,7 +95,7 @@ static ScriptRegion makeScriptRegion(const Script& tScript, char* tStart, char* 
 }
 
 static ScriptRegion getWholeScriptRegion(Script tScript) {
-	return makeScriptRegion(tScript, (char*)tScript.mBuffer.mData, (char*)((uint32_t)tScript.mBuffer.mData + tScript.mBuffer.mLength - 1));
+	return makeScriptRegion(tScript, (char*)tScript.mBuffer.mData, (char*)((uintptr_t)tScript.mBuffer.mData + tScript.mBuffer.mLength - 1));
 }
 
 static ScriptPosition findNextScriptOccurenceOnSameLevel(const ScriptPosition& tPos, const char* tWord) {
@@ -173,7 +173,7 @@ static ScriptPosition findScriptRegionStart(const ScriptPosition& tPos, const ch
 		next = getNextScriptString(ret, w2);
 		if(!isInside && !strcmp(tName, w1) && w2[0] == '{') {
 			if(next.mPointer == NULL) {
-				next.mPointer = (char*)((uint32_t)ret.mRegion.mScript.mBuffer.mData + ret.mRegion.mScript.mBuffer.mLength - 1);
+				next.mPointer = (char*)((uintptr_t)ret.mRegion.mScript.mBuffer.mData + ret.mRegion.mScript.mBuffer.mLength - 1);
 			}
 			return next;
 		}

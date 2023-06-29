@@ -3,7 +3,7 @@ TARGET = 1ST_READ
 OBJS += romdisk.o
 OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -DDREAMCAST -Wall -fpermissive
 KOS_CPPFLAGS+= $(OPTFLAGS)
-CXXFLAGS += -DNDEBUG -std=c++11 -Wall
+CXXFLAGS += -DNDEBUG -std=c++11 -Wall -O2
 KOS_ROMDISK_DIR = romdisk_boot
 
 complete: make_filesystem build_develop

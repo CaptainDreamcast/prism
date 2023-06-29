@@ -21,7 +21,7 @@
 
 static TextureData textureFromSurface(SDL_Surface* tSurface) {
 	TextureData returnData;
-	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
+	returnData.mTexture = allocTextureMemory(sizeof(GLTextureData));
 	returnData.mTextureSize.x = tSurface->w;
 	returnData.mTextureSize.y = tSurface->h;
 	returnData.mHasPalette = 0;
@@ -273,7 +273,7 @@ TextureData loadTextureFromRawPNGBuffer(const Buffer& b, int tWidth, int tHeight
 
 TextureData loadPalettedTextureFrom8BitBuffer(const Buffer& b, int tPaletteID, int tWidth, int tHeight) {
 	TextureData returnData;
-	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
+	returnData.mTexture = allocTextureMemory(sizeof(GLTextureData));
 	returnData.mTextureSize.x = tWidth;
 	returnData.mTextureSize.y = tHeight;
 	returnData.mHasPalette = 1;

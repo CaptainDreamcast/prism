@@ -245,8 +245,8 @@ static void addMugenFont1(int tKey, const char* tPath) {
 	BufferPointer p = getBufferPointer(b);
 	readFromBufferPointer(&header, &p, sizeof(MugenFontHeader));
 
-	Buffer textureBuffer = makeBuffer((void*)(((uint32_t)b.mData) + header.mTextureOffset), header.mTextureLength);
-	Buffer textBuffer = makeBuffer((void*)(((uint32_t)b.mData) + header.mTextOffset), (b.mLength - header.mTextOffset));
+	Buffer textureBuffer = makeBuffer((void*)(((uintptr_t)b.mData) + header.mTextureOffset), header.mTextureLength);
+	Buffer textBuffer = makeBuffer((void*)(((uintptr_t)b.mData) + header.mTextOffset), (b.mLength - header.mTextOffset));
 	MugenDefScript script; 
 	loadMugenDefScriptFromBufferAndFreeBuffer(&script, textBuffer);
 

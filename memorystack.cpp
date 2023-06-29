@@ -28,7 +28,7 @@ void resizeMemoryStackToCurrentSize(MemoryStack* tStack) {
 
 void * allocMemoryOnMemoryStack(MemoryStack * tStack, uint32_t tSize)
 {
-	void* ret = (void*)((uint32_t)tStack->mAddress + tStack->mOffset);
+	void* ret = (void*)((uintptr_t)tStack->mAddress + tStack->mOffset);
 	const auto padding = (4 - (tSize % 4)) % 4;
 	tStack->mOffset += tSize + padding;
 

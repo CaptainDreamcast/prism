@@ -4,6 +4,7 @@
 windows/vs17/.vs/*
 windows/vs17/Release/*
 windows/vs17/Debug/*
+windows/vs17/x64/*
 tools/bin/*
 tools/storyboardbuilder/windows/Release/*
 tools/kompressor/windows/Release/*

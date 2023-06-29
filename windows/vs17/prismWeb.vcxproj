@@ -5,26 +5,45 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{10E9C155-833F-4A97-90C8-8072EE59B89E}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -34,7 +53,13 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -44,7 +69,19 @@
     <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
     <NMakePreprocessorDefinitions>__EMSCRIPTEN__;WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>__EMSCRIPTEN__;WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <NMakeBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web"</NMakeBuildCommandLine>
     <NMakeCleanCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library"</NMakeCleanCommandLine>
     <NMakeReBuildCommandLine>ubuntu run "cd /home/captaindc/LIBS/emsdk &amp;&amp; . emsdk_env.sh &amp;&amp; cd /mnt/c/DEV/PROJECTS/addons/prism &amp;&amp; make -f Makefile.web clean_library &amp;&amp; make -f Makefile.web"</NMakeReBuildCommandLine>

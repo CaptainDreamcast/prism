@@ -54,8 +54,8 @@ SDL_GLContext gGLContext;
 
 static void initScreenDefault() {
 	gPrismWindowsSystemData.mIsLoaded = 1;
-	gPrismWindowsSystemData.mScreenSizeX = gPrismWindowsSystemData.mDisplayedWindowSizeX = 640;
-	gPrismWindowsSystemData.mScreenSizeY = gPrismWindowsSystemData.mDisplayedWindowSizeY = 480; 
+	gPrismWindowsSystemData.mScreenSizeX = gPrismWindowsSystemData.mDisplayedWindowSizeX = 960;
+	gPrismWindowsSystemData.mScreenSizeY = gPrismWindowsSystemData.mDisplayedWindowSizeY = 544; 
 }
 
 void setGameName(const char* tName) {
@@ -99,20 +99,6 @@ static void setToProgramDirectory() {
 
 extern void setDrawingScreenScale(double tScaleX, double tScaleY);
 
-static void setWindowSize(int tX, int tY) {
-	ScreenSize sz = getScreenSize();
-	double scaleX = tX / (double)sz.x;
-	double scaleY = tY / (double)sz.y;
-
-	scaleX = fmin(scaleX, scaleY);
-	scaleY = fmin(scaleX, scaleY);
-
-	setDrawingScreenScale(scaleX, scaleY);
-	gPrismWindowsSystemData.mDisplayedWindowSizeX = (int)(scaleX * sz.x);
-	gPrismWindowsSystemData.mDisplayedWindowSizeY = (int)(scaleY * sz.y);
-	SDL_SetWindowSize(gSDLWindow, gPrismWindowsSystemData.mDisplayedWindowSizeX, gPrismWindowsSystemData.mDisplayedWindowSizeY);
-}
-
 static void initOpenGL() {
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -123,7 +109,6 @@ static void initOpenGL() {
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
 	gGLContext = SDL_GL_CreateContext(gSDLWindow);
-	printf("sdl context: %X\n", (void*)gGLContext);
 }
 
 /*
@@ -145,7 +130,6 @@ void initSystem() {
 	}
 	SDL_setenv("VITA_PVR_OGL", "1", 1);
 	gSDLWindow = SDL_CreateWindow(gPrismWindowsSystemData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 960, 544, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-	printf("sdl window: %X\n", (void*)gSDLWindow);
 
 	initOpenGL();
 
@@ -178,32 +162,6 @@ Vector3D correctSDLWindowPosition(const Vector3D& v) {
 	return vecScale3D(v, Vector3D(1 / scaleX, 1 / scaleY, 1));
 }
 
-static void switchFullscreen() {
-	const auto flags = SDL_GetWindowFlags(gSDLWindow);
-	if (!(flags & SDL_WINDOW_FULLSCREEN)) {
-		if (isOnWeb()) {
-			SDL_SetWindowFullscreen(gSDLWindow, SDL_WINDOW_FULLSCREEN_DESKTOP); // does not break window resizing, unlike the other one, probably due to https://github.com/emscripten-ports/SDL2/issues/8
-		}
-		else {
-			SDL_SetWindowFullscreen(gSDLWindow, SDL_WINDOW_FULLSCREEN);
-		}
-	}
-	else {
-		SDL_SetWindowFullscreen(gSDLWindow, 0);
-		if (isOnWeb()) {
-			setWindowSize(640, 480); // force real window size after fullscreen switch until (https://github.com/emscripten-ports/SDL2/issues/8) resolved
-		}
-	}
-}
-
-static void checkFullscreen() {
-	const auto webInput = isOnWeb() && hasPressedKeyboardKeyFlank(KEYBOARD_F8_PRISM);
-	const auto nonWebInput = !isOnWeb() && hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_ALT_LEFT_PRISM, KEYBOARD_RETURN_PRISM);
-	if (webInput || nonWebInput) {
-		switchFullscreen();
-	}
-}
-
 extern void receiveCharacterInputFromSDL(const std::string& tText);
 
 void updateSystem() {
@@ -223,10 +181,7 @@ void updateSystem() {
 		default:
 			break;
 		}
-	}
-
-	checkFullscreen();
-	
+	}	
 }
 
 void setScreen(int tX, int tY, int tFramerate, int tIsVGA) {
@@ -249,6 +204,7 @@ ScreenSize getScreenSize() {
 	ScreenSize ret;
 	ret.x = gPrismWindowsSystemData.mScreenSizeX;
 	ret.y = gPrismWindowsSystemData.mScreenSizeY;
+
 	return ret;
 }
 
@@ -263,7 +219,7 @@ ScreenSize getDisplayedScreenSize()
 
 void setDisplayedScreenSize(int tX, int tY)
 {
-	setWindowSize(tX, tY);
+	// impossible to change under Vita
 }
 
 void setScreenFramerate(int tFramerate) {

@@ -22,20 +22,22 @@
 #include "prism/compression.h"
 
 static TextureData textureFromSurface(SDL_Surface* tSurface) {
-	TextureData returnData;
-	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
-	returnData.mTextureSize.x = tSurface->w;
-	returnData.mTextureSize.y = tSurface->h;
-	returnData.mHasPalette = 0;
-	Texture texture = (Texture)returnData.mTexture->mData;
-	
+	GLTextureAllocationData allocationData;
+	allocationData.mWidth = tSurface->w;
+	allocationData.mHeight = tSurface->h;
+	allocationData.mFormat = GL_RGBA;
+
 	auto surface = SDL_ConvertSurfaceFormat(tSurface, SDL_PIXELFORMAT_RGBA32, 0);
 	SDL_FreeSurface(tSurface);
 
+	allocationData.mCpuData = surface->pixels;
+	int totalSize = allocationData.mWidth * allocationData.mHeight * 4;
+
+	GLuint newTexture;
 	GLint last_texture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-	glGenTextures(1, &texture->mTexture);
-	glBindTexture(GL_TEXTURE_2D, texture->mTexture);
+	glGenTextures(1, &newTexture);
+	glBindTexture(GL_TEXTURE_2D, newTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -43,13 +45,21 @@ static TextureData textureFromSurface(SDL_Surface* tSurface) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, surface->w, surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
 	glBindTexture(GL_TEXTURE_2D, last_texture);
 
+	TextureData returnData;
+	returnData.mTexture = allocTextureMemory(totalSize, &allocationData);
+	returnData.mTextureSize.x = allocationData.mWidth;
+	returnData.mTextureSize.y = allocationData.mHeight;
+	returnData.mHasPalette = 0;
+	Texture texture = (Texture)returnData.mTexture->mData;
+	texture->mTexture = newTexture;
+
 	SDL_FreeSurface(surface);
 
 	return returnData;
 }
 
 TextureData loadTexturePNG(const char* tFileDir) {
-	
+
 	Buffer b = fileToBuffer(tFileDir);
 	SDL_RWops* memStream = SDL_RWFromMem(b.mData, b.mLength);
 	SDL_Surface* loadedSurface = IMG_Load_RW(memStream, 1);
@@ -245,7 +255,7 @@ TextureData loadTextureFromARGB32Buffer(const Buffer& b, int tWidth, int tHeight
 	uint32_t rmask = 0x00ff0000;
 	uint32_t gmask = 0x0000ff00;
 	uint32_t bmask = 0x000000ff;
-	
+
 	int depth = 32;
 	int pitch = 4 * tWidth;
 
@@ -274,24 +284,32 @@ TextureData loadTextureFromRawPNGBuffer(const Buffer& b, int tWidth, int tHeight
 }
 
 TextureData loadPalettedTextureFrom8BitBuffer(const Buffer& b, int tPaletteID, int tWidth, int tHeight) {
-	TextureData returnData;
-	returnData.mTexture = allocTextureMemory(sizeof(SDLTextureData));
-	returnData.mTextureSize.x = tWidth;
-	returnData.mTextureSize.y = tHeight;
-	returnData.mHasPalette = 1;
-	returnData.mPaletteID = tPaletteID;
-	Texture texture = (Texture)returnData.mTexture->mData;
+	GLTextureAllocationData allocationData;
+	allocationData.mWidth = tWidth;
+	allocationData.mHeight = tHeight;
+	allocationData.mFormat = GL_ALPHA;
+	allocationData.mCpuData = b.mData;
 
+	GLuint newTexture;
 	GLint last_texture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-	glGenTextures(1, &texture->mTexture);
-	glBindTexture(GL_TEXTURE_2D, texture->mTexture);
+	glGenTextures(1, &newTexture);
+	glBindTexture(GL_TEXTURE_2D, newTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, tWidth, tHeight, 0, GL_ALPHA, GL_UNSIGNED_BYTE, b.mData);
 	glBindTexture(GL_TEXTURE_2D, last_texture);
+
+	TextureData returnData;
+	returnData.mTexture = allocTextureMemory(b.mLength, &allocationData);
+	returnData.mTextureSize.x = tWidth;
+	returnData.mTextureSize.y = tHeight;
+	returnData.mHasPalette = 1;
+	returnData.mPaletteID = tPaletteID;
+	Texture texture = (Texture)returnData.mTexture->mData;
+	texture->mTexture = newTexture;
 
 	return returnData;
 }

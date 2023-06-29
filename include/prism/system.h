@@ -55,5 +55,6 @@ int isOnWindows();
 int isOnWeb();
 int isOnVita();
 
+void setSystemExitDisabled(int tIsExitDisabled);
 
 uint64_t getSystemTicks();

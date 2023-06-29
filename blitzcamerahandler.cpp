@@ -127,6 +127,11 @@ int getBlitzCameraHandlerEntityID()
 	return -10;
 }
 
+const GeoRectangle2D& getBlitzCameraHandlerRange()
+{
+	return gBlitzCameraHandlerData.mCameraRange;
+}
+
 void setBlitzCameraHandlerRange(const GeoRectangle2D& tRectangle)
 {
 	const auto sz = getScreenSize();

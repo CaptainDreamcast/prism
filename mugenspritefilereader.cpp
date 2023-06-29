@@ -504,7 +504,7 @@ static void readPNGDataFromInputStream(png_structp png_ptr, png_bytep outBytes, 
 	}
 
 	PNGReadCaller* caller = (PNGReadCaller*)io_ptr;
-	if (((uint32_t)caller->p) + byteCountToRead > ((uint32_t)caller->b.mData) + caller->b.mLength) {
+	if (((uintptr_t)caller->p) + byteCountToRead > ((uintptr_t)caller->b.mData) + caller->b.mLength) {
 		logError("Trying to read outside buffer");
 		recoverFromError();
 	}
@@ -1299,16 +1299,23 @@ static MugenSpriteFile loadMugenSpriteFileGeneral(const char * tPath, int tHasPa
 		logErrorFormat("Unable to open sprite file %s. Aborting.", tPath);
 		recoverFromError();
 	}
+	MugenSpriteFile ret;
 	char preloadPath[1024];
 	sprintf(preloadPath, "%s.preloaded", tPath);
 	if (isFile(preloadPath) && !gPrismMugenSpriteFileReaderData.mIsWritingDreamcastOptimized) {
-		return loadMugenSpriteFileGeneral(preloadPath, tHasPaletteFile, tOptionalPaletteFile);
+
+		ret = loadMugenSpriteFileGeneral(preloadPath, tHasPaletteFile, tOptionalPaletteFile);
+
+		debugFormat("Memory State after pre-loading: %s as %s", tPath, preloadPath);
+		debugLogTextureMemoryState();
+		debugLogMemoryState();
+
+		return ret;
 	}
 
 	gPrismMugenSpriteFileReaderData.mHasPaletteFile = tHasPaletteFile;
 	checkMugenSpriteFileReader();
 
-	MugenSpriteFile ret;
 	gPrismMugenSpriteFileReaderData.mReader.mInit(&gPrismMugenSpriteFileReaderData.mReader, tPath);
 
 	SFFSharedHeader header;
@@ -1336,7 +1343,11 @@ static MugenSpriteFile loadMugenSpriteFileGeneral(const char * tPath, int tHasPa
 	}
 
 	gPrismMugenSpriteFileReaderData.mReader.mDelete(&gPrismMugenSpriteFileReaderData.mReader);
-	
+
+	debugFormat("Memory State after loading: %s", tPath);
+	debugLogTextureMemoryState();
+	debugLogMemoryState();
+
 	return ret;
 }
 

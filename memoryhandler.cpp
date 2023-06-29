@@ -13,6 +13,9 @@
 
 using namespace std;
 
+static void compressMemory(TextureMemory tMem, void** tBuffer, int tSrcSize);
+static void decompressMemory(TextureMemory tMem, void** tBuffer);
+
 #ifdef DREAMCAST
 
 #include <kos.h>
@@ -21,36 +24,70 @@ using namespace std;
 #define allocTextureHW pvr_mem_malloc
 #define freeTextureHW pvr_mem_free
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__
+void virtualizeTextureDreamcast(const TextureMemory& tMem)
+{
+	void* mainMemoryBuffer = malloc(tMem->mSize);
+	memcpy(mainMemoryBuffer, tMem->mData, tMem->mSize);
+
+	compressMemory(tMem, &mainMemoryBuffer, tMem->mSize);
+
+	freeTextureHW(tMem->mData);
+	tMem->mData = mainMemoryBuffer;
+}
+
+void unvirtualizeTextureDreamcast(const TextureMemory& tMem)
+{
+	decompressMemory(tMem, &tMem->mData);
+	void* textureMemoryBuffer = allocTextureHW(tMem->mSize);
+	memcpy(textureMemoryBuffer, tMem->mData, tMem->mSize);
+	free(tMem->mData);
+	tMem->mData = textureMemoryBuffer;
+}
+
+#define virtualizeTextureHW virtualizeTextureDreamcast
+#define unvirtualizeTextureHW unvirtualizeTextureDreamcast
+
+#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined(VITA)
 
 #include <zstd.h>
+#ifdef VITA
+#include <SDL2/SDL.h>
+#else
 #include <SDL.h>
 #include <GL/glew.h>
+#endif
 #include "prism/texture.h"
 
-void freeSDLTexture(void* tData) {
-	SDLTextureData* e = (SDLTextureData*)tData;
+#ifdef VITA
+static void* getActiveUserData();
+#endif
+
+void* allocGLTexture(size_t) {
+	GLTextureData* data = (GLTextureData*)malloc(sizeof(GLTextureData));
+	return data;
+}
+
+void freeGLTexture(void* tData) {
+	GLTextureData* e = (GLTextureData*)tData;
 	glDeleteTextures(1, &e->mTexture);
 	free(tData);
 }
 
-#define allocTextureHW malloc
-#define freeTextureHW freeSDLTexture
+#define allocTextureHW allocGLTexture
+#define freeTextureHW freeGLTexture
 
-#elif defined VITA
-
-#include <zstd.h>
-#include <SDL2/SDL.h>
-#include "prism/texture.h"
-
-void freeSDLTexture(void* tData) {
-	SDLTextureData* e = (SDLTextureData*)tData;
-	glDeleteTextures(1, &e->mTexture);
-	free(tData);
+void virtualizeTextureGL(const TextureMemory& tMem)
+{
+	// Unsupported
 }
 
-#define allocTextureHW malloc
-#define freeTextureHW freeSDLTexture
+void unvirtualizeTextureGL(const TextureMemory& tMem)
+{
+	// Unsupported
+}
+
+#define virtualizeTextureHW virtualizeTextureGL
+#define unvirtualizeTextureHW unvirtualizeTextureGL
 
 #endif
 
@@ -125,9 +162,25 @@ static struct {
 	int mAllocatedMemory;
 
 	int mIsCompressionActive;
+	
+#ifdef VITA
+	void* mActiveUserData;
+#endif
 
 	int mActive;
 } gMemoryHandler;
+
+#ifdef VITA
+static void setActiveUserData(void* tUserData)
+{
+	gMemoryHandler.mActiveUserData = tUserData;
+}
+
+static void* getActiveUserData()
+{
+	return gMemoryHandler.mActiveUserData;
+}
+#endif
 
 static void initHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
 	(void)tStrategy;
@@ -309,13 +362,7 @@ static void virtualizeSingleTextureMemory(TextureMemory tMem) {
 	debugLog("Virtualizing texture memory.");
 	debugInteger(tMem->mSize);
 
-	void* mainMemoryBuffer = malloc(tMem->mSize);
-	memcpy(mainMemoryBuffer, tMem->mData, tMem->mSize);
-
-	compressMemory(tMem, &mainMemoryBuffer, tMem->mSize);
-
-	freeTextureHW(tMem->mData);
-	tMem->mData = mainMemoryBuffer;
+	virtualizeTextureHW(tMem);
 
 	tMem->mIsVirtual = 1;
 }
@@ -324,12 +371,8 @@ static void unvirtualizeSingleTextureMemory(TextureMemory tMem) {
 	debugLog("Unvirtualizing texture memory.");
 	debugInteger(tMem->mSize);
   
-	decompressMemory(tMem, &tMem->mData);
+	unvirtualizeTextureHW(tMem);
 
-	void* textureMemoryBuffer = allocTextureHW(tMem->mSize);
-	memcpy(textureMemoryBuffer, tMem->mData, tMem->mSize);
-	free(tMem->mData);
-	tMem->mData = textureMemoryBuffer;
 	tMem->mIsVirtual = 0;
 
 	addToUsageQueueFront(tMem);
@@ -486,11 +529,18 @@ void* reallocMemory(void* tData, int tSize) {
 	return resizeMemoryOnMemoryListStack(&gMemoryHandler.mMemoryStack, tData, tSize);
 }
 
+#ifdef VITA
+TextureMemory allocTextureMemory(int tSize, void* userData) {
+#else
 TextureMemory allocTextureMemory(int tSize) {
+#endif
 	if (!tSize) {
 		return NULL;
 	}
 	
+#ifdef VITA
+	setActiveUserData(userData);
+#endif
 	return (TextureMemory)addMemoryToMemoryListStack(&gMemoryHandler.mTextureMemoryStack, tSize);
 }
 
@@ -555,6 +605,9 @@ void initMemoryHandler() {
 	gMemoryHandler.mActive = 1;
 	gMemoryHandler.mIsCompressionActive = 0;
 	gMemoryHandler.mMemoryStack.mHead = -1;
+#ifdef VITA
+	gMemoryHandler.mActiveUserData = NULL;
+#endif
 	initMemoryListStack(&gMemoryHandler.mMemoryStack, getHashMapStrategyMainMemory());
 	initMemoryListStack(&gMemoryHandler.mTextureMemoryStack, getHashMapStrategyTextureMemory());
 	initTextureMemoryUsageList();

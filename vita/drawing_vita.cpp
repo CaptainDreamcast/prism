@@ -26,69 +26,74 @@
 #include "prism/debug.h"
 #include "prism/geometry.h"
 
-static const GLchar *gVertexShader =
-"uniform mat4 ProjMtx;\n"
-"attribute vec2 Position;\n"
-"attribute vec2 UV;\n"
-"attribute vec4 Color;\n"
-"attribute vec3 ColorOffset;\n"
-"varying vec2 Frag_UV;\n"
-"varying vec4 Frag_Color;\n"
-"varying vec3 Frag_ColorOffset;\n"
-"void main()\n"
+static const char gVertexShader[] =
+"uniform float4x4 ProjMtx;\n"
+"uniform float4x4 NormalMatrix;\n"
+"uniform float4 LightSourcePosition;\n"
+"uniform float4 MaterialColor;\n"
+"uniform int3 ScreenSizeBlendStyle;\n"
+"void main(\n"
+"float2 Position,\n"
+"float2 UV,\n"
+"float4 Color,\n"
+"float3 ColorOffset,\n"
+"float3 normal,\n"
+"float4 out gl_Position : POSITION,\n"
+"float2 out Frag_UV : TEXCOORD0,\n"
+"float4 out ScreenPos : TEXCOORD1,\n"
+"float4 out Frag_Color : COLOR)\n"
 "{\n"
 "	Frag_UV = UV;\n"
 "	Frag_Color = Color;\n"
-"	Frag_ColorOffset = ColorOffset;\n"
-"	gl_Position = ProjMtx * vec4(Position.xy, 0, 1);\n"
-"}\n";
+"	gl_Position = mul(float4(Position, 0.0, 1.0), ProjMtx);\n"
+"	float4 p = gl_Position;\n"
+"   p.y *= -1;\n"
+"	ScreenPos = float4(0.5 * (float2(p.x + p.w, p.w - p.y) + p.w * (float2(1.0, 1.0) / ScreenSizeBlendStyle.xy)), p.zw);\n"
+"}";
 
-static const GLchar* gFragmentShader =
-#ifdef __EMSCRIPTEN__
-// WebGL requires precision specifiers but OpenGL 2.1 disallows
-// them, so I define the shader without it and then add it here.
-"precision mediump float;\n"
-#endif
-"uniform sampler2D Texture;\n"
+static const char gFragmentShader[] =
+"uniform sampler2D tex;\n"
 "uniform sampler2D Palette;\n"
 "uniform sampler2D BG;\n"
-"uniform ivec3 ScreenSizeBlendStyle;\n"
-"uniform vec2 DestinationAlphaColorFactor;\n"
-"uniform ivec3 PaletteSolidityInversionUsed;\n"
-"varying vec2 Frag_UV;\n"
-"varying vec4 Frag_Color;\n"
-"varying vec3 Frag_ColorOffset;\n"
-"void main()\n"
+"uniform int3 ScreenSizeBlendStyle;\n"
+"uniform float3 DestinationAlphaColorFactor;\n"
+"uniform int3 PaletteSolidityInversionUsed;\n"
+"float4 main(\n"
+"float2 Frag_UV : TEXCOORD0,\n"
+"float4 ScreenPos : TEXCOORD1,\n"
+"float4 Frag_Color : COLOR)\n"
 "{\n"
-"	vec4 textureColor;\n"
+"	float4 Frag_ColorOffset = float4(0.0, 0.0, 0.0, 0.0);\n"
+"	float4 textureColor;\n"
 "	if(PaletteSolidityInversionUsed.x == 1) {\n"
-"	    vec4 index = texture2D(Texture, Frag_UV);\n"
-"		textureColor = texture2D(Palette, vec2(index.w, 0.0));\n"
+"	    float4 index = tex2D(tex, Frag_UV);\n"
+"		textureColor = tex2D(Palette, float2(index.w, 0.0));\n"
 "	} else {\n"
-"		textureColor = texture2D(Texture, Frag_UV);\n"
+"		textureColor = tex2D(tex, Frag_UV);\n"
 "	}\n"
 "	if(DestinationAlphaColorFactor.y != 1.0) {\n"
-"		vec3 grayscaleColor = vec3((textureColor.x + textureColor.y + textureColor.z) / 3.0);\n"
+"		float3 grayscaleColor = float3((textureColor.x + textureColor.y + textureColor.z) / 3.0);\n"
 "		textureColor.xyz = DestinationAlphaColorFactor.y * textureColor.xyz + (1.0 - DestinationAlphaColorFactor.y) * grayscaleColor;\n"
 "	}\n"
 "	if(PaletteSolidityInversionUsed.z == 1) {\n"
-"		textureColor.xyz = vec3(1.0) - textureColor.xyz;\n"
+"		textureColor.xyz = float3(1.0, 1.0, 1.0) - textureColor.xyz;\n"
 "	}\n"
-"   vec4 srcColor;\n"
+"   float4 srcColor;\n"
 "   if(PaletteSolidityInversionUsed.y == 0) {\n"
-"	    srcColor = Frag_Color * (vec4(Frag_ColorOffset, 0) + textureColor);\n"
+"	    srcColor = Frag_Color * (Frag_ColorOffset + textureColor);\n"
 "	} else {\n"
-"		srcColor = vec4(Frag_Color.xyz, Frag_Color.w * textureColor.w);\n"
+"		srcColor = float4(Frag_Color.xyz, Frag_Color.w * textureColor.w);\n"
 "	}\n"
-"	if(ScreenSizeBlendStyle.z == 0) {\n"
-"	    gl_FragColor = srcColor;\n"
+"	if(ScreenSizeBlendStyle.z == 0 || true) {\n" // TODO: fix other blending modes (PBI: 2960)
+"	    return srcColor;\n"
 "	} else {\n"
-"		vec4 dstColor = texture2D(BG, gl_FragCoord.xy / vec2(ScreenSizeBlendStyle.xy));\n"
+"       float2 finalScreenPos = ScreenPos.xy / ScreenPos.w;\n" // gl_FragCoord
+"		float4 dstColor = tex2D(BG, finalScreenPos.xy);\n"
 "		float blendFactor = (ScreenSizeBlendStyle.z == 1) ? 1.0 : -1.0;\n"
 "		float destinationBlendFactor = (srcColor.w == 0.0) ? 1.0 : DestinationAlphaColorFactor.x;\n"
-"		gl_FragColor = vec4(dstColor.xyz * destinationBlendFactor + blendFactor * srcColor.xyz * srcColor.w, dstColor.w);\n"
+"		return float4(dstColor.xyz * destinationBlendFactor + blendFactor * srcColor.xyz * srcColor.w, dstColor.w);\n"
 "	}\n"
-"}\n";
+"}";
 
 using namespace std;
 
@@ -282,15 +287,18 @@ static void initPrismShaderGeneral(PrismShader& tShader, const GLchar* tFragment
 	tShader.mShaderHandle = glCreateProgram();
 	tShader.mVertHandle = glCreateShader(GL_VERTEX_SHADER);
 	tShader.mFragHandle = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(tShader.mVertHandle, 1, &gVertexShader, NULL);
-	glShaderSource(tShader.mFragHandle, 1, &tFragmentShader, 0);
+	const char* p;
+	p = gVertexShader;
+	glShaderSource(tShader.mVertHandle, 1, &p, NULL);
 	glCompileShader(tShader.mVertHandle);
+	p = tFragmentShader;
+	glShaderSource(tShader.mFragHandle, 1, &p, NULL);
 	glCompileShader(tShader.mFragHandle);
 	glAttachShader(tShader.mShaderHandle, tShader.mVertHandle);
 	glAttachShader(tShader.mShaderHandle, tShader.mFragHandle);
 	glLinkProgram(tShader.mShaderHandle);
 
-	tShader.mAttribLocationTex = glGetUniformLocation(tShader.mShaderHandle, "Texture");
+	tShader.mAttribLocationTex = glGetUniformLocation(tShader.mShaderHandle, "tex");
 	tShader.mAttribLocationPal = glGetUniformLocation(tShader.mShaderHandle, "Palette");
 	tShader.mAttribLocationBG = glGetUniformLocation(tShader.mShaderHandle, "BG");
 	tShader.mAttribLocationProjMtx = glGetUniformLocation(tShader.mShaderHandle, "ProjMtx");
@@ -424,13 +432,13 @@ void initDrawing() {
 		return;
 		recoverFromError();
 	}
-	printf("let's stop\n");
+	vglInitExtended(0, 960, 544, 0x800000, SCE_GXM_MULTISAMPLE_NONE);
+	vglUseVram(GL_TRUE);
 
 	ScreenSize sz = getScreenSize();
-	setDrawingScreenScale((640.0 / sz.x), (480.0 / sz.y));
+	setDrawingScreenScale((960.0 / sz.x), (544.0 / sz.y));
 	setDrawingParametersToIdentity();
 
-	printf("ayyooo\n");
 	IMG_Init(IMG_INIT_PNG);
 	//TTF_Init();
 
@@ -442,7 +450,6 @@ void initDrawing() {
 
 	gPrismWindowsDrawingData.mIsDisabled = 0;
 
-	printf("inny opengl\n");
 	initOpenGL();
 }
 
@@ -483,9 +490,6 @@ void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft
 {
 	setProfilingSectionMarkerCurrentFunction();
 	if (gPrismWindowsDrawingData.mIsDisabled) return;
-	debugLog("Draw Sprite");
-	debugInteger(tTexture.mTextureSize.x);
-	debugInteger(tTexture.mTextureSize.y);
 
 	if (tTexture.mTextureSize.x < 0 || tTexture.mTextureSize.y < 0) {
 		logError("Called with invalid textureSize");
@@ -991,9 +995,7 @@ void setDrawingScreenScale(double tScaleX, double tScaleY) {
 	ScreenSize sz = getScreenSize();
 	gOpenGLData.mRealScreenSize = Vector3D(sz.x*gOpenGLData.mScreenScale.x, sz.y*gOpenGLData.mScreenScale.y, 0);
 	glViewport(0, 0, (GLsizei)gOpenGLData.mRealScreenSize.x, (GLsizei)gOpenGLData.mRealScreenSize.y);
-#ifndef __EMSCRIPTEN__
 	recreateFBOs();
-#endif
 }
 
 void setPaletteFromARGB256Buffer(int tPaletteID, const Buffer& tBuffer) {

@@ -112,7 +112,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
 		int val = atoi(argumentText);
 		sprintf(parsedValue, "%d", val);
-		int len = strlen(parsedValue);
+		auto len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
 		*tDst += len;
 	}
@@ -120,7 +120,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
 		double val = atof(argumentText);
 		sprintf(parsedValue, "%f", val);
-		int len = strlen(parsedValue);
+		auto len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
 		*tDst += len;
 	}
@@ -128,7 +128,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
 		double val = atof(argumentText);
 		sprintf(parsedValue, "%e", val);
-		int len = strlen(parsedValue);
+		auto len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
 		*tDst += len;
 	}
@@ -136,7 +136,7 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 		getArgumentTextAndAdvanceParams(argumentText, tParams);
 		double val = atof(argumentText);
 		sprintf(parsedValue, "%g", val);
-		int len = strlen(parsedValue);
+		auto len = strlen(parsedValue);
 		memcpy(*tDst, parsedValue, len);
 		*tDst += len;
 	}
@@ -195,7 +195,7 @@ void addClipboardLineFormatString(const char * tFormatString, const char * tPara
 	char* param = paramBuffer;
 
 	dst = text;
-	int len = strlen(tFormatString);
+	auto len = strlen(tFormatString);
 	int i;
 	for (i = 0; i < len; i++) {
 		if (tFormatString[i] == '%') {

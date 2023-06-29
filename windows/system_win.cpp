@@ -36,6 +36,7 @@ void abortSystem(){
 static struct {
 	
 	int mIsLoaded;
+	int mIsExitDisabled;
 	
 	int mScreenSizeX;
 	int mScreenSizeY;
@@ -51,6 +52,7 @@ SDL_GLContext gGLContext;
 
 static void initScreenDefault() {
 	gPrismWindowsSystemData.mIsLoaded = 1;
+	gPrismWindowsSystemData.mIsExitDisabled = 0;
 	gPrismWindowsSystemData.mScreenSizeX = gPrismWindowsSystemData.mDisplayedWindowSizeX = 640;
 	gPrismWindowsSystemData.mScreenSizeY = gPrismWindowsSystemData.mDisplayedWindowSizeY = 480; 
 }
@@ -266,7 +268,10 @@ void setVGA() {
 }
 
 void returnToMenu() {
-	exit(0);
+	if (!gPrismWindowsSystemData.mIsExitDisabled)
+	{
+		exit(0);
+	}
 }
 
 int isOnDreamcast()
@@ -295,4 +300,9 @@ int isOnVita()
 
 uint64_t getSystemTicks() {
 	return SDL_GetTicks();
+}
+
+void setSystemExitDisabled(int tIsExitDisabled)
+{
+	gPrismWindowsSystemData.mIsExitDisabled = tIsExitDisabled;
 }

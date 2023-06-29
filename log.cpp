@@ -35,16 +35,35 @@ void logprintf(const char* tFormatString, ...) {
 
 static void logToFile() {
 	if (!isInDevelopMode()) return;
-	if (isOnDreamcast() || isOnWeb() || isOnVita()) return;
+	if (isOnDreamcast() || isOnWeb()) return;
+
+	auto prevLogType = gPrismLogData.mMinimumLogType;
+	gPrismLogData.mMinimumLogType = LOG_TYPE_NONE;
 
 	if (gPrismLogData.mLogFile == FILEHND_INVALID) {
-		createDirectory("$pc/debug");
-		gPrismLogData.mLogFile = fileOpen("$pc/debug/log.txt", O_WRONLY);
+		if (isOnVita())
+		{
+			gPrismLogData.mLogFile = fopen("ux0:data/dummy.txt", "wb+");
+		}
+		else
+		{
+			createDirectory("$pc/debug");
+			gPrismLogData.mLogFile = fileOpen("$pc/debug/log.txt", O_WRONLY);
+		}
+
 	}
 	if (gPrismLogData.mLogFile == FILEHND_INVALID) return;
 
 	fileWrite(gPrismLogData.mLogFile, gPrismLogData.mLog[gPrismLogData.mPointer].mText, strlen(gPrismLogData.mLog[gPrismLogData.mPointer].mText));
 	fileFlush(gPrismLogData.mLogFile);
+	
+	if (isOnVita()) // Vita log file is super touchy about when it writes out its data and seems to ignore flush, closing it seems to help
+	{
+		fclose(gPrismLogData.mLogFile);
+		gPrismLogData.mLogFile = fopen("ux0:data/dummy.txt", "ab");
+	}
+
+	gPrismLogData.mMinimumLogType = prevLogType;
 }
 
 void logCommit(LogType tType) {

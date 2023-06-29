@@ -8,7 +8,7 @@ dc/screeneffect_dc.o dc/logoscreen_dc.o dc/thread_dc.o
 defaultall: create_addons_link $(OBJS) subdirs linklib
 
 KOS_CPPFLAGS += -W -Wall -DDREAMCAST -I ./include -I${KOS_PORTS}/zstd/lib -lpng -fpermissive
-CXXFLAGS += -DNDEBUG -std=c++11 -Wall
+CXXFLAGS += -DNDEBUG -std=c++11 -Wall -O2
 
 include $(KOS_BASE)/addons/Makefile.prefab
 

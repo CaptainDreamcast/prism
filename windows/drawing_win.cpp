@@ -511,9 +511,9 @@ void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft
 {
 	setProfilingSectionMarkerCurrentFunction();
 	if (gPrismWindowsDrawingData.mIsDisabled) return;
-	debugLog("Draw Sprite");
-	debugInteger(tTexture.mTextureSize.x);
-	debugInteger(tTexture.mTextureSize.y);
+	verboseLog("Draw Sprite");
+	verboseInteger(tTexture.mTextureSize.x);
+	verboseInteger(tTexture.mTextureSize.y);
 
 	if (tTexture.mTextureSize.x < 0 || tTexture.mTextureSize.y < 0) {
 		logError("Called with invalid textureSize");

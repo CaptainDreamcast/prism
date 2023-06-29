@@ -22,7 +22,7 @@ void convertIntegerToStringFast(std::string& oRet, int tValue)
 		"6061626364656667686970717273747576777879"
 		"8081828384858687888990919293949596979899";
 
-	static const auto BUFFER_SIZE = std::numeric_limits<unsigned long long>::digits10 + 3;
+	static const auto BUFFER_SIZE = 22; // std::numeric_limits<unsigned long long>::digits10 + 3; // Vita hates this
 	char buffer[BUFFER_SIZE];
 	auto absoluteVal = static_cast<unsigned long long>(tValue);
 	const auto isNegative = tValue < 0;
@@ -57,7 +57,7 @@ void convertFloatToStringFast(std::string& oRet, double tValue) {
 }
 
 void turnStringLowercase(char* tString) {
-	int n = strlen(tString);
+	auto n = strlen(tString);
 
 	char* pos = tString;
 	int i;
@@ -73,7 +73,7 @@ void turnStringLowercase(string& tString)
 }
 
 void copyStringLowercase(char* tDst, const char* tSrc) {
-	int n = strlen(tSrc);
+	auto n = strlen(tSrc);
 	int i;
 	for (i = 0; i <= n; i++) {
 		tDst[i] = (char)tolower((int)(tSrc[i]));
@@ -82,7 +82,7 @@ void copyStringLowercase(char* tDst, const char* tSrc) {
 
 void copyStringLowercase(std::string& tDst, const char* tSrc)
 {
-	int n = strlen(tSrc);
+	auto n = strlen(tSrc);
 	tDst.reserve(n);
 	int i;
 	for (i = 0; i <= n; i++) {
@@ -98,7 +98,7 @@ void turnStringUppercase(std::string& tString)
 char* copyToAllocatedString(char* tSrc) {
 	if (!tSrc) return NULL;
 
-	int len = strlen(tSrc);
+	auto len = strlen(tSrc);
 	char* ret = (char*)allocMemory(len+1);
 	strcpy(ret, tSrc);
 	return ret;
@@ -117,8 +117,8 @@ void removeInvalidFileNameElementsFromString(std::string & tString)
 
 int stringBeginsWithSubstring(const char * tString, const char * tSubstring)
 {
-	int n = strlen(tSubstring);
-	int m = strlen(tString);
+	auto n = strlen(tSubstring);
+	auto m = strlen(tString);
 	if (m < n) return 0;
 
 	int i;
@@ -625,7 +625,7 @@ void string_map_empty(StringMap* tMap) {
 }
 
 static int getBucketIDFromString(uint8_t* tKey) {
-	int l = strlen((char*)tKey);
+	auto l = strlen((char*)tKey);
 	int i;
 	int base = 1;
 	int offset = 0;

@@ -27,5 +27,6 @@ void setBlitzCameraHandlerEffectPositionOffset(const Position2D& tPosition);
 
 int getBlitzCameraHandlerEntityID();
 
+const GeoRectangle2D& getBlitzCameraHandlerRange();
 void setBlitzCameraHandlerRange(const GeoRectangle2D& tRectangle);
 void setBlitzCameraPositionBasedOnCenterPoint(const Position& tCenter);

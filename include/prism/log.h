@@ -67,7 +67,6 @@ void logFormatFunc(const char* tFormatString, ...);
 #define debugString(x) logString(x)
 #define debugPointer(x) logPointer(x)
 #define debugFormat(x, ...) logFormatGeneral(LOG_TYPE_NORMAL, x,  __VA_ARGS__)
-
 #else
 #define debugLog(x) {}
 #define debugInteger(x) {}
@@ -75,10 +74,34 @@ void logFormatFunc(const char* tFormatString, ...);
 #define debugString(x) {}
 #define debugPointer(x) {}
 #define debugFormat(x, ...) {}
-#endif	
+#endif
+
+#ifdef PRISM_LOG_VERBOSE
+#define verboseLog(x) logg(x)
+#define verboseInteger(x) logInteger(x)
+#define verboseDouble(x) logDouble(x)
+#define verboseString(x) logString(x)
+#define verbosePointer(x) logPointer(x)
+#define verboseFormat(x, ...) logFormatGeneral(LOG_TYPE_NORMAL, x,  __VA_ARGS__)
+#else
+#define verboseLog(x) {}
+#define verboseInteger(x) {}
+#define verboseDouble(x) {}
+#define verboseString(x) {}
+#define verbosePointer(x) {}
+#define verboseFormat(x, ...) {}
+#endif
 
 void logTextureMemoryState();
 void logMemoryState();
+
+#ifdef DEBUG
+#define debugLogTextureMemoryState() logTextureMemoryState()
+#define debugLogMemoryState() logMemoryState()
+#else
+#define debugLogTextureMemoryState() {}
+#define debugLogMemoryState() {}
+#endif
 
 void setMinimumLogType(LogType tType);
 Vector getLogEntries(); // contains LogEntry

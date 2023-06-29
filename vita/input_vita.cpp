@@ -62,14 +62,12 @@ static int evaluateSDLButtonY(int i) {
 
 static int evaluateSDLButtonL(int i) {
 	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;	
-	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
-	return (axis > 0.5);
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
 }
 
 static int evaluateSDLButtonR(int i) {
 	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
-	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
-	return (axis > 0.5);
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
 }
 
 static int evaluateSDLButtonLeft(int i) {
