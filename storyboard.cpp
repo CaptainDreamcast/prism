@@ -75,7 +75,7 @@ static void destroyStoryboardTexture(Storyboard* e, int tSlot) {
 	if (e->mState.mTextures[tSlot].mElement == NULL) {
 		logError("Attempt to destroy unloaded texture slot.");
 		logErrorInteger(tSlot);
-		logErrorInteger(e->mState.mTextures[tSlot].mElement);
+		logErrorPointer(e->mState.mTextures[tSlot].mElement);
 		recoverFromError();
 	}
 

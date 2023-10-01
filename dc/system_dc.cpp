@@ -163,13 +163,18 @@ int isOnVita() {
 	return 0;
 }
 
+void setSystemExitDisabled(int tIsExitDisabled)
+{
+	gSystem.mIsExitDisabled = tIsExitDisabled;
+}
+
 uint64_t getSystemTicks() {
     uint32 s_s, s_ms;
     timer_ms_gettime(&s_s, &s_ms);
     return s_s*1000 + s_ms;
 }
 
-void setSystemExitDisabled(int tIsExitDisabled)
+uint64_t getUnixTimestampSeconds()
 {
-	gSystem.mIsExitDisabled = tIsExitDisabled;
+	return rtc_unix_secs();
 }

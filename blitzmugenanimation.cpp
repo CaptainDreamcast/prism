@@ -121,6 +121,18 @@ void changeBlitzMugenAnimationIfDifferent(int tEntityID, int tAnimationNumber) {
 	changeMugenAnimation(e->mAnimationElement, getMugenAnimation(e->mAnimations, tAnimationNumber));
 }
 
+void setBlitzMugenAnimationSprites(int tEntityID, MugenSpriteFile* tSprites)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationSprites(e->mAnimationElement, tSprites);
+}
+
+void setBlitzMugenAnimationAnimations(int tEntityID, MugenAnimations* tAnimations)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	e->mAnimations = tAnimations;
+}
+
 Position getBlitzMugenAnimationPosition(int tEntityID)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
@@ -351,6 +363,12 @@ void setBlitzMugenAnimationBaseDrawScale(int tEntityID, double tScale)
 {
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 	setMugenAnimationBaseDrawScale(e->mAnimationElement, tScale);
+}
+
+void setBlitzMugenAnimationDrawScale(int tEntityID, const Vector2D& tScale)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	setMugenAnimationDrawScale(e->mAnimationElement, tScale);
 }
 
 void setBlitzMugenAnimationDrawSize(int tEntityID, const Vector2D& tSize)

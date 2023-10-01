@@ -8,6 +8,14 @@
 #include "prism/log.h"
 #include "prism/memoryhandler.h"
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4267) 
+#pragma warning(disable : 4312) 
+#pragma warning(disable : 4311) 
+#pragma warning(disable : 4302) 
+#endif
+
 #ifdef __EMSCRIPTEN__
 #define SDL_strncasecmp SDL_strncasecmp
 #endif
@@ -483,3 +491,7 @@ int isRomdiskFileHandler(FileHandler tHandler)
 	sprintf(handlerString, "%d", (int)tHandler);
 	return string_map_contains(&gRomdiskHandlers, handlerString);
 }
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif

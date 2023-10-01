@@ -5,6 +5,8 @@
 #include "prism/log.h"
 #include "prism/screeneffect.h"
 
+#define MAXIMUM_VMU_SLOT_AMOUNT 2
+
 typedef struct {
 	maple_device_t* mCont;
 	cont_state_t* mState;
@@ -297,19 +299,44 @@ int isUsingControllerSingle(int i) {
 	return 1;
 }
 
+static maple_device_t* getRumbleDeviceOrNull(int tController = -1, int tSlot = -1) {
+	if (tController == -1) {
+		for (int controllerIndex = 0; controllerIndex < MAXIMUM_CONTROLLER_AMOUNT; controllerIndex++) {
+			const auto dev = getRumbleDeviceOrNull(controllerIndex);
+			if (dev) return dev;
+		}
+		return NULL;
+	}
+	else if (tSlot == -1)
+	{
+		for (int deviceIndex = 1; deviceIndex < MAXIMUM_VMU_SLOT_AMOUNT; deviceIndex++)
+		{
+			const auto dev = getRumbleDeviceOrNull(tController, deviceIndex + 1);
+			if (dev) return dev;
+		}
+		return NULL;
+	}
+	else {
+		const auto dev = maple_enum_dev(tController, tSlot);
+		return (dev && (dev->info.functions & MAPLE_FUNC_PURUPURU)) ? dev : NULL;
+	}
+}
 
-void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude) {
-	(void)i;
-	(void)tDuration;
-	(void)tFrequency;
-	(void)tAmplitude;
-	// TODO
+void addControllerRumbleSingle(int i, Duration tDuration, int /*tFrequency*/, double tAmplitude) {
+	const auto dev = getRumbleDeviceOrNull(i);
+	if (!dev) return;
+
+	purupuru_effect_t effect;
+	effect.duration = uint8_t(std::min(255.0, tDuration * 6));
+	effect.effect2 = PURUPURU_EFFECT2_UINTENSITY(uint8_t(7 - uint8_t(7 * tAmplitude))) | PURUPURU_EFFECT2_LINTENSITY(uint8_t(7 * tAmplitude));
+	effect.effect1 = PURUPURU_EFFECT1_INTENSITY(uint8_t(7 * tAmplitude));
+	effect.special = PURUPURU_SPECIAL_MOTOR1;
+	purupuru_rumble(dev, &effect);
 }
 
 
 void turnControllerRumbleOffSingle(int i) {
-	(void)i;
-	// TODO
+	addControllerRumbleSingle(i, 10, 1, 1.0);
 }
 
 int hasPressedRawButton(int i, ControllerButtonPrism tButton) {

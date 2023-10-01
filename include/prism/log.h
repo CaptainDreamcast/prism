@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "datastructures.h"
-
+#include "file.h"
 
 typedef enum {
 	LOG_TYPE_NORMAL,
@@ -26,7 +26,7 @@ void logCommit(LogType tType);
 #define logStringGeneral(type, x) {logBegin(); logprintf("Value of %s: %s\n", #x, x); logCommit(type);}
 #define logWStringGeneral(type, x) {logBegin(); logprintf("Value of %s: %S\n", #x, x); logCommit(type);} 
 #define logDoubleGeneral(type, x) {logBegin(); logprintf("Value of %s: %f\n", #x, (double)x); logCommit(type);}
-#define logHexGeneral(type, x) {logBegin(); logprintf("Value of %s: %X\n", #x, (unsigned int)x); logCommit(type);}
+#define logHexGeneral(type, x) {logBegin(); logprintf("Value of %s: %X\n", #x, x); logCommit(type);}
 #define logPointerGeneral(type, x) {logBegin(); logprintf("Value of %s: %p\n", #x, (char*)x); logCommit(type);}
 #define logFormatGeneral(type, x, ...) {logBegin(); logFormatFunc(x,  __VA_ARGS__); logCommit(type);}
 void logFormatFunc(const char* tFormatString, ...);
@@ -103,8 +103,11 @@ void logMemoryState();
 #define debugLogMemoryState() {}
 #endif
 
+LogType getMinimumLogType();
 void setMinimumLogType(LogType tType);
 Vector getLogEntries(); // contains LogEntry
 
 void printLogColorStart(LogType tType);
 void printLogColorEnd(LogType tType);
+
+void hardwareLogToFile(FileHandler& tFileHandler, const char* tText);

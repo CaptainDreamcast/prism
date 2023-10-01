@@ -35,6 +35,8 @@ void setWrapperTimeDilatation(double tDilatation);
 void setWrapperBetweenScreensCB(void(*tCB)(void*), void* tCaller);
 void setWrapperIsPausingTracksBetweenScreens(int tIsPausingTracks);
 void setWrapperToExhibitionMode();
+void setWrapperToNonExhibitionMode();
+void setWrapperAbortEnabled(bool isEnabled);
 
 void setWrapperTitleScreen(Screen* tTitleScreen);
 void recoverWrapperError();

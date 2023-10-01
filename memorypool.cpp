@@ -10,6 +10,8 @@
 #ifdef _WIN32
 #pragma warning(push)
 #pragma warning(disable : 4463) 
+#pragma warning(disable : 4302) 
+#pragma warning(disable : 4311) 
 #endif
 
 #define BOOL int

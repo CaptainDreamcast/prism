@@ -57,7 +57,7 @@ void convertFloatToStringFast(std::string& oRet, double tValue) {
 }
 
 void turnStringLowercase(char* tString) {
-	auto n = strlen(tString);
+	auto n = int(strlen(tString));
 
 	char* pos = tString;
 	int i;
@@ -73,7 +73,7 @@ void turnStringLowercase(string& tString)
 }
 
 void copyStringLowercase(char* tDst, const char* tSrc) {
-	auto n = strlen(tSrc);
+	auto n = int(strlen(tSrc));
 	int i;
 	for (i = 0; i <= n; i++) {
 		tDst[i] = (char)tolower((int)(tSrc[i]));
@@ -82,7 +82,7 @@ void copyStringLowercase(char* tDst, const char* tSrc) {
 
 void copyStringLowercase(std::string& tDst, const char* tSrc)
 {
-	auto n = strlen(tSrc);
+	auto n = int(strlen(tSrc));
 	tDst.reserve(n);
 	int i;
 	for (i = 0; i <= n; i++) {
@@ -99,7 +99,7 @@ char* copyToAllocatedString(char* tSrc) {
 	if (!tSrc) return NULL;
 
 	auto len = strlen(tSrc);
-	char* ret = (char*)allocMemory(len+1);
+	char* ret = (char*)allocMemory(int(len+1));
 	strcpy(ret, tSrc);
 	return ret;
 }
@@ -121,7 +121,7 @@ int stringBeginsWithSubstring(const char * tString, const char * tSubstring)
 	auto m = strlen(tString);
 	if (m < n) return 0;
 
-	int i;
+	size_t i;
 	for (i = 0; i < n; i++) {
 		if (tString[i] != tSubstring[i]) return 0;
 	}
@@ -625,7 +625,7 @@ void string_map_empty(StringMap* tMap) {
 }
 
 static int getBucketIDFromString(uint8_t* tKey) {
-	auto l = strlen((char*)tKey);
+	auto l = int(strlen((char*)tKey));
 	int i;
 	int base = 1;
 	int offset = 0;

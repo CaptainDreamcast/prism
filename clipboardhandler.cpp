@@ -195,7 +195,7 @@ void addClipboardLineFormatString(const char * tFormatString, const char * tPara
 	char* param = paramBuffer;
 
 	dst = text;
-	auto len = strlen(tFormatString);
+	auto len = int(strlen(tFormatString));
 	int i;
 	for (i = 0; i < len; i++) {
 		if (tFormatString[i] == '%') {

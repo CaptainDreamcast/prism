@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerCommandArguments>C:\DEV\PROJECTS\VitaTest\vita\build\VitaTest.vpk</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>C:\DEV\PLATFORMS\VITA\vita3k\Vita3K.exe</LocalDebuggerCommand>
-    <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>C:\DEV\PROJECTS\VitaTest\vita\build\VitaTest.vpk</LocalDebuggerCommandArguments>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>C:\DEV\PLATFORMS\VITA\vita3k\Vita3K.exe</LocalDebuggerCommand>
-    <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommandArguments>C:\DEV\PROJECTS\VitaTest\vita\build\VitaTest.vpk</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommand>C:\DEV\PLATFORMS\VITA\vita3k\Vita3K.exe</LocalDebuggerCommand>

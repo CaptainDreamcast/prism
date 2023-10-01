@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <assert.h>
+#include <ctime>
 
 #include <stdlib.h>
 #include <SDL.h>
@@ -87,7 +88,7 @@ static void setToProgramDirectory() {
 	char buf[1024];
 	GetModuleFileName(NULL, wbuf, 1024);
 
-	int len = wcstombs(buf, wbuf, 1024);
+	auto len = wcstombs(buf, wbuf, 1024);
 	buf[len] = '\0';
 	char* end = strrchr(buf, '\\');
 	end[1] = '\0';
@@ -298,11 +299,16 @@ int isOnVita()
 	return 0;
 }
 
+void setSystemExitDisabled(int tIsExitDisabled)
+{
+	gPrismWindowsSystemData.mIsExitDisabled = tIsExitDisabled;
+}
+
 uint64_t getSystemTicks() {
 	return SDL_GetTicks();
 }
 
-void setSystemExitDisabled(int tIsExitDisabled)
+uint64_t getUnixTimestampSeconds()
 {
-	gPrismWindowsSystemData.mIsExitDisabled = tIsExitDisabled;
+	return std::time(0);
 }

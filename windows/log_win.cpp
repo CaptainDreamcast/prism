@@ -59,3 +59,22 @@ void logMemoryState() {
 void printLogColorStart(LogType /*tType*/) {}
 void printLogColorEnd(LogType /*tType*/) {}
 #endif
+
+void hardwareLogToFile(FileHandler& tFileHandler, const char* tText) {
+	if (!isInDevelopMode()) return;
+	if (isOnWeb()) return;
+
+	auto prevLogType = getMinimumLogType();
+	setMinimumLogType(LOG_TYPE_NONE);
+
+	if (tFileHandler == FILEHND_INVALID) {
+		createDirectory("$pc/debug");
+		tFileHandler = fileOpen("$pc/debug/log.txt", O_WRONLY);
+	}
+	if (tFileHandler == FILEHND_INVALID) return;
+
+	fileWrite(tFileHandler, tText, strlen(tText));
+	fileFlush(tFileHandler);
+
+	setMinimumLogType(prevLogType);
+}

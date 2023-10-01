@@ -80,7 +80,7 @@ void setWorkingDirectory(const char* path) {
 	strcpy(gPrismWindowsFileData.cwd, expandedPath);
 	debugString(gPrismWindowsFileData.cwd);
 
-	int l = strlen(gPrismWindowsFileData.cwd);
+	int l = int(strlen(gPrismWindowsFileData.cwd));
 	if(gPrismWindowsFileData.cwd[l-1] != '/') {
 		gPrismWindowsFileData.cwd[l] = '/';
 		gPrismWindowsFileData.cwd[l+1] = '\0';
@@ -160,7 +160,7 @@ size_t fileRead(FileHandler tHandler, void* tBuffer, size_t tCount) {
 size_t fileWrite(FileHandler tHandler, const void* tBuffer, size_t tCount) {
 	if (isRomdiskFileHandler(tHandler)) {
 		logError("Unable to write to romdisk file.");
-		logErrorInteger(tHandler);
+		logErrorPointer(tHandler);
 		recoverFromError();
 	}
 
@@ -169,7 +169,7 @@ size_t fileWrite(FileHandler tHandler, const void* tBuffer, size_t tCount) {
 size_t fileSeek(FileHandler tHandler, size_t tOffset, int tWhence)  {
 	if (isRomdiskFileHandler(tHandler)) return fileSeekRomdisk(tHandler, tOffset, tWhence);
 
-	return fseek(tHandler, tOffset, tWhence);
+	return fseek(tHandler, long(tOffset), tWhence);
 }
 size_t fileTell(FileHandler tHandler) {
 	if (isRomdiskFileHandler(tHandler)) return fileTellRomdisk(tHandler);

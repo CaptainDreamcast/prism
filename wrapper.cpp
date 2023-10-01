@@ -89,6 +89,7 @@ static struct {
 	jmp_buf mExceptionJumpBuffer;
 #endif
 
+	int mIsAbortDisabled;
 	int mIsNotUsingWrapperRecovery;
 	int mIsActive;
 } gPrismWrapperData;
@@ -457,16 +458,20 @@ static void updateExhibitionMode() {
 	if (hasPressedAnyButton()) {
 		gPrismWrapperData.mExhibition.mTicksSinceInput = 0;
 	}
+	else
+	{
+		gPrismWrapperData.mExhibition.mTicksSinceInput++;
+	}
 
-	int secondsSinceInput = gPrismWrapperData.mExhibition.mTicksSinceInput / (getFramerate() * 60);
-	if (secondsSinceInput >= 2) {
+	int secondsSinceInput = gPrismWrapperData.mExhibition.mTicksSinceInput / getFramerate();
+	if (secondsSinceInput >= 60) {
 		setNewScreen(gPrismWrapperData.mTitleScreen);
 		gPrismWrapperData.mExhibition.mTicksSinceInput = 0;
 	}
 }
 
 static void updateScreenAbort() {
-	if (hasPressedAbortFlank()) {
+	if (hasPressedAbortFlank() && !gPrismWrapperData.mIsAbortDisabled) {
 		if ((!gPrismWrapperData.mTitleScreen || gPrismWrapperData.mScreen == gPrismWrapperData.mTitleScreen) && !gPrismWrapperData.mIsInExhibitionMode) {
 			abortScreenHandling();
 		}
@@ -645,6 +650,10 @@ void setWrapperToExhibitionMode() {
 	gPrismWrapperData.mExhibition.mTicksSinceInput = 0;
 	gPrismWrapperData.mIsInExhibitionMode = 1;
 }
+void setWrapperToNonExhibitionMode()
+{
+	gPrismWrapperData.mIsInExhibitionMode = 0;
+}
 
 void setWrapperTitleScreen(Screen * tTitleScreen)
 {
@@ -697,4 +706,9 @@ void updatePrismWrapperScreenForDebugWithIterations(int tIterations) {
 
 void unloadPrismWrapperScreenForDebug() {
 	unloadScreen(gPrismWrapperData.mScreen);
+}
+
+void setWrapperAbortEnabled(bool isEnabled)
+{
+	gPrismWrapperData.mIsAbortDisabled = !isEnabled;
 }

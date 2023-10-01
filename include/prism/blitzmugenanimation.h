@@ -13,6 +13,9 @@ void changeBlitzMugenAnimation(int tEntityID, int tAnimationNumber);
 void changeBlitzMugenAnimationWithStartStep(int tEntityID, int tAnimationNumber, int tStep);
 void changeBlitzMugenAnimationIfDifferent(int tEntityID, int tAnimationNumber);
 
+void setBlitzMugenAnimationSprites(int tEntityID, MugenSpriteFile* tSprites);
+void setBlitzMugenAnimationAnimations(int tEntityID, MugenAnimations* tAnimations);
+
 Position getBlitzMugenAnimationPosition(int tEntityID);
 int getBlitzMugenAnimationAnimationNumber(int tEntityID);
 int getBlitzMugenAnimationAnimationStep(int tEntityID);
@@ -52,6 +55,7 @@ void setBlitzMugenAnimationPositionY(int tEntityID, double tX);
 void setBlitzMugenAnimationVisibility(int tEntityID, int tVisibility);
 void setBlitzMugenAnimationColor(int tEntityID, double tR, double tG, double tB);
 void setBlitzMugenAnimationBaseDrawScale(int tEntityID, double tScale);
+void setBlitzMugenAnimationDrawScale(int tEntityID, const Vector2D& tScale);
 void setBlitzMugenAnimationDrawSize(int tEntityID, const Vector2D& tSize);
 void setBlitzMugenAnimationAngle(int tEntityID, double tRotation);
 void setBlitzMugenAnimationCallback(int tEntityID, void(*tFunc)(void*), void* tCaller);

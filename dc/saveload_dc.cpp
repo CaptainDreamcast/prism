@@ -160,3 +160,31 @@ size_t getPrismGameSaveSize(const Buffer& tBuffer, const char* tApplicationName,
 
 	return size_t(((pkg_size + MEM_BLOCK_SIZE - 1) / MEM_BLOCK_SIZE) * MEM_BLOCK_SIZE);
 }
+
+void setVMUDisplayIcon(void* tBitmap, bool invertOnTheFly)
+{
+	PrismSaveSlot tSaveSlot = PrismSaveSlot::AUTOMATIC;
+	auto dev = getVMUDeviceOrNull(tSaveSlot);
+	if (!dev) return;
+
+	if (!invertOnTheFly)
+	{
+		vmu_draw_lcd(dev, tBitmap);
+	}
+	else
+	{
+		uint8_t* vmuIcon = (uint8_t*)tBitmap;
+		std::vector<uint8_t> reversedIcon(192, 0);
+		for (int y = 0; y < 32; y++)
+		{
+			for (int x = 0; x < 48; x++)
+			{
+				const auto byteX = x / 8;
+				const auto bitX = x % 8;
+				const auto val = (vmuIcon[y * 6 + byteX] >> (7 - bitX)) & 1;
+				reversedIcon[((31 - y) * 6) + (5 - byteX)] |= (val << bitX);
+			}
+		}
+		vmu_draw_lcd(dev, reversedIcon.data());
+	}
+}

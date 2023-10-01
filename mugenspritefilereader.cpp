@@ -508,15 +508,15 @@ static void readPNGDataFromInputStream(png_structp png_ptr, png_bytep outBytes, 
 		logError("Trying to read outside buffer");
 		recoverFromError();
 	}
-	readFromBufferPointer(outBytes, &caller->p, byteCountToRead);
+	readFromBufferPointer(outBytes, &caller->p, uint32_t(byteCountToRead));
 }
 
 static Buffer parseRGBAPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAlpha, int width, int height)
 {
 	uint8_t* dst = (uint8_t*)allocMemory(width*height * 4);
 
-	const png_uint_32 bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
-	char* rowData = (char*)allocMemory(bytesPerRow);
+	const auto bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
+	char* rowData = (char*)allocMemory(int(bytesPerRow));
 
 	// read single row at a time
 	uint32_t rowIdx;
@@ -548,8 +548,8 @@ static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int wi
 {
 	uint8_t* dst = (uint8_t*)allocMemory(width*height * 4);
 
-	png_uint_32 bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
-	uint8_t* rowData = (uint8_t*)allocMemory(bytesPerRow);
+	auto bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
+	uint8_t* rowData = (uint8_t*)allocMemory(int(bytesPerRow));
 
 	png_colorp pngPalette;
 	int palAmount;
@@ -833,7 +833,7 @@ static void loadSingleSFFFile(MugenSpriteFile* tDst) {
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &subHeader, sizeof(SFFSubFileHeader));
 
 	debugInteger(sizeof(SFFSubFileHeader));
-	debugPointer(subHeader.mNextFilePosition);
+	debugInteger(subHeader.mNextFilePosition);
 	debugInteger(subHeader.mSubfileLength);
 	debugInteger(subHeader.mGroup);
 	debugInteger(subHeader.mImage);
@@ -900,7 +900,7 @@ static MugenSpriteFile loadMugenSpriteFile1(int tHasPaletteFile, const char* tOp
 
 	debugInteger(header.mGroupAmount);
 	debugInteger(header.mImageAmount);
-	debugPointer(header.mFirstFileOffset);
+	debugInteger(header.mFirstFileOffset);
 
 	gPreviousGroup = -1;
 
@@ -940,7 +940,7 @@ static void loadSinglePalette2(SFFHeader2* tHeader, MugenSpriteFile* tDst) {
 	SFFPalette2 palette;
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &palette, sizeof(SFFPalette2));
 
-	debugPointer(palette.mDataOffset);
+	debugInteger(palette.mDataOffset);
 	debugInteger(palette.mDataLength);
 	debugInteger(palette.mIndex);
 
@@ -1118,9 +1118,9 @@ static MugenSpriteFile loadMugenSpriteFile2(int tHasPaletteFile, const char* tOp
 	SFFHeader2 header;
 	loadSFFHeader2(&header);
 
-	debugPointer(header.mSpriteOffset);
+	debugInteger(header.mSpriteOffset);
 	debugInteger(header.mSpriteTotal);
-	debugPointer(header.mPaletteOffset);
+	debugInteger(header.mPaletteOffset);
 	debugInteger(header.mPaletteTotal);
 
 	loadPalettes2(&header, &ret);

@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <assert.h>
+#include <ctime>
 
 #include <stdlib.h>
 #include <SDL2/SDL.h>
@@ -256,4 +257,9 @@ int isOnVita()
 
 uint64_t getSystemTicks() {
 	return SDL_GetTicks();
+}
+
+uint64_t getUnixTimestampSeconds()
+{
+	return std::time(0);
 }

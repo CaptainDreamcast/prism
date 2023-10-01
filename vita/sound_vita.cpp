@@ -119,9 +119,7 @@ static void unloadTrack() {
 static void streamMusicFileGeneral(const char* tPath, int tLoopAmount);
 
 static void playTrackGeneral(int tTrack, int tLoopAmount) {
-#ifdef __EMSCRIPTEN__
 	return;
-#endif
 
 	if (gPrismWindowsSoundData.mIsPlayingTrack) stopTrack();
 	if (gPrismWindowsSoundData.mHasLoadedTrack) unloadTrack();
@@ -170,6 +168,8 @@ static void musicFinishedCB() {
 }
 
 static void streamMusicFileGeneral(const char* tPath, int tLoopAmount) {
+	return;
+
 	playMusicPath(tPath);
 	Mix_HookMusicFinished(musicFinishedCB);
 

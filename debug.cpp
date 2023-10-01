@@ -257,7 +257,7 @@ static void submitConsoleText() {
 
 static void textInputReceived(void* /*tCaller*/, const std::string& tText) {
 	gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, tText);
-	gPrismDebug.mConsole.mPointerPosition += tText.size();
+	gPrismDebug.mConsole.mPointerPosition += int(tText.size());
 	updateConsoleText();
 }
 
@@ -293,7 +293,7 @@ static void keyboardInputReceived(void* tCaller, KeyboardKeyPrism tKey) {
 		if (gPrismDebug.mConsole.mArchivePointer < CONSOLE_ARCHIVE_AMOUNT - 1) {
 			gPrismDebug.mConsole.mArchivePointer++;
 			gPrismDebug.mConsole.mConsoleText = gPrismDebug.mConsole.mConsoleArchiveText[gPrismDebug.mConsole.mArchivePointer];
-			gPrismDebug.mConsole.mPointerPosition = gPrismDebug.mConsole.mConsoleText.size();
+			gPrismDebug.mConsole.mPointerPosition = int(gPrismDebug.mConsole.mConsoleText.size());
 			updateConsoleText();
 		}
 	}
@@ -301,7 +301,7 @@ static void keyboardInputReceived(void* tCaller, KeyboardKeyPrism tKey) {
 		if (gPrismDebug.mConsole.mArchivePointer > 0) {
 			gPrismDebug.mConsole.mArchivePointer--;
 			gPrismDebug.mConsole.mConsoleText = gPrismDebug.mConsole.mConsoleArchiveText[gPrismDebug.mConsole.mArchivePointer];
-			gPrismDebug.mConsole.mPointerPosition = gPrismDebug.mConsole.mConsoleText.size();
+			gPrismDebug.mConsole.mPointerPosition = int(gPrismDebug.mConsole.mConsoleText.size());
 			updateConsoleText();
 		}
 	}

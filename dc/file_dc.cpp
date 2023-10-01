@@ -41,13 +41,21 @@ const char* getFileSystem() {
 
 void setWorkingDirectory(const char* path) {
 
-	sprintf(gData.cwd, "%s", path);
-	debugString(gData.cwd);
+	char absolutePath[1024];
+	if (path[0] != '/') {
+		sprintf(absolutePath, "%s%s", gData.cwd, path);
+	}
+	else {
+		strcpy(absolutePath, path);
+	}
 
-	int l = strlen(gData.cwd);
-	if(gData.cwd[l-1] != '/') {
+	strcpy(gData.cwd, absolutePath);
+	debugString(gPrismWindowsFileData.cwd);
+
+	int l = int(strlen(gData.cwd));
+	if (gData.cwd[l - 1] != '/') {
 		gData.cwd[l] = '/';
-		gData.cwd[l+1] = '\0';
+		gData.cwd[l + 1] = '\0';
 	}
 }
 

@@ -76,12 +76,12 @@ void freeGLTexture(void* tData) {
 #define allocTextureHW allocGLTexture
 #define freeTextureHW freeGLTexture
 
-void virtualizeTextureGL(const TextureMemory& tMem)
+void virtualizeTextureGL(const TextureMemory&)
 {
 	// Unsupported
 }
 
-void unvirtualizeTextureGL(const TextureMemory& tMem)
+void unvirtualizeTextureGL(const TextureMemory&)
 {
 	// Unsupported
 }
@@ -322,6 +322,11 @@ static void moveTextureMemoryInUsageQueueToFront(TextureMemory tMem) {
 	addToUsageQueueFront(tMem);
 }
 
+#ifdef _WIN32
+#pragma warning( push )
+#pragma warning( disable : 4505)
+#endif
+
 static const int COMPRESSION_BUFFER = 400;
 
 static void compressMemory(TextureMemory tMem, void** tBuffer, int tSrcSize) {
@@ -333,7 +338,7 @@ static void compressMemory(TextureMemory tMem, void** tBuffer, int tSrcSize) {
 	char* src = (char*)(*tBuffer);
 	int dstBufferSize = tSrcSize + COMPRESSION_BUFFER;
 	char* dst = (char*)malloc(dstBufferSize);
-	int dstLength = ZSTD_compress(dst, dstBufferSize, src, tSrcSize, 1);
+	auto dstLength = ZSTD_compress(dst, size_t(dstBufferSize), src, size_t(tSrcSize), 1);
 	dst = (char*)realloc(dst, dstLength);
 
 	free(src);
@@ -351,12 +356,16 @@ static void decompressMemory(TextureMemory tMem, void** tBuffer) {
 	size_t uncompressedLength = (size_t)ZSTD_getFrameContentSize(src, tMem->mCompressedSize);
 
 	char* dst = (char*)malloc(uncompressedLength);
-	int dstLength = ZSTD_decompress(dst, uncompressedLength, src, tMem->mCompressedSize);
+	auto dstLength = ZSTD_decompress(dst, uncompressedLength, src, tMem->mCompressedSize);
 	dst = (char*)realloc(dst, dstLength);
 
 	free(src);
 	*tBuffer = dst;	
 }
+
+#ifdef _WIN32
+#pragma warning( pop ) 
+#endif
 
 static void virtualizeSingleTextureMemory(TextureMemory tMem) {
 	debugLog("Virtualizing texture memory.");
@@ -386,7 +395,7 @@ static void virtualizeTextureMemory(size_t tSize) {
 		TextureMemory next = cur->mPrevInUsageList;
 		virtualizeSingleTextureMemory(cur);
 		removeFromUsageQueue(cur);
-		sizeLeft -= cur->mSize;
+		sizeLeft -= int(cur->mSize);
 		cur = next;
 		if(sizeLeft <= 0) break;
 	}
@@ -404,7 +413,7 @@ static void makeSpaceInTextureMemory(size_t tSize) {
 
 	if ((int)tSize <= available) return;
 
-	int needed = tSize - available;
+	int needed = int(tSize) - available;
 
 	virtualizeTextureMemory(needed);
 }

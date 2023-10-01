@@ -55,7 +55,7 @@ CollisionCirc adjustCollisionObjectCirc(CollisionObjectCirc* tObj);
 
 
 CollisionRect makeCollisionRect(const Position2D& tTopLeft, const Position2D& tBottomRight);
-CollisionCirc makeCollisionCirc(const Position& tCenter, double tRadius);
+CollisionCirc makeCollisionCirc(const Position2D& tCenter, double tRadius);
 
 int checkCollisionObjectCirc(const CollisionObjectCirc& tObj1, const CollisionObjectCirc& tObj2);
 int checkCollisionObjectRect(const CollisionObjectRect& tObj1, const CollisionObjectRect& tObj2);

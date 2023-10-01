@@ -208,13 +208,13 @@ Buffer fileToBuffer(const char* tFileDir) {
 		ret.mIsOwned = 0;
 	}
 	else {
-		data = (char*)allocMemory(bufferLength);
+		data = (char*)allocMemory(int(bufferLength));
 		fileRead(file, data, bufferLength);
 		ret.mIsOwned = 1;
 	}
 
 	ret.mData = data;
-	ret.mLength = bufferLength;
+	ret.mLength = uint32_t(bufferLength);
 
 	fileClose(file);
 
@@ -223,7 +223,7 @@ Buffer fileToBuffer(const char* tFileDir) {
 
 Buffer copyStringToBuffer(const std::string& tString)
 {
-	return copyBuffer(makeBuffer((void*)tString.c_str(), tString.size()));
+	return copyBuffer(makeBuffer((void*)tString.c_str(), uint32_t(tString.size())));
 }
 
 void bufferToFile(const char* tFileDir, const Buffer& tBuffer) {

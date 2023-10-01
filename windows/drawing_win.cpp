@@ -693,7 +693,7 @@ static int isTextPositionEmpty(char tChar) {
 }
 
 static void drawSortedTruetype(DrawListTruetypeElement* e) {
-	int l = strlen(e->mText);
+	int l = int(strlen(e->mText));
 	if (!l) return;
 
 	SDL_Color color;

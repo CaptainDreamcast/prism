@@ -1,6 +1,7 @@
 #pragma once
 
 struct Vector3D;
+struct Vector3DI;
 
 struct Vector2D {
 	inline Vector2D() {};
@@ -14,14 +15,13 @@ using Position2D = Vector2D;
 struct Vector3D {
 	inline Vector3D() {};
 	Vector3D(double x, double y, double z);
+	Vector3D(const Vector3DI& v);
 	Vector2D xy() const;
 	double x;
 	double y;
 	double z;
 };
 using Position = Vector3D;
-
-struct Vector3DI;
 
 struct Vector2DI {
 	inline Vector2DI() {};
@@ -96,6 +96,7 @@ Vector2D vecNormalize(const Vector2DI& tVector);
 Vector2D vecNormalize(const Vector2D& tVector);
 Vector3D vecNormalize(const Vector3DI& tVector);
 Vector3D vecNormalize(const Vector3D& tVector);
+Vector2D vecRotateZ2D(const Vector2D& tVector, double tAngle);
 Vector3D vecRotateZ(const Vector3D& tVector, double tAngle);
 Vector3D vecRotateZAroundCenter(const Vector3D& tVector, double tAngle, const Vector3D& tCenter);
 Vector3D vecScaleToSize(const Vector3D& v, double tSize);
@@ -122,6 +123,7 @@ Vector3DI vecMinI2D(const Vector3DI& v1, const Vector3DI& v2);
 Vector3DI vecMaxI2D(const Vector3DI& v1, const Vector3DI& v2);
 
 double getAngleFromDirection(const Vector3D& tDirection);
+double getAngleFromDirection(const Vector2D& tDirection);
 Vector3D getDirectionFromAngleZ(double tAngle);
 double degreesToRadians(double tDegrees);
 double radiansToDegrees(double tRadians);

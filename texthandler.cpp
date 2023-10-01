@@ -60,7 +60,7 @@ void shutdownTextHandler() {
 
 static void increaseDrawnText(HandledText* e) {
 
-	int currentPos = strlen(e->mDrawnText);
+	auto currentPos = strlen(e->mDrawnText);
 	e->mDrawnText[currentPos] = e->mText[currentPos];
 	e->mDrawnText[currentPos + 1] = '\0';
 

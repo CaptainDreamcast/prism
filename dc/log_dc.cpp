@@ -38,3 +38,7 @@ void printLogColorEnd(LogType tType) {
 		break;
 	}
 }
+
+void hardwareLogToFile(FileHandler&, const char*)
+{
+}

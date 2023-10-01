@@ -58,3 +58,4 @@ int isOnVita();
 void setSystemExitDisabled(int tIsExitDisabled);
 
 uint64_t getSystemTicks();
+uint64_t getUnixTimestampSeconds();

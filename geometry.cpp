@@ -27,6 +27,13 @@ Vector3D::Vector3D(double x, double y, double z)
 {
 }
 
+Vector3D::Vector3D(const Vector3DI& v)
+	: x(v.x)
+	, y (v.y)
+	, z (v.z)
+{
+}
+
 Vector2D Vector3D::xy() const
 {
 	return Vector2D(x, y);
@@ -174,6 +181,14 @@ Vector3D vecNormalize(const Vector3D& tVector) {
 	return tVector / l;
 }
 
+Vector2D vecRotateZ2D(const Vector2D& tVector, double tAngle)
+{
+	Vector2D ret;
+	ret.x = cos(tAngle) * tVector.x - sin(tAngle) * tVector.y;
+	ret.y = sin(tAngle) * tVector.x + cos(tAngle) * tVector.y;
+	return ret;
+}
+
 Vector3D vecRotateZ(const Vector3D& tVector, double tAngle) {
 	Vector3D ret;
 	ret.x = cos(tAngle)*tVector.x - sin(tAngle)*tVector.y;
@@ -305,6 +320,10 @@ Vector3DI vecMaxI2D(const Vector3DI& v1, const Vector3DI& v2)
 }
 
 double getAngleFromDirection(const Vector3D& tDirection) {
+	return -fatan2(tDirection.y, tDirection.x) + M_PI;
+}
+
+double getAngleFromDirection(const Vector2D& tDirection) {
 	return -fatan2(tDirection.y, tDirection.x) + M_PI;
 }
 

@@ -27,3 +27,5 @@ int isPrismSaveSlotActive(PrismSaveSlot tSaveSlot);
 int hasPrismGameSave(PrismSaveSlot tSaveSlot, const char* tFileName);
 size_t getAvailableSizeForSaveSlot(PrismSaveSlot tSaveSlot);
 size_t getPrismGameSaveSize(const Buffer& tBuffer, const char* tApplicationName, const char* tShortDescription, const char* tLongDescription, const Buffer& tIconDataBuffer, const Buffer& tPaletteBuffer);
+
+void setVMUDisplayIcon(void* tBitmap, bool invertOnTheFly = false);

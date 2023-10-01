@@ -160,7 +160,7 @@ TextureData loadTexturePKG(const char* tFileDir) {
 	char pngPath[1024];
 
 	strcpy(pngPath, tFileDir);
-	int len = strlen(pngPath);
+	int len = int(strlen(pngPath));
 	pngPath[len - 2] = 'n';
 
 
@@ -199,9 +199,19 @@ void unloadTexture(TextureData& tTexture) {
 	freeTextureMemory(tTexture.mTexture);
 }
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4302) 
+#pragma warning(disable : 4311) 
+#endif
+
 int getTextureHash(const TextureData& tTexture) {
 	return (int)tTexture.mTexture;
 }
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
 
 int canLoadTexture(const char* tPath) {
 	const char* fileExt = getFileExtension(tPath);
@@ -409,5 +419,5 @@ void saveScreenShot(const char* tFileDir) {
 	const auto sz = getDisplayedScreenSize();
 	std::vector<BYTE> pixels(3 * sz.x * sz.y);
 	glReadPixels(0, 0, sz.x, sz.y, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
-	saveRGB32ToPNG(makeBuffer(pixels.data(), pixels.size()), sz.x, sz.y, tFileDir);
+	saveRGB32ToPNG(makeBuffer(pixels.data(), uint32_t(pixels.size())), sz.x, sz.y, tFileDir);
 }

@@ -74,11 +74,17 @@ std::string getSTLMugenDefStringVariable(MugenDefScript* tScript, const char* tG
 int isMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 char* getAllocatedMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 std::string getSTLMugenDefStringVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+char* getAllocatedMugenDefStringVariableAsGroupForceAddWhiteSpaces(MugenDefScriptGroup* tGroup, const char* tVariableName);
+std::string getSTLMugenDefStringVariableAsGroupForceAddWhiteSpaces(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
 char* getAllocatedMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement* tElement);
 std::string getSTLMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement* tElement);
+char* getAllocatedMugenDefStringVariableForAssignmentAsElementForceAddWhiteSpaces(MugenDefScriptGroupElement* tElement);
+std::string getSTLMugenDefStringVariableForAssignmentAsElementForceAddWhiteSpaces(MugenDefScriptGroupElement* tElement);
 char* getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
 std::string getSTLMugenDefStringVariableAsElement(MugenDefScriptGroupElement* tElement);
+char* getAllocatedMugenDefStringVariableAsElementForceAddWhiteSpaces(MugenDefScriptGroupElement* tElement);
+std::string getSTLMugenDefStringVariableAsElementForceAddWhiteSpaces(MugenDefScriptGroupElement* tElement);
 
 int isMugenDefVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 

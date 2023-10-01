@@ -81,7 +81,7 @@ typedef struct {
 static void initFileReader(FileReader* tReader, const char* tPath) {
 	MugenSpriteFileFileReaderData* data = (MugenSpriteFileFileReaderData*)allocMemory(sizeof(MugenSpriteFileFileReaderData));
 	data->mFile = fileOpen(tPath, O_RDONLY);
-	data->mFileSize = fileTotal(data->mFile);
+	data->mFileSize = uint32_t(fileTotal(data->mFile));
 	data->mIsOver = 0;
 	tReader->mData = data;
 }

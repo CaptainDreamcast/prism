@@ -43,7 +43,7 @@ static void addTokenToTokenReader(MugenDefToken* tToken) {
 
 static MugenDefToken* makeMugenDefToken(const char* tValue) {
 	MugenDefToken* e = (MugenDefToken*)allocMemory(sizeof(MugenDefToken));
-	e->mValue = (char*)allocMemory(strlen(tValue) + 10);
+	e->mValue = (char*)allocMemory(int(strlen(tValue) + 10));
 	strcpy(e->mValue, tValue);
 	e->mNext = NULL;
 
@@ -51,7 +51,7 @@ static MugenDefToken* makeMugenDefToken(const char* tValue) {
 }
 
 static int isEmpty(BufferPointer p) {
-	return *p == ' ' || *p == '	' || *p < 0;
+	return *p == ' ' || *p == '	'; //|| *p < 0; TODO: check if this breaks Dolmexica (PBI 3074)
 }
 
 static int increaseAndCheckIfOver(Buffer* b, BufferPointer* p) {
@@ -61,7 +61,7 @@ static int increaseAndCheckIfOver(Buffer* b, BufferPointer* p) {
 
 static int decreaseAndCheckIfOver(Buffer* b, BufferPointer* p) {
 	(*p)--;
-	return (int32_t)(*p) < (int32_t)b->mData;
+	return (uintptr_t)(*p) < (uintptr_t)b->mData;
 }
 
 static int isComment(BufferPointer p) {
@@ -310,7 +310,7 @@ static int isAssignment(Buffer* b, BufferPointer p, char tAssignmentChar) {
 }
 
 static int isVectorStatement(Buffer* b, BufferPointer p) {
-	return (int)searchForChar(b, p, ',');
+	return searchForChar(b, p, ',') != NULL;
 }
 
 static int isLoopStartStatement(Buffer* b, BufferPointer p) {
@@ -475,7 +475,7 @@ static int isStringToken(MugenDefToken* t) {
 }
 
 static int isVectorToken(MugenDefToken* t) {
-	int len = strlen(t->mValue);
+	auto len = int(strlen(t->mValue));
 	int i;
 	int isVector = 0;
 	for (i = 0; i < len; i++) {
@@ -491,7 +491,7 @@ static int isNumberToken(MugenDefToken* t) {
 	if (t->mValue[0] == '-') p = t->mValue + 1;
 	else p = t->mValue;
 
-	int len = strlen(p);
+	auto len = int(strlen(p));
 	int i;
 	for (i = 0; i < len; i++) {
 		if (*p < '0' || *p > '9') return 0;
@@ -507,7 +507,7 @@ static int isFloatToken(MugenDefToken* t) {
 	if (t->mValue[0] == '-') p = t->mValue + 1;
 	else p = t->mValue;
 
-	int len = strlen(p);
+	auto len = int(strlen(p));
 	int i;
 	int hasPoint = 0;
 	for (i = 0; i < len; i++) {
@@ -528,7 +528,7 @@ static void setStringElement(MugenDefScriptGroupElement* element, MugenDefToken*
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT;
 	
 	MugenDefScriptStringElement* e = (MugenDefScriptStringElement*)allocMemory(sizeof(MugenDefScriptStringElement));
-	e->mString = (char*)allocMemory(strlen(t->mValue) + 10);
+	e->mString = (char*)allocMemory(int(strlen(t->mValue) + 10));
 	strcpy(e->mString, t->mValue);
 	element->mData = e;
 
@@ -588,7 +588,7 @@ static void setVectorElement(MugenDefScriptGroupElement* element, MugenDefToken*
 		while (temp[offset] == ' ') offset++;
 		char* start = temp + offset;
 
-		e->mVector.mElement[i] = (char*)allocMemory(strlen(start) + 3);
+		e->mVector.mElement[i] = (char*)allocMemory(int(strlen(start) + 3));
 		strcpy(e->mVector.mElement[i], start);
 
 		i++;
@@ -604,7 +604,7 @@ static void setRawElement(MugenDefScriptGroupElement* element, MugenDefToken* t)
 	element->mType = MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT;
 
 	MugenDefScriptStringElement* e = (MugenDefScriptStringElement*)allocMemory(sizeof(MugenDefScriptStringElement));
-	e->mString = (char*)allocMemory(strlen(t->mValue) + 10);
+	e->mString = (char*)allocMemory(int(strlen(t->mValue) + 10));
 	strcpy(e->mString, t->mValue);
 	element->mData = e;
 
@@ -920,7 +920,7 @@ MugenStringVector createAllocatedMugenStringVectorFromString(const char* tString
 	MugenStringVector ret;
 	ret.mSize = 1;
 	ret.mElement = (char**)allocMemory(sizeof(char*));
-	ret.mElement[0] = (char*)allocMemory(strlen(tString) + 3);
+	ret.mElement[0] = (char*)allocMemory(int(strlen(tString) + 3));
 	strcpy(ret.mElement[0], tString);
 	return ret;
 }
@@ -990,6 +990,22 @@ string getSTLMugenDefStringVariableAsGroup(MugenDefScriptGroup * tGroup, const c
 	return getSTLMugenDefStringVariableAsElement(element);
 }
 
+char* getAllocatedMugenDefStringVariableAsGroupForceAddWhiteSpaces(MugenDefScriptGroup* tGroup, const char* tVariableName)
+{
+	assert(stl_string_map_contains_array(tGroup->mElements, tVariableName));
+	MugenDefScriptGroupElement* element = &tGroup->mElements[tVariableName];
+
+	return getAllocatedMugenDefStringVariableAsElementForceAddWhiteSpaces(element);
+}
+
+std::string getSTLMugenDefStringVariableAsGroupForceAddWhiteSpaces(MugenDefScriptGroup* tGroup, const char* tVariableName)
+{
+	assert(stl_string_map_contains_array(tGroup->mElements, tVariableName));
+	MugenDefScriptGroupElement* element = &tGroup->mElements[tVariableName];
+
+	return getSTLMugenDefStringVariableAsElementForceAddWhiteSpaces(element);
+}
+
 int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
 	(void)tElement;
@@ -998,28 +1014,32 @@ int isMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
 
 
 
-static void turnMugenDefVectorToString(char* tDst, MugenDefScriptVectorElement* tVectorElement) {
+static void turnMugenDefVectorToString(char* tDst, MugenDefScriptVectorElement* tVectorElement, bool tDoesAddWhiteSpaces) {
 	int i = 0;
 	char* pos = tDst;
 	*pos = '\0';
 	for (i = 0; i < tVectorElement->mVector.mSize; i++) {
-		if (i > 0) pos += sprintf(pos, ",");
+		if (i > 0)
+		{
+			pos += sprintf(pos, ",");
+			if (tDoesAddWhiteSpaces) pos += sprintf(pos, " ");
+		}
 		pos += sprintf(pos, "%s", tVectorElement->mVector.mElement[i]);
 	}
 }
 
 static void checkStringElementForQuotesAndReturnRaw(char* tRet, MugenDefScriptStringElement* tStringElement) {
-	int length = strlen(tStringElement->mString);
+	int length = int(strlen(tStringElement->mString));
 	if (length && tStringElement->mString[0] == '"' && tStringElement->mString[length - 1] == '"') {
 		strcpy(tRet, tStringElement->mString + 1);
-		int newLength = strlen(tRet);
+		int newLength = int(strlen(tRet));
 		if (newLength) tRet[newLength - 1] = '\0';
 	}
 	else {
 		strcpy(tRet, tStringElement->mString);
 	}
 }
-void getMugenDefStringVariableAsElementGeneral(char* tDst, MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
+static void getMugenDefStringVariableAsElementGeneral(char* tDst, MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw, bool tDoesAddWhiteSpaces)
 {
 	if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_STRING_ELEMENT) {
 		MugenDefScriptStringElement* stringElement = (MugenDefScriptStringElement*)tElement->mData;
@@ -1037,7 +1057,7 @@ void getMugenDefStringVariableAsElementGeneral(char* tDst, MugenDefScriptGroupEl
 	}
 	else if (tElement->mType == MUGEN_DEF_SCRIPT_GROUP_VECTOR_ELEMENT) {
 		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
-		turnMugenDefVectorToString(tDst, vectorElement);
+		turnMugenDefVectorToString(tDst, vectorElement, tDoesAddWhiteSpaces);
 	}
 	else {
 		logError("Unknown type.");
@@ -1046,38 +1066,58 @@ void getMugenDefStringVariableAsElementGeneral(char* tDst, MugenDefScriptGroupEl
 	}
 }
 
-char * getAllocatedMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
+char * getAllocatedMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw, bool tDoesAddWhiteSpaces)
 {
 	char* ret = (char*)allocMemory(1024);
-	getMugenDefStringVariableAsElementGeneral(ret, tElement, tDoesReturnStringsRaw);
+	getMugenDefStringVariableAsElementGeneral(ret, tElement, tDoesReturnStringsRaw, tDoesAddWhiteSpaces);
 	return ret;
 }
 
-std::string getSTLMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw)
+std::string getSTLMugenDefStringVariableAsElementGeneral(MugenDefScriptGroupElement * tElement, int tDoesReturnStringsRaw, bool tDoesAddWhiteSpaces)
 {
 	char ret[1024];
-	getMugenDefStringVariableAsElementGeneral(ret, tElement, tDoesReturnStringsRaw);
+	getMugenDefStringVariableAsElementGeneral(ret, tElement, tDoesReturnStringsRaw, tDoesAddWhiteSpaces);
 	return std::string(ret);
 }
 
 char * getAllocatedMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement * tElement)
 {
-	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 1);
+	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 1, false);
 }
 
 std::string getSTLMugenDefStringVariableForAssignmentAsElement(MugenDefScriptGroupElement * tElement)
 {
-	return getSTLMugenDefStringVariableAsElementGeneral(tElement, 1);
+	return getSTLMugenDefStringVariableAsElementGeneral(tElement, 1, false);
+}
+
+char* getAllocatedMugenDefStringVariableForAssignmentAsElementForceAddWhiteSpaces(MugenDefScriptGroupElement* tElement)
+{
+	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 1, true);
+}
+
+std::string getSTLMugenDefStringVariableForAssignmentAsElementForceAddWhiteSpaces(MugenDefScriptGroupElement* tElement)
+{
+	return getSTLMugenDefStringVariableAsElementGeneral(tElement, 1, true);
 }
 
 char * getAllocatedMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
-	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 0);
+	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 0, false);
 }
 
 std::string getSTLMugenDefStringVariableAsElement(MugenDefScriptGroupElement * tElement)
 {
-	return getSTLMugenDefStringVariableAsElementGeneral(tElement, 0);
+	return getSTLMugenDefStringVariableAsElementGeneral(tElement, 0, false);
+}
+
+char* getAllocatedMugenDefStringVariableAsElementForceAddWhiteSpaces(MugenDefScriptGroupElement* tElement)
+{
+	return getAllocatedMugenDefStringVariableAsElementGeneral(tElement, 0, true);
+}
+
+std::string getSTLMugenDefStringVariableAsElementForceAddWhiteSpaces(MugenDefScriptGroupElement* tElement)
+{
+	return getSTLMugenDefStringVariableAsElementGeneral(tElement, 0, true);
 }
 
 int isMugenDefVariable(MugenDefScript * tScript, const char * tGroupName, const char * tVariableName)
@@ -1559,7 +1599,7 @@ MugenStringVector copyMugenDefStringVectorVariableAsElement(MugenDefScriptGroupE
 
 	int i;
 	for (i = 0; i < ret.mVector.mSize; i++) {
-		ret.mVector.mElement[i] = (char*)allocMemory(strlen(vectorElement->mVector.mElement[i]) + 10);
+		ret.mVector.mElement[i] = (char*)allocMemory(int(strlen(vectorElement->mVector.mElement[i]) + 10));
 		strcpy(ret.mVector.mElement[i], vectorElement->mVector.mElement[i]);
 	}
 
@@ -1580,7 +1620,7 @@ void getMugenDefStringOrDefault(char* tDst, MugenDefScript* s, const char* tGrou
 }
 
 static char* createAllocatedString(const char* tString) {
-	char* ret = (char*)allocMemory(strlen(tString) + 1);
+	char* ret = (char*)allocMemory(int(strlen(tString) + 1));
 	strcpy(ret, tString);
 	return ret;
 }

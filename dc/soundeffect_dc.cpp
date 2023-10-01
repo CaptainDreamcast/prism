@@ -11,11 +11,11 @@
 static struct {
 	int mIsCompressing;
 
-	int mVolume;
+	double mVolume;
 } gSoundEffectDreamcastData;
 
 void initSoundEffects() {
-	gSoundEffectDreamcastData.mVolume = 254; // using 255 for volume results in sound effects glitching out
+	gSoundEffectDreamcastData.mVolume = 1.0;
 }
 
 void setupSoundEffectHandler() {

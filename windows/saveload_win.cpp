@@ -17,3 +17,4 @@ int isPrismSaveSlotActive(PrismSaveSlot /*tSaveSlot*/) { return 0; }
 int hasPrismGameSave(PrismSaveSlot /*tSaveSlot*/, const char* /*tFileName*/) { return 0; }
 size_t getAvailableSizeForSaveSlot(PrismSaveSlot /*tSaveSlot*/) { return 0; }
 size_t getPrismGameSaveSize(const Buffer& /*tBuffer*/, const char* /*tApplicationName*/, const char* /*tShortDescription*/, const char* /*tLongDescription*/, const Buffer& /*tIconDataBuffer*/, const Buffer& /*tPaletteBuffer*/) { return 0; }
+void setVMUDisplayIcon(void* /*tBitmap*/, bool) { }

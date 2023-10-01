@@ -34,7 +34,7 @@ typedef struct {
 } MugenElecbyteFontMapEntry;
 
 typedef struct {
-	MugenElecbyteFontMapEntry mMap[0xFF];
+	MugenElecbyteFontMapEntry mMap[0x100];
 	MugenSpriteFileSprite* mSprite;
 
 	MugenElecbyteFontType mType;
@@ -110,26 +110,31 @@ static void parseSingleMapElement(void* tCaller, void* tData) {
 		entry.mWidth = caller->mFont->mSize.x;
 	}
 
-	int keyValue;
+	uint8_t keyValue;
 	if (strlen(key) == 1) {
-		keyValue = key[0];
+		keyValue = (uint8_t)key[0];
 	}
 	else if (key[0] == '0' && key[1] == 'x') {
-		int items = sscanf(e->mString, "%i", &keyValue);
+		int tempKeyValue; // dreamcast crashes when reading into keyValue directly, so read into temp
+		int items = sscanf(e->mString, "%i", &tempKeyValue);
 		if (items != 1) {
 			logWarningFormat("Unable to parse keyValue from string: %s", e->mString);
 			keyValue = 0;
+		}
+		else
+		{
+			keyValue = (uint8_t)tempKeyValue;
 		}
 	}
 	else {
 		logError("Unrecognized map key.");
 		logErrorString(key);
 		recoverFromError();
-		keyValue = -1;
+		keyValue = 0xFF;
 	}
 
 	entry.mExists = 1;
-	caller->mElecbyteFont->mMap[keyValue % 0xFF] = entry;
+	caller->mElecbyteFont->mMap[keyValue % 0x100] = entry;
 
 	caller->i++;
 }
@@ -163,7 +168,7 @@ static void loadMugenElecbyteFont(MugenDefScript* tScript, const Buffer& tTextur
 
 	e->mType = getMugenElecbyteFontType(tScript);
 
-	for (int i = 0; i < 0xFF; i++) e->mMap[i].mExists = 0;
+	for (int i = 0; i < 0x100; i++) e->mMap[i].mExists = 0;
 
 	MugenDefScriptGroup* group = &tScript->mGroups["map"];
 
@@ -440,7 +445,7 @@ static void updateSingleTextBuildup(MugenText* e) {
 		}
 
 	
-		int l = strlen(e->mDisplayText);
+		auto l = strlen(e->mDisplayText);
 		e->mDisplayText[l] = e->mText[l];
 		e->mDisplayText[l + 1] = '\0';
 	}
@@ -501,7 +506,7 @@ static set<int> getBitmapTextLinebreaks(char* tText, const Position& tStart, Mug
 
 	set<int> ret;
 	Position p = tStart;
-	int n = strlen(tText);
+	auto n = int(strlen(tText));
 	for (int i = 0; i < n; i++) {
 		int positionsRead = 0;
 		int doesBreak;
@@ -547,7 +552,7 @@ static set<int> getBitmapTextLinebreaks(char* tText, const Position& tStart, Mug
 static void drawSingleBitmapText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)font->mData;
-	int textLength = strlen(e->mDisplayText);
+	auto textLength = int(strlen(e->mDisplayText));
 	double factor = getNewMugenFontFactor() * e->mScale;
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
@@ -642,7 +647,7 @@ static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, M
 
 	set<int> ret;
 	Position p = tStart;
-	int n = strlen(tText);
+	auto n = int(strlen(tText));
 	for (int i = 0; i < n; i++) {
 		int positionsRead = 0;
 		int doesBreak;
@@ -654,8 +659,8 @@ static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, M
 			int items = sscanf(tText + i, "%1023s%n", word, &positionsRead);
 			if (items != 1) break;
 			for (int j = i; j < i + positionsRead; j++) {
-				if (tElecbyteFont->mMap[(int)tText[j]].mExists) {
-					MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(int)tText[j]];
+				if (tElecbyteFont->mMap[(uint8_t)tText[j]].mExists) {
+					MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(uint8_t)tText[j]];
 					p = vecAdd2D(p, vecScale(Vector3D(mapEntry.mWidth, 0, 0), tFactor));
 					p = vecAdd2D(p, vecScale(Vector3D(tFont->mSpacing.x, 0, 0), tFactor));
 				}
@@ -688,7 +693,7 @@ static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, M
 static void drawSingleElecbyteText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
-	int textLength = strlen(e->mDisplayText);
+	auto textLength = int(strlen(e->mDisplayText));
 	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
@@ -698,10 +703,9 @@ static void drawSingleElecbyteText(MugenText* e) {
 	double rightX = p.x + e->mTextBoxWidth;
 	const auto breaks = getElecbyteTextLinebreaks(e->mText, start, font, elecbyteFont, rightX, factor);
 	for (i = 0; i < textLength; i++) {
-
-		if (elecbyteFont->mMap[(int)e->mDisplayText[i]].mExists) {
+		if (elecbyteFont->mMap[(uint8_t)e->mDisplayText[i]].mExists) {
 			ElecbyteDrawCaller caller;
-			caller.mMapEntry = &elecbyteFont->mMap[(int)e->mDisplayText[i]];
+			caller.mMapEntry = &elecbyteFont->mMap[(uint8_t)e->mDisplayText[i]];
 			caller.mBasePosition = p;
 			caller.mStartX = p.x;
 			caller.mPreviousSubSpriteOffsetY = INF;
@@ -837,7 +841,7 @@ void setMugenTextFont(int tID, int tFont)
 static double getBitmapTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)font->mData;
-	int textLength = strlen(e->mText);
+	auto textLength = int(strlen(e->mText));
 	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	MugenSpriteFileGroup* spriteGroup = (MugenSpriteFileGroup*)int_map_get(&bitmapFont->mSprites.mGroups, 0);
@@ -860,21 +864,21 @@ static double getBitmapTextSize(MugenText* e) {
 }
 
 static double getTruetypeTextSize(MugenText* e) {
-	int textLength = strlen(e->mText);
-	return e->mFont->mSize.x*textLength;
+	auto textLength = strlen(e->mText);
+	return double(e->mFont->mSize.x*textLength);
 }
 
 static double getElecbyteTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
 	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
-	int textLength = strlen(e->mText);
+	auto textLength = int(strlen(e->mText));
 	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	int i;
 	double sizeX = 0;
 	for (i = 0; i < textLength; i++) {
-		if (elecbyteFont->mMap[(int)e->mText[i]].mExists) {
-			MugenElecbyteFontMapEntry& mapEntry = elecbyteFont->mMap[(int)e->mText[i]];
+		if (elecbyteFont->mMap[(uint8_t)e->mText[i]].mExists) {
+			MugenElecbyteFontMapEntry& mapEntry = elecbyteFont->mMap[(uint8_t)e->mText[i]];
 			sizeX += mapEntry.mWidth*factor;
 			sizeX += font->mSpacing.x*factor;
 		}
