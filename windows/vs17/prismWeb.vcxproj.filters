@@ -19,4 +19,12 @@
     <None Include="..\..\Makefile.commonweb" />
     <None Include="..\..\Makefile.web" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\web\netplay_web.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\web\thread_web.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
 </Project>

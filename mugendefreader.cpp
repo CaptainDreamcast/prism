@@ -51,7 +51,7 @@ static MugenDefToken* makeMugenDefToken(const char* tValue) {
 }
 
 static int isEmpty(BufferPointer p) {
-	return *p == ' ' || *p == '	'; //|| *p < 0; TODO: check if this breaks Dolmexica (PBI 3074)
+	return *p == ' ' || *p == '	';
 }
 
 static int increaseAndCheckIfOver(Buffer* b, BufferPointer* p) {

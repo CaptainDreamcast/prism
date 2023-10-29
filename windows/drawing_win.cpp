@@ -243,6 +243,12 @@ static struct {
 	double mFrequency;
 	double mFrameStartTime;
 	double mRealFramerate = 60;
+
+	bool mIsFrameSkippingEnabled;
+	double mDrawingStartTime;
+	double mDrawingEndTime;
+	int mIsSkippingNextFrameDrawCounter;
+	double mRealFrameStartTime;
 } gBookkeepingData;
 
 static vector<DrawListElement> gDrawVector;
@@ -466,6 +472,11 @@ void initDrawing() {
 	gBookkeepingData.mFrequency = counter.QuadPart / 1000.0;
 #endif
 	gBookkeepingData.mFrameStartTime = 0;
+	gBookkeepingData.mIsFrameSkippingEnabled = false;
+	gBookkeepingData.mDrawingStartTime = 0;
+	gBookkeepingData.mDrawingEndTime = 0;
+	gBookkeepingData.mIsSkippingNextFrameDrawCounter = 0;
+	gBookkeepingData.mRealFrameStartTime = 0;
 
 	gPrismWindowsDrawingData.mEffectStack = new_vector();
 
@@ -539,9 +550,20 @@ static void clearDrawVector() {
 	gDrawVector.clear();
 }
 
+static void startDrawingBookkeeping()
+{
+#ifndef __EMSCRIPTEN__
+	LARGE_INTEGER counter;
+	QueryPerformanceCounter(&counter);
+	gBookkeepingData.mDrawingStartTime = (counter.QuadPart / gBookkeepingData.mFrequency);
+#endif
+}
+
 void startDrawing() {
 	setProfilingSectionMarkerCurrentFunction();
 
+	startDrawingBookkeeping();
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 #ifndef __EMSCRIPTEN__
@@ -800,6 +822,15 @@ static void drawFBOToScreen() {
 }
 #endif
 
+static void stopDrawingBookkeeping()
+{
+#ifndef __EMSCRIPTEN__
+	LARGE_INTEGER counter;
+	QueryPerformanceCounter(&counter);
+	gBookkeepingData.mDrawingEndTime = (counter.QuadPart / gBookkeepingData.mFrequency);
+#endif
+}
+
 void stopDrawing() {
 	setProfilingSectionMarkerCurrentFunction();
 
@@ -812,6 +843,8 @@ void stopDrawing() {
 #endif
 
 	SDL_GL_SwapWindow(gSDLWindow);
+
+	stopDrawingBookkeeping();
 }
 
 void waitForScreen() {
@@ -829,11 +862,70 @@ void waitForScreen() {
 
 	QueryPerformanceCounter(&counter);
 	const auto now = (counter.QuadPart / gBookkeepingData.mFrequency);
-	gBookkeepingData.mRealFramerate = 1000.0 / (now - gBookkeepingData.mFrameStartTime);
-	gBookkeepingData.mFrameStartTime = now;
+	gBookkeepingData.mRealFramerate = 1000.0 / (now - gBookkeepingData.mRealFrameStartTime);
+	if (gBookkeepingData.mIsFrameSkippingEnabled)
+	{
+		const auto frameTime = now - gBookkeepingData.mRealFrameStartTime;
+		const auto drawTime = gBookkeepingData.mDrawingEndTime - gBookkeepingData.mDrawingStartTime;
+		const auto nonDrawTime = frameTime - drawTime;
+		static const auto EPSILON = 5;
+		if (now > frameEndTime + EPSILON) {
+			if (nonDrawTime < frameMS) {
+				gBookkeepingData.mIsSkippingNextFrameDrawCounter = (gBookkeepingData.mIsSkippingNextFrameDrawCounter + 1) % 10;
+				if (gBookkeepingData.mIsSkippingNextFrameDrawCounter)
+				{
+					gBookkeepingData.mDrawingEndTime = gBookkeepingData.mDrawingStartTime = now;
+				}
+			}
+			else
+			{
+				gBookkeepingData.mIsSkippingNextFrameDrawCounter = 0;
+			}
+		}
+		else
+		{
+			gBookkeepingData.mIsSkippingNextFrameDrawCounter = 0;
+		}
+		gBookkeepingData.mFrameStartTime = frameEndTime;
+		gBookkeepingData.mRealFrameStartTime = now;
+	}
+	else
+	{
+		gBookkeepingData.mFrameStartTime = now;
+	}
+	setPrismDebugDropFrameCounter(gBookkeepingData.mIsSkippingNextFrameDrawCounter);
 #else
 	gBookkeepingData.mRealFramerate = 60;
 #endif
+}
+
+bool isSkippingDrawing()
+{
+	return gBookkeepingData.mIsSkippingNextFrameDrawCounter;
+}
+
+void setDrawingFrameSkippingEnabled(bool tIsEnabled) {
+#ifndef __EMSCRIPTEN__
+	gBookkeepingData.mIsFrameSkippingEnabled = tIsEnabled;
+	if (tIsEnabled) {
+		gBookkeepingData.mIsSkippingNextFrameDrawCounter = 0;
+		resetDrawingFrameStartTime();
+	}
+#endif
+}
+
+void resetDrawingFrameStartTime() {
+#ifndef __EMSCRIPTEN__
+	LARGE_INTEGER counter;
+	QueryPerformanceCounter(&counter);
+	gBookkeepingData.mFrameStartTime = (counter.QuadPart / gBookkeepingData.mFrequency);
+	gBookkeepingData.mRealFrameStartTime = gBookkeepingData.mFrameStartTime;
+#endif
+}
+
+void updateDrawingFrameStartTime(double tTimeDelta) {
+	gBookkeepingData.mFrameStartTime += tTimeDelta;
+	gBookkeepingData.mRealFrameStartTime += tTimeDelta;
 }
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);

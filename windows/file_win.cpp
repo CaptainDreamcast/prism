@@ -202,7 +202,7 @@ void* fileMemoryMap(FileHandler tHandler) {
 
 void createDirectory(const char * tPath)
 {
-#ifndef __EMSCRIPTEN__
+#ifdef _WIN32
 	if (!isDirectory(tPath)) {
 		char path[1024];
 		getFullPath(path, tPath);

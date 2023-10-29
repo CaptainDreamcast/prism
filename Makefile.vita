@@ -1,9 +1,9 @@
 include Makefile.common
 
-OBJS += vita/drawing_vita.o vita/texture_vita.o vita/input_vita.o \
-vita/framerateselect_vita.o vita/file_vita.o vita/math_vita.o vita/system_vita.o vita/log_vita.o \
-vita/saveload_vita.o vita/soundeffect_vita.o vita/sound_vita.o vita/memoryhandler_vita.o \
-vita/screeneffect_vita.o vita/logoscreen_vita.o vita/thread_vita.o vita/romdisk_vita.o
+OBJS += vita/drawing_vita.o vita/texture_vita.o windows/input_win.o \
+windows/framerateselect_win.o windows/file_win.o windows/math_win.o vita/system_vita.o vita/log_vita.o \
+windows/saveload_win.o vita/soundeffect_vita.o vita/sound_vita.o vita/memoryhandler_vita.o web/netplay_web.o \
+windows/screeneffect_win.o windows/logoscreen_win.o web/thread_web.o windows/romdisk_win.o
 
 
 PHONY := all package clean
@@ -39,7 +39,10 @@ install: $(TARGET)
 	arm-vita-eabi-g++ -c -o $@ $<
 
 clean:
-	rm -f $(PROJECT)
-	rm -r *.o
-	rm -r vita/*.o
+	-rm -f $(PROJECT)
+	-rm -r *.o
+	-rm -r vita/*.o
+	-rm -r windows/*.o
+	-rm -r web/*.o
+	-rm -r dc/*.o
 

@@ -15,6 +15,7 @@ ActorBlueprint getPrismDebug();
 void setPrismDebugUpdateStartTime();
 void setPrismDebugDrawingStartTime();
 void setPrismDebugWaitingStartTime();
+void setPrismDebugDropFrameCounter(int tDropFrameCounter);
 int getPrismDebugSideDisplayVisibility();
 void setPrismDebugSideDisplayVisibility(int tIsVisible);
 void togglePrismDebugSideDisplayVisibility();

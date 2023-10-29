@@ -7,14 +7,18 @@
 #include <prism/wrapper.h>
 #include <prism/system.h>
 
+#ifdef DREAMCAST
 #define PREVIOUS_FPS_AMOUNT 5
+#else
+#define PREVIOUS_FPS_AMOUNT 100
+#endif
 #define CONSOLE_Z 90
 #define CONSOLE_ARCHIVE_AMOUNT 5
 
 using namespace std;
 
 typedef struct SideDisplay_t {
-	double mPreviousFPS[PREVIOUS_FPS_AMOUNT];
+	double mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT];
 	int mFPSCounterTextID;
 
 	uint64_t mStartDrawingTime;
@@ -30,6 +34,9 @@ typedef struct SideDisplay_t {
 	uint64_t mStartWaitingTime;
 	uint64_t mEndWaitingTime;
 	int mWaitingTimeCounterTextID;
+
+	int mDropFrameCounter;
+	int mDropFrameCounterTextID;
 
 	int mIsVisible = 1;
 } SideDisplay;
@@ -144,6 +151,9 @@ static void loadPrismDebug(void* tData) {
 	gPrismDebug.mSideDisplay.mStartWaitingTime = gPrismDebug.mSideDisplay.mEndWaitingTime = getSystemTicks();
 	gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy * 3, 95), Vector3DI(-1, 1, -1));
 
+	gPrismDebug.mSideDisplay.mDropFrameCounter = 0;
+	gPrismDebug.mSideDisplay.mDropFrameCounterTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 4, 95), Vector3DI(-1, 1, -1));
+
 	gPrismDebug.mConsole.mWhiteTexture = createWhiteTexture();
 	gPrismDebug.mConsole.mIsVisible = 0;
 
@@ -162,34 +172,41 @@ static void unloadPrismDebug(void* tData) {
 }
 
 static void updatePrismDebugSideDisplay() {
-	double fps = getRealFramerate();
-	double fpsSum = fps + gPrismDebug.mSideDisplay.mPreviousFPS[PREVIOUS_FPS_AMOUNT - 1];
+	const auto fps = getRealFramerate();
+	const auto time = (1.0 / fps) * 1000.0;
+	double timeSum = time + gPrismDebug.mSideDisplay.mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT - 1];
 	for (int i = 1; i < PREVIOUS_FPS_AMOUNT; i++) {
-		fpsSum += gPrismDebug.mSideDisplay.mPreviousFPS[i - 1];
-		gPrismDebug.mSideDisplay.mPreviousFPS[i - 1] = gPrismDebug.mSideDisplay.mPreviousFPS[i];
+		timeSum += gPrismDebug.mSideDisplay.mPreviousFrameTimes[i - 1];
+		gPrismDebug.mSideDisplay.mPreviousFrameTimes[i - 1] = gPrismDebug.mSideDisplay.mPreviousFrameTimes[i];
 	}
-	gPrismDebug.mSideDisplay.mPreviousFPS[PREVIOUS_FPS_AMOUNT - 1] = fps;
-	fpsSum /= PREVIOUS_FPS_AMOUNT + 1;
+	gPrismDebug.mSideDisplay.mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT - 1] = time;
+
+	timeSum /= PREVIOUS_FPS_AMOUNT + 1;
+	const auto fpsSum = (1000.0 / timeSum);
 
 	if (gPrismDebug.mSideDisplay.mIsVisible) {
 		char text[200];
-		sprintf(text, "%.1f", fpsSum);
+		sprintf(text, "%.1f fps", fpsSum);
 		changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, text);
 
-		sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
+		sprintf(text, "%lu drw", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
 		changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, text);
 
-		sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
+		sprintf(text, "%lu upd", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
 		changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, text);
 
-		sprintf(text, "%lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
+		sprintf(text, "%lu wat", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
 		changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, text);
+
+		sprintf(text, "%d drp", gPrismDebug.mSideDisplay.mDropFrameCounter);
+		changeMugenText(gPrismDebug.mSideDisplay.mDropFrameCounterTextID, text);
 	}
 	else {
 		changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, "");
 		changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, "");
 		changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, "");
 		changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, "");
+		changeMugenText(gPrismDebug.mSideDisplay.mDropFrameCounterTextID, "");
 	}
 }
 
@@ -415,6 +432,11 @@ void setPrismDebugWaitingStartTime()
 	if (!gPrismDebug.mIsActive) return;
 	gPrismDebug.mSideDisplay.mEndUpdateTime = getSystemTicks();
 	gPrismDebug.mSideDisplay.mStartWaitingTime = getSystemTicks();
+}
+
+void setPrismDebugDropFrameCounter(int tDropFrameCounter)
+{
+	gPrismDebug.mSideDisplay.mDropFrameCounter = tDropFrameCounter;
 }
 
 int getPrismDebugSideDisplayVisibility()

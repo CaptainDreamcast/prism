@@ -1,6 +1,10 @@
 #include "prism/screeneffect.h"
 
+#ifdef VITA
+#include <vitaGL.h>
+#else
 #include <GL/glew.h>
+#endif
 
 extern SDL_Renderer* gRenderer;
 

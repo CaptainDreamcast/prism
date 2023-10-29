@@ -58,6 +58,10 @@
     <None Include="..\..\Makefile.commonweb" />
     <None Include="..\..\Makefile.web" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\web\netplay_web.cpp" />
+    <ClCompile Include="..\..\web\thread_web.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

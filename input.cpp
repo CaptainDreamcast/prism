@@ -86,6 +86,10 @@ int hasPressedAbortFlankSingle(int i) {
 	return !gPrismGeneralInputData.mStatus[i].mAbortPrev && gPrismGeneralInputData.mStatus[i].mAbortCurrent;
 }
 
+void consumeAbortFlankSingle(int i) {
+	gPrismGeneralInputData.mStatus[i].mAbortPrev = gPrismGeneralInputData.mStatus[i].mAbortCurrent;
+}
+
 int hasShotGunFlankSingle(int i)
 {
 	return !gPrismGeneralInputData.mStatus[i].mShotPrev && gPrismGeneralInputData.mStatus[i].mShotCurrent;
@@ -140,7 +144,9 @@ int hasPressedAbortFlank() {
 	return hasPressedAbortFlankSingle(getMainController());
 }
 
-
+void consumeAbortFlank() {
+	consumeAbortFlankSingle(getMainController());
+}
 
 int hasPressedA() {
 	return hasPressedASingle(getMainController());

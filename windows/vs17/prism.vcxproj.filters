@@ -224,6 +224,9 @@
     <ClInclude Include="..\..\include\prism\saveload.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\netplay.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\drawing_win.cpp">
@@ -449,6 +452,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\saveload_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\netplay_win.cpp">
       <Filter>src\windows</Filter>
     </ClCompile>
   </ItemGroup>

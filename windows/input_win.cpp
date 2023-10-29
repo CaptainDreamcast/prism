@@ -2,8 +2,13 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include <queue>
 
+#ifdef VITA
+#include <SDL2/SDL.h>
+#else
 #include <SDL.h>
+#endif
 
 #include "prism/log.h"
 #include "prism/math.h"
@@ -21,6 +26,8 @@ typedef struct {
 	int mHapticEffectID;
 	Duration mRumbleNow;
 	Duration mRumbleDuration;
+
+	std::deque<std::vector<Uint8>> mButtonStates; // queue of CONTROLLER_BUTTON_AMOUNT_PRISM
 } Controller;
 
 typedef struct {
@@ -29,16 +36,24 @@ typedef struct {
 	void* mCaller;
 } KeyInputWait;
 
+typedef struct
+{
+	const Uint8* mKeyStatePointer;
+	std::deque<std::vector<Uint8>> mKeyStates; // queue of SDL_NUM_SCANCODES
+	std::deque<Uint8> mConfirmationState;
+} InputKeyboard;
+
 static struct {
 	KeyInputWait mInputWait;
 
-	const Uint8* mKeyStatePointer;
-	Uint8* mCurrentKeyStates;
-	Uint8* mPreviousKeyStates;
+	int mInputDelay;
+	int mInputBuffer;
+	
+	int mUsedKeyboard[MAXIMUM_CONTROLLER_AMOUNT];
+	int mUsedKeyboardMapping[MAXIMUM_CONTROLLER_AMOUNT];
+	InputKeyboard mKeyboards[MAXIMUM_CONTROLLER_AMOUNT];
 	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
 } gPrismWindowsInputData;
-
-
 
 static int evaluateSDLButtonA(int i) {
 	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
@@ -60,6 +75,17 @@ static int evaluateSDLButtonY(int i) {
 	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_Y);
 }
 
+#ifdef VITA
+static int evaluateSDLButtonL(int i) {
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_LEFTSHOULDER);
+}
+
+static int evaluateSDLButtonR(int i) {
+	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
+	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER);
+}
+#else
 static int evaluateSDLButtonL(int i) {
 	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;	
 	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
@@ -71,6 +97,7 @@ static int evaluateSDLButtonR(int i) {
 	double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
 	return (axis > 0.5);
 }
+#endif
 
 static int evaluateSDLButtonLeft(int i) {
 	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
@@ -259,12 +286,70 @@ static void initKeyboardScancodes() {
 	}
 }
 
+static std::vector<Uint8>& getButtonStates(int i, int tNegativeFrameDelta)
+{
+	return *(gPrismWindowsInputData.mControllers[i].mButtonStates.rbegin() - tNegativeFrameDelta);
+}
+
+static std::vector<Uint8>& getKeyStates(int i, int tNegativeFrameDelta)
+{
+	return *(gPrismWindowsInputData.mKeyboards[i].mKeyStates.rbegin() - tNegativeFrameDelta);
+}
+
+static void updateKeyStateArraySize(int i)
+{
+	while (gPrismWindowsInputData.mKeyboards[i].mKeyStates.size() < gPrismWindowsInputData.mInputDelay + gPrismWindowsInputData.mInputBuffer)
+	{
+		gPrismWindowsInputData.mKeyboards[i].mKeyStates.push_front(std::vector<Uint8>(SDL_NUM_SCANCODES, 0));
+		gPrismWindowsInputData.mKeyboards[i].mConfirmationState.push_front(0);
+	}
+
+	while (gPrismWindowsInputData.mKeyboards[i].mKeyStates.size() > gPrismWindowsInputData.mInputDelay + gPrismWindowsInputData.mInputBuffer)
+	{
+		gPrismWindowsInputData.mKeyboards[i].mKeyStates.pop_front();
+		gPrismWindowsInputData.mKeyboards[i].mConfirmationState.pop_front();
+	}
+}
+
+static void updateKeyStateArraySizes()
+{
+	for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
+		updateKeyStateArraySize(i);
+	}
+}
+
+static void updateControllerButtonStateArraySize(int i)
+{
+	while (gPrismWindowsInputData.mControllers[i].mButtonStates.size() < gPrismWindowsInputData.mInputDelay + gPrismWindowsInputData.mInputBuffer)
+	{
+		gPrismWindowsInputData.mControllers[i].mButtonStates.push_front(std::vector<Uint8>(CONTROLLER_BUTTON_AMOUNT_PRISM, 0));
+	}
+
+	while (gPrismWindowsInputData.mControllers[i].mButtonStates.size() > gPrismWindowsInputData.mInputDelay + gPrismWindowsInputData.mInputBuffer)
+	{
+		gPrismWindowsInputData.mControllers[i].mButtonStates.pop_front();
+	}
+}
+
+static void updateControllerButtonStateArraySizes()
+{
+	for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
+		updateControllerButtonStateArraySize(i);
+	}
+}
+
 void initInput() {
 	gPrismWindowsInputData.mInputWait.mIsActive = 0;
 
-	gPrismWindowsInputData.mPreviousKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
-	gPrismWindowsInputData.mCurrentKeyStates = (Uint8*)allocClearedMemory(SDL_NUM_SCANCODES, 1);
-	gPrismWindowsInputData.mKeyStatePointer = SDL_GetKeyboardState(NULL);
+	gPrismWindowsInputData.mUsedKeyboard[PRISM_KEYBOARD_LOCAL] = gPrismWindowsInputData.mUsedKeyboard[PRISM_KEYBOARD_NETPLAY] = 0;
+	for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
+		gPrismWindowsInputData.mUsedKeyboardMapping[i] = i;
+	}
+	gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_LOCAL].mKeyStatePointer = SDL_GetKeyboardState(NULL);
+	gPrismWindowsInputData.mInputDelay = 0;
+	gPrismWindowsInputData.mInputBuffer = 2;
+	updateKeyStateArraySizes();
+	updateControllerButtonStateArraySizes();
 	initKeyboardScancodes();
 }
 
@@ -286,6 +371,30 @@ static void unloadController(int i) {
 	gPrismWindowsInputData.mControllers[i].mIsUsingController = 0;
 }
 
+static void fillSingleButtonState(int i, int buttonIndex, std::vector<Uint8>& data) {
+	data[buttonIndex] = uint8_t(gSDLButtonMapping[gButtonMapping[i][buttonIndex]](i));
+}
+
+static void updateControllerButtonStateArrayContentFillFrontWithCurrentButtonState(int i) {
+	auto& data = gPrismWindowsInputData.mControllers[i].mButtonStates.front();
+	for (int buttonIndex = 0; buttonIndex < CONTROLLER_BUTTON_AMOUNT_PRISM; buttonIndex++)
+	{
+		fillSingleButtonState(i, buttonIndex, data);
+	}
+}
+
+static void updateControllerButtonStateArrayContent(int i) {
+	updateControllerButtonStateArrayContentFillFrontWithCurrentButtonState(i);
+	gPrismWindowsInputData.mControllers[i].mButtonStates.push_back(gPrismWindowsInputData.mControllers[i].mButtonStates.front());
+	gPrismWindowsInputData.mControllers[i].mButtonStates.pop_front();
+}
+
+static void updateControllerButtonStates(int i)
+{
+	updateControllerButtonStateArraySize(i);
+	updateControllerButtonStateArrayContent(i);
+}
+
 static void updateSingleControllerInput(int i) {
 	if (i >= SDL_NumJoysticks()) {
 		unloadController(i);
@@ -293,6 +402,7 @@ static void updateSingleControllerInput(int i) {
 	}
 
 	loadController(i);
+	updateControllerButtonStates(i);
 }
 
 static void updateSingleControllerRumble(int i) {
@@ -312,92 +422,104 @@ static void updateControllers() {
 	}
 }
 
+static void updateKeyboardLocalKeyboard(int i) {
+	updateKeyStateArraySize(i);
+	memcpy(gPrismWindowsInputData.mKeyboards[i].mKeyStates.front().data(), gPrismWindowsInputData.mKeyboards[i].mKeyStatePointer, SDL_NUM_SCANCODES);
+	gPrismWindowsInputData.mKeyboards[i].mKeyStates.push_back(gPrismWindowsInputData.mKeyboards[i].mKeyStates.front());
+	gPrismWindowsInputData.mKeyboards[i].mConfirmationState.push_back(1);
+	gPrismWindowsInputData.mKeyboards[i].mKeyStates.pop_front();
+	gPrismWindowsInputData.mKeyboards[i].mConfirmationState.pop_front();
+}
+
+static void updateKeyboardRemoteKeyboard(int i) {
+	updateKeyStateArraySize(i);
+	gPrismWindowsInputData.mKeyboards[i].mKeyStates.push_back(std::vector<Uint8>(SDL_NUM_SCANCODES, 0));
+	gPrismWindowsInputData.mKeyboards[i].mConfirmationState.push_back(0);
+	gPrismWindowsInputData.mKeyboards[i].mKeyStates.pop_front();
+	gPrismWindowsInputData.mKeyboards[i].mConfirmationState.pop_front();
+}
+
+static void updateKeyboards()
+{
+	updateKeyboardLocalKeyboard(PRISM_KEYBOARD_LOCAL);
+	if (gPrismWindowsInputData.mUsedKeyboard[0] == PRISM_KEYBOARD_NETPLAY || gPrismWindowsInputData.mUsedKeyboard[1] == PRISM_KEYBOARD_NETPLAY) {
+		updateKeyboardRemoteKeyboard(PRISM_KEYBOARD_NETPLAY);
+	}
+}
+
 void updateInputPlatform() {
-	memcpy(gPrismWindowsInputData.mPreviousKeyStates, gPrismWindowsInputData.mCurrentKeyStates, SDL_NUM_SCANCODES);
-	memcpy(gPrismWindowsInputData.mCurrentKeyStates, gPrismWindowsInputData.mKeyStatePointer, SDL_NUM_SCANCODES);
+	updateKeyboards();
 	updateControllers();
 }
 
 int hasPressedASingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_A_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_A_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_A_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_A_PRISM];
 	return state;
 }
 
 int hasPressedBSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_B_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_B_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_B_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_B_PRISM];
 	return state;
 }
 
 int hasPressedXSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_X_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_X_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_X_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_X_PRISM];
 	return state;
 }
 
 int hasPressedYSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_Y_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_Y_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_Y_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_Y_PRISM];
 	return state;
 }
 
 int hasPressedLeftSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_LEFT_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_LEFT_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_LEFT_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_LEFT_PRISM];
 	return state;
 }
 
 int hasPressedRightSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_RIGHT_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_RIGHT_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_RIGHT_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_RIGHT_PRISM];
 	return state;
 }
 
 int hasPressedUpSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_UP_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_UP_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_UP_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_UP_PRISM];
 	return state;
 }
 
 int hasPressedDownSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_DOWN_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_DOWN_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_DOWN_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_DOWN_PRISM];
 	return state;
 }
 
 int hasPressedLSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_L_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_L_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_L_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_L_PRISM];
 	return state;
 }
 
 int hasPressedRSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_R_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_R_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_R_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_R_PRISM];
 	return state;
 }
 
 int hasPressedStartSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[gPrismToSDLKeyboardMapping[gKeys[i][CONTROLLER_START_PRISM]].second];
-	state |= gSDLButtonMapping[gButtonMapping[i][CONTROLLER_START_PRISM]](i);
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gPrismToSDLKeyboardMapping[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_START_PRISM]].second];
+	state |= getButtonStates(i, -gPrismWindowsInputData.mInputDelay)[CONTROLLER_START_PRISM];
 	return state;
 }
 
 int hasPressedAbortSingle(int i) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-	int state = gPrismWindowsInputData.mCurrentKeyStates[SDL_SCANCODE_ESCAPE];
+	int state = getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[SDL_SCANCODE_ESCAPE];
 	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
 		state |= (hasPressedASingle(i) && hasPressedBSingle(i) && hasPressedXSingle(i) && hasPressedYSingle(i) && hasPressedStartSingle(i));
 	}
@@ -420,11 +542,9 @@ Vector3D getShotPositionSingle(int /*i*/) {
 }
 
 
-static double getStickNormalizedBinary(int tCodeMinus, int tCodePlus) {
-	if (gPrismWindowsInputData.mCurrentKeyStates == NULL) return 0;
-
-	if (gPrismWindowsInputData.mCurrentKeyStates[tCodeMinus]) return -1;
-	else if (gPrismWindowsInputData.mCurrentKeyStates[tCodePlus]) return 1;
+static double getStickNormalizedBinary(int i, int tCodeMinus, int tCodePlus) {
+	if (getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[tCodeMinus]) return -1;
+	else if (getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[tCodePlus]) return 1;
 	else return 0;
 }
 
@@ -432,28 +552,28 @@ double getSingleLeftStickNormalizedX(int i) {
 	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
 		return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
 	}
-	else return getStickNormalizedBinary(gKeys[i][CONTROLLER_LEFT_PRISM], gKeys[i][CONTROLLER_RIGHT_PRISM]);
+	else return getStickNormalizedBinary(i, gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_LEFT_PRISM], gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_RIGHT_PRISM]);
 }
 
 double getSingleLeftStickNormalizedY(int i) {
 	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
 		return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
 	}
-	else return getStickNormalizedBinary(gKeys[i][CONTROLLER_UP_PRISM], gKeys[i][CONTROLLER_DOWN_PRISM]);
+	else return getStickNormalizedBinary(i, gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_UP_PRISM], gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_DOWN_PRISM]);
 }
 
 double getSingleLNormalized(int i) {
 	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
 		return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
 	}
-	else return gPrismWindowsInputData.mCurrentKeyStates[gKeys[i][CONTROLLER_L_PRISM]];
+	else return getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_L_PRISM]];
 }
 
 double getSingleRNormalized(int i) {
 	if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
 		return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
 	}
-	else return gPrismWindowsInputData.mCurrentKeyStates[gKeys[i][CONTROLLER_R_PRISM]];
+	else return getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_R_PRISM]];
 }
 
 extern SDL_Window* gSDLWindow;
@@ -522,12 +642,12 @@ int hasPressedRawButton(int i, ControllerButtonPrism tButton) {
 
 int hasPressedRawKeyboardKey(KeyboardKeyPrism tKey) {
 	int id = gPrismToSDLKeyboardMapping[tKey].second;
-	return gPrismWindowsInputData.mCurrentKeyStates[id];
+	return getKeyStates(PRISM_KEYBOARD_LOCAL, -gPrismWindowsInputData.mInputDelay)[id];
 }
 
 int hasPressedKeyboardKeyFlank(KeyboardKeyPrism tKey) {
 	int id = gPrismToSDLKeyboardMapping[tKey].second;
-	return !gPrismWindowsInputData.mPreviousKeyStates[id] && gPrismWindowsInputData.mCurrentKeyStates[id];
+	return !getKeyStates(PRISM_KEYBOARD_LOCAL, -gPrismWindowsInputData.mInputDelay - 1)[id] && getKeyStates(PRISM_KEYBOARD_LOCAL, -gPrismWindowsInputData.mInputDelay)[id];
 }
 
 int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
@@ -542,8 +662,8 @@ int hasPressedKeyboardMultipleKeyFlank(int tKeyAmount, ...) {
 	{
 		KeyboardKeyPrism singleKey = (KeyboardKeyPrism)va_arg(vl, int);
 		int id = gPrismToSDLKeyboardMapping[singleKey].second;
-		previousKeyPressed = previousKeyPressed && gPrismWindowsInputData.mPreviousKeyStates[id];
-		currentKeyPressed = currentKeyPressed && gPrismWindowsInputData.mCurrentKeyStates[id];
+		previousKeyPressed = previousKeyPressed && getKeyStates(PRISM_KEYBOARD_LOCAL, -gPrismWindowsInputData.mInputDelay - 1)[id];
+		currentKeyPressed = currentKeyPressed && getKeyStates(PRISM_KEYBOARD_LOCAL, -gPrismWindowsInputData.mInputDelay)[id];
 	}
 	va_end(vl);
 
@@ -562,12 +682,12 @@ void setButtonForController(int i, ControllerButtonPrism tTargetButton, Controll
 
 KeyboardKeyPrism getButtonForKeyboard(int i, ControllerButtonPrism tTargetButton)
 {
-	return gKeys[i][tTargetButton];
+	return gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][tTargetButton];
 }
 
 void setButtonForKeyboard(int i, ControllerButtonPrism tTargetButton, KeyboardKeyPrism tKeyValue)
 {
-	gKeys[i][tTargetButton] = tKeyValue;
+	gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][tTargetButton] = tKeyValue;
 }
 
 void receiveCharacterInputFromSDL(const std::string& tText) {
@@ -586,4 +706,82 @@ void waitForCharacterFromUserInput(int /*i*/, void(*tCB)(void*, const std::strin
 void cancelWaitingForCharacterFromUserInput(int /*i*/) {
 	SDL_StopTextInput();
 	gPrismWindowsInputData.mInputWait.mIsActive = 0;
+}
+
+int getInputDelay()
+{
+	return gPrismWindowsInputData.mInputDelay;
+}
+
+void setInputDelay(int tInputDelay) {
+	gPrismWindowsInputData.mInputDelay = tInputDelay;
+	updateKeyStateArraySizes();
+	updateControllerButtonStateArraySizes();
+}
+
+void setInputBufferSize(int tInputBufferSize)
+{
+	gPrismWindowsInputData.mInputBuffer = std::max(2, tInputBufferSize);
+	updateKeyStateArraySizes();
+	updateControllerButtonStateArraySizes();
+}
+
+void setInputUsedKeyboardByPlayer(int i, int tKeyboardIndex) {
+	gPrismWindowsInputData.mUsedKeyboard[i] = tKeyboardIndex;
+}
+
+void setInputUsedKeyboardMappingByPlayer(int i, int tMappingIndex) {
+	gPrismWindowsInputData.mUsedKeyboardMapping[i] = tMappingIndex;
+}
+
+void gatherWindowsInputStateForPastFrames(int i, size_t pastFrames, std::vector<std::vector<uint8_t>>& tKeyStates, std::vector<std::vector<uint8_t>>& tButtonStates) {
+	size_t regularGatherFrames = std::min(pastFrames, gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_LOCAL].mKeyStates.size());
+	for (size_t frameIndex = 0; frameIndex < regularGatherFrames; frameIndex++) {
+		tKeyStates.push_back(*(gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_LOCAL].mKeyStates.rbegin() + frameIndex));
+		tButtonStates.push_back(*(gPrismWindowsInputData.mControllers[i].mButtonStates.rbegin() + frameIndex));
+	}
+
+	if (tKeyStates.size() < pastFrames) {
+		logWarningFormat("[Input] Unable to gather requested input frame count, availability only %d", regularGatherFrames);
+		while (tKeyStates.size() < pastFrames) {
+			tKeyStates.push_back(tKeyStates.back());
+			tButtonStates.push_back(tButtonStates.back());
+		}
+	}
+}
+
+void gatherWindowsInputStateForLogging(std::vector<uint8_t>& tConfirmationStates, std::vector<std::vector<uint8_t>>& tKeyStates, std::vector<std::vector<uint8_t>>& tButtonStates) {
+	for (int i = 0; i < 2; i++)
+	{
+		tKeyStates.push_back(*(gPrismWindowsInputData.mKeyboards[i].mKeyStates.rbegin()));
+		tButtonStates.push_back(*(gPrismWindowsInputData.mControllers[i].mButtonStates.rbegin()));
+		tConfirmationStates.push_back(*(gPrismWindowsInputData.mKeyboards[i].mConfirmationState.rbegin()));
+	}
+}
+
+void setInputForFrameDelta(int i, int tNegativeFrameDelta, const std::vector<std::vector<uint8_t>>& tKeyStates, const std::vector<std::vector<uint8_t>>& tButtonStates)
+{
+	int baseIndex = -tNegativeFrameDelta;
+	for (size_t frameIndex = 0; frameIndex < tKeyStates.size(); frameIndex++) {
+		if (baseIndex < 0) {
+			baseIndex++;
+			continue;
+		}
+		if (baseIndex >= gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_NETPLAY].mKeyStates.size()) break;
+		auto& keyConfirmation = *(gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_NETPLAY].mConfirmationState.rbegin() + baseIndex);
+		if (keyConfirmation) continue;
+
+		auto& keyStates = *(gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_NETPLAY].mKeyStates.rbegin() + baseIndex);
+		auto& buttonStates = *(gPrismWindowsInputData.mControllers[i].mButtonStates.rbegin() + baseIndex);
+		keyStates = tKeyStates[frameIndex];
+		keyConfirmation = 1;
+		buttonStates = tButtonStates[frameIndex];
+		baseIndex++;
+	}
+}
+
+int isNetplayInputConfirmed() {
+	if (gPrismWindowsInputData.mInputDelay >= gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_NETPLAY].mConfirmationState.size()) return 0;
+	const auto& confirmationState = *(gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_NETPLAY].mConfirmationState.rbegin() + gPrismWindowsInputData.mInputDelay);
+	return confirmationState;
 }

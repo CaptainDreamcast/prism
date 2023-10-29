@@ -1,21 +1,17 @@
 #include "prism/soundeffect.h"
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
-
-#ifdef __EMSCRIPTEN__
-#include <SDL2/SDL_mixer.h>
-#elif defined _WIN32
-#include <SDL_mixer.h>
-#endif
+extern "C"
+{
+#include <DrakonSound/DrakonSound.h>
+}
 
 #include <algorithm>
 
 #include "prism/file.h"
 #include "prism/sound.h"
 #include "prism/datastructures.h"
-#include "prism/memoryhandler.h"
 #include "prism/stlutil.h"
+#include "prism/log.h"
 
 using namespace std;
 
@@ -26,7 +22,7 @@ typedef struct {
 static struct {
 	double mVolume;
 	map<int, SoundEffectEntry> mAllocatedChunks;
-	map<int, Mix_Chunk*> mChunks;
+	map<int, DrakonAudioHandler> mChunks;
 } gSoundEffectData;
 
 void initSoundEffects() {
@@ -34,6 +30,7 @@ void initSoundEffects() {
 }
 
 void setupSoundEffectHandler() {
+	return;
 	gSoundEffectData.mAllocatedChunks.clear();
 	gSoundEffectData.mChunks.clear();
 }
@@ -49,13 +46,15 @@ static int unloadSingleSoundEffect(void* tCaller, SoundEffectEntry& tData) {
 	return 1;
 }
 
-static int unloadSingleChunkEntry(void* tCaller, Mix_Chunk*& tData) {
+static int unloadSingleChunkEntry(void* tCaller, DrakonAudioHandler& tData) {
 	(void)tCaller;
-	Mix_FreeChunk(tData);
+	DrakonStopAudio(&tData);
+	DrakonTerminateAudio(&tData);
 	return 1;
 }
 
 void shutdownSoundEffectHandler() {
+	return;
 	stl_int_map_remove_predicate(gSoundEffectData.mAllocatedChunks, unloadSingleSoundEffect);
 	gSoundEffectData.mAllocatedChunks.clear();
 
@@ -72,6 +71,7 @@ static int addBufferToSoundEffectHandler(Buffer tBuffer) {
 }
 
 int loadSoundEffect(const char* tPath) {
+	return -1;
 	Buffer b = fileToBuffer(tPath);
 	return addBufferToSoundEffectHandler(b);
 }
@@ -79,12 +79,13 @@ int loadSoundEffect(const char* tPath) {
 static int gDummy;
 
 int loadSoundEffectFromBuffer(const Buffer& tBuffer) {
-
+	return -1;
 	Buffer ownedBuffer = copyBuffer(tBuffer);
 	return addBufferToSoundEffectHandler(ownedBuffer);
 }
 
 void unloadSoundEffect(int tID) {
+	return;
 	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
 	unloadSoundEffectEntry(e);
 	gSoundEffectData.mAllocatedChunks.erase(tID);
@@ -93,61 +94,79 @@ void unloadSoundEffect(int tID) {
 static void tryEraseChannelChunk(int tChannel) {
 	setProfilingSectionMarkerCurrentFunction();
 	if (stl_map_contains(gSoundEffectData.mChunks, tChannel)) {
-		Mix_FreeChunk(gSoundEffectData.mChunks[tChannel]);
+		DrakonTerminateAudio(&gSoundEffectData.mChunks[tChannel]);
 		gSoundEffectData.mChunks.erase(tChannel);
 	}
 }
 
 int playSoundEffect(int tID) {
+	return -1;
 	setProfilingSectionMarkerCurrentFunction();
 	return playSoundEffectChannel(tID, -1, getSoundEffectVolume());
 }
 
-static int parseVolume(double tVolume) {
-	return (int)(tVolume * 128);
+static int findEmptyChannel()
+{
+	return 1;
 }
 
-int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreqMul*/, int tIsLooping)
+int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreqMul*/, int /*tIsLooping*/)
 {
+	return -1;
 	setProfilingSectionMarkerCurrentFunction();
-	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
-	SDL_RWops* rwOps = SDL_RWFromConstMem(e->mBuffer.mData, e->mBuffer.mLength);
-	Mix_Chunk* chunk = Mix_LoadWAV_RW(rwOps, 0);
-	int channel = Mix_PlayChannel(tChannel, chunk, tIsLooping);
-	Mix_Volume(channel, parseVolume(tVolume));
-	tryEraseChannelChunk(channel);
+	if (tChannel == -1)
+	{
+		tChannel = findEmptyChannel();
+	}
 
-	gSoundEffectData.mChunks[channel] = chunk;
-	return channel;
+	tryEraseChannelChunk(tChannel);
+
+	DrakonAudioHandler& audioHandler = gSoundEffectData.mChunks[tChannel];
+	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
+	DrakonInitializeAudio(&audioHandler);
+	DrakonLoadWavFromMemory(&audioHandler, e->mBuffer.mData, e->mBuffer.mLength, AUDIO_OUT_MAIN);
+	DrakonPlayAudio(&audioHandler);
+	logErrorFormat("Playing sound effect on channel %d with size %d", tChannel, e->mBuffer.mLength);
+
+	return tChannel;
 }
 
 void stopSoundEffect(int tChannel) {
+	return;
 	setProfilingSectionMarkerCurrentFunction();
-	Mix_HaltChannel(tChannel);
+	if (gSoundEffectData.mChunks.find(tChannel) != gSoundEffectData.mChunks.end())
+	{
+		DrakonStopAudio(&gSoundEffectData.mChunks[tChannel]);
+	}
 	tryEraseChannelChunk(tChannel);
 }
 
-static void stopSingleSoundEffectCB(int tChannel, Mix_Chunk*& /*tChunk*/) {
+static void stopSingleSoundEffectCB(int tChannel, DrakonAudioHandler& tAudioHandler) {
 	setProfilingSectionMarkerCurrentFunction();
-	Mix_HaltChannel(tChannel);
+	DrakonStopAudio(&tAudioHandler);
 	tryEraseChannelChunk(tChannel);
 }
 
 void stopAllSoundEffects() {
+	return;
 	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_map(gSoundEffectData.mChunks, stopSingleSoundEffectCB);
 }
 
 void panSoundEffect(int tChannel, double tPanning)
 {
+	return;
 	setProfilingSectionMarkerCurrentFunction();
 	const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
-	Mix_SetPanning(tChannel, 255 - right, right);
 }
 
 int isSoundEffectPlayingOnChannel(int tChannel) {
+	return 0;
 	setProfilingSectionMarkerCurrentFunction();
-	return Mix_Playing(tChannel);
+	auto it = gSoundEffectData.mChunks.find(tChannel);
+	if (it == gSoundEffectData.mChunks.end()) return 0;
+	auto& audioHandler = it->second;
+	return !DrakonGetAudioStatus(&audioHandler);
 }
 
 double getSoundEffectVolume() {
@@ -157,5 +176,4 @@ double getSoundEffectVolume() {
 void setSoundEffectVolume(double tVolume) {
 	setProfilingSectionMarkerCurrentFunction();
 	gSoundEffectData.mVolume = tVolume;
-	Mix_Volume(-1, parseVolume(gSoundEffectData.mVolume));
 }

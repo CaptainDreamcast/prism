@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctime>
+#include <chrono>
 
 #include <stdlib.h>
 #include <SDL.h>
@@ -311,4 +312,9 @@ uint64_t getSystemTicks() {
 uint64_t getUnixTimestampSeconds()
 {
 	return std::time(0);
+}
+
+uint64_t getUnixTimestampMilliseconds()
+{
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

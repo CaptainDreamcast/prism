@@ -84,11 +84,11 @@ static const char gFragmentShader[] =
 "	} else {\n"
 "		srcColor = float4(Frag_Color.xyz, Frag_Color.w * textureColor.w);\n"
 "	}\n"
-"	if(ScreenSizeBlendStyle.z == 0 || true) {\n" // TODO: fix other blending modes (PBI: 2960)
+"	if(ScreenSizeBlendStyle.z == 0) {\n"
 "	    return srcColor;\n"
 "	} else {\n"
 "       float2 finalScreenPos = ScreenPos.xy / ScreenPos.w;\n" // gl_FragCoord
-"		float4 dstColor = tex2D(BG, finalScreenPos.xy);\n"
+"		float4 dstColor = tex2D(BG, finalScreenPos.xy - float2(0.000, 0.001));\n" // strange drift under vita, not sure where it's coming from, but even with this hack you have it drawing stuff from previous screens (maybe some missing clear somewhere?)
 "		float blendFactor = (ScreenSizeBlendStyle.z == 1) ? 1.0 : -1.0;\n"
 "		float destinationBlendFactor = (srcColor.w == 0.0) ? 1.0 : DestinationAlphaColorFactor.x;\n"
 "		return float4(dstColor.xyz * destinationBlendFactor + blendFactor * srcColor.xyz * srcColor.w, dstColor.w);\n"
@@ -232,11 +232,9 @@ static struct {
 	unsigned int mVboHandle, mElementsHandle, mFBO, mFBOColorAttachment;
 	PrismShader mPrismShader;
 
-	GraphicsCardType mCardType;
 	Vector3D mScreenScale;
 	Vector3D mRealScreenSize;
 
-	uint32_t mSubtractionEquation;
 	uint32_t mActiveShaderFlags;
 } gOpenGLData;
 
@@ -250,38 +248,6 @@ static vector<DrawListElement> gDrawVector;
 static DrawingData gPrismWindowsDrawingData;
 
 extern SDL_Window* gSDLWindow;
-
-static void detectOpenGLCardType() {
-	auto vendorString = std::string((char*)glGetString(GL_VENDOR));
-	turnStringLowercase(vendorString);
-	const auto vendorStringsSplit = splitStringBySeparator(vendorString, ' ');
-
-	if (std::find(vendorStringsSplit.begin(), vendorStringsSplit.end(), "intel") != vendorStringsSplit.end()) {
-		gOpenGLData.mCardType = GraphicsCardType::INTEL;
-	}
-	else if (std::find(vendorStringsSplit.begin(), vendorStringsSplit.end(), "nvidia") != vendorStringsSplit.end()) {
-		gOpenGLData.mCardType = GraphicsCardType::NVIDIA;
-	} 
-	else if (std::find(vendorStringsSplit.begin(), vendorStringsSplit.end(), "ati") != vendorStringsSplit.end() || std::find(vendorStringsSplit.begin(), vendorStringsSplit.end(), "amd") != vendorStringsSplit.end()) {
-		gOpenGLData.mCardType = GraphicsCardType::AMD;
-	}
-	else if (isOnWeb()) {
-		gOpenGLData.mCardType = GraphicsCardType::WEBGL;
-	}
-	else {
-		logWarningFormat("Unable to detect GPU properly: %s %s", (char*)glGetString(GL_VENDOR), (char*)glGetString(GL_RENDERER));
-		gOpenGLData.mCardType = GraphicsCardType::UNKNOWN;
-	}
-}
-
-static void setupCardSpecificRendering() {
-	if (gOpenGLData.mCardType == GraphicsCardType::INTEL) {
-		gOpenGLData.mSubtractionEquation = GL_FUNC_ADD;
-	}
-	else {
-		gOpenGLData.mSubtractionEquation = GL_FUNC_REVERSE_SUBTRACT;
-	}
-}
 
 static void initPrismShaderGeneral(PrismShader& tShader, const GLchar* tFragmentShader) {
 	tShader.mShaderHandle = glCreateProgram();
@@ -419,9 +385,6 @@ static void initOpenGL() {
 	for (int i = 0; i < 4; i++) {
 		glGenTextures(1, &gPrismWindowsDrawingData.mPalettes[i]);
 	}
-
-	detectOpenGLCardType();
-	setupCardSpecificRendering();
 }
 
 void setDrawingScreenScale(double tScaleX, double tScaleY);
@@ -612,15 +575,8 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	Texture texture = (Texture)e->mTexture.mTexture->mData;
 	auto blendType = e->mData.mBlendType;
 	ShaderBlendType shaderBlendType = SHADER_BLEND_TYPE_NORMAL;
-#ifndef __EMSCRIPTEN__
-	if (blendType == BLEND_TYPE_ADDITION) {
-		blendType = BLEND_TYPE_NORMAL;
-		shaderBlendType = SHADER_BLEND_TYPE_ADDITION;
-	} else if(blendType == BLEND_TYPE_SUBTRACTION) {
-		blendType = BLEND_TYPE_NORMAL;
-		shaderBlendType = SHADER_BLEND_TYPE_SUBTRACTION;
-	}
-#endif
+
+	// The custom shader blend paths for additive/subtractive do not work under Vita (see comment above), so do it the regular way
 
 	switch (blendType) {
 	case BLEND_TYPE_ADDITION:
@@ -632,7 +588,7 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		break;
 	case BLEND_TYPE_SUBTRACTION:
-		glBlendEquation(gOpenGLData.mSubtractionEquation);
+		glBlendEquation(GL_FUNC_ADD); // Subtractive blending handled as additive so you get that transparency effect (even if too bright)
 		glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
 		break;
 	case BLEND_TYPE_ONE:
@@ -760,7 +716,6 @@ static void drawSorted(void* tCaller, DrawListElement& tData) {
 	}
 }
 
-#ifndef __EMSCRIPTEN__
 static void drawFBOToScreen() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	const auto srcRect = GeoRectangle2D(0, 1, 1, -1);
@@ -770,7 +725,6 @@ static void drawFBOToScreen() {
 	drawOpenGLTexture(gOpenGLData.mFBOColorAttachment, srcRect, dstRect, &gPrismWindowsDrawingData, SHADER_BLEND_TYPE_NORMAL);
 	glBindFramebuffer(GL_FRAMEBUFFER, gOpenGLData.mFBO);
 }
-#endif
 
 void stopDrawing() {
 	setProfilingSectionMarkerCurrentFunction();
@@ -779,9 +733,7 @@ void stopDrawing() {
 	stl_vector_map(gDrawVector, drawSorted);
 	clearDrawVector();
 
-#ifndef __EMSCRIPTEN__
 	drawFBOToScreen();
-#endif
 
 	SDL_GL_SwapWindow(gSDLWindow);
 }
@@ -789,6 +741,19 @@ void stopDrawing() {
 void waitForScreen() {
 	setProfilingSectionMarkerCurrentFunction();
 	gBookkeepingData.mRealFramerate = 60;
+}
+
+bool isSkippingDrawing()
+{
+	return false;
+}
+
+void setDrawingFrameSkippingEnabled(bool /*tIsEnabled*/) {
+
+}
+
+void resetDrawingFrameStartTime() {
+
 }
 
 extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);

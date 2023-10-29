@@ -18,31 +18,10 @@
     <ClCompile Include="..\..\vita\drawing_vita.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\vita\file_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\vita\framerateselect_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\vita\input_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\vita\logoscreen_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\vita\log_vita.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\vita\math_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\vita\memoryhandler_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-	<ClCompile Include="..\..\vita\romdisk_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\vita\screeneffect_vita.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\vita\soundeffect_vita.cpp">
@@ -55,12 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\vita\texture_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\vita\thread_vita.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\vita\saveload_vita.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

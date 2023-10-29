@@ -55,6 +55,10 @@ void drawTruetypeText(const char* tText, TruetypeFont tFont, const Position& tPo
 void waitForScreen();
 void startDrawing();
 void stopDrawing();
+bool isSkippingDrawing();
+void setDrawingFrameSkippingEnabled(bool tIsEnabled);
+void resetDrawingFrameStartTime();
+void updateDrawingFrameStartTime(double tTimeDelta);
 
 void disableDrawing();
 void enableDrawing();

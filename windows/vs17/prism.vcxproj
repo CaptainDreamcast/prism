@@ -44,11 +44,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PLATFORMS\WINDOWS\LIBS\enet-1.3.17\include;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PLATFORMS\WINDOWS\LIBS\enet-1.3.17\include;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,6 +135,7 @@
     <ClInclude Include="..\..\include\prism\mugensoundfilereader.h" />
     <ClInclude Include="..\..\include\prism\mugenspritefilereader.h" />
     <ClInclude Include="..\..\include\prism\mugentexthandler.h" />
+    <ClInclude Include="..\..\include\prism\netplay.h" />
     <ClInclude Include="..\..\include\prism\optionhandler.h" />
     <ClInclude Include="..\..\include\prism\physics.h" />
     <ClInclude Include="..\..\include\prism\physicshandler.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="..\log_win.cpp" />
     <ClCompile Include="..\math_win.cpp" />
     <ClCompile Include="..\memoryhandler_win.cpp" />
+    <ClCompile Include="..\netplay_win.cpp" />
     <ClCompile Include="..\romdisk_win.cpp" />
     <ClCompile Include="..\saveload_win.cpp" />
     <ClCompile Include="..\screeneffect_win.cpp" />

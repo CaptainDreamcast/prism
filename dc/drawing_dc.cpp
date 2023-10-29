@@ -262,6 +262,11 @@ void stopDrawing() {
   //sem_signal(&gPVRAccessSemaphore);
 }
 
+bool isSkippingDrawing() { return false; }
+void setDrawingFrameSkippingEnabled(bool /*tIsEnabled*/) {}
+void resetDrawingFrameStartTime() {}
+void updateDrawingFrameStartTime(double /*tTimeDelta*/) {}
+
 void disableDrawing() {
 	gPrismDreamcastDrawingData.mIsDisabled = 1;
 }

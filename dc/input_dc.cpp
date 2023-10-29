@@ -487,3 +487,7 @@ void waitForCharacterFromUserInput(int /*i*/, void(*/*tCB*/)(void*, const std::s
 
 void cancelWaitingForCharacterFromUserInput(int /*i*/) {
 }
+
+int getInputDelay() { return 0; }
+void setInputDelay(int /*tInputDelay*/) {}
+void setInputBufferSize(int /*tInputBufferSize*/) {}

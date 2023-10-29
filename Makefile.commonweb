@@ -1,9 +1,9 @@
 
 .c.o:
-	emcc $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS="[""png""]" -s USE_SDL_TTF=2 -g -s SAFE_HEAP=1 -s FORCE_FILESYSTEM=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)/../../../PLATFORMS/WINDOWS/LIBS/lpng1632 -I$(PRISM_PATH)/../../../PLATFORMS/WINDOWS/LIBS/zstd/lib -o $@	
+	emcc $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS="[""png""]" -s USE_SDL_TTF=2 -g -I$(PRISM_PATH)/include -I$(PRISM_PATH)/../../../PLATFORMS/WINDOWS/LIBS/lpng1632 -I$(PRISM_PATH)/../../../PLATFORMS/WINDOWS/LIBS/zstd/lib -o $@	
 	
 .cpp.o:
-	em++ $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS="[""png""]" -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_OGG=1 -s USE_VORBIS=1 -std=c++14 -fpermissive -g -s SAFE_HEAP=1 -s FORCE_FILESYSTEM=1 -I$(PRISM_PATH)/include -I$(PRISM_PATH)/../../../PLATFORMS/WINDOWS/LIBS/lpng1632 -I$(PRISM_PATH)/../../../PLATFORMS/WINDOWS/LIBS/zstd/lib -o $@	
+	em++ $< -c -O3 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS="[""png""]" -s USE_SDL_TTF=2 -s USE_SDL_MIXER=2 -s USE_OGG=1 -s USE_VORBIS=1 -std=c++17 -fpermissive -g -I$(PRISM_PATH)/include -I$(PRISM_PATH)/../../../PLATFORMS/WINDOWS/LIBS/lpng1632 -I$(PRISM_PATH)/../../../PLATFORMS/WINDOWS/LIBS/zstd/lib -o $@	
 	
 build_develop: $(OBJS) 
 	em++ $(OBJS) -O3 \
@@ -12,7 +12,6 @@ build_develop: $(OBJS)
 	-s CASE_INSENSITIVE_FS=1 -s FORCE_FILESYSTEM=1 \
 	-s SDL2_IMAGE_FORMATS="[""png""]" \
 	-s USE_SDL_MIXER=2 -s USE_OGG=1 -s USE_VORBIS=1 \
-	-s BINARYEN_TRAP_MODE="clamp" \
 	-L$(PRISM_PATH)/bin -lprism \
 	-L$(PRISM_PATH)/web/lib -lzstd \
 	-o web/game.html

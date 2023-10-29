@@ -2,6 +2,9 @@
 
 #define MAXIMUM_CONTROLLER_AMOUNT 2
 
+#define PRISM_KEYBOARD_LOCAL	0
+#define PRISM_KEYBOARD_NETPLAY	1
+
 #include <stdio.h>
 #include <string>
 
@@ -121,6 +124,8 @@ int hasPressedRFlank();
 int hasPressedStartFlank();
 int hasPressedAbortFlank();
 
+void consumeAbortFlank();
+
 double getLeftStickNormalizedX();
 double getLeftStickNormalizedY();
 double getLNormalized();
@@ -160,6 +165,8 @@ int hasPressedLFlankSingle(int i);
 int hasPressedRFlankSingle(int i);
 int hasPressedStartFlankSingle(int i);
 int hasPressedAbortFlankSingle(int i);
+
+void consumeAbortFlankSingle(int i);
 
 double getSingleLeftStickNormalizedX(int i);
 double getSingleLeftStickNormalizedY(int i);
@@ -211,3 +218,12 @@ void cancelWaitingForButtonFromUserInput(int i);
 
 void waitForCharacterFromUserInput(int i, void(*tCB)(void*, const std::string&), void* tCaller = NULL);
 void cancelWaitingForCharacterFromUserInput(int i);
+
+int getInputDelay();
+void setInputDelay(int tInputDelay);
+void setInputBufferSize(int tInputBufferSize);
+
+void setInputUsedKeyboardByPlayer(int i, int tKeyboardIndex);
+void setInputUsedKeyboardMappingByPlayer(int i, int tMappingIndex);
+
+int isNetplayInputConfirmed();

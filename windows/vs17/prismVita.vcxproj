@@ -57,21 +57,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\vita\drawing_vita.cpp" />
-    <ClCompile Include="..\..\vita\file_vita.cpp" />
-    <ClCompile Include="..\..\vita\framerateselect_vita.cpp" />
-    <ClCompile Include="..\..\vita\input_vita.cpp" />
-    <ClCompile Include="..\..\vita\logoscreen_vita.cpp" />
     <ClCompile Include="..\..\vita\log_vita.cpp" />
-    <ClCompile Include="..\..\vita\math_vita.cpp" />
     <ClCompile Include="..\..\vita\memoryhandler_vita.cpp" />
-    <ClCompile Include="..\..\vita\romdisk_vita.cpp" />
-    <ClCompile Include="..\..\vita\saveload_vita.cpp" />
-    <ClCompile Include="..\..\vita\screeneffect_vita.cpp" />
     <ClCompile Include="..\..\vita\soundeffect_vita.cpp" />
     <ClCompile Include="..\..\vita\sound_vita.cpp" />
     <ClCompile Include="..\..\vita\system_vita.cpp" />
     <ClCompile Include="..\..\vita\texture_vita.cpp" />
-    <ClCompile Include="..\..\vita\thread_vita.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Makefile.common" />

@@ -47,6 +47,7 @@
 #include "prism/errorscreen.h"
 #include "prism/debug.h"
 #include "prism/math.h"
+#include "prism/netplay.h"
 
 
 typedef struct {
@@ -483,8 +484,10 @@ static void updateScreenAbort() {
 
 static void updateScreen() {
 	setProfilingSectionMarkerCurrentFunction();
+	updateNetplay();
 	updateSystem();
 	updateInput();
+	if (isNetplayConnecting()) return;
 
 	if (gPrismWrapperData.mDebug.mIsPaused < 2 && !gPrismWrapperData.mIsPaused) {
 		updatePhysicsHandler();
@@ -512,16 +515,19 @@ static void drawScreen() {
 	waitForScreen();
 
 	setPrismDebugDrawingStartTime();
-	startDrawing();
-	drawHandledAnimations();
-	drawHandledCollisions();
-	drawActorHandler();
+	if (!isSkippingDrawing())
+	{
+		startDrawing();
+		drawHandledAnimations();
+		drawHandledCollisions();
+		drawActorHandler();
 
-	if (gPrismWrapperData.mScreen->mDraw) {
-		gPrismWrapperData.mScreen->mDraw();
+		if (gPrismWrapperData.mScreen->mDraw) {
+			gPrismWrapperData.mScreen->mDraw();
+		}
+
+		stopDrawing();
 	}
-
-	stopDrawing();
 }
 
 static int isPrismWrappedScreenOver() {
@@ -563,6 +569,10 @@ static void performScreenIteration() {
 static Screen* showScreen() {
 	logg("Show screen");
 
+	resetDrawingFrameStartTime();
+	if (isNetplayActive()) {
+		renegotiateNetplayConnection();
+	}
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop(performScreenIteration, 60, 1);
 #endif

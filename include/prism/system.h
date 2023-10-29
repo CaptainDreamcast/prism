@@ -59,3 +59,4 @@ void setSystemExitDisabled(int tIsExitDisabled);
 
 uint64_t getSystemTicks();
 uint64_t getUnixTimestampSeconds();
+uint64_t getUnixTimestampMilliseconds();
