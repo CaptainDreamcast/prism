@@ -121,10 +121,10 @@ FileHandler fileOpen(const char* tPath, int tFlags){
 		return fileOpenRomdisk(path, tFlags);
 	}
 
-	debugLog("Open file.");
-	debugString(tPath);
-	debugString(gPrismWindowsFileData.mFileSystem);
-	debugString(gPrismWindowsFileData.cwd);
+	verboseLog("Open file.");
+	verboseString(tPath);
+	verboseString(gPrismWindowsFileData.mFileSystem);
+	verboseString(gPrismWindowsFileData.cwd);
 
 	char flags[100];
 	flags[0] = '\0';

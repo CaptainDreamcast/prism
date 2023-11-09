@@ -15,7 +15,7 @@ static struct {
 using namespace std;
 
 const char* getPureFileName(const char* path) {
-	debugLog("Getting pure filename.");
+	verboseLog("Getting pure filename.");
 	const char* pos = strrchr(path, '/');
 
 	if (pos == NULL) return path;
@@ -183,7 +183,7 @@ Buffer makeBufferOwnedIfNecessary(const Buffer& tBuffer)
 }
 
 Buffer fileToBuffer(const char* tFileDir) {
-	debugLog("Reading file to Buffer.");
+	verboseLog("Reading file to Buffer.");
 	Buffer ret;
 
 	size_t bufferLength;
@@ -201,7 +201,7 @@ Buffer fileToBuffer(const char* tFileDir) {
 	}
 
 	bufferLength = fileTotal(file);
-	debugInteger(bufferLength);
+	verboseInteger(bufferLength);
 
 	if (isFileMemoryMapped(file)) {
 		data = (char*)fileMemoryMap(file);

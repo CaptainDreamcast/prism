@@ -185,12 +185,18 @@ static int parseVolume(double tVolume) {
 
 int playSoundEffect(int tID) {
 	if (tID == -1) return -1;
-	return snd_sfx_play(tID, parseVolume(gSoundEffectDreamcastData.mVolume), 128);
+	return snd_sfx_play(tID, parseVolume(gSoundEffectDreamcastData.mVolume), 128, 1.0, 0);
 }
 
 int playSoundEffectChannel(int tID, int tChannel, double tVolume, double tFreqMul, int tIsLooping) {
 	if (tID == -1) return -1;
-	return snd_sfx_play_chn(tChannel, tID, parseVolume(tVolume), 128, tFreqMul, tIsLooping);
+	if (tChannel == -1)
+	{
+		return snd_sfx_play(tID, parseVolume(tVolume), 128, tFreqMul, tIsLooping);
+	}
+	else {
+		return snd_sfx_play_chn(tChannel, tID, parseVolume(tVolume), 128, tFreqMul, tIsLooping);
+	}
 }
 
 void stopSoundEffect(int tChannel) {

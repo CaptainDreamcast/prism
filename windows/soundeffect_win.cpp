@@ -139,6 +139,7 @@ void stopAllSoundEffects() {
 void panSoundEffect(int tChannel, double tPanning)
 {
 	setProfilingSectionMarkerCurrentFunction();
+	tPanning = (tPanning + 1.0) * 0.5; // [-1, 1] --> [0, 1]
 	const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
 	Mix_SetPanning(tChannel, 255 - right, right);
 }

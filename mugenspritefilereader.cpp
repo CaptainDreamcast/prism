@@ -832,12 +832,12 @@ static void loadSingleSFFFile(MugenSpriteFile* tDst) {
 
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &subHeader, sizeof(SFFSubFileHeader));
 
-	debugInteger(sizeof(SFFSubFileHeader));
-	debugInteger(subHeader.mNextFilePosition);
-	debugInteger(subHeader.mSubfileLength);
-	debugInteger(subHeader.mGroup);
-	debugInteger(subHeader.mImage);
-	debugString(subHeader.mComments);
+	verboseInteger(sizeof(SFFSubFileHeader));
+	verboseInteger(subHeader.mNextFilePosition);
+	verboseInteger(subHeader.mSubfileLength);
+	verboseInteger(subHeader.mGroup);
+	verboseInteger(subHeader.mImage);
+	verboseString(subHeader.mComments);
 
 	if (gPrismMugenSpriteFileReaderData.mHasPaletteFile && subHeader.mGroup == 0 && subHeader.mImage == 0) {
 		removeAllPalettesExceptFirst(tDst);
@@ -898,9 +898,9 @@ static MugenSpriteFile loadMugenSpriteFile1(int tHasPaletteFile, const char* tOp
 	SFFHeader header;
 	loadSFFHeader(&header);
 
-	debugInteger(header.mGroupAmount);
-	debugInteger(header.mImageAmount);
-	debugInteger(header.mFirstFileOffset);
+	verboseInteger(header.mGroupAmount);
+	verboseInteger(header.mImageAmount);
+	verboseInteger(header.mFirstFileOffset);
 
 	gPreviousGroup = -1;
 
@@ -940,9 +940,9 @@ static void loadSinglePalette2(SFFHeader2* tHeader, MugenSpriteFile* tDst) {
 	SFFPalette2 palette;
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &palette, sizeof(SFFPalette2));
 
-	debugInteger(palette.mDataOffset);
-	debugInteger(palette.mDataLength);
-	debugInteger(palette.mIndex);
+	verboseInteger(palette.mDataOffset);
+	verboseInteger(palette.mDataLength);
+	verboseInteger(palette.mIndex);
 
 	uint32_t originalPosition = gPrismMugenSpriteFileReaderData.mReader.mGetCurrentOffset(&gPrismMugenSpriteFileReaderData.mReader);
 	gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, tHeader->mLDataOffset + palette.mDataOffset);
@@ -1043,10 +1043,10 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tH
 	SFFSprite2 sprite;
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &sprite, sizeof(SFFSprite2));
 
-	debugLog("Load sprite2");
-	debugInteger(sprite.mGroupNo);
-	debugInteger(sprite.mItemNo);
-	debugInteger(sprite.mFormat);
+	verboseLog("Load sprite2");
+	verboseInteger(sprite.mGroupNo);
+	verboseInteger(sprite.mItemNo);
+	verboseInteger(sprite.mFormat);
 
 	if (gPrismMugenSpriteFileReaderData.mIsOnlyLoadingPortraits && (sprite.mGroupNo != 9000 || sprite.mItemNo > 1)) {
 		return;
@@ -1118,10 +1118,10 @@ static MugenSpriteFile loadMugenSpriteFile2(int tHasPaletteFile, const char* tOp
 	SFFHeader2 header;
 	loadSFFHeader2(&header);
 
-	debugInteger(header.mSpriteOffset);
-	debugInteger(header.mSpriteTotal);
-	debugInteger(header.mPaletteOffset);
-	debugInteger(header.mPaletteTotal);
+	verboseInteger(header.mSpriteOffset);
+	verboseInteger(header.mSpriteTotal);
+	verboseInteger(header.mPaletteOffset);
+	verboseInteger(header.mPaletteTotal);
 
 	loadPalettes2(&header, &ret);
 	loadSprites2(&header, &ret, tHasPaletteFile);
@@ -1292,8 +1292,8 @@ static void checkMugenSpriteFileReader() {
 
 static MugenSpriteFile loadMugenSpriteFileGeneral(const char * tPath, int tHasPaletteFile, const char* tOptionalPaletteFile)
 {
-	debugLog("Loading sprite file.");
-	debugString(tPath);
+	verboseLog("Loading sprite file.");
+	verboseString(tPath);
 	
 	if (!isFile(tPath)) {
 		logErrorFormat("Unable to open sprite file %s. Aborting.", tPath);

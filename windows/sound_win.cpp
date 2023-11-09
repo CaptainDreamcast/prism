@@ -40,7 +40,7 @@ typedef struct {
 static struct {
 
 	int mVolume;
-	int mPanning;
+	double mPanning;
 
 	int mHasLoadedTrack;
 	int mIsPlayingTrack;
@@ -52,7 +52,7 @@ static struct {
 } gPrismWindowsSoundData;
 
 void initSound() {
-	gPrismWindowsSoundData.mPanning = 128;
+	gPrismWindowsSoundData.mPanning = 0;
 	if (!Mix_Init(MIX_INIT_OGG))
 	{
 		logErrorFormat("Unable to init SDL Mixer: %s", SDL_GetError());
@@ -67,7 +67,7 @@ void initSound() {
 	}
 	gPrismWindowsSoundData.mHasLoadedTrack = 0;
 	gPrismWindowsSoundData.mIsPlayingTrack = 0;
-	
+
 	setVolume(0.2);
 	gPrismWindowsSoundData.mMicrophone.mIsMicrophoneActive = 0;
 }
@@ -86,11 +86,13 @@ void setVolume(double tVolume) {
 }
 
 double getPanningValue() {
-	return (gPrismWindowsSoundData.mPanning / 128.0) - 1.0;
+	return gPrismWindowsSoundData.mPanning;
 }
 
 void setPanningValue(int tChannel, double tPanning)
 {
+	gPrismWindowsSoundData.mPanning = tPanning;
+	tPanning = (tPanning + 1) * 0.5; // [-1, 1] -> [0, 1]
 	const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
 	Mix_SetPanning(tChannel, 255 - right, right);
 }

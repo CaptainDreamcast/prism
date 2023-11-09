@@ -21,3 +21,6 @@ void setNetplaySyncCBs(Buffer(*tGatherCB)(void*), void* tGatherCaller, int(*tChe
 void setNetplayDesyncCB(void(*tCB)(void*), void* tCaller);
 void setNetplayDisconnectCB(void(*tCB)(void*, const std::string&), void* tCaller);
 void renegotiateNetplayConnection();
+
+int getNetplaySyncFrame();
+int getNetplayLastReceivedFrame();

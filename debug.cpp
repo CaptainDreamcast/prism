@@ -6,6 +6,7 @@
 #include <prism/stlutil.h>
 #include <prism/wrapper.h>
 #include <prism/system.h>
+#include <prism/netplay.h>
 
 #ifdef DREAMCAST
 #define PREVIOUS_FPS_AMOUNT 5
@@ -37,6 +38,11 @@ typedef struct SideDisplay_t {
 
 	int mDropFrameCounter;
 	int mDropFrameCounterTextID;
+
+	int mNetplayInputDelayTextID;
+	int mNetplaySyncFrameTextID;
+	int mNetplayReceivedFrameTextID;
+	int mNetplayFrameDifferenceTextID;
 
 	int mIsVisible = 1;
 } SideDisplay;
@@ -154,6 +160,13 @@ static void loadPrismDebug(void* tData) {
 	gPrismDebug.mSideDisplay.mDropFrameCounter = 0;
 	gPrismDebug.mSideDisplay.mDropFrameCounterTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 4, 95), Vector3DI(-1, 1, -1));
 
+#ifdef _WIN32
+	gPrismDebug.mSideDisplay.mNetplayInputDelayTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 5, 95), Vector3DI(-1, 1, -1));
+	gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 6, 95), Vector3DI(-1, 1, -1));
+	gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 7, 95), Vector3DI(-1, 1, -1));
+	gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 8, 95), Vector3DI(-1, 1, -1));
+#endif
+
 	gPrismDebug.mConsole.mWhiteTexture = createWhiteTexture();
 	gPrismDebug.mConsole.mIsVisible = 0;
 
@@ -200,6 +213,29 @@ static void updatePrismDebugSideDisplay() {
 
 		sprintf(text, "%d drp", gPrismDebug.mSideDisplay.mDropFrameCounter);
 		changeMugenText(gPrismDebug.mSideDisplay.mDropFrameCounterTextID, text);
+
+#ifdef _WIN32
+		if (isNetplayActive())
+		{
+			sprintf(text, "%d idl", getInputDelay());
+			changeMugenText(gPrismDebug.mSideDisplay.mNetplayInputDelayTextID, text);
+
+			sprintf(text, "%d sfr", getNetplaySyncFrame());
+			changeMugenText(gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID, text);
+
+			sprintf(text, "%d rfr", getNetplayLastReceivedFrame());
+			changeMugenText(gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID, text);
+
+			sprintf(text, "%d frd", getNetplaySyncFrame() - getNetplayLastReceivedFrame());
+			changeMugenText(gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID, text);
+		}
+		else {
+			changeMugenText(gPrismDebug.mSideDisplay.mNetplayInputDelayTextID, "");
+			changeMugenText(gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID, "");
+			changeMugenText(gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID, "");
+			changeMugenText(gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID, "");
+		}
+#endif
 	}
 	else {
 		changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, "");

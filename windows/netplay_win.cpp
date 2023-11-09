@@ -15,7 +15,7 @@
 #include <prism/math.h>
 #include <prism/log.h>
 
-#define NETPLAY_VERSION 1
+#define NETPLAY_VERSION 2
 
 static struct {
     FileHandler mLogFile;
@@ -114,7 +114,9 @@ static struct
 
     std::deque<Buffer> mPreviousFrameSyncData;
 
+    uint64_t mLastReceivedTimeStamp;
     int mSyncedFrameIndex;
+    int mLastReceivedFrameIndex;
     int mInputDelay;
     int mConnectSyncFrame;
     int mNegotiationIndex;
@@ -193,10 +195,13 @@ static void createHostServer()
     }
 
     gNetplayData.mFrameDelayInfo.mHasEstablishedInputDelay = false;
+    gNetplayData.mFrameDelayInfo.mReceivedFrameDelayEstablishmentFrames = 0;
+    gNetplayData.mFrameDelayInfo.mNecessaryFrameDelay = 0;
     gNetplayData.mSyncedFrameIndex = 0;
     gNetplayData.mConnectSyncFrame = 0;
     gNetplayData.mNegotiationIndex = 0;
     gNetplayData.mInputDelay = 0;
+    gNetplayData.mLastReceivedTimeStamp = 0;
     gNetplayData.mIsHost = true;
     setInputUsedKeyboardByPlayer(1, 1);
     setInputUsedKeyboardMappingByPlayer(1, 0);
@@ -303,6 +308,7 @@ bool joinNetplayHost(const std::string& tIP, int tPort)
     gNetplayData.mConnectSyncFrame = 0;
     gNetplayData.mNegotiationIndex = 0;
     gNetplayData.mInputDelay = 0;
+    gNetplayData.mLastReceivedTimeStamp = 0;
     gNetplayData.mIsHost = false;
     setInputUsedKeyboardByPlayer(1, 1);
     setInputUsedKeyboardMappingByPlayer(1, 0);
@@ -328,25 +334,17 @@ static void receivePeerInput(const StandardNetplayPackage* package) {
 
 static void establishFrameDelayWithPeer(const StandardNetplayPackage* package)
 {
+    static constexpr auto INPUT_DELAY_SAFETY_BUFFER = 10;
+
     if (gNetplayData.mIsHost) {
-        if (!gNetplayData.mInputDelay && package->mInputDelay)
-        {
-            gNetplayData.mInputDelay = int(package->mInputDelay);
-            setInputDelay(gNetplayData.mInputDelay);
-            netplayLogFormat("[Netplay] Input delay set to %d", gNetplayData.mInputDelay);
-            gNetplayData.mConnectSyncFrame = gNetplayData.mSyncedFrameIndex + gNetplayData.mInputDelay * 2;
-            netplayLogFormat("[Netplay] Connect sync frame set to %d", gNetplayData.mConnectSyncFrame);
-            gNetplayData.mFrameDelayInfo.mHasEstablishedInputDelay = true;
-        }
-    }
-    else {
-        if (!gNetplayData.mInputDelay) 
+        if (!gNetplayData.mInputDelay && package->mUnixTimestamp)
         {
             const auto nowMs = int64_t(getUnixTimestampMilliseconds());
-            const auto timeStampPackageMs = int64_t(package->mUnixTimestamp);
-            const auto timeDelayMs = nowMs - timeStampPackageMs;
+            const auto timeDelayMs = (nowMs -package->mUnixTimestamp) / 2;
+
             const auto frameTimeMs = (1.0 / double(getFramerate())) * 1000;
             auto frameDelay = int((timeDelayMs / frameTimeMs)) + 1;
+
             if (frameDelay <= 20)
             {
                 netplayLogFormat("[Netplay] adding frame delay for consideration %d", frameDelay);
@@ -362,17 +360,35 @@ static void establishFrameDelayWithPeer(const StandardNetplayPackage* package)
 
             if (gNetplayData.mFrameDelayInfo.mReceivedFrameDelayEstablishmentFrames >= 10)
             {
-                gNetplayData.mSyncedFrameIndex = int(package->mSyncedFrameIndex) + gNetplayData.mFrameDelayInfo.mNecessaryFrameDelay;
-                static constexpr auto INPUT_DELAY_SAFETY_BUFFER = 10;
                 gNetplayData.mInputDelay = gNetplayData.mFrameDelayInfo.mNecessaryFrameDelay + INPUT_DELAY_SAFETY_BUFFER;
                 setInputDelay(gNetplayData.mInputDelay);
                 netplayLogFormat("[Netplay] Peer input delay set to %d", gNetplayData.mInputDelay);
                 gNetplayData.mFrameDelayInfo.mHasEstablishedInputDelay = true;
+                gNetplayData.mConnectSyncFrame = gNetplayData.mSyncedFrameIndex + gNetplayData.mInputDelay * 2;
+                netplayLogFormat("[Netplay] Connect sync frame set to %d", gNetplayData.mConnectSyncFrame);
             }
         }
-        else if (!gNetplayData.mConnectSyncFrame && package->mInputDelay) {
-            gNetplayData.mConnectSyncFrame = int(package->mConnectSyncFrame);
-            netplayLogFormat("[Netplay] Connect sync frame set to %d", gNetplayData.mConnectSyncFrame);
+    }
+    else {
+        if (!gNetplayData.mInputDelay) 
+        {
+            if (!package->mInputDelay)
+            {
+                gNetplayData.mLastReceivedTimeStamp = package->mUnixTimestamp;
+                netplayLogFormat("[Netplay] Received ping package with timestamp %llu", package->mUnixTimestamp);
+            }
+            else
+            {
+                gNetplayData.mInputDelay = int(package->mInputDelay);
+                setInputDelay(gNetplayData.mInputDelay);
+                netplayLogFormat("[Netplay] Input delay set to %d", gNetplayData.mInputDelay);
+                gNetplayData.mFrameDelayInfo.mHasEstablishedInputDelay = true;
+                gNetplayData.mFrameDelayInfo.mNecessaryFrameDelay = gNetplayData.mInputDelay - INPUT_DELAY_SAFETY_BUFFER;
+                gNetplayData.mSyncedFrameIndex = int(package->mSyncedFrameIndex) + gNetplayData.mFrameDelayInfo.mNecessaryFrameDelay;
+                netplayLogFormat("[Netplay] Synched frame established at %d", gNetplayData.mSyncedFrameIndex);
+                gNetplayData.mConnectSyncFrame = int(package->mConnectSyncFrame);
+                netplayLogFormat("[Netplay] Connect sync frame set to %d", gNetplayData.mConnectSyncFrame);
+            }
         }
     }
 }
@@ -423,8 +439,7 @@ static void updateNetplayEvents()
                 break;
             }
             
-            netplayLogFormat("[Netplay] Received peer package for frame %d vs own frame %d", package->mSyncedFrameIndex, gNetplayData.mSyncedFrameIndex);
-
+            gNetplayData.mLastReceivedFrameIndex = package->mSyncedFrameIndex;
             if (package->mNegotiationIndex == gNetplayData.mNegotiationIndex) {
                 if (!gNetplayData.mConnectSyncFrame)
                 {
@@ -460,7 +475,7 @@ static void updateNetplaySendingFrame() {
     StandardNetplayPackage netplayPackage;
     netplayPackage.mVersion = NETPLAY_VERSION;
     netplayPackage.mMagic = 503;
-    netplayPackage.mUnixTimestamp = getUnixTimestampMilliseconds();
+    netplayPackage.mUnixTimestamp = gNetplayData.mIsHost ? getUnixTimestampMilliseconds() : gNetplayData.mLastReceivedTimeStamp;
     netplayPackage.mSyncedFrameIndex = gNetplayData.mSyncedFrameIndex;
     netplayPackage.mConnectSyncFrame = gNetplayData.mConnectSyncFrame;
     netplayPackage.mNegotiationIndex = gNetplayData.mNegotiationIndex;
@@ -555,7 +570,7 @@ static int checkConfirmedInputAndWaitIfNecessary() {
 
     if (!ret)
     {
-        logWarningFormat("[Netplay] Using unconfirmed input for frame %d.", gNetplayData.mSyncedFrameIndex - getInputDelay());
+        netplayLogFormat("[Netplay] Using unconfirmed input for frame %d.", gNetplayData.mSyncedFrameIndex - getInputDelay());
     }
     return ret;
 }
@@ -613,6 +628,8 @@ void setNetplayDisconnectCB(void(*tCB)(void*, const std::string&), void* tCaller
 }
 
 void renegotiateNetplayConnection() {
+    updateNetplayEvents(); // flush packages so far
+
     gNetplayData.mConnectCB = NULL;
     gNetplayData.mConnectCBCaller = NULL;
 
@@ -625,8 +642,18 @@ void renegotiateNetplayConnection() {
     {
         gNetplayData.mSyncedFrameIndex = 0;
     }
+    gNetplayData.mFrameDelayInfo.mNecessaryFrameDelay = 0;
     gNetplayData.mFrameDelayInfo.mReceivedFrameDelayEstablishmentFrames = 0;
+    gNetplayData.mLastReceivedTimeStamp = 0;
     gNetplayData.mConnectSyncFrame = 0;
     gNetplayData.mNegotiationIndex++;
     gNetplayData.mInputDelay = 0;
+}
+
+int getNetplaySyncFrame() {
+    return gNetplayData.mSyncedFrameIndex;
+}
+int getNetplayLastReceivedFrame()
+{
+    return gNetplayData.mLastReceivedFrameIndex;
 }
