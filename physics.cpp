@@ -14,6 +14,27 @@ static struct {
 	Vector3D mOneMinusDragCoefficient;
 } gPrismPhysicsData;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+void imguiPhysics()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "Physics", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("Physics", &isWindowShown);
+		ImGui::Text("MaxVelocity = %f %f %f", gPrismPhysicsData.mMaxVelocity.x, gPrismPhysicsData.mMaxVelocity.y, gPrismPhysicsData.mMaxVelocity.z);
+		ImGui::Text("MaxVelocityDouble = %f", gPrismPhysicsData.mMaxVelocityDouble);
+		ImGui::Text("Gravity = %f %f %f", gPrismPhysicsData.mGravity.x, gPrismPhysicsData.mGravity.y, gPrismPhysicsData.mGravity.z);
+		ImGui::Text("IsPaused = %d", gPrismPhysicsData.mIsPaused);
+		ImGui::Text("OneMinusDragCoefficient = %f %f %f", gPrismPhysicsData.mOneMinusDragCoefficient.x, gPrismPhysicsData.mOneMinusDragCoefficient.y, gPrismPhysicsData.mOneMinusDragCoefficient.z);
+		ImGui::End();
+	}
+}
+#endif
+
 void setMaxVelocity(const Velocity& tVelocity) {
   gPrismPhysicsData.mMaxVelocity = tVelocity;
 }

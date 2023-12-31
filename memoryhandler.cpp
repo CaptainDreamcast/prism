@@ -170,6 +170,155 @@ static struct {
 	int mActive;
 } gMemoryHandler;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static std::string_view allocationStrategyToString(const AllocationStrategy& allocationStrategy)
+{
+	if (allocationStrategy.mMalloc == malloc) return "Hash Map Strategy Main Memory";
+	else return "Hash Map Strategy Texture Memory";
+}
+
+void imguiTextureMemory(const std::string_view& tName, const TextureMemory& tTextureMemory)
+{
+	if (ImGui::TreeNode(tName.data()))
+	{
+		GLTextureData* data = (GLTextureData*)tTextureMemory->mData;
+		ImGui::Text("%d", data->mTexture);
+		ImGui::Text("%d", tTextureMemory->mSize);
+		ImGui::Text("%d", tTextureMemory->mIsCompressed ? tTextureMemory->mCompressedSize : 0);
+		ImGui::Text("%d", tTextureMemory->mIsVirtual);
+		ImGui::Text("%d", tTextureMemory->mIsCompressed);
+		ImGui::TreePop();
+	}
+}
+
+static void imguiTextureMemoryTableEntry(TextureMemory tTextureMemory)
+{
+	GLTextureData* data = (GLTextureData*)tTextureMemory->mData;
+	ImGui::TableNextRow(); ImGui::TableNextColumn();
+	ImGui::Text("%d", data->mTexture); ImGui::TableNextColumn();
+	ImGui::Text("%d", tTextureMemory->mSize); ImGui::TableNextColumn();
+	ImGui::Text("%d", tTextureMemory->mIsCompressed ? tTextureMemory->mCompressedSize : 0); ImGui::TableNextColumn();
+	ImGui::Text("%d", tTextureMemory->mIsVirtual); ImGui::TableNextColumn();
+	ImGui::Text("%d", tTextureMemory->mIsCompressed);
+}
+
+static void imguiMemoryStack(const MemoryListStack& tMemoryListStack, const std::string_view& tName)
+{
+	if (ImGui::TreeNode(tName.data()))
+	{
+		const auto strategy = allocationStrategyToString(tMemoryListStack.mStrategy);
+		ImGui::Text("Strategy = %s", strategy.data());
+		ImGui::Text("Head = %d", tMemoryListStack.mHead);
+		if (ImGui::TreeNode("Maps"))
+		{
+			for (int row = 0; row < MEMORY_STACK_MAX; row++)
+			{
+				if (ImGui::TreeNode(std::to_string(row).c_str()))
+				{
+					ImGui::Text("Size = %d", tMemoryListStack.mMaps[row].mMap.size());
+					if (ImGui::TreeNode("Elements"))
+					{
+						static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+						if (tName == "Memory Stack")
+						{
+							if (ImGui::BeginTable("Elements", 1, flags))
+							{
+								ImGui::TableSetupColumn("Address");
+								ImGui::TableHeadersRow();
+								
+								for (const auto& pointer : tMemoryListStack.mMaps[row].mMap)
+								{
+									ImGui::TableNextRow();
+									ImGui::TableNextColumn();
+									ImGui::Text("%X", pointer);
+								}
+								ImGui::EndTable();
+							}
+						}
+						else
+						{
+							if (ImGui::BeginTable("Elements", 5, flags))
+							{
+								ImGui::TableSetupColumn("Texture ID");
+								ImGui::TableSetupColumn("Size");
+								ImGui::TableSetupColumn("CompressedSize");
+								ImGui::TableSetupColumn("IsVirtual");
+								ImGui::TableSetupColumn("IsCompressed");
+								ImGui::TableHeadersRow();
+								
+								for (const auto& pointer : tMemoryListStack.mMaps[row].mMap)
+								{
+									TextureMemory entry = (TextureMemory)pointer;
+									imguiTextureMemoryTableEntry(entry);
+								}
+								ImGui::EndTable();
+							}
+						}
+						ImGui::TreePop();
+					}
+					ImGui::TreePop();
+				}
+			}
+			ImGui::TreePop();
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiTextureMemoryUsageList()
+{
+	if (ImGui::TreeNode("TextureMemoryUsageList"))
+	{
+		ImGui::Text("Size = %d", gMemoryHandler.mTextureMemoryUsageList.mSize);
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+		if (ImGui::BeginTable("Elements", 5, flags))
+		{
+			ImGui::TableSetupColumn("Texture ID");
+			ImGui::TableSetupColumn("Size");
+			ImGui::TableSetupColumn("CompressedSize");
+			ImGui::TableSetupColumn("IsVirtual");
+			ImGui::TableSetupColumn("IsCompressed");
+			ImGui::TableHeadersRow();
+
+			auto currentTextureMemory = gMemoryHandler.mTextureMemoryUsageList.mFirst;
+			int index = 0;
+			while (currentTextureMemory)
+			{
+				imguiTextureMemoryTableEntry(currentTextureMemory);
+				currentTextureMemory = currentTextureMemory->mNextInUsageList;
+				index++;
+			}
+			ImGui::EndTable();
+		}
+		ImGui::TreePop();
+	}
+}
+
+void imguiMemoryHandler()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "Memory Handler", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("Memory Handler", &isWindowShown);
+		ImGui::Text("Active = %d", gMemoryHandler.mActive);
+		ImGui::Text("IsCompressionActive = %d", gMemoryHandler.mIsCompressionActive);
+		ImGui::Text("AllocatedMemory = %d", gMemoryHandler.mAllocatedMemory);
+		ImGui::Separator();
+		imguiMemoryStack(gMemoryHandler.mMemoryStack, "Memory Stack");
+		ImGui::Separator();
+		imguiMemoryStack(gMemoryHandler.mTextureMemoryStack, "Texture Memory Stack");
+		ImGui::Separator();
+		imguiTextureMemoryUsageList();
+		ImGui::End();
+	}
+}
+#endif
+
 #ifdef VITA
 static void setActiveUserData(void* tUserData)
 {

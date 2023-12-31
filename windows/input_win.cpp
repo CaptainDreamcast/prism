@@ -4,6 +4,10 @@
 #include <stdarg.h>
 #include <queue>
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#endif
+
 #ifdef VITA
 #include <SDL2/SDL.h>
 #else
@@ -424,7 +428,13 @@ static void updateControllers() {
 
 static void updateKeyboardLocalKeyboard(int i) {
 	updateKeyStateArraySize(i);
-	memcpy(gPrismWindowsInputData.mKeyboards[i].mKeyStates.front().data(), gPrismWindowsInputData.mKeyboards[i].mKeyStatePointer, SDL_NUM_SCANCODES);
+#ifdef _WIN32
+	auto& io = ImGui::GetIO();
+	if (!io.WantTextInput)
+#endif
+	{
+		memcpy(gPrismWindowsInputData.mKeyboards[i].mKeyStates.front().data(), gPrismWindowsInputData.mKeyboards[i].mKeyStatePointer, SDL_NUM_SCANCODES);
+	}
 	gPrismWindowsInputData.mKeyboards[i].mKeyStates.push_back(gPrismWindowsInputData.mKeyboards[i].mKeyStates.front());
 	gPrismWindowsInputData.mKeyboards[i].mConfirmationState.push_back(1);
 	gPrismWindowsInputData.mKeyboards[i].mKeyStates.pop_front();

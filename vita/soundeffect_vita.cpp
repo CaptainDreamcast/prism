@@ -12,6 +12,7 @@ extern "C"
 #include "prism/datastructures.h"
 #include "prism/stlutil.h"
 #include "prism/log.h"
+#include "prism/memoryhandler.h"
 
 using namespace std;
 
@@ -30,7 +31,6 @@ void initSoundEffects() {
 }
 
 void setupSoundEffectHandler() {
-	return;
 	gSoundEffectData.mAllocatedChunks.clear();
 	gSoundEffectData.mChunks.clear();
 }
@@ -54,7 +54,6 @@ static int unloadSingleChunkEntry(void* tCaller, DrakonAudioHandler& tData) {
 }
 
 void shutdownSoundEffectHandler() {
-	return;
 	stl_int_map_remove_predicate(gSoundEffectData.mAllocatedChunks, unloadSingleSoundEffect);
 	gSoundEffectData.mAllocatedChunks.clear();
 
@@ -71,21 +70,92 @@ static int addBufferToSoundEffectHandler(Buffer tBuffer) {
 }
 
 int loadSoundEffect(const char* tPath) {
-	return -1;
 	Buffer b = fileToBuffer(tPath);
 	return addBufferToSoundEffectHandler(b);
 }
 
-static int gDummy;
+typedef struct {
+	uint8_t mBuffer1[8]; // 8
+	uint32_t mMagic; // 12
+	uint8_t mBuffer2[8]; // 20
+	uint16_t mFormat; // 22
+	uint16_t mStereo; // 24
+	uint32_t mHertz; // 28
+	uint8_t mBuffer3[6]; //34
+	uint16_t mBitSize; //36
+	uint8_t mBuffer4[4]; //40
+	uint32_t mLen; // 44
+} WaveHeader;
+
+static Buffer upsampleBuffer8Bit(const Buffer& tBuffer) {
+	auto header = (WaveHeader*)tBuffer.mData;
+	uint32_t totalLength = sizeof(WaveHeader) + header->mLen * 2;
+
+	void* fullData = allocMemory(totalLength);
+	auto newHeader = (WaveHeader*)fullData;
+	*newHeader = *header;
+	newHeader->mBitSize = 16;
+	newHeader->mLen *= 2;
+
+	uint8_t* src = ((uint8_t*)tBuffer.mData) + sizeof(WaveHeader);
+	int16_t* dst = (int16_t*)(((uint8_t*)fullData) + sizeof(WaveHeader));
+
+	int dstPos = 0;
+	size_t copyLength = header->mLen - (header->mLen % 2);
+	for (size_t srcPos = 0; srcPos < copyLength; srcPos++) {
+		dst[dstPos] = (int16_t(src[srcPos]) - 128) << 8;
+		dstPos += 1;
+	}
+
+	return makeBufferOwned(fullData, totalLength);
+}
+
+static Buffer downsampleBuffer32Bit(const Buffer& tBuffer) {
+	auto header = (WaveHeader*)tBuffer.mData;
+	uint32_t totalLength = sizeof(WaveHeader) + header->mLen / 2;
+
+	void* fullData = allocMemory(totalLength);
+	auto newHeader = (WaveHeader*)fullData;
+	*newHeader = *header;
+	newHeader->mFormat = 0x01;
+	newHeader->mBitSize = 16;
+	newHeader->mLen /= 2;
+
+	float* src = (float*)(((uint8_t*)tBuffer.mData) + sizeof(WaveHeader));
+	int16_t* dst = (int16_t*)(((uint8_t*)fullData) + sizeof(WaveHeader));
+
+	int dstPos = 0;
+	size_t baseLength = header->mLen / 2;
+	size_t copyLength = baseLength - (baseLength % 2);
+	for (size_t srcPos = 0; srcPos < copyLength; srcPos++) {
+		float fval = src[srcPos] * 2 - 1;
+		
+		dst[dstPos] = int16_t(INT16_MAX * fval);
+		dstPos += 1;
+	}
+
+	return makeBufferOwned(fullData, totalLength);
+}
+
+static Buffer resampleBufferIfNecessary(const Buffer& tBuffer) {
+
+	auto header = (WaveHeader*)tBuffer.mData;
+	switch (header->mBitSize) {
+	case 8:
+		return upsampleBuffer8Bit(tBuffer);
+	case 32:
+		return downsampleBuffer32Bit(tBuffer);
+	default:
+		return copyBuffer(tBuffer);
+	}
+}
 
 int loadSoundEffectFromBuffer(const Buffer& tBuffer) {
-	return -1;
-	Buffer ownedBuffer = copyBuffer(tBuffer);
+	Buffer ownedBuffer = resampleBufferIfNecessary(tBuffer);
 	return addBufferToSoundEffectHandler(ownedBuffer);
 }
 
 void unloadSoundEffect(int tID) {
-	return;
 	SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
 	unloadSoundEffectEntry(e);
 	gSoundEffectData.mAllocatedChunks.erase(tID);
@@ -100,23 +170,26 @@ static void tryEraseChannelChunk(int tChannel) {
 }
 
 int playSoundEffect(int tID) {
-	return -1;
 	setProfilingSectionMarkerCurrentFunction();
 	return playSoundEffectChannel(tID, -1, getSoundEffectVolume());
 }
 
 static int findEmptyChannel()
 {
-	return 1;
+	for (int i = 1; i < 9; i++)
+	{
+		if (!isSoundEffectPlayingOnChannel(i)) return i;
+	}
+	return -1;
 }
 
 int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreqMul*/, int /*tIsLooping*/)
 {
-	return -1;
 	setProfilingSectionMarkerCurrentFunction();
 	if (tChannel == -1)
 	{
 		tChannel = findEmptyChannel();
+		if (tChannel == -1) return -1;
 	}
 
 	tryEraseChannelChunk(tChannel);
@@ -132,7 +205,6 @@ int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreq
 }
 
 void stopSoundEffect(int tChannel) {
-	return;
 	setProfilingSectionMarkerCurrentFunction();
 	if (gSoundEffectData.mChunks.find(tChannel) != gSoundEffectData.mChunks.end())
 	{
@@ -148,20 +220,17 @@ static void stopSingleSoundEffectCB(int tChannel, DrakonAudioHandler& tAudioHand
 }
 
 void stopAllSoundEffects() {
-	return;
 	setProfilingSectionMarkerCurrentFunction();
 	stl_int_map_map(gSoundEffectData.mChunks, stopSingleSoundEffectCB);
 }
 
 void panSoundEffect(int tChannel, double tPanning)
 {
-	return;
 	setProfilingSectionMarkerCurrentFunction();
 	const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
 }
 
 int isSoundEffectPlayingOnChannel(int tChannel) {
-	return 0;
 	setProfilingSectionMarkerCurrentFunction();
 	auto it = gSoundEffectData.mChunks.find(tChannel);
 	if (it == gSoundEffectData.mChunks.end()) return 0;

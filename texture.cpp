@@ -277,3 +277,21 @@ void saveRGB32ToPNG(const Buffer& b, int tWidth, int tHeight, const char* tFileD
 #ifdef _WIN32
 #pragma warning(pop)
 #endif
+
+
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+void imguiTextureData(const std::string_view& tName, const TextureData& tTextureData)
+{
+	if (ImGui::TreeNode(tName.data()))
+	{
+		ImGui::Text("TextureSize = %d / d", tTextureData.mTextureSize);
+		imguiTextureMemory("TextureMemory", tTextureData.mTexture);
+		ImGui::Text("HasPalette = %d", tTextureData.mHasPalette);
+		ImGui::Text("PaletteID = %d", tTextureData.mPaletteID);
+		ImGui::TreePop();
+	}
+}
+#endif

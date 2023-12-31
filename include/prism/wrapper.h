@@ -7,6 +7,7 @@ typedef void (*LoadScreenFunction)();
 typedef void (*UpdateScreenFunction)();
 typedef void (*DrawScreenFunction)();
 typedef void (*UnloadScreenFunction)();
+typedef void (*DebugScreenFunction)();
 
 typedef struct Screen_internal{
 	LoadScreenFunction mLoad;
@@ -14,6 +15,7 @@ typedef struct Screen_internal{
 	DrawScreenFunction mDraw;
 	UnloadScreenFunction mUnload;
 	struct Screen_internal* (*mGetNextScreen)();
+	DebugScreenFunction mDebug;
 } Screen;
 
 void initPrismWrapperWithDefaultFlags();
@@ -26,7 +28,7 @@ void resumeWrapper();
 int isWrapperPaused();
 int isUsingWrapper();
 
-Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate = NULL, DrawScreenFunction tDraw = NULL, UnloadScreenFunction tUnload = NULL, Screen*(*tGetNextScreen)() = NULL);
+Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate = NULL, DrawScreenFunction tDraw = NULL, UnloadScreenFunction tUnload = NULL, Screen*(*tGetNextScreen)() = NULL, DebugScreenFunction tDebug = NULL);
 void startScreenHandling(Screen* tScreen);
 void abortScreenHandling();
 void setNewScreen(Screen* tScreen);

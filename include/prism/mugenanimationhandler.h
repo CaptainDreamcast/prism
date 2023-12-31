@@ -202,6 +202,7 @@ double getMugenAnimationColorRed(MugenAnimationHandlerElement* tElement);
 double getMugenAnimationColorGreen(MugenAnimationHandlerElement* tElement);
 double getMugenAnimationColorBlue(MugenAnimationHandlerElement* tElement);
 
+Position* getMugenAnimationBasePosition(MugenAnimationHandlerElement* tElement);
 double* getMugenAnimationColorRedReference(MugenAnimationHandlerElement* tElement);
 double* getMugenAnimationColorGreenReference(MugenAnimationHandlerElement* tElement);
 double* getMugenAnimationColorBlueReference(MugenAnimationHandlerElement* tElement);

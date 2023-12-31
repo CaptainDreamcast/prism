@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <string_view>
 
 #ifdef DREAMCAST
 #include <kos.h>
@@ -80,3 +81,8 @@ int getAvailableTextureMemory();
 int getAvailableSoundMemory();
 
 int getAllocatedMemoryBlockAmount();
+
+#ifdef _WIN32
+void imguiMemoryHandler();
+void imguiTextureMemory(const std::string_view& tName, const TextureMemory& tTextureMemory);
+#endif

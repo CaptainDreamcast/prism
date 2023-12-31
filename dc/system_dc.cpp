@@ -40,7 +40,9 @@ static void initiatePVR() {
 		/* No FSAA */
 		0,
 		/* Translucent Autosort enabled. */
-		0
+		0,
+		/* Extra OPBs */
+		3
 	};
 	pvr_init(&params);
 }
@@ -125,6 +127,13 @@ void setDisplayedScreenSize(int tX, int tY)
 	(void)tX;
 	(void)tY;
 	// TODO: check if the DC even needs something like that
+}
+
+void setScreenPosition(int, int) {
+	// impossible to change under DC
+}
+void setScreenFullscreen(bool) {
+	// impossible to change under DC
 }
 
 void setScreenFramerate(int tFramerate) {

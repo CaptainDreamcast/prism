@@ -18,6 +18,7 @@
 #include "prism/math.h"
 #include "prism/drawing.h"
 #include "prism/compression.h"
+#include "prism/stlutil.h"
 
 #include "prism/lz5.h"
 
@@ -238,90 +239,58 @@ typedef struct {
 	Vector2DI mSize;
 } SubImageBuffer;
 
-typedef struct {
-	List* mDst;
-	Buffer mPaletteBuffer;
-} ApplyToSubImageListCaller;
+static std::vector<MugenSpriteFileSubSprite> loadTextureFromPalettedImageList1bpp(const std::vector<SubImageBuffer>& tBufferList, const Buffer& tPaletteBuffer) {
+	vector<MugenSpriteFileSubSprite> ret;
 
-static void loadTextureFromSinglePalettedImageListEntry1bpp(void* tCaller, void* tData) {
-	ApplyToSubImageListCaller* caller = (ApplyToSubImageListCaller*)tCaller;
-	SubImageBuffer* buffer = (SubImageBuffer*)tData;
-
-	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
-	newSprite->mOffset = buffer->mOffset;
-	newSprite->mTexture = loadTextureFromPalettedImageData1bpp(buffer->mBuffer, caller->mPaletteBuffer, buffer->mSize.x, buffer->mSize.y);
-
-	list_push_back_owned(caller->mDst, newSprite);
-}
-
-static List loadTextureFromPalettedImageList1bpp(List& tBufferList, const Buffer& tPaletteBuffer) {
-	List ret = new_list();
-
-	ApplyToSubImageListCaller caller;
-	caller.mDst = &ret;
-	caller.mPaletteBuffer = tPaletteBuffer;
-
-	list_map(&tBufferList, loadTextureFromSinglePalettedImageListEntry1bpp, &caller);
+	for (const auto& buffer : tBufferList)
+	{
+		MugenSpriteFileSubSprite newSprite;
+		newSprite.mOffset = buffer.mOffset;
+		newSprite.mTexture = loadTextureFromPalettedImageData1bpp(buffer.mBuffer, tPaletteBuffer, buffer.mSize.x, buffer.mSize.y);
+		ret.push_back(newSprite);
+	}
 
 	return ret;
 }
 
+static std::vector<MugenSpriteFileSubSprite> loadTextureFromRawImageList1bpp(const std::vector<SubImageBuffer>& tBufferList) {
+	std::vector<MugenSpriteFileSubSprite> ret;
 
-static void loadTextureFromSingleRawImageListEntry1bpp(void* tCaller, void* tData) {
-	ApplyToSubImageListCaller* caller = (ApplyToSubImageListCaller*)tCaller;
-	SubImageBuffer* buffer = (SubImageBuffer*)tData;
-
-	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
-	newSprite->mOffset = buffer->mOffset;
-	if (gPrismMugenSpriteFileReaderData.mCustomLoadPalettedTextureFrom8BitBuffer) {
-		newSprite->mTexture = gPrismMugenSpriteFileReaderData.mCustomLoadPalettedTextureFrom8BitBuffer(buffer->mBuffer, gPrismMugenSpriteFileReaderData.mPaletteID, buffer->mSize.x, buffer->mSize.y);
+	for (const auto& buffer : tBufferList)
+	{
+		MugenSpriteFileSubSprite newSprite;
+		newSprite.mOffset = buffer.mOffset;
+		if (gPrismMugenSpriteFileReaderData.mCustomLoadPalettedTextureFrom8BitBuffer) {
+			newSprite.mTexture = gPrismMugenSpriteFileReaderData.mCustomLoadPalettedTextureFrom8BitBuffer(buffer.mBuffer, gPrismMugenSpriteFileReaderData.mPaletteID, buffer.mSize.x, buffer.mSize.y);
+		}
+		else {
+			newSprite.mTexture = loadPalettedTextureFrom8BitBuffer(buffer.mBuffer, gPrismMugenSpriteFileReaderData.mPaletteID, buffer.mSize.x, buffer.mSize.y);
+		}
+		ret.push_back(newSprite);
 	}
-	else {
-		newSprite->mTexture = loadPalettedTextureFrom8BitBuffer(buffer->mBuffer, gPrismMugenSpriteFileReaderData.mPaletteID, buffer->mSize.x, buffer->mSize.y);
-	}
-
-	list_push_back_owned(caller->mDst, newSprite);
-}
-
-static List loadTextureFromRawImageList1bpp(List& tBufferList) {
-	List ret = new_list();
-
-	ApplyToSubImageListCaller caller;
-	caller.mDst = &ret;
-
-	list_map(&tBufferList, loadTextureFromSingleRawImageListEntry1bpp, &caller);
 
 	return ret;
 }
 
-static void loadTextureFromSingleImageARGB32ListEntry(void* tCaller, void* tData) {
-	ApplyToSubImageListCaller* caller = (ApplyToSubImageListCaller*)tCaller;
-	SubImageBuffer* buffer = (SubImageBuffer*)tData;
+static std::vector<MugenSpriteFileSubSprite> loadTextureFromImageARGB32List(const std::vector<SubImageBuffer>& tBufferList) {
+	std::vector<MugenSpriteFileSubSprite> ret;
 
-	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
-	newSprite->mOffset = buffer->mOffset;
+	for (const auto& buffer : tBufferList)
+	{
+		MugenSpriteFileSubSprite newSprite;
+		newSprite.mOffset = buffer.mOffset;
 
-	if (gPrismMugenSpriteFileReaderData.mCustomLoadTextureFromARGB32Buffer) {
-		newSprite->mTexture = gPrismMugenSpriteFileReaderData.mCustomLoadTextureFromARGB32Buffer(buffer->mBuffer, buffer->mSize.x, buffer->mSize.y);
+		if (gPrismMugenSpriteFileReaderData.mCustomLoadTextureFromARGB32Buffer) {
+			newSprite.mTexture = gPrismMugenSpriteFileReaderData.mCustomLoadTextureFromARGB32Buffer(buffer.mBuffer, buffer.mSize.x, buffer.mSize.y);
+		}
+		else {
+			newSprite.mTexture = loadTextureFromARGB32Buffer(buffer.mBuffer, buffer.mSize.x, buffer.mSize.y);
+		}
+		ret.push_back(newSprite);
 	}
-	else {
-		newSprite->mTexture = loadTextureFromARGB32Buffer(buffer->mBuffer, buffer->mSize.x, buffer->mSize.y);
-	}
-
-	list_push_back_owned(caller->mDst, newSprite);
-}
-
-static List loadTextureFromImageARGB32List(List& tBufferList) {
-	List ret = new_list();
-
-	ApplyToSubImageListCaller caller;
-	caller.mDst = &ret;
-
-	list_map(&tBufferList, loadTextureFromSingleImageARGB32ListEntry, &caller);
 
 	return ret;
 }
-
 
 static Buffer decodeRLE5BufferAndReturnOwnedBuffer(const Buffer& b, int tFinalSize) {
 	uint8_t* output = (uint8_t*)allocMemory(tFinalSize+10);
@@ -384,21 +353,21 @@ static Buffer decodeRLE8BufferAndReturnOwnedBuffer(const Buffer& b, int tFinalSi
 	return makeBufferOwned(output, tFinalSize);
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSprite(List& tTextures, const TextureSize& tOriginalTextureSize, const Vector2D& tAxisOffset) {
-	MugenSpriteFileSprite* e = (MugenSpriteFileSprite*)allocMemory(sizeof(MugenSpriteFileSprite));
-	e->mTextures = tTextures;
-	e->mOriginalTextureSize = tOriginalTextureSize;
-	e->mIsLinked = 0;
-	e->mIsLinkedTo = 0;
-	e->mAxisOffset = tAxisOffset;
+static MugenSpriteFileSprite makeMugenSpriteFileSprite(const std::vector<MugenSpriteFileSubSprite>& tTextures, const TextureSize& tOriginalTextureSize, const Vector2D& tAxisOffset) {
+	MugenSpriteFileSprite e;
+	e.mTextures = tTextures;
+	e.mOriginalTextureSize = tOriginalTextureSize;
+	e.mIsLinked = 0;
+	e.mIsLinkedTo = 0;
+	e.mAxisOffset = tAxisOffset;
 	return e;
 }
 
-static MugenSpriteFileSprite* makeLinkedMugenSpriteFileSprite(int tIsLinkedTo, const Vector2D& tAxisOffset) {
-	MugenSpriteFileSprite* e = (MugenSpriteFileSprite*)allocMemory(sizeof(MugenSpriteFileSprite));
-	e->mIsLinked = 1;
-	e->mIsLinkedTo = tIsLinkedTo;
-	e->mAxisOffset = tAxisOffset;
+static MugenSpriteFileSprite makeLinkedMugenSpriteFileSprite(int tIsLinkedTo, const Vector2D& tAxisOffset) {
+	MugenSpriteFileSprite e;
+	e.mIsLinked = 1;
+	e.mIsLinkedTo = tIsLinkedTo;
+	e.mAxisOffset = tAxisOffset;
 	return e;
 }
 
@@ -409,7 +378,7 @@ static Buffer loadPCXPaletteToBuffer(BufferPointer p, int tEncodedSize) {
 	return makeBufferOwned(data, size);
 }
 
-static SubImageBuffer* getSingleAllocatedBufferFromSource(const Buffer& b, int x, int y, int dx, int dy, int tBytesPerLine, int tWidth, int tHeight, int tBytesPerPixel) {
+static SubImageBuffer getSingleAllocatedBufferFromSource(const Buffer& b, int x, int y, int dx, int dy, int tBytesPerLine, int tWidth, int tHeight, int tBytesPerPixel) {
 	int dstSize = dx*dy;
 	char* dst = (char*)allocMemory(dstSize*tBytesPerPixel);
 	char* src = (char*)b.mData;
@@ -430,14 +399,17 @@ static SubImageBuffer* getSingleAllocatedBufferFromSource(const Buffer& b, int x
 		memset(dst + startIndexDst + rowSrcSize, 0, rowBufferSize);
 	}
 
-	SubImageBuffer* ret = (SubImageBuffer*)allocMemory(sizeof(SubImageBuffer));
-	ret->mBuffer = makeBufferOwned(dst, dstSize*tBytesPerPixel);
-	ret->mOffset = Vector2DI(x, y);
-	ret->mSize = Vector2DI(dx, dy);
+	SubImageBuffer ret;
+	ret.mBuffer = makeBufferOwned(dst, dstSize*tBytesPerPixel);
+	ret.mOffset = Vector2DI(x, y);
+	ret.mSize = Vector2DI(dx, dy);
 	return ret;
 }
 
 static int getMaximumSizeFit(int tVal) {
+#if defined(VITA)
+	return tVal;
+#else
 	const int mini = gPrismMugenSpriteFileReaderData.mSubTextureSplitMin;
 	const int maxi = gPrismMugenSpriteFileReaderData.mSubTextureSplitMax;
 
@@ -456,10 +428,11 @@ static int getMaximumSizeFit(int tVal) {
 	logErrorInteger(tVal);
 	recoverFromError();
 	return 0;
+#endif
 }
 
-List breakImageBufferUpIntoMultipleBuffers(const Buffer& b, int tBytesPerLine, int tWidth, int tHeight, int tBytesPerPixel) {
-	List ret = new_list();
+std::vector<SubImageBuffer> breakImageBufferUpIntoMultipleBuffers(const Buffer& b, int tBytesPerLine, int tWidth, int tHeight, int tBytesPerPixel) {
+	std::vector<SubImageBuffer> ret;
 
 	int y = 0;
 	while (y < tHeight) { // INFO: Need power of 2 split for paletted images on Dreamcast, they need to be twiddled and twiddling only works with power of 2
@@ -469,8 +442,8 @@ List breakImageBufferUpIntoMultipleBuffers(const Buffer& b, int tBytesPerLine, i
 		while (x < tWidth) {
 			int widthLeft = tWidth - x;
 			int dx = getMaximumSizeFit(widthLeft);
-			SubImageBuffer* newBuffer = getSingleAllocatedBufferFromSource(b, x, y, dx, dy, tBytesPerLine, tWidth, tHeight, tBytesPerPixel);
-			list_push_back_owned(&ret, newBuffer);
+			auto newBuffer = getSingleAllocatedBufferFromSource(b, x, y, dx, dy, tBytesPerLine, tWidth, tHeight, tBytesPerPixel);
+			ret.push_back(newBuffer);
 			x += dx;
 		}
 		y += dy;
@@ -479,16 +452,12 @@ List breakImageBufferUpIntoMultipleBuffers(const Buffer& b, int tBytesPerLine, i
 	return ret;
 }
 
-static int removeSingleSubImageBufferEntryCB(void* tCaller, void* tData) {
-	(void)tCaller;
-	SubImageBuffer* buffer = (SubImageBuffer*)tData;
-	freeBuffer(buffer->mBuffer);
-
-	return 1;
-}
-
-static void freeSubImageBufferList(List tList) {
-	list_remove_predicate(&tList, removeSingleSubImageBufferEntryCB, NULL);
+static void freeSubImageBufferList(std::vector<SubImageBuffer>& tBufferList) {
+	for (auto& buffer : tBufferList)
+	{
+		freeBuffer(buffer.mBuffer);
+	}
+	tBufferList.clear();
 }
 
 typedef struct {
@@ -665,62 +634,61 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(const Buffer& tRawPNGBuffer, int 
 	return ret;
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer& tRawPNGBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
+static MugenSpriteFileSprite makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer& tRawPNGBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
 
 	Buffer argb32Buffer = loadARGB32BufferFromRawPNGBuffer(tRawPNGBuffer, tBytesPerLine, tHeight);
 	freeBuffer(tRawPNGBuffer);
 
-	List subImageList = breakImageBufferUpIntoMultipleBuffers(argb32Buffer, tBytesPerLine, tWidth, tHeight, 4);
+	auto subImageList = breakImageBufferUpIntoMultipleBuffers(argb32Buffer, tBytesPerLine, tWidth, tHeight, 4);
 	freeBuffer(argb32Buffer);
 
-	List textures = loadTextureFromImageARGB32List(subImageList);
+	auto textures = loadTextureFromImageARGB32List(subImageList);
 	freeSubImageBufferList(subImageList);
 
 	return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(Buffer& tRawImageBuffer, const Buffer& tPaletteBuffer, int tIsUsingPaletteBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
-	List subImagelist = breakImageBufferUpIntoMultipleBuffers(tRawImageBuffer, tBytesPerLine, tWidth, tHeight, 1);
+static MugenSpriteFileSprite makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(Buffer& tRawImageBuffer, const Buffer& tPaletteBuffer, int tIsUsingPaletteBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
+	auto subImageList = breakImageBufferUpIntoMultipleBuffers(tRawImageBuffer, tBytesPerLine, tWidth, tHeight, 1);
 	freeBuffer(tRawImageBuffer);
 
-	List textures;
+	std::vector<MugenSpriteFileSubSprite> textures;
 	if (tIsUsingPaletteBuffer) {
-		textures = loadTextureFromPalettedImageList1bpp(subImagelist, tPaletteBuffer);
+		textures = loadTextureFromPalettedImageList1bpp(subImageList, tPaletteBuffer);
 	}
 	else {
-		textures = loadTextureFromRawImageList1bpp(subImagelist);
+		textures = loadTextureFromRawImageList1bpp(subImageList);
 	}
-	freeSubImageBufferList(subImagelist);
+	freeSubImageBufferList(subImageList);
 
 	return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(Buffer& tRawImageBuffer, const Buffer& tPaletteBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
+static MugenSpriteFileSprite makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(Buffer& tRawImageBuffer, const Buffer& tPaletteBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
 	return makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(tRawImageBuffer, tPaletteBuffer, 1, tWidth, tHeight, tBytesPerLine, tAxisOffset);
 }
 
-static MugenSpriteFileSprite* makeMugenSpriteFileSpriteFromRawBuffer(Buffer& tRawImageBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
+static MugenSpriteFileSprite makeMugenSpriteFileSpriteFromRawBuffer(Buffer& tRawImageBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
 	return makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(tRawImageBuffer, makeBuffer(NULL, 0), 0, tWidth, tHeight, tBytesPerLine, tAxisOffset);
 }
 
 static void insertPaletteIntoMugenSpriteFile(MugenSpriteFile* tSprites, const Buffer& b, int tGroup = -1, int tItem = -1) {
 	assert(b.mLength == 256 * 3);
 
-	if (gPrismMugenSpriteFileReaderData.mIsUsingRealPalette && !vector_size(&tSprites->mPalettes)) {
+	if (gPrismMugenSpriteFileReaderData.mIsUsingRealPalette && tSprites->mPalettes.empty()) {
 		setPaletteFromBGR256WithFirstValueTransparentBuffer(gPrismMugenSpriteFileReaderData.mPaletteID, b);
 	}
 
-	auto paletteElement = (MugenSpriteFilePalette*)allocMemory(sizeof(MugenSpriteFilePalette));
-	paletteElement->mBuffer = b;
-	paletteElement->mGroup = tGroup;
-	paletteElement->mItem = tItem;
-	vector_push_back_owned(&tSprites->mPalettes, paletteElement);
+	MugenSpriteFilePalette paletteElement;
+	paletteElement.mBuffer = b;
+	paletteElement.mGroup = tGroup;
+	paletteElement.mItem = tItem;
+	tSprites->mPalettes.push_back(paletteElement);
 }
 
  
-static MugenSpriteFileSprite* loadTextureFromPCXBuffer(MugenSpriteFile* tDst, int mIsUsingOwnPalette, const Buffer& b, const Vector2D& tAxisOffset) {
+static MugenSpriteFileSprite loadTextureFromPCXBuffer(MugenSpriteFile* tDst, int mIsUsingOwnPalette, const Buffer& b, const Vector2D& tAxisOffset) {
 	PCXHeader header;
-	
 
 	BufferPointer p = getBufferPointer(b);
 
@@ -752,55 +720,66 @@ static MugenSpriteFileSprite* loadTextureFromPCXBuffer(MugenSpriteFile* tDst, in
 		auto insertPalette = loadPCXPaletteToBuffer(p, encodedSize);
 		insertPaletteIntoMugenSpriteFile(tDst, insertPalette);
 	}
-	assert(vector_size(&tDst->mPalettes));
+	assert(!tDst->mPalettes.empty());
 
-	if (gPrismMugenSpriteFileReaderData.mIsUsingRealPalette && vector_size(&tDst->mPalettes) == 1) {
+	if (gPrismMugenSpriteFileReaderData.mIsUsingRealPalette && tDst->mPalettes.size() == 1) {
 		return makeMugenSpriteFileSpriteFromRawBuffer(rawImageBuffer, w, h, header.mBytesPerLine, tAxisOffset);
 	}
 	else {
-		auto paletteElement = (MugenSpriteFilePalette*)vector_get_back(&tDst->mPalettes);
-		auto paletteBuffer = &paletteElement->mBuffer;
-		return makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawImageBuffer, *paletteBuffer, w, h, header.mBytesPerLine, tAxisOffset);
+		auto paletteElement = tDst->mPalettes.back();
+		return makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawImageBuffer, paletteElement.mBuffer, w, h, header.mBytesPerLine, tAxisOffset);
 	}
 	
 }
 
 static MugenSpriteFile makeEmptySpriteFile();
-static void unloadSinglePalette(void* tCaller, void* tData);
+static void unloadSinglePalette(MugenSpriteFilePalette& palette);
 
-MugenSpriteFileSprite* loadSingleTextureFromPCXBuffer(const Buffer& tBuffer) {
+MugenSpriteFileSprite loadSingleTextureFromPCXBuffer(const Buffer& tBuffer) {
 	MugenSpriteFile sprites = makeEmptySpriteFile();
 
-	MugenSpriteFileSprite* sprite = loadTextureFromPCXBuffer(&sprites, 1, tBuffer, Vector2D(0, 0));
-	delete_int_map(&sprites.mGroups);
-	delete_vector(&sprites.mAllSprites);
-	vector_map(&sprites.mPalettes, unloadSinglePalette, NULL);
-	delete_vector(&sprites.mPalettes);
+	auto sprite = loadTextureFromPCXBuffer(&sprites, 1, tBuffer, Vector2D(0, 0));
+	for (auto& palette : sprites.mPalettes)
+	{
+		unloadSinglePalette(palette);
+	}
 
 	return sprite;
 }
 
+static int findEmptyNegativeSpriteSlot(const MugenSpriteFileGroup& tGroup)
+{
+	int testIndex = -10000;
+	while (tGroup.mSprites.find(testIndex) != tGroup.mSprites.end())
+	{
+		testIndex--;
+	}
+	return testIndex;
+}
 
+static void insertTextureIntoSpriteFile(MugenSpriteFile* tDst, MugenSpriteFileSprite& tTexture, int tGroup, int tSprite) {
 
-static void insertTextureIntoSpriteFile(MugenSpriteFile* tDst, MugenSpriteFileSprite* tTexture, int tGroup, int tSprite) {
-
-	if (!int_map_contains(&tDst->mGroups, tGroup)) {
-		MugenSpriteFileGroup* group = (MugenSpriteFileGroup*)allocMemory(sizeof(MugenSpriteFileGroup));
-		group->mSprites = new_int_map();
-		int_map_push_owned(&tDst->mGroups, tGroup, group);
+	if (!stl_map_contains(tDst->mGroups, tGroup)) {
+		tDst->mGroups[tGroup] = MugenSpriteFileGroup();
 	}
 
-	MugenSpriteFileGroup* g = (MugenSpriteFileGroup*)int_map_get(&tDst->mGroups, tGroup);
-	
-	int_map_push_owned(&g->mSprites, tSprite, tTexture);
-	vector_push_back(&tDst->mAllSprites, tTexture);
+	auto& g = tDst->mGroups[tGroup];
+
+	int realIndex = tSprite;
+	if (g.mSprites.find(realIndex) != g.mSprites.end())
+	{
+		realIndex = findEmptyNegativeSpriteSlot(g);
+		logWarningFormat("[MugenSpriteFileReader] Duplicate sprite for %d %d. Ignoring second and saving as negative index %d.", tGroup, tSprite, realIndex);
+	}
+	g.mSprites[realIndex] = tTexture;
+	tDst->mAllSprites.push_back(&g.mSprites[realIndex]);
 }
 
 static int gPreviousGroup;
 
 static void loadSingleSFFFileAndInsertIntoSpriteFile(const SFFSubFileHeader& subHeader, MugenSpriteFile* tDst) {
 
-	MugenSpriteFileSprite* texture;
+	MugenSpriteFileSprite texture;
 
 	if (subHeader.mSubfileLength) {
 		Buffer pcxBuffer = gPrismMugenSpriteFileReaderData.mReader.mReadBufferReadOnly(&gPrismMugenSpriteFileReaderData.mReader, subHeader.mSubfileLength);
@@ -818,12 +797,12 @@ static void loadSingleSFFFileAndInsertIntoSpriteFile(const SFFSubFileHeader& sub
 }
 
 static void removeAllPalettesExceptFirst(MugenSpriteFile* tDst) {
-	assert(vector_size(&tDst->mPalettes) >= 1);
+	assert(tDst->mPalettes.size() >= 1);
 
-	while (vector_size(&tDst->mPalettes) > 1) {
-		auto paletteElement = (MugenSpriteFilePalette*)vector_get_back(&tDst->mPalettes);
-		freeBuffer(paletteElement->mBuffer);
-		vector_pop_back(&tDst->mPalettes);
+	while (tDst->mPalettes.size() > 1) {
+		auto& paletteElement = tDst->mPalettes.back();
+		freeBuffer(paletteElement.mBuffer);
+		tDst->mPalettes.pop_back();
 	}
 }
 
@@ -861,9 +840,6 @@ static void loadSFFHeader(SFFHeader* tHeader) {
 
 static MugenSpriteFile makeEmptySpriteFile() {
 	MugenSpriteFile ret;
-	ret.mGroups = new_int_map();
-	ret.mAllSprites = new_vector();
-	ret.mPalettes = new_vector();
 	ret.mPaletteMappedGroup = ret.mPaletteMappedItem = 1;
 	return ret;
 }
@@ -907,7 +883,7 @@ static MugenSpriteFile loadMugenSpriteFile1(int tHasPaletteFile, const char* tOp
 	gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, header.mFirstFileOffset);
 	while (!gPrismMugenSpriteFileReaderData.mReader.mIsOver(&gPrismMugenSpriteFileReaderData.mReader)) {
 		loadSingleSFFFile(&ret);
-		if(gPrismMugenSpriteFileReaderData.mIsOnlyLoadingPortraits && vector_size(&ret.mAllSprites) == 2) break;
+		if(gPrismMugenSpriteFileReaderData.mIsOnlyLoadingPortraits && ret.mAllSprites.size() == 2) break;
 	}
 
 	return ret;
@@ -1035,7 +1011,7 @@ static Buffer readRawSprite2(SFFSprite2* tSprite, SFFHeader2* tHeader) {
 }
 
 static void insertLinkedTextureIntoSpriteFile2(MugenSpriteFile* tDst, SFFSprite2* tSprite) {
-	MugenSpriteFileSprite* e = makeLinkedMugenSpriteFileSprite(tSprite->mIndex, Vector2D(tSprite->mAxisX, tSprite->mAxisY));
+	MugenSpriteFileSprite e = makeLinkedMugenSpriteFileSprite(tSprite->mIndex, Vector2D(tSprite->mAxisX, tSprite->mAxisY));
 	insertTextureIntoSpriteFile(tDst, e, tSprite->mGroupNo, tSprite->mItemNo);
 }
 
@@ -1060,7 +1036,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tH
 	int isPaletted = sprite.mFormat == 0 || sprite.mFormat == 2 || sprite.mFormat == 4;
 	int isRawPNG = sprite.mFormat == 10 || sprite.mFormat == 11 || sprite.mFormat == 12;
 
-	MugenSpriteFileSprite* e;
+	MugenSpriteFileSprite e;
 	if (isPaletted) {
 		uint32_t originalPosition = gPrismMugenSpriteFileReaderData.mReader.mGetCurrentOffset(&gPrismMugenSpriteFileReaderData.mReader);
 
@@ -1071,9 +1047,8 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tH
 			e =  makeMugenSpriteFileSpriteFromRawBuffer(rawBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, Vector2D(sprite.mAxisX, sprite.mAxisY));
 		}
 		else {
-			auto paletteElement = (MugenSpriteFilePalette*)vector_get(&tDst->mPalettes, palette);
-			auto paletteBuffer = &paletteElement->mBuffer;
-			e = makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawBuffer, *paletteBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, Vector2D(sprite.mAxisX, sprite.mAxisY));
+			auto& paletteElement = tDst->mPalettes[palette];
+			e = makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(rawBuffer, paletteElement.mBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, Vector2D(sprite.mAxisX, sprite.mAxisY));
 		}
 		gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, originalPosition);
 	}
@@ -1091,7 +1066,6 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tH
 		logError("Unrecognized image format.");
 		logErrorInteger(sprite.mFormat);
 		recoverFromError();
-		e = NULL;
 	}
 
 	insertTextureIntoSpriteFile(tDst, e, sprite.mGroupNo, sprite.mItemNo);
@@ -1102,7 +1076,7 @@ static void loadSprites2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tHasPal
 	gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, tHeader->mSpriteOffset);
 	for (i = 0; i < (int)tHeader->mSpriteTotal; i++) {
 		loadSingleSprite2(tHeader, tDst, tHasPalette);
-		if(gPrismMugenSpriteFileReaderData.mIsOnlyLoadingPortraits && vector_size(&tDst->mAllSprites) == 2) break;
+		if(gPrismMugenSpriteFileReaderData.mIsOnlyLoadingPortraits && tDst->mAllSprites.size() == 2) break;
 	}
 }
 
@@ -1166,7 +1140,7 @@ typedef struct {
 	TextureSize mTextureSize;
 } SubspriteHeader;
 
-static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
+static MugenSpriteFileSubSprite loadSingleSpriteSubSpritePreloaded() {
 	SubspriteHeader header;
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &header, sizeof(SubspriteHeader));
 
@@ -1183,9 +1157,9 @@ static MugenSpriteFileSubSprite* loadSingleSpriteSubSpritePreloaded() {
 
 	freeBuffer(b);
 
-	MugenSpriteFileSubSprite* newSprite = (MugenSpriteFileSubSprite*)allocMemory(sizeof(MugenSpriteFileSubSprite));
-	newSprite->mOffset = header.mOffset.xy();
-	newSprite->mTexture = data;
+	MugenSpriteFileSubSprite newSprite;
+	newSprite.mOffset = header.mOffset.xy();
+	newSprite.mTexture = data;
 
 	return newSprite;
 }
@@ -1220,19 +1194,19 @@ static void loadSingleSpritePreloaded(MugenSpriteFile* tDst) {
 	Vector2D axisOffset = Vector2D(spriteHeader.mAxisOffsetX, spriteHeader.mAxisOffsetY);
 
 	if (spriteHeader.mIsLinked) {
-		MugenSpriteFileSprite* sprite = makeLinkedMugenSpriteFileSprite(spriteHeader.mIsLinkedTo, axisOffset);
+		MugenSpriteFileSprite sprite = makeLinkedMugenSpriteFileSprite(spriteHeader.mIsLinkedTo, axisOffset);
 		insertTextureIntoSpriteFile(tDst, sprite, spriteHeader.mGroupNumber, spriteHeader.mSpriteNumber);
 		return;
 	}
 
-	List textures = new_list();
+	std::vector<MugenSpriteFileSubSprite> textures;
 	uint32_t i;
 	for (i = 0; i < spriteHeader.mSubspriteAmount; i++) {
-		MugenSpriteFileSubSprite* subSprite = loadSingleSpriteSubSpritePreloaded();
-		list_push_back_owned(&textures, subSprite);
+		auto subSprite = loadSingleSpriteSubSpritePreloaded();
+		textures.push_back(subSprite);
 	}
 
-	MugenSpriteFileSprite* sprite = makeMugenSpriteFileSprite(textures, makeTextureSize(spriteHeader.mOriginalTextureSizeX, spriteHeader.mOriginalTextureSizeY), axisOffset);
+	MugenSpriteFileSprite sprite = makeMugenSpriteFileSprite(textures, makeTextureSize(spriteHeader.mOriginalTextureSizeX, spriteHeader.mOriginalTextureSizeY), axisOffset);
 	insertTextureIntoSpriteFile(tDst, sprite, spriteHeader.mGroupNumber, spriteHeader.mSpriteNumber);
 }
 
@@ -1374,72 +1348,57 @@ MugenSpriteFile loadMugenSpriteFileWithoutPalette(const char * tPath)
 	return loadMugenSpriteFile(tPath, 0, NULL);
 }
 
-static void unloadSinglePalette(void* tCaller, void* tData) {
-	(void)tCaller;
-	MugenSpriteFilePalette* b = (MugenSpriteFilePalette*)tData;
-	freeBuffer(b->mBuffer);
-}
-
-static int unloadSingleSpriteFileGroupSpriteCB(void* tCaller, void* tData) {
-	(void)tCaller;
-	MugenSpriteFileSprite* e = (MugenSpriteFileSprite*)tData;
-	unloadMugenSpriteFileSprite(e);
-	return 1;
-}
-
-static int unloadSingleSpriteFileGroup(void* tCaller, void* tData) {
-	(void)tCaller;
-	MugenSpriteFileGroup* e = (MugenSpriteFileGroup*)tData;
-	int_map_remove_predicate(&e->mSprites, unloadSingleSpriteFileGroupSpriteCB, NULL);
-	delete_int_map(&e->mSprites);
-
-	return 1;
+static void unloadSinglePalette(MugenSpriteFilePalette& palette) {
+	freeBuffer(palette.mBuffer);
 }
 
 void unloadMugenSpriteFile(MugenSpriteFile* tFile) {
-	int_map_remove_predicate(&tFile->mGroups, unloadSingleSpriteFileGroup, NULL);
-	delete_int_map(&tFile->mGroups);
+	for (auto& group : tFile->mGroups)
+	{
+		for (auto& sprite : group.second.mSprites)
+		{
+			unloadMugenSpriteFileSprite(&sprite.second);
+		}
+	}
+	tFile->mGroups.clear();
 
-	vector_map(&tFile->mPalettes, unloadSinglePalette, NULL);
-	delete_vector(&tFile->mPalettes);
-	delete_vector(&tFile->mAllSprites);
-}
-
-static int unloadSingleMugenSpriteFileSubSprite(void* tCaller, void* tData) {
-	(void)tCaller;
-	MugenSpriteFileSubSprite* subSprite = (MugenSpriteFileSubSprite*)tData;
-	unloadTexture(subSprite->mTexture);
-
-	return 1;
+	for (auto& palette : tFile->mPalettes)
+	{
+		unloadSinglePalette(palette);
+	}
+	tFile->mPalettes.clear();
+	tFile->mAllSprites.clear();
 }
 
 void unloadMugenSpriteFileSprite(MugenSpriteFileSprite* tSprite) {
 
 	if (!tSprite->mIsLinked) {
-		list_remove_predicate(&tSprite->mTextures, unloadSingleMugenSpriteFileSubSprite, NULL);
-		delete_list(&tSprite->mTextures);
+		for (auto& texture : tSprite->mTextures)
+		{
+			unloadTexture(texture.mTexture);
+		}
+		tSprite->mTextures.clear();
 	}
 }
 
 MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite)
 {
 	if (!tFile) return NULL;
-	if (!int_map_contains(&tFile->mGroups, tGroup)) return NULL;
+	if (!stl_map_contains(tFile->mGroups, tGroup)) return NULL;
 
-	MugenSpriteFileGroup* g = (MugenSpriteFileGroup*)int_map_get(&tFile->mGroups, tGroup);
+	auto& g = tFile->mGroups[tGroup];
+	if (!stl_map_contains(g.mSprites, tSprite)) return NULL;
 
-	if (!int_map_contains(&g->mSprites, tSprite)) return NULL;
-
-	MugenSpriteFileSprite* original = (MugenSpriteFileSprite*)int_map_get(&g->mSprites, tSprite);
-	if (original->mIsLinked) {
-		MugenSpriteFileSprite* e = original;
+	auto& original = g.mSprites[tSprite];
+	if (original.mIsLinked) {
+		MugenSpriteFileSprite* e = &original;
 		while (e->mIsLinked) {
-			e = (MugenSpriteFileSprite*)vector_get(&tFile->mAllSprites, e->mIsLinkedTo);
+			e = tFile->mAllSprites[e->mIsLinkedTo];
 		}
-		original->mOriginalTextureSize = e->mOriginalTextureSize;
-		original->mTextures = e->mTextures;
+		original.mOriginalTextureSize = e->mOriginalTextureSize;
+		original.mTextures = e->mTextures;
 	}
-	return original;
+	return &g.mSprites[tSprite];
 }
 
 void setMugenSpriteFileReaderToBuffer()
@@ -1480,9 +1439,9 @@ void setMugenSpriteFileReaderSubTextureSplit(int tSubTextureSplitMin, int tSubTe
 int hasMugenSprite(MugenSpriteFile* tSprites, int tGroup, int tSprite)
 {
 	if (!tSprites) return 0;
-	if (!int_map_contains(&tSprites->mGroups, tGroup)) return 0;
-	const auto g = (MugenSpriteFileGroup*)int_map_get(&tSprites->mGroups, tGroup);
-	return int_map_contains(&g->mSprites, tSprite);
+	if (!stl_map_contains(tSprites->mGroups, tGroup)) return 0;
+	const auto& g = tSprites->mGroups[tGroup];
+	return stl_map_contains(g.mSprites, tSprite);
 }
 
 void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector2DI& tSource, const Vector2DI& tDestination, int tPaletteID)
@@ -1490,11 +1449,83 @@ void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector2DI& tSo
 	if (tSource.x != 1 || tSource.y != 1) return;
 	if (tDestination.x == tSprites->mPaletteMappedGroup && tDestination.y == tSprites->mPaletteMappedItem) return;
 
-	for (int i = 0; i < vector_size(&tSprites->mPalettes); i++) {
-		auto paletteElement = (MugenSpriteFilePalette*)vector_get(&tSprites->mPalettes, i);
-		if (paletteElement->mGroup != tDestination.x || paletteElement->mItem != tDestination.y) continue;
-		setPaletteFromBGR256WithFirstValueTransparentBuffer(tPaletteID, paletteElement->mBuffer);
-		tSprites->mPaletteMappedGroup = paletteElement->mGroup;
-		tSprites->mPaletteMappedItem = paletteElement->mItem;
+	for (int i = 0; i < tSprites->mPalettes.size(); i++) {
+		auto& paletteElement = tSprites->mPalettes[i];
+		if (paletteElement.mGroup != tDestination.x || paletteElement.mItem != tDestination.y) continue;
+		setPaletteFromBGR256WithFirstValueTransparentBuffer(tPaletteID, paletteElement.mBuffer);
+		tSprites->mPaletteMappedGroup = paletteElement.mGroup;
+		tSprites->mPaletteMappedItem = paletteElement.mItem;
 	}
 }
+
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static void imguiMugenSpriteFileSubSprite(MugenSpriteFileSubSprite& tSubSprite) {
+	ImGui::Text("Offset = %d / %d", tSubSprite.mOffset.x, tSubSprite.mOffset.y);
+	imguiTextureData("TextureData", tSubSprite.mTexture);
+}
+
+static void imguiMugenSpriteFileSpriteSingle(MugenSpriteFileSprite& tSprite) {
+	imguiVector("Textures", tSprite.mTextures, imguiMugenSpriteFileSubSprite);
+	ImGui::Text("OriginalTextureSize = %d / %d", tSprite.mOriginalTextureSize.x, tSprite.mOriginalTextureSize.y);
+	ImGui::Text("IsLinked = %d", tSprite.mIsLinked);
+	ImGui::Text("IsLinkedTo = %d", tSprite.mIsLinkedTo);
+	ImGui::Text("AxisOffset = %d / %d", tSprite.mAxisOffset.x, tSprite.mAxisOffset.y);
+}
+
+static void imguiMugenSpriteFileSprite(MugenSpriteFileSprite& tSprite, int tSpriteID) {
+	if (ImGui::TreeNode(std::to_string(tSpriteID).c_str()))
+	{
+		imguiMugenSpriteFileSpriteSingle(tSprite);
+		ImGui::TreePop();
+	}
+}
+
+static void imguiMugenSpriteFileGroup(MugenSpriteFileGroup& tGroup, int tGroupID) {
+	if (ImGui::TreeNode(std::to_string(tGroupID).c_str()))
+	{
+		if (ImGui::TreeNode("MugenSpriteFileSprites"))
+		{
+			for (auto& sprite : tGroup.mSprites)
+			{
+				imguiMugenSpriteFileSprite(sprite.second, sprite.first);
+			}
+			ImGui::TreePop();
+		}
+
+		ImGui::TreePop();
+	}
+}
+
+static void imguiMugenSpriteFilePalette(MugenSpriteFilePalette& tPalette)
+{
+	ImGui::Text("Group = %d", tPalette.mGroup);
+	ImGui::Text("Item = %d", tPalette.mItem);
+	imguiBuffer("Buffer", tPalette.mBuffer);
+}
+
+void imguiMugenSpriteFile(MugenSpriteFile& tSprites, const std::string_view& tName)
+{
+	if (ImGui::TreeNode(tName.data()))
+	{
+		if (ImGui::TreeNode("Groups"))
+		{
+			for (auto& group : tSprites.mGroups)
+			{
+				imguiMugenSpriteFileGroup(group.second, group.first);
+			}
+			ImGui::TreePop();
+		}
+
+		imguiVector("AllSprites", tSprites.mAllSprites, imguiMugenSpriteFileSpriteSingle);
+		imguiVector("Palettes", tSprites.mPalettes, imguiMugenSpriteFilePalette);
+
+		ImGui::Text("PaletteMappedGroup = %d", tSprites.mPaletteMappedGroup);
+		ImGui::Text("mPaletteMappedItem = %d", tSprites.mPaletteMappedItem);
+
+		ImGui::TreePop();
+	}
+}
+#endif

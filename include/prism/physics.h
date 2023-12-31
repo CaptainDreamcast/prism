@@ -29,4 +29,8 @@ void resumePhysics();
 int isEmptyVelocity(const Velocity& tVelocity);
 Velocity normalizeVelocity(const Velocity& tVelocity);
 
+#ifdef _WIN32
+void imguiPhysics();
+#endif
+
 #define makeAcceleration(x, y, z) Vector3D(x, y, z)

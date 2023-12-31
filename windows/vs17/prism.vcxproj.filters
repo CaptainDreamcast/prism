@@ -16,6 +16,18 @@
     <Filter Include="hdr\klib">
       <UniqueIdentifier>{fd7ea795-9a88-40f4-b8a0-efcde18bf1f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="external">
+      <UniqueIdentifier>{a3c384b2-5954-4d33-8608-27ba538590d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imgui">
+      <UniqueIdentifier>{4f759db5-2fec-40bc-9fe4-027ff3852853}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imgui\inc">
+      <UniqueIdentifier>{2656b8e6-9feb-4e69-bc09-8440e14186b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external\imgui\src">
+      <UniqueIdentifier>{3ad5cb96-df56-4806-9e6b-c3ba42385437}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -226,6 +238,42 @@
     </ClInclude>
     <ClInclude Include="..\..\include\prism\netplay.h">
       <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui.h">
+      <Filter>external\imgui\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_stdlib.h">
+      <Filter>external\imgui\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\src\imconfig.h">
+      <Filter>external\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\src\imgui_internal.h">
+      <Filter>external\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\src\imstb_rectpack.h">
+      <Filter>external\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\src\imstb_textedit.h">
+      <Filter>external\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\src\imstb_truetype.h">
+      <Filter>external\imgui\src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl2.h">
+      <Filter>external\imgui\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_sdl2.h">
+      <Filter>external\imgui\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\windows\debugimgui_win.h">
+      <Filter>hdr\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl3.h">
+      <Filter>external\imgui\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl3_loader.h">
+      <Filter>external\imgui\inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -456,6 +504,36 @@
     </ClCompile>
     <ClCompile Include="..\netplay_win.cpp">
       <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui_demo.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui_draw.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui_stdlib.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui_tables.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui_widgets.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui_impl_opengl2.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui_impl_sdl2.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\debugimgui_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\imgui\src\imgui_impl_opengl3.cpp">
+      <Filter>external\imgui\src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

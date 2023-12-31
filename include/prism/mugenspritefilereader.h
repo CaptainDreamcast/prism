@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 #include "datastructures.h"
 #include "texture.h"
@@ -12,7 +13,7 @@ typedef struct {
 } MugenSpriteFileSubSprite;
 
 typedef struct {
-	List mTextures; // MugenSpriteFileSubSprite
+	std::vector<MugenSpriteFileSubSprite> mTextures;
 	TextureSize mOriginalTextureSize;
 	int mIsLinked;
 	int mIsLinkedTo;
@@ -21,7 +22,7 @@ typedef struct {
 } MugenSpriteFileSprite;
 
 typedef struct {
-	IntMap mSprites;
+	std::map<int, MugenSpriteFileSprite> mSprites;
 } MugenSpriteFileGroup;
 
 typedef struct {
@@ -31,9 +32,9 @@ typedef struct {
 } MugenSpriteFilePalette;
 
 typedef struct {
-	IntMap mGroups; // contains MugenSpriteFileGroup
-	Vector mAllSprites; // contains MugenSpriteFileSprite
-	Vector mPalettes; // contains MugenSpriteFilePalette
+	std::map<int, MugenSpriteFileGroup> mGroups;
+	std::vector<MugenSpriteFileSprite*> mAllSprites;
+	std::vector<MugenSpriteFilePalette> mPalettes;
 	
 	// group and item palette 1,1 is mapped to
 	int mPaletteMappedGroup;
@@ -49,7 +50,7 @@ MugenSpriteFile loadMugenSpriteFileWithoutPalette(const std::string& tPath);
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(const char* tPath);
 MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite);
 
-MugenSpriteFileSprite* loadSingleTextureFromPCXBuffer(const Buffer& tBuffer);
+MugenSpriteFileSprite loadSingleTextureFromPCXBuffer(const Buffer& tBuffer);
 
 void setMugenSpriteFileReaderToBuffer();
 void setMugenSpriteFileReaderToFileOperations();
@@ -60,3 +61,5 @@ void setMugenSpriteFileReaderSubTextureSplit(int tSubTextureSplitMin, int tSubTe
 
 int hasMugenSprite(MugenSpriteFile* tSprites, int tGroup, int tSprite);
 void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector2DI& tSource, const Vector2DI& tDestination, int tPaletteID);
+
+void imguiMugenSpriteFile(MugenSpriteFile& tSprites, const std::string_view& tName);

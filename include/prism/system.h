@@ -26,6 +26,10 @@ typedef enum {
 } Framerate;
 #define FRAMERATE_AMOUNT 2
 
+#ifdef _WIN32
+void imguiSystem();
+#endif
+
 void initSystem();
 void shutdownSystem();
 void updateSystem();
@@ -39,6 +43,8 @@ void setIcon(const char* tPath);
 
 void setScreen(int tX, int tY, int tFramerate, int tIsVGA);
 void setScreenSize(int tX, int tY);
+void setScreenPosition(int tX, int tY);
+void setScreenFullscreen(bool tIsFullscreen);
 ScreenSize getScreenSize();
 ScreenSize getDisplayedScreenSize();
 void setDisplayedScreenSize(int tX, int tY);

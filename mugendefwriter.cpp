@@ -98,6 +98,60 @@ static BufferPointer findExistingVariablePositionOrNullIfNonExistant(ModifiableM
 	return NULL;
 }
 
+static BufferPointer findExistingVariablePositionOrNullIfNonExistant(ModifiableMugenDefScript* tScript, const char* tGroupName, size_t tGroupOffset, const char* tVariableName) {
+	auto p = getBufferPointer(tScript->mOwnedBuffer);
+
+	int foundOriginal = 0;
+	int index = 0;
+	int found = 0;
+	while (true) {
+		const auto line = readLineOrEOFFromTextStreamBufferPointer(&p, tScript->mOwnedBuffer);
+		if (isBufferPointerOver(p, tScript->mOwnedBuffer)) break;
+		if (line.size() > 0 && line[0] != '[') continue;
+		std::string groupName;
+		for (size_t i = 1; i < line.size() && line[i] != ']'; i++) {
+			groupName.push_back(line[i]);
+		}
+		if (foundOriginal)
+		{
+			if (index == tGroupOffset)
+			{
+				found = 1;
+				break;
+			}
+			index++;
+		}
+		else
+		{
+			if (stringEqualCaseIndependent(groupName.c_str(), tGroupName)) {
+				foundOriginal = 1;
+			}
+		}
+	}
+
+	if (!found) return NULL;
+
+	std::vector<std::pair<std::string, BufferPointer>> relevantLines;
+	while (true) {
+		auto linePosition = p;
+		const auto line = readLineOrEOFFromTextStreamBufferPointer(&p, tScript->mOwnedBuffer);
+		if (isBufferPointerOver(p, tScript->mOwnedBuffer)) break;
+		if (line.size() > 0 && line[0] == '[') break;
+		relevantLines.push_back(std::make_pair(line, linePosition));
+	}
+
+	for (size_t i = 0; i < relevantLines.size(); i++) {
+		std::istringstream ss(relevantLines[i].first);
+		std::string firstWord;
+		ss >> firstWord;
+		if (stringEqualCaseIndependent(firstWord.c_str(), tVariableName)) {
+			return relevantLines[i].second;
+		}
+	}
+
+	return NULL;
+}
+
 static BufferPointer findStartOfGroup(ModifiableMugenDefScript* tScript, const char* tGroupName) {
 	auto p = getBufferPointer(tScript->mOwnedBuffer);
 
@@ -195,4 +249,21 @@ void saveMugenDefInteger(ModifiableMugenDefScript* tScript, const char* tGroupNa
 	std::stringstream ss;
 	ss << tValue;
 	saveMugenDefString(tScript, tGroupName, tVariableName, ss.str());
+}
+
+void saveMugenDefString(const std::string& tPath, const char* tGroupName, size_t tGroupOffset, const char* tVariableName, const std::string& tValue)
+{
+	auto script = openModifiableMugenDefScript(tPath);
+
+	auto sectionStart = findExistingVariablePositionOrNullIfNonExistant(&script, tGroupName, tGroupOffset, tVariableName);
+	if (!sectionStart)
+	{
+		closeModifiableMugenDefScript(&script);
+		return;
+	}
+
+	adaptValueAtPosition(&script, sectionStart, tValue, tGroupName, tVariableName);
+
+	saveModifiableMugenDefScript(&script, tPath);
+	closeModifiableMugenDefScript(&script);
 }

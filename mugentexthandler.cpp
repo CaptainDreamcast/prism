@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <set>
+#include <variant>
 
 #include "prism/mugendefreader.h"
 #include "prism/mugenanimationhandler.h"
@@ -35,7 +36,7 @@ typedef struct {
 
 typedef struct {
 	MugenElecbyteFontMapEntry mMap[0x100];
-	MugenSpriteFileSprite* mSprite;
+	MugenSpriteFileSprite mSprite;
 
 	MugenElecbyteFontType mType;
 } MugenElecbyteFont;
@@ -50,7 +51,7 @@ typedef struct {
 
 typedef struct {
 	MugenFontType mType;
-	void* mData;
+	std::variant<MugenElecbyteFont, MugenBitmapFont, MugenTruetypeFont> mData;
 
 	Vector3DI mSize;
 	Vector3DI mSpacing;
@@ -62,19 +63,18 @@ static struct {
 } gMugenFontData;
 
 static void loadBitmapFont(MugenDefScript* tScript, MugenFont* tFont) {
-	MugenBitmapFont* e = (MugenBitmapFont*)allocMemory(sizeof(MugenBitmapFont));
+	MugenBitmapFont e;
 
 	char* path = getAllocatedMugenDefStringVariable(tScript, "def", "file");
-	e->mSprites = loadMugenSpriteFileWithoutPalette(path);
+	e.mSprites = loadMugenSpriteFileWithoutPalette(path);
 	freeMemory(path);
-
 	tFont->mData = e;
 }
 
 static void loadMugenTruetypeFont(MugenDefScript* tScript, MugenFont* tFont) {
-	MugenTruetypeFont* e = (MugenTruetypeFont*)allocMemory(sizeof(MugenTruetypeFont));
+	MugenTruetypeFont e;
 	char* name = getAllocatedMugenDefStringVariable(tScript, "def", "file");
-	e->mFont = loadTruetypeFont(name, tFont->mSize.y);
+	e.mFont = loadTruetypeFont(name, tFont->mSize.y);
 	freeMemory(name);
 	tFont->mData = e;
 }
@@ -164,21 +164,21 @@ static MugenElecbyteFontType getMugenElecbyteFontType(MugenDefScript* tScript) {
 }
 
 static void loadMugenElecbyteFont(MugenDefScript* tScript, const Buffer& tTextureBuffer, MugenFont* tFont) {
-	MugenElecbyteFont* e = (MugenElecbyteFont*)allocMemory(sizeof(MugenElecbyteFont));
+	MugenElecbyteFont e;
 
-	e->mType = getMugenElecbyteFontType(tScript);
+	e.mType = getMugenElecbyteFontType(tScript);
 
-	for (int i = 0; i < 0x100; i++) e->mMap[i].mExists = 0;
+	for (int i = 0; i < 0x100; i++) e.mMap[i].mExists = 0;
 
 	MugenDefScriptGroup* group = &tScript->mGroups["map"];
 
 	ElecbyteMapParseCaller caller;
 	caller.mFont = tFont;
-	caller.mElecbyteFont = e;
+	caller.mElecbyteFont = &e;
 	caller.i = 0;
 	list_map(&group->mOrderedElementList, parseSingleMapElement, &caller);
 
-	e->mSprite = loadSingleTextureFromPCXBuffer(tTextureBuffer);
+	e.mSprite = loadSingleTextureFromPCXBuffer(tTextureBuffer);
 
 	tFont->mData = e;
 }
@@ -342,22 +342,18 @@ void loadMugenTextHandler()
 }
 
 static void unloadBitmapFont(MugenFont* tFont) {
-	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)tFont->mData;
-	unloadMugenSpriteFile(&bitmapFont->mSprites);
-	freeMemory(bitmapFont);
+	auto& bitmapFont = std::get<MugenBitmapFont>(tFont->mData);
+	unloadMugenSpriteFile(&bitmapFont.mSprites);
 }
 
 static void unloadElecbyteFont(MugenFont* tFont) {
-	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)tFont->mData;
-	unloadMugenSpriteFileSprite(elecbyteFont->mSprite);
-	freeMemory(elecbyteFont->mSprite);
-	freeMemory(elecbyteFont);
+	auto& elecbyteFont = std::get<MugenElecbyteFont>(tFont->mData);
+	unloadMugenSpriteFileSprite(&elecbyteFont.mSprite);
 }
 
 static void unloadMugenTruetypeFont(MugenFont* tFont) {
-	MugenTruetypeFont* truetypeFont = (MugenTruetypeFont*)tFont->mData;
-	unloadTruetypeFont(truetypeFont->mFont);
-	freeMemory(truetypeFont);
+	auto& truetypeFont = std::get<MugenTruetypeFont>(tFont->mData);
+	unloadTruetypeFont(truetypeFont.mFont);
 }
 
 
@@ -481,27 +477,24 @@ typedef struct {
 	MugenFont* mFont;
 } BitmapDrawCaller;
 
-static void drawSingleBitmapSubSprite(void* tCaller, void* tData) {
-	BitmapDrawCaller* caller = (BitmapDrawCaller*)tCaller;
-	MugenSpriteFileSubSprite* subSprite = (MugenSpriteFileSubSprite*)tData;
-
-	double factor = getNewMugenFontFactor() * caller->mText->mScale;
-	Position p = caller->mBasePosition + (subSprite->mOffset * factor);	
+static void drawSingleBitmapSubSprite(MugenSpriteFileSubSprite& tSubSprite, BitmapDrawCaller& tCaller) {
+	double factor = getNewMugenFontFactor() * tCaller.mText->mScale;
+	Position p = tCaller.mBasePosition + (tSubSprite.mOffset * factor);
 	
 	int minHeight = 0;
-	int maxHeight = subSprite->mTexture.mTextureSize.y - 1;
-	int upY = max(minHeight, min(maxHeight, (int)(caller->mText->mRectangle.mTopLeft.y - p.y)));
-	int downY = max(minHeight, min(maxHeight, upY + (int)(caller->mText->mRectangle.mBottomRight.y - (p.y + caller->mFont->mSize.y))));
+	int maxHeight = tSubSprite.mTexture.mTextureSize.y - 1;
+	int upY = max(minHeight, min(maxHeight, (int)(tCaller.mText->mRectangle.mTopLeft.y - p.y)));
+	int downY = max(minHeight, min(maxHeight, upY + (int)(tCaller.mText->mRectangle.mBottomRight.y - (p.y + tCaller.mFont->mSize.y))));
 	if (upY == downY) return;
 
-	p.y = max(p.y, caller->mText->mRectangle.mTopLeft.y);
+	p.y = max(p.y, tCaller.mText->mRectangle.mTopLeft.y);
 
 	scaleDrawing(factor, p);
-	drawSprite(subSprite->mTexture, p, makeRectangleFromTexture(subSprite->mTexture));
+	drawSprite(tSubSprite.mTexture, p, makeRectangleFromTexture(tSubSprite.mTexture));
 	scaleDrawing(1 / factor, p);
 }
 
-static set<int> getBitmapTextLinebreaks(char* tText, const Position& tStart, MugenFont* tFont, MugenSpriteFileGroup* tSpriteGroup, double tRightX, double tFactor) {
+static set<int> getBitmapTextLinebreaks(char* tText, const Position& tStart, MugenFont* tFont, MugenSpriteFileGroup& tSpriteGroup, double tRightX, double tFactor) {
 	if (tRightX >= INF / 2) return set<int>();
 
 	set<int> ret;
@@ -518,9 +511,9 @@ static set<int> getBitmapTextLinebreaks(char* tText, const Position& tStart, Mug
 			int items = sscanf(tText + i, "%1023s%n", word, &positionsRead);
 			if (items != 1) break;
 			for (int j = i; j < i + positionsRead; j++) {
-				if (int_map_contains(&tSpriteGroup->mSprites, (int)tText[j])) {
-					MugenSpriteFileSprite* sprite = (MugenSpriteFileSprite*)int_map_get(&tSpriteGroup->mSprites, (int)tText[j]);
-					p = vecAdd2D(p, vecScale(Vector3D(sprite->mOriginalTextureSize.x, 0, 0), tFactor));
+				if (stl_map_contains(tSpriteGroup.mSprites, (int)tText[j])) {
+					auto& sprite = tSpriteGroup.mSprites[(int)tText[j]];
+					p = vecAdd2D(p, vecScale(Vector3D(sprite.mOriginalTextureSize.x, 0, 0), tFactor));
 					p = vecAdd2D(p, vecScale(Vector3D(tFont->mSpacing.x, 0, 0), tFactor));
 				}
 				else {
@@ -551,13 +544,13 @@ static set<int> getBitmapTextLinebreaks(char* tText, const Position& tStart, Mug
 
 static void drawSingleBitmapText(MugenText* e) {
 	MugenFont* font = e->mFont;
-	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)font->mData;
+	auto& bitmapFont = std::get<MugenBitmapFont>(font->mData);
 	auto textLength = int(strlen(e->mDisplayText));
 	double factor = getNewMugenFontFactor() * e->mScale;
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 
-	MugenSpriteFileGroup* spriteGroup = (MugenSpriteFileGroup*)int_map_get(&bitmapFont->mSprites.mGroups, 0);
+	auto& spriteGroup = bitmapFont.mSprites.mGroups[0];
 
 	int i;
 	Position p = vecAdd2D(e->mPosition, vecScale(Vector3D(font->mOffset.x, font->mOffset.y, 0), factor));
@@ -566,13 +559,16 @@ static void drawSingleBitmapText(MugenText* e) {
 	const auto breaks = getBitmapTextLinebreaks(e->mText, start, font, spriteGroup, rightX, factor);
 	for (i = 0; i < textLength; i++) {
 
-		if (int_map_contains(&spriteGroup->mSprites, (int)e->mDisplayText[i])) {
+		if (stl_map_contains(spriteGroup.mSprites, (int)e->mDisplayText[i])) {
 			BitmapDrawCaller caller;
-			caller.mSprite = (MugenSpriteFileSprite*)int_map_get(&spriteGroup->mSprites, (int)e->mDisplayText[i]);
+			caller.mSprite = &spriteGroup.mSprites[(int)e->mDisplayText[i]];
 			caller.mBasePosition = p;
 			caller.mText = e;
 			caller.mFont = font;
-			list_map(&caller.mSprite->mTextures, drawSingleBitmapSubSprite, &caller);
+			for (auto& texture : caller.mSprite->mTextures)
+			{
+				drawSingleBitmapSubSprite(texture, caller);
+			}
 
 			p = vecAdd2D(p, vecScale(Vector3D(caller.mSprite->mOriginalTextureSize.x, 0, 0), factor));
 			p = vecAdd2D(p, vecScale(Vector3D(font->mSpacing.x, 0, 0), factor));
@@ -594,8 +590,8 @@ static void drawSingleBitmapText(MugenText* e) {
 
 static void drawSingleTruetypeText(MugenText* e) {
 	MugenFont* font = e->mFont;
-	MugenTruetypeFont* truetypeFont = (MugenTruetypeFont*)font->mData;
-	drawTruetypeText(e->mDisplayText, truetypeFont->mFont, e->mPosition, font->mSize, Vector3D(e->mR, e->mG, e->mB), e->mTextBoxWidth, e->mRectangle);
+	auto& truetypeFont = std::get<MugenTruetypeFont>(font->mData);
+	drawTruetypeText(e->mDisplayText, truetypeFont.mFont, e->mPosition, font->mSize, Vector3D(e->mR, e->mG, e->mB), e->mTextBoxWidth, e->mRectangle);
 }
 
 typedef struct {
@@ -607,42 +603,39 @@ typedef struct {
 	MugenFont* mFont;
 } ElecbyteDrawCaller;
 
-static void drawSingleElecbyteSubSprite(void* tCaller, void* tData) {
-	ElecbyteDrawCaller* caller = (ElecbyteDrawCaller*)tCaller;
-	MugenSpriteFileSubSprite* subSprite = (MugenSpriteFileSubSprite*)tData;
+static void drawSingleElecbyteSubSprite(MugenSpriteFileSubSprite& tSubSprite, ElecbyteDrawCaller& tCaller) {
+	if (tCaller.mMapEntry->mStartX >= tSubSprite.mOffset.x + tSubSprite.mTexture.mTextureSize.x) return;
+	if (tCaller.mMapEntry->mStartX + tCaller.mMapEntry->mWidth - 1 < tSubSprite.mOffset.x) return;
 
-	if (caller->mMapEntry->mStartX >= subSprite->mOffset.x + subSprite->mTexture.mTextureSize.x) return;
-	if (caller->mMapEntry->mStartX + caller->mMapEntry->mWidth - 1 < subSprite->mOffset.x) return;
-
-	if (subSprite->mOffset.y > caller->mPreviousSubSpriteOffsetY) {
-		caller->mBasePosition.x = caller->mStartX;
+	if (tSubSprite.mOffset.y > tCaller.mPreviousSubSpriteOffsetY) {
+		tCaller.mBasePosition.x = tCaller.mStartX;
 	}
-	caller->mPreviousSubSpriteOffsetY = subSprite->mOffset.y;
+	tCaller.mPreviousSubSpriteOffsetY = tSubSprite.mOffset.y;
 
 	int minWidth = 0;
-	int maxWidth = subSprite->mTexture.mTextureSize.x - 1;
-	int leftX = max(minWidth, min(maxWidth, caller->mMapEntry->mStartX - subSprite->mOffset.x));
-	int rightX = max(minWidth, min(maxWidth, (caller->mMapEntry->mStartX + caller->mMapEntry->mWidth - 1) - subSprite->mOffset.x));
+	int maxWidth = tSubSprite.mTexture.mTextureSize.x - 1;
+	int leftX = max(minWidth, min(maxWidth, tCaller.mMapEntry->mStartX - tSubSprite.mOffset.x));
+	int rightX = max(minWidth, min(maxWidth, (tCaller.mMapEntry->mStartX + tCaller.mMapEntry->mWidth - 1) - tSubSprite.mOffset.x));
 
-	double factor = getOriginalMugenFontFactor() * caller->mText->mScale;
-	Position p = vecAdd2D(caller->mBasePosition, vecScale(Vector3D(0.f, subSprite->mOffset.y, 0.f), factor));
+	double factor = getOriginalMugenFontFactor() * tCaller.mText->mScale;
+	Position p = vecAdd2D(tCaller.mBasePosition, vecScale(Vector3D(0.f, tSubSprite.mOffset.y, 0.f), factor));
 
 	int minHeight = 0;
-	int maxHeight = subSprite->mTexture.mTextureSize.y - 1;
-	int upY = max(minHeight, min(maxHeight, (int)(caller->mText->mRectangle.mTopLeft.y - p.y)));
-	int downY = max(minHeight, min(maxHeight, upY + (int)(caller->mText->mRectangle.mBottomRight.y - (p.y + caller->mFont->mSize.y))));
+	int maxHeight = tSubSprite.mTexture.mTextureSize.y - 1;
+	int upY = max(minHeight, min(maxHeight, (int)(tCaller.mText->mRectangle.mTopLeft.y - p.y)));
+	int downY = max(minHeight, min(maxHeight, upY + (int)(tCaller.mText->mRectangle.mBottomRight.y - (p.y + tCaller.mFont->mSize.y))));
 	if (upY == downY) return;
 
-	p.y = max(p.y, caller->mText->mRectangle.mTopLeft.y);
+	p.y = max(p.y, tCaller.mText->mRectangle.mTopLeft.y);
 
 	scaleDrawing(factor, p);
-	drawSprite(subSprite->mTexture, p, makeRectangle(leftX, upY, rightX - leftX, downY - upY));
+	drawSprite(tSubSprite.mTexture, p, makeRectangle(leftX, upY, rightX - leftX, downY - upY));
 	scaleDrawing(1 / factor, p);
 
-	caller->mBasePosition.x += (rightX - leftX + 1) * factor;
+	tCaller.mBasePosition.x += (rightX - leftX + 1) * factor;
 }
 
-static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, MugenFont* tFont, MugenElecbyteFont* tElecbyteFont, double tRightX, double tFactor) {
+static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, MugenFont* tFont, MugenElecbyteFont& tElecbyteFont, double tRightX, double tFactor) {
 	if (tRightX >= INF / 2) return set<int>();
 
 	set<int> ret;
@@ -659,8 +652,8 @@ static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, M
 			int items = sscanf(tText + i, "%1023s%n", word, &positionsRead);
 			if (items != 1) break;
 			for (int j = i; j < i + positionsRead; j++) {
-				if (tElecbyteFont->mMap[(uint8_t)tText[j]].mExists) {
-					MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont->mMap[(uint8_t)tText[j]];
+				if (tElecbyteFont.mMap[(uint8_t)tText[j]].mExists) {
+					MugenElecbyteFontMapEntry& mapEntry = tElecbyteFont.mMap[(uint8_t)tText[j]];
 					p = vecAdd2D(p, vecScale(Vector3D(mapEntry.mWidth, 0, 0), tFactor));
 					p = vecAdd2D(p, vecScale(Vector3D(tFont->mSpacing.x, 0, 0), tFactor));
 				}
@@ -692,7 +685,7 @@ static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, M
 
 static void drawSingleElecbyteText(MugenText* e) {
 	MugenFont* font = e->mFont;
-	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
+	auto& elecbyteFont = std::get<MugenElecbyteFont>(font->mData);
 	auto textLength = int(strlen(e->mDisplayText));
 	double factor = getOriginalMugenFontFactor() * e->mScale;
 
@@ -703,15 +696,18 @@ static void drawSingleElecbyteText(MugenText* e) {
 	double rightX = p.x + e->mTextBoxWidth;
 	const auto breaks = getElecbyteTextLinebreaks(e->mText, start, font, elecbyteFont, rightX, factor);
 	for (i = 0; i < textLength; i++) {
-		if (elecbyteFont->mMap[(uint8_t)e->mDisplayText[i]].mExists) {
+		if (elecbyteFont.mMap[(uint8_t)e->mDisplayText[i]].mExists) {
 			ElecbyteDrawCaller caller;
-			caller.mMapEntry = &elecbyteFont->mMap[(uint8_t)e->mDisplayText[i]];
+			caller.mMapEntry = &elecbyteFont.mMap[(uint8_t)e->mDisplayText[i]];
 			caller.mBasePosition = p;
 			caller.mStartX = p.x;
 			caller.mPreviousSubSpriteOffsetY = INF;
 			caller.mText = e;
 			caller.mFont = font;
-			list_map(&elecbyteFont->mSprite->mTextures, drawSingleElecbyteSubSprite, &caller);
+			for (auto& texture : elecbyteFont.mSprite.mTextures)
+			{
+				drawSingleElecbyteSubSprite(texture, caller);
+			}
 
 			p = vecAdd2D(p, vecScale(Vector3D(caller.mMapEntry->mWidth, 0, 0), factor));
 			p = vecAdd2D(p, vecScale(Vector3D(font->mSpacing.x, 0, 0), factor));
@@ -840,18 +836,18 @@ void setMugenTextFont(int tID, int tFont)
 
 static double getBitmapTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
-	MugenBitmapFont* bitmapFont = (MugenBitmapFont*)font->mData;
+	auto& bitmapFont = std::get<MugenBitmapFont>(font->mData);
 	auto textLength = int(strlen(e->mText));
 	double factor = getOriginalMugenFontFactor() * e->mScale;
 
-	MugenSpriteFileGroup* spriteGroup = (MugenSpriteFileGroup*)int_map_get(&bitmapFont->mSprites.mGroups, 0);
+	auto& spriteGroup = bitmapFont.mSprites.mGroups[0];
 
 	double sizeX = 0;
 	int i;
 	for (i = 0; i < textLength; i++) {
-		if (int_map_contains(&spriteGroup->mSprites, (int)e->mText[i])) {
-			MugenSpriteFileSprite* sprite = (MugenSpriteFileSprite*)int_map_get(&spriteGroup->mSprites, (int)e->mText[i]);
-			sizeX += sprite->mOriginalTextureSize.x * factor;
+		if (stl_map_contains(spriteGroup.mSprites, (int)e->mText[i])) {
+			auto& sprite = spriteGroup.mSprites[(int)e->mText[i]];
+			sizeX += sprite.mOriginalTextureSize.x * factor;
 			sizeX += font->mSpacing.x * factor;
 		}
 		else {
@@ -870,15 +866,15 @@ static double getTruetypeTextSize(MugenText* e) {
 
 static double getElecbyteTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
-	MugenElecbyteFont* elecbyteFont = (MugenElecbyteFont*)font->mData;
+	auto& elecbyteFont = std::get<MugenElecbyteFont>(font->mData);
 	auto textLength = int(strlen(e->mText));
 	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	int i;
 	double sizeX = 0;
 	for (i = 0; i < textLength; i++) {
-		if (elecbyteFont->mMap[(uint8_t)e->mText[i]].mExists) {
-			MugenElecbyteFontMapEntry& mapEntry = elecbyteFont->mMap[(uint8_t)e->mText[i]];
+		if (elecbyteFont.mMap[(uint8_t)e->mText[i]].mExists) {
+			MugenElecbyteFontMapEntry& mapEntry = elecbyteFont.mMap[(uint8_t)e->mText[i]];
 			sizeX += mapEntry.mWidth*factor;
 			sizeX += font->mSpacing.x*factor;
 		}

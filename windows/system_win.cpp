@@ -21,6 +21,8 @@
 #include <GL/glu.h>
 
 #include <SDL_image.h>
+
+#include "prism/windows/debugimgui_win.h"
 #endif
 
 #include "prism/log.h"
@@ -48,6 +50,28 @@ static struct {
 		
 	char mGameName[100];
 } gPrismWindowsSystemData;
+
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+void imguiSystem()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "System", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("System", &isWindowShown);
+		ImGui::Text("IsLoaded = %d", gPrismWindowsSystemData.mIsLoaded);
+		ImGui::Text("IsExitDisabled = %d", gPrismWindowsSystemData.mIsExitDisabled);
+		ImGui::Text("Screen Size = %d/%d", gPrismWindowsSystemData.mScreenSizeX, gPrismWindowsSystemData.mScreenSizeY);
+		ImGui::Text("Displayed Screen Size = %d/%d", gPrismWindowsSystemData.mDisplayedWindowSizeX, gPrismWindowsSystemData.mDisplayedWindowSizeY);
+		ImGui::Text("Game Name = %s", gPrismWindowsSystemData.mGameName);
+		ImGui::End();
+
+	}
+}
+#endif
 
 SDL_Window* gSDLWindow;
 SDL_GLContext gGLContext;
@@ -175,7 +199,26 @@ Vector3D correctSDLWindowPosition(const Vector3D& v) {
 
 static void switchFullscreen() {
 	const auto flags = SDL_GetWindowFlags(gSDLWindow);
-	if (!(flags & SDL_WINDOW_FULLSCREEN)) {
+	setScreenFullscreen(!(flags & SDL_WINDOW_FULLSCREEN));
+}
+
+static void checkFullscreen() {
+	const auto webInput = isOnWeb() && hasPressedKeyboardKeyFlank(KEYBOARD_F8_PRISM);
+	const auto nonWebInput = !isOnWeb() && hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_ALT_LEFT_PRISM, KEYBOARD_RETURN_PRISM);
+	if (webInput || nonWebInput) {
+		switchFullscreen();
+	}
+}
+
+void setScreenPosition(int tX, int tY)
+{
+#ifdef _WIN32
+	SDL_SetWindowPosition(gSDLWindow, tX, tY);
+#endif
+}
+
+void setScreenFullscreen(bool tIsFullscreen) {
+	if (tIsFullscreen) {
 		if (isOnWeb()) {
 			SDL_SetWindowFullscreen(gSDLWindow, SDL_WINDOW_FULLSCREEN_DESKTOP); // does not break window resizing, unlike the other one, probably due to https://github.com/emscripten-ports/SDL2/issues/8
 		}
@@ -191,20 +234,15 @@ static void switchFullscreen() {
 	}
 }
 
-static void checkFullscreen() {
-	const auto webInput = isOnWeb() && hasPressedKeyboardKeyFlank(KEYBOARD_F8_PRISM);
-	const auto nonWebInput = !isOnWeb() && hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_ALT_LEFT_PRISM, KEYBOARD_RETURN_PRISM);
-	if (webInput || nonWebInput) {
-		switchFullscreen();
-	}
-}
-
 extern void receiveCharacterInputFromSDL(const std::string& tText);
 
 void updateSystem() {
 	setProfilingSectionMarkerCurrentFunction();
 	SDL_Event e;
-	while (SDL_PollEvent(&e) != 0) { 
+	while (SDL_PollEvent(&e) != 0) {
+#ifdef _WIN32
+		imguiPrismProcessEvent(&e);
+#endif
 		switch (e.type) {
 		case SDL_QUIT:
 			returnToMenu();

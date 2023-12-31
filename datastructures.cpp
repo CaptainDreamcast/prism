@@ -508,7 +508,11 @@ void* vector_get(Vector* tVector, int tIndex) {
 	return tVector->mData[tIndex].mData;
 }
 
-int vector_size(Vector* tVector) {
+const void* vector_get(const Vector* tVector, int tIndex) {
+	return tVector->mData[tIndex].mData;
+}
+
+int vector_size(const Vector* tVector) {
 	return tVector->mSize;
 }
 

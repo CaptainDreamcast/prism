@@ -44,11 +44,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PLATFORMS\WINDOWS\LIBS\enet-1.3.17\include;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PLATFORMS\WINDOWS\LIBS\enet-1.3.17\include;C:\DEV\PROJECTS\addons\prism\include;C:\DEV\PROJECTS\addons\prism\external\imgui\inc</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PLATFORMS\WINDOWS\LIBS\enet-1.3.17\include;C:\DEV\PROJECTS\addons\prism\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2-2.0.7\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_image-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_mixer-2.0.1;C:\DEV\PLATFORMS\WINDOWS\LIBS\SDL2_ttf-2.0.14;C:\DEV\PLATFORMS\WINDOWS\LIBS\lpng1632;C:\DEV\PLATFORMS\WINDOWS\LIBS\glew-2.1.0\include;C:\DEV\PLATFORMS\WINDOWS\LIBS\zstd\lib;C:\DEV\PLATFORMS\WINDOWS\LIBS\zlib-1.2.11;C:\DEV\PLATFORMS\WINDOWS\LIBS\optick\src;C:\DEV\PLATFORMS\WINDOWS\LIBS\enet-1.3.17\include;C:\DEV\PROJECTS\addons\prism\include;C:\DEV\PROJECTS\addons\prism\external\imgui\inc</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -89,6 +89,17 @@
     <None Include="..\..\README.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui.h" />
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl2.h" />
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_sdl2.h" />
+    <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_stdlib.h" />
+    <ClInclude Include="..\..\external\imgui\src\imconfig.h" />
+    <ClInclude Include="..\..\external\imgui\src\imgui_internal.h" />
+    <ClInclude Include="..\..\external\imgui\src\imstb_rectpack.h" />
+    <ClInclude Include="..\..\external\imgui\src\imstb_textedit.h" />
+    <ClInclude Include="..\..\external\imgui\src\imstb_truetype.h" />
     <ClInclude Include="..\..\include\prism\actorhandler.h" />
     <ClInclude Include="..\..\include\prism\animation.h" />
     <ClInclude Include="..\..\include\prism\animationtree.h" />
@@ -155,6 +166,7 @@
     <ClInclude Include="..\..\include\prism\thread.h" />
     <ClInclude Include="..\..\include\prism\timer.h" />
     <ClInclude Include="..\..\include\prism\tweening.h" />
+    <ClInclude Include="..\..\include\prism\windows\debugimgui_win.h" />
     <ClInclude Include="..\..\include\prism\windows\romdisk_win.h" />
     <ClInclude Include="..\..\include\prism\wrapper.h" />
   </ItemGroup>
@@ -181,6 +193,15 @@
     <ClCompile Include="..\..\debug.cpp" />
     <ClCompile Include="..\..\drawing.cpp" />
     <ClCompile Include="..\..\errorscreen.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui_demo.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui_draw.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui_impl_opengl2.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui_stdlib.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui_tables.cpp" />
+    <ClCompile Include="..\..\external\imgui\src\imgui_widgets.cpp" />
     <ClCompile Include="..\..\file.cpp" />
     <ClCompile Include="..\..\filereader.cpp" />
     <ClCompile Include="..\..\geometry.cpp" />
@@ -218,6 +239,7 @@
     <ClCompile Include="..\..\timer.cpp" />
     <ClCompile Include="..\..\tweening.cpp" />
     <ClCompile Include="..\..\wrapper.cpp" />
+    <ClCompile Include="..\debugimgui_win.cpp" />
     <ClCompile Include="..\drawing_win.cpp" />
     <ClCompile Include="..\file_win.cpp" />
     <ClCompile Include="..\framerateselect_win.cpp" />

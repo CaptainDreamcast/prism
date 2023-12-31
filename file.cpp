@@ -12,6 +12,33 @@ static struct {
 	int mIsMinusDebugCheckEnabled;
 } gPrismFileGeneralData;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+void imguiFileGeneral()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "File General", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("File General", &isWindowShown);
+		ImGui::Text("IsMinusDebugCheckEnabled = %d", gPrismFileGeneralData.mIsMinusDebugCheckEnabled);
+		ImGui::End();
+	}
+}
+
+void imguiBuffer(const std::string_view& tName, const Buffer& tBuffer)
+{
+	if (ImGui::TreeNode(tName.data()))
+	{
+		ImGui::Text("IsOwned = %d", tBuffer.mIsOwned);
+		ImGui::Text("Length = %d", tBuffer.mLength);
+		ImGui::TreePop();
+	}
+}
+#endif
+
 using namespace std;
 
 const char* getPureFileName(const char* path) {

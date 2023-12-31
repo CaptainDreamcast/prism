@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <map>
+#include <cassert>
 
 #include "prism/collisionhandler.h"
 #include "prism/math.h"
@@ -214,6 +215,10 @@ static void startNewAnimationWithStartStep(MugenAnimationHandlerElement* e, int 
 	if (tStartStep < 0) {
 		logWarningFormat("Trying to start animation with negative start step: %d. Defaulting to zero.\n", tStartStep);
 		tStartStep = 0;
+	}
+	if (tStartStep > vector_size(&e->mAnimation->mSteps)) {
+		logWarningFormat("Trying to start animation with start step larger than animation element count: %d vs %d. Defaulting to step count.\n", tStartStep, vector_size(&e->mAnimation->mSteps));
+		tStartStep = vector_size(&e->mAnimation->mSteps);
 	}
 
 	e->mOverallTime = getTimeWhenStepStarts(e, tStartStep) - 1;
@@ -594,6 +599,12 @@ double getMugenAnimationColorBlue(MugenAnimationHandlerElement* e)
 	return e->mB;
 }
 
+Position* getMugenAnimationBasePosition(MugenAnimationHandlerElement* e)
+{
+	assert(e->mHasBasePositionReference);
+	return e->mBasePositionReference;
+}
+
 double * getMugenAnimationColorRedReference(MugenAnimationHandlerElement* e)
 {
 	return &e->mR;
@@ -918,31 +929,28 @@ typedef struct {
 	Position2D mCameraCenter;
 } DrawSingleMugenAnimationSpriteCaller;
 
-static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
+static void drawSingleMugenAnimationSprite(MugenSpriteFileSubSprite& tSprite, DrawSingleMugenAnimationSpriteCaller& tCaller) {
 	setProfilingSectionMarkerCurrentFunction();
 
-	DrawSingleMugenAnimationSpriteCaller* caller = (DrawSingleMugenAnimationSpriteCaller*)tCaller;
-	MugenSpriteFileSubSprite* sprite = (MugenSpriteFileSubSprite*)tData;
+	MugenAnimationHandlerElement* e = tCaller.e;
+	MugenAnimationStep* step = tCaller.mStep;
+	Position p = tCaller.mBasePosition;
+	p = p + Vector2D(tSprite.mOffset.x, tSprite.mOffset.y);
 
-	MugenAnimationHandlerElement* e = caller->e;
-	MugenAnimationStep* step = caller->mStep;
-	Position p = caller->mBasePosition;
-	p = p + Vector2D(sprite->mOffset.x, sprite->mOffset.y);
-
-	const auto realSpriteSize = vecMinI2D(Vector2DI(e->mSprite->mOriginalTextureSize.x, e->mSprite->mOriginalTextureSize.y) - sprite->mOffset, Vector2DI(sprite->mTexture.mTextureSize.x, sprite->mTexture.mTextureSize.y));
+	const auto realSpriteSize = vecMinI2D(Vector2DI(e->mSprite->mOriginalTextureSize.x, e->mSprite->mOriginalTextureSize.y) - tSprite.mOffset, Vector2DI(tSprite.mTexture.mTextureSize.x, tSprite.mTexture.mTextureSize.y));
 	auto texturePos = makeRectangle(0, 0, realSpriteSize.x - 1, realSpriteSize.y - 1);
 
 	if (e->mHasRectangleWidth) {
-		int newWidth = e->mRectangleWidth - sprite->mOffset.x;
+		int newWidth = e->mRectangleWidth - tSprite.mOffset.x;
 		if (newWidth <= 0) return;
-		newWidth = min(newWidth, sprite->mTexture.mTextureSize.x);
+		newWidth = min(newWidth, tSprite.mTexture.mTextureSize.x);
 		texturePos.bottomRight.x = texturePos.topLeft.x + newWidth;
 	}
 
 	if (e->mHasRectangleHeight) {
-		int newHeight = e->mRectangleHeight - sprite->mOffset.y;
+		int newHeight = e->mRectangleHeight - tSprite.mOffset.y;
 		if (newHeight <= 0) return;
-		newHeight = min(newHeight, sprite->mTexture.mTextureSize.y);
+		newHeight = min(newHeight, tSprite.mTexture.mTextureSize.y);
 		texturePos.bottomRight.y = texturePos.topLeft.y + newHeight;
 	}
 
@@ -999,7 +1007,7 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		texturePos.bottomRight.y = originalTexturePos.topLeft.y;
 	}
 
-	Vector2D animationStepDelta = caller->mDelta;
+	Vector2D animationStepDelta = tCaller.mDelta;
 	if (!e->mIsFacingRight) {
 		animationStepDelta.x = -animationStepDelta.x;
 	}
@@ -1024,8 +1032,8 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 	setDrawingColorFactor(e->mColorFactor);
 	setDrawingBaseColorOffsetAdvanced(e->mOffsetR, e->mOffsetG, e->mOffsetB);
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
-	setDrawingTransparency(e->mAlpha * caller->mSrcBlendFactor);
-	setDrawingDestinationTransparency(e->mDestinationAlpha * caller->mDstBlendFactor);
+	setDrawingTransparency(e->mAlpha * tCaller.mSrcBlendFactor);
+	setDrawingDestinationTransparency(e->mDestinationAlpha * tCaller.mDstBlendFactor);
 
 	if (e->mHasCameraScaleReference && *e->mCameraScaleReference != Vector3D(1, 1, 1)) {
 		auto scaledCameraScale = *e->mCameraScaleReference;
@@ -1033,30 +1041,30 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 			const auto cameraScaleDelta = (*e->mCameraScaleReference) - Vector3D(1.0, 1.0, 1.0);
 			scaledCameraScale = Vector3D(1.0, 1.0, 1.0) + (cameraScaleDelta * e->mCameraScaleFactor);
 		}
-		scaleDrawing2D(scaledCameraScale.xy(), caller->mCameraCenter + gMugenAnimationHandler.mPixelCenter);
+		scaleDrawing2D(scaledCameraScale.xy(), tCaller.mCameraCenter + gMugenAnimationHandler.mPixelCenter);
 	}
 	if (e->mHasCameraAngleReference && *e->mCameraAngleReference) {
-		setDrawingRotationZ(*e->mCameraAngleReference, caller->mCameraCenter + gMugenAnimationHandler.mPixelCenter);
+		setDrawingRotationZ(*e->mCameraAngleReference, tCaller.mCameraCenter + gMugenAnimationHandler.mPixelCenter);
 	}
 
-	if ((caller->mScale != Vector2D(1, 1)) || (caller->mStepScaleX != 1.0) || (caller->mStepScaleY != 1.0)) {
-		scaleDrawing2D(caller->mScale * Vector2D(caller->mStepScaleX, caller->mStepScaleY), caller->mScalePosition + gMugenAnimationHandler.mPixelCenter);
+	if ((tCaller.mScale != Vector2D(1, 1)) || (tCaller.mStepScaleX != 1.0) || (tCaller.mStepScaleY != 1.0)) {
+		scaleDrawing2D(tCaller.mScale * Vector2D(tCaller.mStepScaleX, tCaller.mStepScaleY), tCaller.mScalePosition + gMugenAnimationHandler.mPixelCenter);
 	}
 
-	if (caller->mAngle || caller->mStepAngleRad) {
-		setDrawingRotationZ(caller->mAngle + caller->mStepAngleRad, caller->mScalePosition + gMugenAnimationHandler.mPixelCenter);
+	if (tCaller.mAngle || tCaller.mStepAngleRad) {
+		setDrawingRotationZ(tCaller.mAngle + tCaller.mStepAngleRad, tCaller.mScalePosition + gMugenAnimationHandler.mPixelCenter);
 	}
 
-	if (caller->e->mHasShear) {
+	if (tCaller.e->mHasShear) {
 		const auto sizeX = abs(texturePos.bottomRight.x - texturePos.topLeft.x) + 1;
 		const auto sizeY = abs(texturePos.bottomRight.y - texturePos.topLeft.y) + 1;
-		const auto scaleCenterX = caller->mScalePosition.x + gMugenAnimationHandler.mPixelCenter.x;
+		const auto scaleCenterX = tCaller.mScalePosition.x + gMugenAnimationHandler.mPixelCenter.x;
 		const auto dLeftTotalTop = (p.x - scaleCenterX);
 		const auto dRightTotalTop = ((p.x + sizeX) - scaleCenterX);
 		const auto dLeftTotalBottom = dLeftTotalTop * e->mShearLowerScaleDeltaX;
 		const auto dRightTotalBottom = dRightTotalTop * e->mShearLowerScaleDeltaX;
-		const auto parallaxTUp = sprite->mOffset.y / double(e->mSprite->mOriginalTextureSize.y);
-		const auto parallaxTDown = (sprite->mOffset.y + realSpriteSize.y) / double(e->mSprite->mOriginalTextureSize.y);
+		const auto parallaxTUp = tSprite.mOffset.y / double(e->mSprite->mOriginalTextureSize.y);
+		const auto parallaxTDown = (tSprite.mOffset.y + realSpriteSize.y) / double(e->mSprite->mOriginalTextureSize.y);
 		const auto dLeftDeltaPosTop = parallaxTUp * dLeftTotalBottom + (1.0 - parallaxTUp) * dLeftTotalTop;
 		const auto dRightDeltaPosTop = parallaxTUp * dRightTotalBottom + (1.0 - parallaxTUp) * dRightTotalTop;
 		const auto dLeftDeltaPosBottom = parallaxTDown * dLeftTotalBottom + (1.0 - parallaxTDown) * dLeftTotalTop;
@@ -1065,10 +1073,10 @@ static void drawSingleMugenAnimationSpriteCB(void* tCaller, void* tData) {
 		const auto rightTop = e->mShearLowerOffsetX * parallaxTUp + scaleCenterX + dRightDeltaPosTop;
 		const auto leftBottom = e->mShearLowerOffsetX * parallaxTDown + scaleCenterX + dLeftDeltaPosBottom;
 		const auto rightBottom = e->mShearLowerOffsetX * parallaxTDown + scaleCenterX + dRightDeltaPosBottom;
-		drawSpriteNoRectangle(sprite->mTexture, Vector3D(leftTop, p.y, p.z), Vector3D(rightTop, p.y, p.z), Vector3D(leftBottom, p.y + sizeY, p.z), Vector3D(rightBottom, p.y + sizeY, p.z), texturePos);
+		drawSpriteNoRectangle(tSprite.mTexture, Vector3D(leftTop, p.y, p.z), Vector3D(rightTop, p.y, p.z), Vector3D(leftBottom, p.y + sizeY, p.z), Vector3D(rightBottom, p.y + sizeY, p.z), texturePos);
 	}
 	else {
-		drawSprite(sprite->mTexture, p, texturePos);
+		drawSprite(tSprite.mTexture, p, texturePos);
 	}
 	setDrawingParametersToIdentity();
 }
@@ -1229,7 +1237,10 @@ static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement
 		caller.mStepAngleRad = step->mAngleRad;
 	}
 
-	list_map(&e->mSprite->mTextures, drawSingleMugenAnimationSpriteCB, &caller);
+	for (auto& texture : e->mSprite->mTextures)
+	{
+		drawSingleMugenAnimationSprite(texture, caller);
+	}
 }
 
 static void drawMugenAnimationHandler(void* tData) {

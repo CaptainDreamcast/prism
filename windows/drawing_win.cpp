@@ -13,6 +13,7 @@
 #elif defined _WIN32
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include "prism/windows/debugimgui_win.h"
 #endif
 
 #include "prism/log.h"
@@ -512,6 +513,7 @@ void drawSprite(const TextureData& tTexture, const Position& tPos, const Rectang
 	if (gPrismWindowsDrawingData.mIsDisabled) return;
 	if (isCulledOutsideScreen(tPos, tTexturePosition)) return;
 
+	assert(tPos.z >= 0);
 	const auto sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
 	const auto sizeY = abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y) + 1;
 	drawSpriteNoRectangle(tTexture, tPos, Vector3D(tPos.x + sizeX, tPos.y, tPos.z), Vector3D(tPos.x, tPos.y + sizeY, tPos.z), Vector3D(tPos.x + sizeX, tPos.y + sizeY, tPos.z), tTexturePosition);
@@ -839,6 +841,10 @@ void stopDrawing() {
 	clearDrawVector();
 
 #ifndef __EMSCRIPTEN__
+	if (isImguiPrismActive())
+	{
+		imguiPrismRenderEnd();
+	}
 	drawFBOToScreen();
 #endif
 

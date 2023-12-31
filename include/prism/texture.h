@@ -55,3 +55,5 @@ Buffer twiddleTextureBuffer16(const Buffer& tBuffer, int tWidth, int tHeight);
 
 void saveScreenShot(const char* tFileDir);
 void saveRGB32ToPNG(const Buffer& b, int tWidth, int tHeight, const char* tFileDir);
+
+void imguiTextureData(const std::string_view& tName, const TextureData& tTextureData);

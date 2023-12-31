@@ -10,17 +10,6 @@
 #include <memory>
 #include <functional>
 
-// until we use c++14 with DC, define make_unique ourselves
-#ifdef DREAMCAST
-namespace std {
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args)
-{
-	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
-}
-#endif
-
 template <class K, class V>
 void stl_new_map(std::map<K, V>& tMap) {
 	tMap.clear();
@@ -201,13 +190,13 @@ void stl_string_map_map(std::unordered_map<std::string, T> &tMap, void(*tFunc)(C
 }
 
 template<class K, class V>
-int stl_map_contains(std::map<K, V>& tMap, K tID)
+int stl_map_contains(const std::map<K, V>& tMap, K tID)
 {
 	return tMap.find(tID) != tMap.end();
 }
 
 template<class K, class V>
-int stl_map_contains(std::unordered_map<K, V>& tMap, K tID)
+int stl_map_contains(const std::unordered_map<K, V>& tMap, K tID)
 {
 	return tMap.find(tID) != tMap.end();
 }
@@ -325,7 +314,6 @@ void stl_list_map(std::list<T> &tList, void(*tFunc)(C* tCaller, T& tData), C* tC
 
 	while (it != tList.end()) {
 		T &val = *it;
-		typename std::list<T>::iterator current = it;
 		it++;
 		tFunc(tCaller, val);
 	}
@@ -337,8 +325,14 @@ void stl_list_map(std::list<T> &tList, void(*tFunc)(T& tData)) {
 
 	while (it != tList.end()) {
 		T &val = *it;
-		typename std::list<T>::iterator current = it;
 		it++;
 		tFunc(val);
 	}
+}
+
+template <class T>
+T& stl_list_at(std::list<T>& tList, size_t index) {
+	auto it = tList.begin();
+	std::advance(it, index);
+	return *it;
 }

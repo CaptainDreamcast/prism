@@ -19,7 +19,7 @@ PROJECT_TITLE := Prism
 PROJECT_TITLEID := VSDK00006
 
 PROJECT := prism
-CXXFLAGS += -std=c++14 -Wl,-q -O2 -g -mtune=cortex-a9 -mfpu=neon -ftree-vectorize -I ./include -DVITA
+CXXFLAGS += -std=c++17 -Wl,-q -O2 -g -mtune=cortex-a9 -mfpu=neon -ftree-vectorize -I ./include -DVITA
 
 
 all: $(TARGET) install

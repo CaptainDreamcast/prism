@@ -49,6 +49,9 @@
 #include "prism/math.h"
 #include "prism/netplay.h"
 
+#ifdef _WIN32
+#include "prism/windows/debugimgui_win.h"
+#endif
 
 typedef struct {
 	int mIsPaused;
@@ -101,7 +104,7 @@ static void initBasicSystems() {
 	debugLog("Initiating memory handler.");
 	initMemoryHandler();
 #ifdef PRISM_PROFILING_ACTIVE
-	logg("Initiating profiling.");
+	debugLog("Initiating profiling.");
 	initProfiling();
 #endif
 	debugLog("Initiating physics.");
@@ -110,6 +113,10 @@ static void initBasicSystems() {
 	initFileSystem();
 	debugLog("Initiating drawing.");
 	initDrawing();
+#ifdef _WIN32
+	debugLog("Initiating imgui.");
+	imguiPrismInitAfterDrawingSetup();
+#endif
 	debugLog("Initiating sound.");
 	initSound();
 	debugLog("Initiating sound effects.");
@@ -179,6 +186,9 @@ void shutdownPrismWrapper() {
 	shutdownThreading();
 	shutdownSound();
 	shutdownFileSystem();
+#ifdef _WIN32
+	imguiPrismShutdown();
+#endif
 #ifdef PRISM_PROFILING_ACTIVE
 	shutdownProfiling();
 #endif
@@ -401,11 +411,10 @@ static void unloadScreen(Screen* tScreen) {
 static void takeWrapperScreenshot() {
 	createDirectory("debug/screenshots");
 	for (int i = 1; i < 999; i++) {
-		std::stringstream ss, ss2;
-		ss << "debug/screenshots/screenshot" << i << ".png";
-		ss2 << "debug/screenshots/screenshot" << i << ".ppm";
-		if (!isFile(ss.str()) && !isFile(ss2.str())) {
-			saveScreenShot(ss.str().c_str());
+		const auto f1 = std::string("debug/screenshots/screenshot").append(std::to_string(i)).append(".png");
+		const auto f2 = std::string("debug/screenshots/screenshot").append(std::to_string(i)).append(".ppm");
+		if (!isFile(f1) && !isFile(f2)) {
+			saveScreenShot(f1.c_str());
 			break;
 		}
 	}
@@ -482,8 +491,25 @@ static void updateScreenAbort() {
 	}
 }
 
+#ifdef _WIN32
+static void drawWrapperImgui()
+{
+	imguiSystem();
+	imguiMemoryHandler();
+	imguiPhysics();
+	imguiFileGeneral();
+	imguiFileHardware();
+}
+#endif
+
 static void updateScreen() {
 	setProfilingSectionMarkerCurrentFunction();
+#ifdef _WIN32
+	if (isImguiPrismActive())
+	{
+		imguiPrismStartFrame();
+	}
+#endif
 	updateNetplay();
 	updateSystem();
 	updateInput();
@@ -517,6 +543,12 @@ static void drawScreen() {
 	setPrismDebugDrawingStartTime();
 	if (!isSkippingDrawing())
 	{
+#ifdef _WIN32
+		if (isImguiPrismActive())
+		{
+			imguiPrismRenderStart();
+		}
+#endif
 		startDrawing();
 		drawHandledAnimations();
 		drawHandledCollisions();
@@ -526,6 +558,16 @@ static void drawScreen() {
 			gPrismWrapperData.mScreen->mDraw();
 		}
 
+#ifdef _WIN32
+		if (isImguiPrismActive())
+		{
+			drawWrapperImgui();
+		}
+#endif
+		if (isInDevelopMode() && gPrismWrapperData.mScreen->mDebug)
+		{
+			gPrismWrapperData.mScreen->mDebug();
+		}
 		stopDrawing();
 	}
 }
@@ -594,13 +636,14 @@ void setNewScreen(Screen * tScreen)
 	gPrismWrapperData.mNext = tScreen;
 }
 
-Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate, DrawScreenFunction tDraw, UnloadScreenFunction tUnload, Screen*(*tGetNextScreen)()) {
+Screen makeScreen(LoadScreenFunction tLoad, UpdateScreenFunction tUpdate, DrawScreenFunction tDraw, UnloadScreenFunction tUnload, Screen*(*tGetNextScreen)(), DebugScreenFunction tDebug) {
 	Screen ret;
 	ret.mLoad = tLoad;
 	ret.mUpdate = tUpdate;
 	ret.mDraw = tDraw;
 	ret.mUnload = tUnload;
 	ret.mGetNextScreen = tGetNextScreen;
+	ret.mDebug = tDebug;
 	return ret;
 }
 

@@ -112,3 +112,9 @@ void printDirectory(const char* tPath);
 std::string sanitizeFileNameWithInvalidCharacters(const std::string& tPathWithInvalidCharacters);
 int isDebugMinusCheckEnabled();
 void setDebugMinusCheckEnabled(int tIsEnabled);
+
+#ifdef _WIN32
+void imguiFileGeneral();
+void imguiFileHardware();
+void imguiBuffer(const std::string_view& tName, const Buffer& tBuffer);
+#endif

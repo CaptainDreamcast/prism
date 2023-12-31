@@ -3,7 +3,7 @@ TARGET = 1ST_READ
 OBJS += romdisk.o
 OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -DDREAMCAST -Wall -fpermissive
 KOS_CPPFLAGS+= $(OPTFLAGS)
-CXXFLAGS += -DNDEBUG -std=c++11 -Wall -O2
+CXXFLAGS += -DNDEBUG -std=c++17 -Wall -O2
 KOS_ROMDISK_DIR = romdisk_boot
 
 complete: make_filesystem build_develop
@@ -51,7 +51,7 @@ clean_general:
 	-rm -f assets/debug/*.pkg
 
 build_develop: $(OBJS) 
-	kos-c++ -fno-operator-names -fno-rtti -fno-exceptions -std=c++11 \
+	kos-c++ -fno-operator-names -fno-rtti -fno-exceptions -std=c++17 \
 	-DDEVELOP -I/home/captaindc/dc/kos/../extensions/include -D_arch_dreamcast \
 	-DNDEBUG \
 	-D_arch_sub_pristine -Wall -g -fno-builtin -fno-strict-aliasing  -ml -m4-single-only \

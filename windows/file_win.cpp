@@ -16,6 +16,23 @@ static struct {
 	int mIsUsingRomdisk;
 } gPrismWindowsFileData;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+void imguiFileHardware()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "File Hardware", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("File Hardware", &isWindowShown);
+		ImGui::Text("cwd = %s", gPrismWindowsFileData.cwd);
+		ImGui::Text("FileSystem = %s", gPrismWindowsFileData.mFileSystem);
+		ImGui::Text("IsUsingRomdisk = %d", gPrismWindowsFileData.mIsUsingRomdisk);
+		ImGui::End();
+	}
+}
+#endif
 
 extern char romdisk_buffer[];
 extern int romdisk_buffer_length;

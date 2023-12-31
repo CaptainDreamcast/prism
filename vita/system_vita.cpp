@@ -227,6 +227,13 @@ void setScreenFramerate(int tFramerate) {
 	(void)tFramerate;
 }
 
+void setScreenPosition(int, int) {
+	// impossible to change under Vita
+}
+void setScreenFullscreen(bool) {
+	// impossible to change under Vita
+}
+
 void setVGA() {
 	
 }
