@@ -101,10 +101,8 @@ void setIcon(const char * tPath)
 }
 
 #ifdef _WIN32
-#define Rectangle Rectangle2
 #include <windows.h>
 #include <direct.h>
-#undef Rectangle
 #endif
 
 static void setToProgramDirectory() {

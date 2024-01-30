@@ -27,7 +27,7 @@ struct AnimationHandlerElement {
 	AnimationPlayerCB mCB;
 
 	Position mPosition;
-	Rectangle mTexturePosition;
+	PrismRectangle mTexturePosition;
 	TextureData* mTextureData;
 	Animation mAnimation;
 	int mIsLooped;
@@ -73,11 +73,11 @@ double getDurationPercentage(Duration tNow, Duration tDuration);
 void setupAnimationHandler();
 void updateAnimationHandler();
 void drawHandledAnimations();
-AnimationHandlerElement* playAnimation(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller);
-AnimationHandlerElement* playAnimationLoop(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition);
+AnimationHandlerElement* playAnimation(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const PrismRectangle& tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller);
+AnimationHandlerElement* playAnimationLoop(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const PrismRectangle& tTexturePosition);
 AnimationHandlerElement* playOneFrameAnimationLoop(const Position& tPosition, TextureData* tTextures);
 
-void changeAnimation(AnimationHandlerElement* tElement, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition);
+void changeAnimation(AnimationHandlerElement* tElement, TextureData* tTextures, const Animation& tAnimation, const PrismRectangle& tTexturePosition);
 
 
 void setAnimationScreenPositionReference(AnimationHandlerElement* tElement, Position* tScreenPositionReference);
@@ -91,7 +91,7 @@ void setAnimationTransparency(AnimationHandlerElement* tElement, double a);
 void setAnimationVisibility(AnimationHandlerElement* tElement, int tIsVisible);
 void setAnimationCB(AnimationHandlerElement* tElement, AnimationPlayerCB tCB, void* tCaller);
 void setAnimationPosition(AnimationHandlerElement* tElement, const Position& tPosition);
-void setAnimationTexturePosition(AnimationHandlerElement* tElement, const Rectangle& tTexturePosition);
+void setAnimationTexturePosition(AnimationHandlerElement* tElement, const PrismRectangle& tTexturePosition);
 void setAnimationLoop(AnimationHandlerElement* tElement, int tIsLooping);
 void removeAnimationCB(AnimationHandlerElement* tElement);
 void fadeInAnimation(AnimationHandlerElement* tElement, Duration tDuration);

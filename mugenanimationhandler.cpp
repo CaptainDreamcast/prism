@@ -858,6 +858,11 @@ void setMugenAnimationIsSpriteOffsetForcedToCenter(MugenAnimationHandlerElement*
 	e->mIsSpriteOffsetForcedToCenter = tIsSpriteOffsetForcedToCenter;
 }
 
+std::list<MugenAnimationHandlerHitboxElement>& getMugenAnimationActiveHitboxes(MugenAnimationHandlerElement* e)
+{
+	return e->mActiveHitboxes;
+}
+
 void resetMugenAnimation(MugenAnimationHandlerElement* e) {
 	changeMugenAnimation(e, e->mAnimation);
 }
@@ -983,7 +988,7 @@ static void drawSingleMugenAnimationSprite(MugenSpriteFileSubSprite& tSprite, Dr
 	if (hasPrismFlagDynamic(step->mFlags, MugenAnimationStepFlags::IS_FLIPPING_HORIZONTALLY)) isFacingRight ^= 1;
 
 	if (!isFacingRight) {
-		Rectangle originalTexturePos = texturePos;
+		PrismRectangle originalTexturePos = texturePos;
 		const auto& center = e->mPlayerPositionReference;
 		double deltaX = center.x - p.x;
 		double nRightX = center.x + deltaX;
@@ -997,7 +1002,7 @@ static void drawSingleMugenAnimationSprite(MugenSpriteFileSubSprite& tSprite, Dr
 	if (hasPrismFlagDynamic(step->mFlags, MugenAnimationStepFlags::IS_FLIPPING_VERTICALLY)) isFacingDown ^= 1;
 
 	if (!isFacingDown) {
-		Rectangle originalTexturePos = texturePos;
+		PrismRectangle originalTexturePos = texturePos;
 		const auto& center = e->mPlayerPositionReference;
 		double deltaY = center.y - p.y;
 		double nRightY = center.y + deltaY;

@@ -196,7 +196,7 @@ static void drawAnimationHandlerCB(void* tCaller, AnimationHandlerElement& tData
 		setDrawingTransparency(cur->mTransparency);
 	}
 
-	Rectangle texturePos = cur->mTexturePosition;
+	PrismRectangle texturePos = cur->mTexturePosition;
 
 	if(cur->mInversionState.x) {
 		Position center = vecAdd(cur->mCenter, p);
@@ -233,7 +233,7 @@ static void emptyAnimationHandler(){
 	gAnimationHandler.mList.clear();
 }
 
-static AnimationHandlerElement* playAnimationInternal(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller, int tIsLooped){
+static AnimationHandlerElement* playAnimationInternal(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const PrismRectangle& tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller, int tIsLooped){
 	
 	AnimationHandlerElement e;
 	e.mCaller = tCaller;
@@ -260,22 +260,22 @@ static AnimationHandlerElement* playAnimationInternal(const Position& tPosition,
 }
 
 
-AnimationHandlerElement* playAnimation(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller){
+AnimationHandlerElement* playAnimation(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const PrismRectangle& tTexturePosition, AnimationPlayerCB tOptionalCB, void* tCaller){
 	return playAnimationInternal(tPosition, tTextures, tAnimation, tTexturePosition, tOptionalCB, tCaller, 0);	
 
 }
 
-AnimationHandlerElement* playAnimationLoop(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition){
+AnimationHandlerElement* playAnimationLoop(const Position& tPosition, TextureData* tTextures, const Animation& tAnimation, const PrismRectangle& tTexturePosition){
 	return playAnimationInternal(tPosition, tTextures, tAnimation, tTexturePosition, NULL, NULL, 1);
 }
 
 AnimationHandlerElement* playOneFrameAnimationLoop(const Position& tPosition, TextureData* tTextures) {
 	Animation anim = createOneFrameAnimation();
-	Rectangle rect = makeRectangleFromTexture(tTextures[0]);
+	PrismRectangle rect = makeRectangleFromTexture(tTextures[0]);
 	return playAnimationLoop(tPosition, tTextures, anim, rect);
 }
 
-void changeAnimation(AnimationHandlerElement* e, TextureData* tTextures, const Animation& tAnimation, const Rectangle& tTexturePosition) {
+void changeAnimation(AnimationHandlerElement* e, TextureData* tTextures, const Animation& tAnimation, const PrismRectangle& tTexturePosition) {
 	e->mTexturePosition = tTexturePosition;
 	e->mTextureData = tTextures;
 	e->mAnimation = tAnimation;
@@ -358,7 +358,7 @@ void setAnimationPosition(AnimationHandlerElement* e, const Position& tPosition)
 	e->mPosition = tPosition;
 }
 
-void setAnimationTexturePosition(AnimationHandlerElement* e, const Rectangle& tTexturePosition)
+void setAnimationTexturePosition(AnimationHandlerElement* e, const PrismRectangle& tTexturePosition)
 {
 	e->mTexturePosition = tTexturePosition;
 }

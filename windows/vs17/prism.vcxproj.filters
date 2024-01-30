@@ -194,6 +194,9 @@
     <ClInclude Include="..\..\include\prism\blitztimelineanimation.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzclick.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\prism\blitzcollision.h">
       <Filter>hdr</Filter>
     </ClInclude>
@@ -332,6 +335,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\blitzcamerahandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzclick.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\blitzcollision.cpp">

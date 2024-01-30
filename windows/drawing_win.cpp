@@ -90,9 +90,7 @@ static const GLchar* gFragmentShader =
 "}\n";
 
 #ifndef __EMSCRIPTEN__
-#define Rectangle Rectangle2
 #include <Windows.h>
-#undef Rectangle
 #endif
 
 using namespace std;
@@ -128,7 +126,7 @@ struct DrawListSpriteElement{
 	Position2D mTopRight;
 	Position2D mBottomLeft;
 	Position2D mBottomRight;
-	Rectangle mTexturePosition;
+	PrismRectangle mTexturePosition;
 
 	DrawingData mData;
 	double mZ;
@@ -486,7 +484,7 @@ void initDrawing() {
 	initOpenGL();
 }
 
-static int isCulledOutsideScreen(const Position& tPos, const Rectangle& tTexturePosition) {
+static int isCulledOutsideScreen(const Position& tPos, const PrismRectangle& tTexturePosition) {
 	setProfilingSectionMarkerCurrentFunction();
 
 	const auto sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
@@ -508,7 +506,7 @@ static int isCulledOutsideScreen(const Position& tPos, const Rectangle& tTexture
 	return 0;
 }
 
-void drawSprite(const TextureData& tTexture, const Position& tPos, const Rectangle& tTexturePosition) {
+void drawSprite(const TextureData& tTexture, const Position& tPos, const PrismRectangle& tTexturePosition) {
 	setProfilingSectionMarkerCurrentFunction();
 	if (gPrismWindowsDrawingData.mIsDisabled) return;
 	if (isCulledOutsideScreen(tPos, tTexturePosition)) return;
@@ -520,7 +518,7 @@ void drawSprite(const TextureData& tTexture, const Position& tPos, const Rectang
 }
 
 
-void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition)
+void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const PrismRectangle& tTexturePosition)
 {
 	setProfilingSectionMarkerCurrentFunction();
 	if (gPrismWindowsDrawingData.mIsDisabled) return;
@@ -947,7 +945,7 @@ void drawMultilineText(const char* tText, const char* tFullText, const Position&
 	while (tText[current] != '\0') {
 		FontCharacterData charData = getFontCharacterData(tText[current]);
 
-		Rectangle tTexturePosition;
+		PrismRectangle tTexturePosition;
 		tTexturePosition.topLeft.x = (int)(fontData.mTextureSize.x*charData.mFilePositionX1);
 		tTexturePosition.topLeft.y = (int)(fontData.mTextureSize.y*charData.mFilePositionY1);
 		tTexturePosition.bottomRight.x = (int)(fontData.mTextureSize.x*charData.mFilePositionX2);

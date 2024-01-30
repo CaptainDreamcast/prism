@@ -464,3 +464,9 @@ void setBlitzMugenAnimationInvisible(int tEntityID)
 	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 	setMugenAnimationInvisible(e->mAnimationElement);
 }
+
+std::list<MugenAnimationHandlerHitboxElement>& getBlitzMugenAnimationActiveHitboxes(int tEntityID)
+{
+	BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+	return getMugenAnimationActiveHitboxes(e->mAnimationElement);
+}

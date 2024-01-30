@@ -315,9 +315,7 @@ TextureData loadPalettedTextureFrom8BitBuffer(const Buffer& b, int tPaletteID, i
 }
 
 #ifdef _WIN32
-#define Rectangle Rectangle2
 #include <Windows.h>
-#undef Rectangle
 // Get system font file path (Taken from https://stackoverflow.com/questions/11387564/get-a-font-filepath-from-name-and-style-in-c-windows)
 static std::string getSystemFontFile(const std::string& tFaceName) {
 
@@ -378,9 +376,7 @@ static std::string getSystemFontFile(const std::string& tFaceName) {
 	WCHAR winDir[MAX_PATH];
 	GetWindowsDirectory(winDir, MAX_PATH);
 
-	std::wstringstream ss;
-	ss << winDir << "\\Fonts\\" << wsFontFile;
-	wsFontFile = ss.str();
+	wsFontFile = std::wstring(winDir).append(L"\\Fonts\\").append(wsFontFile);
 
 #pragma warning( push )
 #pragma warning( disable : 4244 ) // implicit conversion from wstring element to string element, but it's intended

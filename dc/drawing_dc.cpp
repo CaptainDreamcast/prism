@@ -81,7 +81,7 @@ void initDrawing(){
 
 #define PVR_OARGB_FLAG_ACTIVE	4   /**< \brief Taken from: https://dcemulation.org/phpBB/viewtopic.php?f=29&t=104921 */
 
-static void sendSpriteToPVR(const TextureData& tTexture, const Rectangle& tTexturePosition, pvr_vertex_t* vert) {
+static void sendSpriteToPVR(const TextureData& tTexture, const PrismRectangle& tTexturePosition, pvr_vertex_t* vert) {
   //sem_wait(&gPVRAccessSemaphore);
 
   referenceTextureMemory(tTexture.mTexture);
@@ -183,7 +183,7 @@ static void sendSpriteToPVR(const TextureData& tTexture, const Rectangle& tTextu
   //sem_signal(&gPVRAccessSemaphore);
 }
 
-void drawSprite(const TextureData& tTexture, const Position& tPos, const Rectangle& tTexturePosition) {
+void drawSprite(const TextureData& tTexture, const Position& tPos, const PrismRectangle& tTexturePosition) {
 	if (gPrismDreamcastDrawingData.mIsDisabled) return;
 
 	const auto sizeX = abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x) + 1;
@@ -191,7 +191,7 @@ void drawSprite(const TextureData& tTexture, const Position& tPos, const Rectang
 	drawSpriteNoRectangle(tTexture, tPos, Vector3D(tPos.x + sizeX, tPos.y, tPos.z), Vector3D(tPos.x, tPos.y + sizeY, tPos.z), Vector3D(tPos.x + sizeX, tPos.y + sizeY, tPos.z), tTexturePosition);
 }
 
-void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition) {
+void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const PrismRectangle& tTexturePosition) {
   if(gPrismDreamcastDrawingData.mIsDisabled) return;
 
   debugLog("Draw Sprite");

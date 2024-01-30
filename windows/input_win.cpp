@@ -795,3 +795,24 @@ int isNetplayInputConfirmed() {
 	const auto& confirmationState = *(gPrismWindowsInputData.mKeyboards[PRISM_KEYBOARD_NETPLAY].mConfirmationState.rbegin() + gPrismWindowsInputData.mInputDelay);
 	return confirmationState;
 }
+Vector2D getMousePointerPosition()
+{
+	int x, y;
+	SDL_GetMouseState(&x, &y);
+	const auto sz = getScreenSize();
+	const auto displaySize = getDisplayedScreenSize();
+	const auto scaleX = sz.x / (double)displaySize.x;
+	const auto scaleY = sz.y / (double)displaySize.y;
+    return Vector2D(x * scaleX, y * scaleY);
+}
+
+bool isMouseInRectangle(const GeoRectangle2D& tRectangle)
+{
+	const auto pos = getMousePointerPosition();
+	return pos.x >= tRectangle.mTopLeft.x && pos.x <= tRectangle.mBottomRight.x && pos.y >= tRectangle.mTopLeft.y && pos.y <= tRectangle.mBottomRight.y;
+
+}
+bool isMouseLeftPressed()
+{
+	return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT);
+}

@@ -1,8 +1,6 @@
 #include "prism/netplay.h"
 
-#define Rectangle Rectangle2
 #include <enet/enet.h>
-#undef Rectangle
 
 #include <assert.h>
 #include <queue>
@@ -116,10 +114,10 @@ static struct
 
     uint64_t mLastReceivedTimeStamp;
     int mSyncedFrameIndex;
-    int mLastReceivedFrameIndex;
+    int64_t mLastReceivedFrameIndex;
     int mInputDelay;
     int mConnectSyncFrame;
-    int mNegotiationIndex;
+    uint32_t mNegotiationIndex;
 
     FrameDelayInfo mFrameDelayInfo;
 
@@ -655,5 +653,5 @@ int getNetplaySyncFrame() {
 }
 int getNetplayLastReceivedFrame()
 {
-    return gNetplayData.mLastReceivedFrameIndex;
+    return int(gNetplayData.mLastReceivedFrameIndex);
 }

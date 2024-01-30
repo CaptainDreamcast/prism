@@ -150,7 +150,7 @@ static void drawSelector() {
 	double selectorFactor =  gPrismOptionHandlerData.mTextSize / (double)gPrismOptionHandlerData.mSelector.mTextureSize.x;
 
 	p = vecAdd(p, Vector3D(-gPrismOptionHandlerData.mTextSize, 0, 0));
-	Rectangle r = makeRectangleFromTexture(gPrismOptionHandlerData.mSelector);
+	PrismRectangle r = makeRectangleFromTexture(gPrismOptionHandlerData.mSelector);
 	scaleDrawing(selectorFactor, p);
 	drawSprite(gPrismOptionHandlerData.mSelector, p, r);
 	setDrawingParametersToIdentity();

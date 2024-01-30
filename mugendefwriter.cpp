@@ -240,15 +240,11 @@ void saveMugenDefString(ModifiableMugenDefScript* tScript, const char* tGroupNam
 
 void saveMugenDefFloat(ModifiableMugenDefScript* tScript, const char* tGroupName, const char* tVariableName, double tValue)
 {
-	std::stringstream ss;
-	ss << tValue;
-	saveMugenDefString(tScript, tGroupName, tVariableName, ss.str());
+	saveMugenDefString(tScript, tGroupName, tVariableName, std::to_string(tValue));
 }
 
 void saveMugenDefInteger(ModifiableMugenDefScript* tScript, const char* tGroupName, const char* tVariableName, int tValue) {
-	std::stringstream ss;
-	ss << tValue;
-	saveMugenDefString(tScript, tGroupName, tVariableName, ss.str());
+	saveMugenDefString(tScript, tGroupName, tVariableName, std::to_string(tValue));
 }
 
 void saveMugenDefString(const std::string& tPath, const char* tGroupName, size_t tGroupOffset, const char* tVariableName, const std::string& tValue)

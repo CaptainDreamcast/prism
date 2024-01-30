@@ -187,7 +187,7 @@ static void loadStoryboardTextureTexture(Storyboard* e, StoryBoardTextureStruct*
 		}
 	}
 
-	Rectangle rect;
+	PrismRectangle rect;
 	rect.topLeft.x = (int)tTexture->TexturePositionX1*e->mState.mTextures[slot].mTextures[0].mTextureSize.x;
 	rect.topLeft.y = (int)tTexture->TexturePositionY1*e->mState.mTextures[slot].mTextures[0].mTextureSize.y;
 	rect.bottomRight.x = (int)tTexture->TexturePositionX2*e->mState.mTextures[slot].mTextures[0].mTextureSize.x;

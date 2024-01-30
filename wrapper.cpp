@@ -41,6 +41,7 @@
 #include "prism/blitzcamerahandler.h"
 #include "prism/blitztimelineanimation.h"
 #include "prism/blitzcollision.h"
+#include "prism/blitzclick.h"
 #include "prism/blitzparticles.h"
 #include "prism/thread.h"
 #include "prism/loadingscreen.h"
@@ -324,6 +325,7 @@ static void loadScreen(Screen* tScreen) {
 		instantiateActor(getBlitzMugenAnimationHandler());
 		instantiateActor(getBlitzMugenSoundHandler());
 		instantiateActor(getBlitzCollisionHandler());
+		instantiateActor(getBlitzClickHandler());
 		instantiateActor(getBlitzPhysicsHandler());
 		instantiateActor(getBlitzTimelineAnimationHandler());
 	}

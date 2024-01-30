@@ -104,6 +104,7 @@
     <ClInclude Include="..\..\include\prism\animation.h" />
     <ClInclude Include="..\..\include\prism\animationtree.h" />
     <ClInclude Include="..\..\include\prism\blitz.h" />
+    <ClInclude Include="..\..\include\prism\blitzclick.h" />
     <ClInclude Include="..\..\include\prism\blitzcollision.h" />
     <ClInclude Include="..\..\include\prism\blitzmugenanimation.h" />
     <ClInclude Include="..\..\include\prism\blitzcamerahandler.h" />
@@ -175,6 +176,7 @@
     <ClCompile Include="..\..\animation.cpp" />
     <ClCompile Include="..\..\animationtree.cpp" />
     <ClCompile Include="..\..\blitzcamerahandler.cpp" />
+    <ClCompile Include="..\..\blitzclick.cpp" />
     <ClCompile Include="..\..\blitzcollision.cpp" />
     <ClCompile Include="..\..\blitzcomponent.cpp" />
     <ClCompile Include="..\..\blitzentity.cpp" />

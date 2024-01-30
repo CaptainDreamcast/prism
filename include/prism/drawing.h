@@ -12,7 +12,7 @@ typedef struct {
 typedef struct {
   TexturePosition topLeft;
   TexturePosition bottomRight;
-} Rectangle;
+} PrismRectangle;
 
 typedef enum {
   COLOR_BLACK,
@@ -46,8 +46,8 @@ typedef enum {
 typedef int TextSize;
 
 void initDrawing();
-void drawSprite(const TextureData& tTexture, const Position& tPos, const Rectangle& tTexturePosition);
-void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const Rectangle& tTexturePosition);
+void drawSprite(const TextureData& tTexture, const Position& tPos, const PrismRectangle& tTexturePosition);
+void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft, const Position& tTopRight, const Position& tBottomLeft, const Position& tBottomRight, const PrismRectangle& tTexturePosition);
 void drawText(const char* tText, const Position& tPosition, TextSize tSize, Color tColor);
 void drawAdvancedText(const char* tText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, TextSize tBreakSize);
 void drawMultilineText(const char* tText, const char* tFullText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize);
@@ -87,12 +87,12 @@ void pushDrawingRotationZ(double tAngle, const Vector3D& tCenter);
 void popDrawingRotationZ();
 void popDrawingTranslation();
 
-Rectangle makeRectangle(int x, int y, int w, int h);
-Rectangle makeRectangleFromTexture(const TextureData& tTexture);
-Rectangle scaleRectangle(const Rectangle& tRect, const Vector3D& tScale);
-Rectangle translateRectangle(const Rectangle& tRect, const Position& tOffset);
+PrismRectangle makeRectangle(int x, int y, int w, int h);
+PrismRectangle makeRectangleFromTexture(const TextureData& tTexture);
+PrismRectangle scaleRectangle(const PrismRectangle& tRect, const Vector3D& tScale);
+PrismRectangle translateRectangle(const PrismRectangle& tRect, const Position& tOffset);
 Position getTextureMiddlePosition(const TextureData& tTexture);
-void printRectangle(const Rectangle& r);
+void printRectangle(const PrismRectangle& r);
 
 Vector3D makeFontSize(int x, int y);
 

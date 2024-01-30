@@ -78,3 +78,5 @@ int isBlitzMugenAnimationTimeOffsetInAnimation(int tEntityID, int tTime);
 int getBlitzMugenAnimationTimeWhenStepStarts(int tEntityID, int tStep);
 
 void setBlitzMugenAnimationCollisionDebug(int tEntityID, int tIsActive);
+
+std::list<MugenAnimationHandlerHitboxElement>& getBlitzMugenAnimationActiveHitboxes(int tEntityID);

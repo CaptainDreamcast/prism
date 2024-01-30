@@ -79,12 +79,12 @@ int hasToLinebreak(const char* tText, int tCurrent, const Position& tTopLeft, co
 	return (after.x > bottomRight.x);
 }
 
-Rectangle makeRectangleFromTexture(const TextureData& tTexture) {
+PrismRectangle makeRectangleFromTexture(const TextureData& tTexture) {
 	return makeRectangle(0, 0, tTexture.mTextureSize.x - 1, tTexture.mTextureSize.y - 1);
 }
 
-Rectangle scaleRectangle(const Rectangle& tRect, const Vector3D& tScale) {
-	Rectangle ret;
+PrismRectangle scaleRectangle(const PrismRectangle& tRect, const Vector3D& tScale) {
+	PrismRectangle ret;
 	ret.topLeft.x = (int)(tRect.topLeft.x*tScale.x);
 	ret.topLeft.y = (int)(tRect.topLeft.y*tScale.y);
 
@@ -93,8 +93,8 @@ Rectangle scaleRectangle(const Rectangle& tRect, const Vector3D& tScale) {
 	return ret;
 }
 
-Rectangle translateRectangle(const Rectangle& tRect, const Position& tOffset) {
-	Rectangle ret = tRect;
+PrismRectangle translateRectangle(const PrismRectangle& tRect, const Position& tOffset) {
+	PrismRectangle ret = tRect;
 	ret.topLeft.x += (int)tOffset.x;
 	ret.topLeft.y += (int)tOffset.y;
 
@@ -107,8 +107,8 @@ Position getTextureMiddlePosition(const TextureData& tTexture) {
 	return Vector3D(tTexture.mTextureSize.x / 2, tTexture.mTextureSize.y / 2, 0);
 }
 
-Rectangle makeRectangle(int x, int y, int w, int h) {
-	Rectangle ret;
+PrismRectangle makeRectangle(int x, int y, int w, int h) {
+	PrismRectangle ret;
 	ret.topLeft.x = x;
 	ret.topLeft.y = y;
 	ret.bottomRight.x = x + w;
@@ -116,8 +116,8 @@ Rectangle makeRectangle(int x, int y, int w, int h) {
 	return ret;
 }
 
-void printRectangle(const Rectangle& r) {
-	logg("Rectangle");
+void printRectangle(const PrismRectangle& r) {
+	logg("PrismRectangle");
 	logDouble(r.topLeft.x);
 	logDouble(r.topLeft.y);
 	logDouble(r.bottomRight.x);

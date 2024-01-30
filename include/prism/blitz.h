@@ -20,6 +20,7 @@
 #include "mugensoundfilereader.h"
 
 #include "blitzcamerahandler.h"
+#include "blitzclick.h"
 #include "blitzcollision.h"
 #include "blitzcomponent.h"
 #include "blitzentity.h"

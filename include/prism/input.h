@@ -227,3 +227,7 @@ void setInputUsedKeyboardByPlayer(int i, int tKeyboardIndex);
 void setInputUsedKeyboardMappingByPlayer(int i, int tMappingIndex);
 
 int isNetplayInputConfirmed();
+
+Vector2D getMousePointerPosition();
+bool isMouseInRectangle(const GeoRectangle2D& tRectangle);
+bool isMouseLeftPressed();

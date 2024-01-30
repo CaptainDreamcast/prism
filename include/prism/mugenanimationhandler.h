@@ -243,6 +243,8 @@ void setMugenAnimationShearX(MugenAnimationHandlerElement* tElement, double tLow
 void setMugenAnimationCoordinateSystemScale(MugenAnimationHandlerElement* tElement, double tCoordinateSystemScale);
 void setMugenAnimationIsSpriteOffsetForcedToCenter(MugenAnimationHandlerElement* tElement, int tIsSpriteOffsetForcedToCenter);
 
+std::list<MugenAnimationHandlerHitboxElement>& getMugenAnimationActiveHitboxes(MugenAnimationHandlerElement* tElement);
+
 void resetMugenAnimation(MugenAnimationHandlerElement* tElement);
 
 void pauseMugenAnimationHandler();
