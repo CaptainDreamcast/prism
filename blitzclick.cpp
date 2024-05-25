@@ -11,8 +11,6 @@ struct ClickEntry {
     int mEntityID;
     bool mIsPassiveHitboxCheck;
     bool mIsClicked;
-    bool mIsClickedReal;
-    bool mIsClickedLastFrame;
 };
 
 static struct {
@@ -34,15 +32,13 @@ static void unloadBlitzClickHandler(void*) {
 }
 
 static void updateSingleBlitzClickEntryPassiveAnimationHitbox(ClickEntry& e) {
-    e.mIsClickedLastFrame = e.mIsClickedReal;
-    e.mIsClickedReal = isMouseLeftPressed(); // TODO: proper mouse flanks
     const auto& activeHitBoxes = getBlitzMugenAnimationActiveHitboxes(e.mEntityID);
     for (const auto& activeHitBox : activeHitBoxes) {
         const auto offset = getBlitzEntityPosition(e.mEntityID);
         const auto rectangle = activeHitBox.mCollider.mImpl.mRect;
         const auto geoRect = GeoRectangle2D(rectangle.mTopLeft.x, rectangle.mTopLeft.y, rectangle.mBottomRight.x - rectangle.mTopLeft.x, rectangle.mBottomRight.y - rectangle.mTopLeft.y) + Vector2D(offset.x, offset.y);
         if (isMouseInRectangle(geoRect)) {
-            e.mIsClicked = e.mIsClickedReal && !e.mIsClickedLastFrame;
+            e.mIsClicked = hasPressedMouseLeftFlank();
         }
         else
         {
@@ -87,13 +83,11 @@ void addBlitzClickComponentPassiveAnimationHitbox(int tEntityID)
     auto& e = gBlitzClickData.mEntries[tEntityID];
     e.mIsPassiveHitboxCheck = true;
     e.mIsClicked = false;
-    e.mIsClickedReal = false;
-    e.mIsClickedLastFrame = false;
 }
 
 bool isBlitzEntityClicked(int tEntityID) {
     assert(gBlitzClickData.mEntries.count(tEntityID));
-    return gBlitzClickData.mEntries[tEntityID].mIsClicked && !gBlitzClickData.mEntries[tEntityID].mIsClickedLastFrame;
+    return gBlitzClickData.mEntries[tEntityID].mIsClicked;
 }
 
 static void unregisterEntity(int tEntityID) {

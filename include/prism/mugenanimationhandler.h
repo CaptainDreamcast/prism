@@ -183,6 +183,8 @@ void setMugenAnimationColorSolid(MugenAnimationHandlerElement* tElement, double 
 void setMugenAnimationTransparency(MugenAnimationHandlerElement* tElement, double tOpacity);
 void setMugenAnimationDestinationTransparency(MugenAnimationHandlerElement* tElement, double tOpacity);
 void setMugenAnimationPosition(MugenAnimationHandlerElement* tElement, const Position& tPosition);
+void setMugenAnimationPositionX(MugenAnimationHandlerElement* tElement, float tX);
+void setMugenAnimationPositionY(MugenAnimationHandlerElement* tElement, float tY);
 void setMugenAnimationBlendType(MugenAnimationHandlerElement* tElement, BlendType tBlendType);
 void setMugenAnimationSprites(MugenAnimationHandlerElement* tElement, MugenSpriteFile* tSprites);
 void setMugenAnimationConstraintRectangle(MugenAnimationHandlerElement* tElement, const GeoRectangle2D& tConstraintRectangle);

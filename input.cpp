@@ -7,6 +7,8 @@
 typedef struct InputStatus_t {
 	uint8_t mPrev[CONTROLLER_BUTTON_AMOUNT_PRISM];
 	uint8_t mCurrent[CONTROLLER_BUTTON_AMOUNT_PRISM];
+	uint8_t mMousePrev[MOUSE_BUTTON_AMOUNT_PRISM];
+	uint8_t mMouseCurrent[MOUSE_BUTTON_AMOUNT_PRISM];
 	uint8_t mAbortPrev = 0;
 	uint8_t mAbortCurrent = 0;
 	uint8_t mShotPrev = 0;
@@ -402,6 +404,7 @@ static void updateInputFlanks() {
 		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_START_PRISM], &gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_START_PRISM], hasPressedStartSingle(i));
 		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mAbortPrev, &gPrismGeneralInputData.mStatus[i].mAbortCurrent, hasPressedAbortSingle(i));
 		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mShotPrev, &gPrismGeneralInputData.mStatus[i].mShotCurrent, hasShotGunSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mMousePrev[MOUSE_LEFT_BUTTON_PRISM], &gPrismGeneralInputData.mStatus[i].mMouseCurrent[MOUSE_LEFT_BUTTON_PRISM], hasPressedMouseLeftSingle(i));
 	}
 }
 
@@ -446,4 +449,24 @@ void waitForButtonFromUserInputForKeyboard(int i, void(*tCB)(void*, KeyboardKeyP
 void cancelWaitingForButtonFromUserInput(int i)
 {
 	gPrismGeneralInputData.mSetInput[i].mIsActive = 0;
+}
+
+bool hasPressedMouseLeftFlankSingle(int i)
+{
+	return !gPrismGeneralInputData.mStatus[i].mMousePrev[MOUSE_LEFT_BUTTON_PRISM] && gPrismGeneralInputData.mStatus[i].mMouseCurrent[MOUSE_LEFT_BUTTON_PRISM];
+}
+
+bool hasPressedMouseLeftFlank()
+{
+	return hasPressedMouseLeftFlankSingle(getMainController());
+}
+
+bool hasPressedMouseRightFlankSingle(int i)
+{
+	return !gPrismGeneralInputData.mStatus[i].mMousePrev[MOUSE_RIGHT_BUTTON_PRISM] && gPrismGeneralInputData.mStatus[i].mMouseCurrent[MOUSE_RIGHT_BUTTON_PRISM];
+}
+
+bool hasPressedMouseRightFlank()
+{
+	return hasPressedMouseRightFlankSingle(getMainController());
 }

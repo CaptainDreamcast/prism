@@ -4,11 +4,9 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
+                "C:/DEV/PROJECTS/addons/prism/include",
                 "C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2-2.0.7/include",
-                "C:/DEV/PLATFORMS/WINDOWS/LIBS/glew-2.1.0/include",
-                "C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2_image-2.0.1",
-                "C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2_ttf-2.0.14",
-                "${workspaceFolder}/include"
+                "C:/DEV/PLATFORMS/WINDOWS/LIBS/glew-2.1.0/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -19,7 +17,8 @@
             "compilerPath": "cl.exe",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "windows-msvc-x64"
+            "intelliSenseMode": "windows-msvc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

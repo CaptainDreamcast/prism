@@ -97,10 +97,9 @@ static BufferPointer findEndOfToken(Buffer* b, BufferPointer p, char start, char
 	int depth = 1;
 
 	while ((depth > 0 || *p != end) && (uintptr_t)p < ((uintptr_t)b->mData)+b->mLength) {
-		if (increaseAndCheckIfOver(b, &p)) {
+		if (increaseAndCheckIfOver(b, &p) || *p == '\r' || *p == '\n') {
 			logError("Token reached end in wrong place.");
-			logErrorString(p);
-			recoverFromError();
+			return p;
 		}
 		if(tDoesCheckNesting) depth += *p == start;
 		depth -= *p == end;

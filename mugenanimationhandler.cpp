@@ -519,6 +519,16 @@ void setMugenAnimationPosition(MugenAnimationHandlerElement* e, const Position& 
 	e->mOffset = tPosition;
 }
 
+void setMugenAnimationPositionX(MugenAnimationHandlerElement* tElement, float tX)
+{
+	tElement->mOffset.x = tX;
+}
+
+void setMugenAnimationPositionY(MugenAnimationHandlerElement* tElement, float tY)
+{
+	tElement->mOffset.y = tY;
+}
+
 void setMugenAnimationBlendType(MugenAnimationHandlerElement* e, BlendType tBlendType)
 {
 	e->mBlendType = tBlendType;

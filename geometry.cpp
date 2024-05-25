@@ -238,6 +238,11 @@ double getDistance2D(const Position& tFrom, const Position& tTo)
 	return vecLength2D(vecSub(tTo, tFrom));
 }
 
+double getDistance2D(const Vector2D& tFrom, const Vector2D& tTo)
+{
+	return vecLength(tTo - tFrom);
+}
+
 Line2D makeLine2D(const Vector2D& tStart, const Vector2D& tEnd) {
 	Line2D ret;
 	ret.mP1 = tStart;
@@ -525,6 +530,11 @@ Vector2D operator+(const Vector2D& a, const Vector2DI& b)
 }
 
 Vector3D operator+(const Vector3D & a, const Vector2D& b)
+{
+	return Vector3D(a.x + b.x, a.y + b.y, a.z);
+}
+
+Vector3D operator+(const Vector3D & a, const Vector2DI& b)
 {
 	return Vector3D(a.x + b.x, a.y + b.y, a.z);
 }

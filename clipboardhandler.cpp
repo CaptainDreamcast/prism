@@ -100,8 +100,8 @@ static void parseParameterInput(const char* tFormatString, int* i, char** tDst, 
 	}
 	char identifier = tFormatString[*i];
 
-	char argumentText[100];
-	char parsedValue[100];
+	char argumentText[300];
+	char parsedValue[300];
 
 	if (identifier == '%') {
 		**tDst = '%';

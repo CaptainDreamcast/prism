@@ -14,6 +14,7 @@ typedef enum {
 int hasMugenFont(int tKey); 
 void addMugenFont(int tKey, const char* tPath); 
 void loadMugenTextHandler();
+void removeMugenFont(int tKey);
 void unloadMugenFonts();
 
 int getMugenFontSizeY(int tKey);

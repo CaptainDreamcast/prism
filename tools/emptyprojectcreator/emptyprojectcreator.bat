@@ -53,6 +53,8 @@ set cur_file=%target_dir%\vita\CmakeLists.txt
 powershell -Command "(gc %cur_file%) -replace 'TemplateVita', '%1' | Out-File %cur_file%"
 set cur_file=%target_dir%\windows\TemplateAll.sln
 powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File %cur_file%"
+set cur_file=%target_dir%\cmake\CMakeLists.txt
+powershell -Command "(gc %cur_file%) -replace 'Template', '%1' | Out-File -encoding utf8 %cur_file%"
 
 rename %target_dir%\gitignore.txt .gitignore
 rename %target_dir%\gitattributes.txt .gitattributes
@@ -74,6 +76,7 @@ rename %target_dir%\windows\TemplateVita.vcxproj %1Vita.vcxproj
 rename %target_dir%\windows\TemplateVita.vcxproj.filters %1Vita.vcxproj.filters
 rename %target_dir%\windows\TemplateVita.vcxproj.user %1Vita.vcxproj.user
 rename %target_dir%\windows\TemplateAll.sln %1All.sln
+rename %target_dir%\windows\Template.code-workspace %1.code-workspace
 
 md %target_dir%\concept
 

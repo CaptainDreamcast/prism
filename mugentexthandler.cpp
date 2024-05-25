@@ -300,6 +300,11 @@ static void addMugenFont2(int tKey, const char* tPath) {
 }
 
 void addMugenFont(int tKey, const char* tPath) {
+	if(hasMugenFont(tKey))
+	{
+		removeMugenFont(tKey);
+	}
+
 	char path[1024];
 	if (strchr(tPath, '/')) {
 		sprintf(path, "assets/%s", tPath);
@@ -382,18 +387,42 @@ void unloadMugenFonts()
 	stl_int_map_remove_predicate(gMugenFontData.mFonts, unloadSingleFont);
 }
 
+void removeMugenFont(int tKey)
+{
+	assert(hasMugenFont(tKey));
+	unloadSingleFont(NULL, gMugenFontData.mFonts[tKey]);
+}
+
+static MugenFont* getUsedMugenFontFromAvailable(int tFont)
+{
+	if (stl_map_contains(gMugenFontData.mFonts, tFont)) {
+		return &gMugenFontData.mFonts[tFont];
+	}
+	else if (stl_map_contains(gMugenFontData.mFonts, 1)) { // try falling back to font 1 if it exists
+		return &gMugenFontData.mFonts[1];
+	}
+	else if (!gMugenFontData.mFonts.empty()) // just pick one
+	{
+		return &gMugenFontData.mFonts.begin()->second;
+	}
+	else {
+		logErrorFormat("[MugenTextHandler] Failed font fallback for font %d: No fonts loaded.", tFont);
+		abortSystem();
+	}
+	return nullptr;
+}
+
 int getMugenFontSizeY(int tKey)
 {
-	MugenFont& font = gMugenFontData.mFonts[tKey];
-	return font.mSize.y;
+	const auto font = getUsedMugenFontFromAvailable(tKey);
+	return font->mSize.y;
 }
 
 int getMugenFontSpacingY(int tKey)
 {
-	MugenFont& font = gMugenFontData.mFonts[tKey];
-	return font.mSpacing.y;
+	const auto font = getUsedMugenFontFromAvailable(tKey);
+	return font->mSpacing.y;
 }
-
 
 typedef struct {
 	char mText[1024];
@@ -776,7 +805,7 @@ void drawMugenText(char* tText, const Position& tPosition, int tFont) {
 	drawSingleText(NULL, textData);
 }
 
-int addMugenText(const char * tText, const Position& tPosition, int tFont)
+int addMugenText(const char* tText, const Position& tPosition, int tFont)
 {
 	int id = stl_int_map_push_back(gMugenTextHandler.mHandledTexts, MugenText());
 
@@ -784,12 +813,7 @@ int addMugenText(const char * tText, const Position& tPosition, int tFont)
 	strcpy(e.mText, tText);
 	strcpy(e.mDisplayText, tText);
 
-	if (stl_map_contains(gMugenFontData.mFonts, tFont)) {
-		e.mFont = &gMugenFontData.mFonts[tFont];
-	}
-	else {
-		e.mFont = &gMugenFontData.mFonts[1];
-	}
+	e.mFont = getUsedMugenFontFromAvailable(tFont);
 	e.mScale = 1;
 	e.mPosition = vecSub(tPosition, Vector3D(0, e.mFont->mSize.y * e.mScale, 0));
 	e.mR = e.mG = e.mB = 1;
@@ -824,13 +848,7 @@ void setMugenTextFont(int tID, int tFont)
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 
 	e->mPosition = vecAdd2D(e->mPosition, Vector3D(0, e->mFont->mSize.y * e->mScale, 0));
-	if (stl_map_contains(gMugenFontData.mFonts, tFont)) {
-		e->mFont = &gMugenFontData.mFonts[tFont];
-	}
-	else {
-		e->mFont = &gMugenFontData.mFonts[1];
-	}
-
+	e->mFont = getUsedMugenFontFromAvailable(tFont);
 	e->mPosition = vecSub(e->mPosition, Vector3D(0, e->mFont->mSize.y * e->mScale, 0));
 }
 

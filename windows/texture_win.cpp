@@ -346,10 +346,10 @@ static std::string getSystemFontFile(const std::string& tFaceName) {
 			continue;
 		}
 
-		std::wstring wsValueName(valueName.data(), valueNameSize);
+		std::wstring wsValueData((LPWSTR)valueData.data(), valueDataSize);
 
 		// Found a match
-		if (_wcsnicmp(wsFaceName.c_str(), wsValueName.c_str(), wsFaceName.length()) == 0) {
+		if (_wcsnicmp(wsFaceName.c_str(), wsValueData.c_str(), wsFaceName.length()) == 0) {
 
 			wsFontFile.assign((LPWSTR)valueData.data(), valueDataSize);
 			break;

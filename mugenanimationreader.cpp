@@ -320,7 +320,7 @@ static int isHitboxAssignment(const char* tName) {
 
 	*opening = '\0';
 
-	return !strcmp("clsn2Default", name) || !strcmp("clsn2", name) || !strcmp("clsn1Default", name) || !strcmp("clsn1", name);
+	return !strncmp("clsn", name, 4);
 }
 
 

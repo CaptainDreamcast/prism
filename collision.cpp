@@ -63,7 +63,6 @@ int checkCollision(const CollisionRect& tRect1, const CollisionRect& tRect2) {
   if (tRect2.mTopLeft.y > tRect1.mBottomRight.y)
     return 0;
 
-  debugLog("Collision found");
   return 1;
 }
 

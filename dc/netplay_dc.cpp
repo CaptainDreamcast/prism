@@ -12,9 +12,9 @@ bool isNetplayConnecting() { return false; }
 
 void updateNetplay() {}
 
-void sendNetplayData(const Buffer& tData) {}
-void setNetplayConnectCB(void(*tCB)(void*), void*) {}
-void setNetplaySyncCBs(Buffer(*tGatherCB)(void*), void*, int(*tCheckCB)(void*, const Buffer&, const Buffer&), void*) {}
-void setNetplayDesyncCB(void(*tCB)(void*), void* tCaller) {}
-void setNetplayDisconnectCB(void(*tCB)(void*, const std::string&), void*) {}
+void sendNetplayData(const Buffer&) {}
+void setNetplayConnectCB(void(*)(void*), void*) {}
+void setNetplaySyncCBs(Buffer(*)(void*), void*, int(*)(void*, const Buffer&, const Buffer&), void*) {}
+void setNetplayDesyncCB(void(*)(void*), void*) {}
+void setNetplayDisconnectCB(void(*)(void*, const std::string&), void*) {}
 void renegotiateNetplayConnection() {}

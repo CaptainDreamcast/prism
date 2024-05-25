@@ -11,6 +11,7 @@ dc-tool_*
 
 filesystem
 concept
+build
 assets.cpp
 assets/debug/*
 
@@ -48,3 +49,6 @@ windows/Debug/*
 *.ilk
 *.psess
 *.vspx
+*.exe.recipe
+
+export/*

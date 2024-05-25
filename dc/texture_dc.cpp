@@ -274,7 +274,7 @@ void unloadTruetypeFont(TruetypeFont tFont) {
 void saveScreenShot(const char* tFileDir) {
 	char fullPath[1024];
 	getFullPath(fullPath, tFileDir);
-	char ppmPath[1024];
+	char ppmPath[1048];
 	char* fileExtension = strrchr(fullPath, '.');
 	if (fileExtension) *fileExtension = '\0';
 	sprintf(ppmPath, "%s.ppm", fullPath);

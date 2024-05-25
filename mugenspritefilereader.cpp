@@ -1449,7 +1449,7 @@ void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector2DI& tSo
 	if (tSource.x != 1 || tSource.y != 1) return;
 	if (tDestination.x == tSprites->mPaletteMappedGroup && tDestination.y == tSprites->mPaletteMappedItem) return;
 
-	for (int i = 0; i < tSprites->mPalettes.size(); i++) {
+	for (int i = 0; i < int(tSprites->mPalettes.size()); i++) {
 		auto& paletteElement = tSprites->mPalettes[i];
 		if (paletteElement.mGroup != tDestination.x || paletteElement.mItem != tDestination.y) continue;
 		setPaletteFromBGR256WithFirstValueTransparentBuffer(tPaletteID, paletteElement.mBuffer);

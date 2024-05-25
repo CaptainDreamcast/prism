@@ -491,3 +491,10 @@ void cancelWaitingForCharacterFromUserInput(int /*i*/) {
 int getInputDelay() { return 0; }
 void setInputDelay(int /*tInputDelay*/) {}
 void setInputBufferSize(int /*tInputBufferSize*/) {}
+
+Vector2D getMousePointerPosition() { return Vector2D(0, 0); }
+bool isMouseInRectangle(const GeoRectangle2D&) { return false; }
+bool hasPressedMouseLeft() { return false; }
+bool hasPressedMouseLeftSingle(int) { return false; }
+bool hasPressedMouseRight() { return false; }
+bool hasPressedMouseRightSingle(int) { return false; }

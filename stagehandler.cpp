@@ -485,7 +485,7 @@ static ScriptPosition loadStageScriptLayer(void* tCaller, const ScriptPosition& 
 	else if (!strcmp("ELEMENT", word)) {
 		ScriptRegion reg = getScriptRegionAtPosition(ret);
 		StageScriptLayerElementData caller;
-		memset(&caller, 0, sizeof(StageScriptLayerElementData));
+		memset((void*)(&caller), 0, sizeof(StageScriptLayerElementData));
 		executeOnScriptRegion(reg, loadStageScriptLayerElement, &caller);
 		ret = getPositionAfterScriptRegion(ret.mRegion, reg);
 		addBackgroundElement(e->mID, caller.mPosition, caller.mPath, caller.mAnimation);

@@ -102,6 +102,7 @@ Vector3D vecRotateZAroundCenter(const Vector3D& tVector, double tAngle, const Ve
 Vector3D vecScaleToSize(const Vector3D& v, double tSize);
 Position getDirection(const Position& tFrom, const Position& tTo);
 double getDistance2D(const Position& tFrom, const Position& tTo);
+double getDistance2D(const Vector2D& tFrom, const Vector2D& tTo);
 Line2D makeLine2D(const Vector2D& tStart, const Vector2D& tEnd);
 Line makeLine(const Vector3D& tStart, const Vector3D& tEnd);
 
@@ -149,6 +150,7 @@ Vector3D interpolatePositionLinear(const Position& a, const Position& b, double 
 Vector2D operator+(const Vector2D& a, const Vector2D& b);
 Vector2D operator+(const Vector2D& a, const Vector2DI& b);
 Vector3D operator+(const Vector3D& a, const Vector2D& b);
+Vector3D operator+(const Vector3D& a, const Vector2DI& b);
 Vector2D operator-(const Vector2D& a, const Vector2D& b);
 Vector2D operator-(const Vector2D& a, const Vector2DI& b);
 Vector3D operator-(const Vector3D& a, const Vector2D& b);

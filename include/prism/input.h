@@ -94,6 +94,12 @@ typedef enum {
 	CONTROLLER_BUTTON_AMOUNT_PRISM,
 } ControllerButtonPrism;
 
+typedef enum {
+	MOUSE_LEFT_BUTTON_PRISM,
+	MOUSE_RIGHT_BUTTON_PRISM,
+	MOUSE_BUTTON_AMOUNT_PRISM,
+} MouseButtonPrism;
+
 void initInput();
 void updateInput();
 void resetInputForAllControllers();
@@ -230,4 +236,11 @@ int isNetplayInputConfirmed();
 
 Vector2D getMousePointerPosition();
 bool isMouseInRectangle(const GeoRectangle2D& tRectangle);
-bool isMouseLeftPressed();
+bool hasPressedMouseLeftSingle(int i);
+bool hasPressedMouseLeft();
+bool hasPressedMouseLeftFlankSingle(int i);
+bool hasPressedMouseLeftFlank();
+bool hasPressedMouseRightSingle(int i);
+bool hasPressedMouseRight();
+bool hasPressedMouseRightFlankSingle(int i);
+bool hasPressedMouseRightFlank();

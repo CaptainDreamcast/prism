@@ -104,7 +104,7 @@ void handlePhysics(PhysicsObject* tObject) {
 }
 
 void resetPhysicsObject(PhysicsObject* tObject) {
-  memset(tObject, 0, sizeof(*tObject));
+  memset((void*)tObject, 0, sizeof(PhysicsObject));
 }
 
 void resetPhysics() {

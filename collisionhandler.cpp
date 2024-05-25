@@ -166,8 +166,7 @@ void addCollisionHandlerCheck(CollisionListData* tList1, CollisionListData* tLis
 }
 
 CollisionListData* addCollisionListToHandler() {
-	CollisionListData e;
-	e.mCollisionElements.clear();
+	CollisionListData e{ 0, {} };
 	int id = stl_int_map_push_back(gCollisionHandler.mCollisionLists, e);
 	auto list = &gCollisionHandler.mCollisionLists[id];
 	list->mID = id;

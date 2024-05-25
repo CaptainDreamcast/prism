@@ -47,7 +47,6 @@ typedef struct {
 	int mIsRightCollided;
 
 	map<int, BlitzCollisionObject> mCollisionObjects;
-	int mIsEmpty;
 } CollisionEntry;
 
 static struct {
@@ -188,8 +187,7 @@ static void internalCollisionCB(void* tCaller, void* tCollisionData, int /*tOthe
 
 void addBlitzCollisionComponent(int tEntityID)
 {
-	CollisionEntry e;
-	e.mEntityID = tEntityID;
+	CollisionEntry e{ tEntityID, 0, 0, 0, 0, {} };
 	registerBlitzComponent(tEntityID, getBlitzCollisionComponent());
 	gBlitzCollisionData.mEntries[tEntityID] = e;
 }

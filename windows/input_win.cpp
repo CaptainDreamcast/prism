@@ -812,7 +812,22 @@ bool isMouseInRectangle(const GeoRectangle2D& tRectangle)
 	return pos.x >= tRectangle.mTopLeft.x && pos.x <= tRectangle.mBottomRight.x && pos.y >= tRectangle.mTopLeft.y && pos.y <= tRectangle.mBottomRight.y;
 
 }
-bool isMouseLeftPressed()
+bool hasPressedMouseLeft()
+{
+	return hasPressedMouseLeftSingle(0);
+}
+
+bool hasPressedMouseLeftSingle(int)
 {
 	return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT);
+}
+
+bool hasPressedMouseRight()
+{
+	return hasPressedMouseRightSingle(0);
+}
+
+bool hasPressedMouseRightSingle(int)
+{
+	return SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT);
 }

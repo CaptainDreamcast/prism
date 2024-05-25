@@ -114,7 +114,7 @@ static BufferPointer findExistingVariablePositionOrNullIfNonExistant(ModifiableM
 		}
 		if (foundOriginal)
 		{
-			if (index == tGroupOffset)
+			if (index == int(tGroupOffset))
 			{
 				found = 1;
 				break;
