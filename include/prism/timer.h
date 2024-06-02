@@ -11,3 +11,5 @@ void setupTimer();
 void updateTimer();
 void clearTimer();
 void shutdownTimer();
+
+int hasTimerFinished(int tID);

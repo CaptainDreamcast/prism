@@ -44,7 +44,10 @@ static int updateCB(void* tCaller, TimerElement& tData) {
 	int isOver = handleDurationAndCheckIfOver(&cur->mNow, cur->mDuration);
 
 	if(isOver) {
-		cur->mCB(cur->mCaller);
+		if(cur->mCB)
+		{
+			cur->mCB(cur->mCaller);
+		}
 		return 1;
 	}
 
@@ -61,4 +64,8 @@ void clearTimer(){
 
 void shutdownTimer(){
 	clearTimer();
+}
+
+int hasTimerFinished(int tID) {
+	return gTimerData.mList.find(tID) == gTimerData.mList.end();
 }

@@ -209,6 +209,9 @@
     <ClInclude Include="..\..\include\prism\thread.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\lifebar.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\prism\loadingscreen.h">
       <Filter>hdr</Filter>
     </ClInclude>
@@ -277,6 +280,12 @@
     </ClInclude>
     <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl3_loader.h">
       <Filter>external\imgui\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\introtexthelper.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\numberpopuphandler.h">
+      <Filter>hdr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -395,6 +404,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\input.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\lifebar.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\loadingscreen.cpp">
@@ -540,6 +552,12 @@
     </ClCompile>
     <ClCompile Include="..\..\external\imgui\src\imgui_impl_opengl3.cpp">
       <Filter>external\imgui\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\introtexthelper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\numberpopuphandler.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

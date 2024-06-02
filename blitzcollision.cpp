@@ -29,6 +29,8 @@ typedef struct {
 	int mIsSolid;
 	int mIsMovable;
 
+	int mHasCollidedThisFrame;
+
 	List mCollisionCallbacks;
 } BlitzCollisionObject;
 
@@ -72,8 +74,16 @@ static void updateSingleBlitzCollidedValue(int* tValue) {
 	*tValue = 0;
 }
 
+static void resetSingleBlitzCollisionEntryCollisionObjectCollisionStates(CollisionEntry& tData)
+{
+	for (auto& e : tData.mCollisionObjects) {
+		e.second.mHasCollidedThisFrame = 0;
+	}
+}
+
 static void updateSingleBlitzCollisionEntry(void* , CollisionEntry& tData) {
 	CollisionEntry* e = &tData;
+	resetSingleBlitzCollisionEntryCollisionObjectCollisionStates(tData);
 	updateSingleBlitzCollidedValue(&e->mIsTopCollided);
 	updateSingleBlitzCollidedValue(&e->mIsBottomCollided);
 	updateSingleBlitzCollidedValue(&e->mIsLeftCollided);
@@ -183,6 +193,9 @@ static void internalCollisionCB(void* tCaller, void* tCollisionData, int /*tOthe
 	}
 
 	list_map(&selfObject->mCollisionCallbacks, internalCollisionHandleSingleCB, otherObject);
+
+	selfObject->mHasCollidedThisFrame = 1;
+	otherObject->mHasCollidedThisFrame = 1;
 }
 
 void addBlitzCollisionComponent(int tEntityID)
@@ -206,6 +219,8 @@ static int addEmptyCollisionObject(CollisionEntry* tEntry, CollisionListData* tL
 	e->mCollisionHandlerElement = NULL;
 	e->mCollisionData = NULL;
 	e->mIsSolid = 0;
+	e->mIsMovable = 0;
+	e->mHasCollidedThisFrame = 0;
 	e->mCollisionCallbacks = new_list();
 	return id;
 }
@@ -326,6 +341,12 @@ int hasBlitzCollidedRight(int tEntityID)
 	return e->mIsRightCollided;
 }
 
+int hasBlitzCollidedThisFrame(int tEntityID, int tCollisionID)
+{
+	if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) return 0;
+	BlitzCollisionObject* object = getBlitzCollisionObject(tEntityID, tCollisionID);
+	return object->mHasCollidedThisFrame;
+}
 
 
 static int removeSingleCollisionObject(void* , BlitzCollisionObject& tData) {

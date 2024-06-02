@@ -24,4 +24,6 @@ int hasBlitzCollidedBottom(int tEntityID);
 int hasBlitzCollidedLeft(int tEntityID);
 int hasBlitzCollidedRight(int tEntityID);
 
+int hasBlitzCollidedThisFrame(int tEntityID, int tCollisionID);
+
 void removeAllBlitzCollisions(int tEntityID);

@@ -129,8 +129,10 @@
     <ClInclude Include="..\..\include\prism\framerateselectscreen.h" />
     <ClInclude Include="..\..\include\prism\geometry.h" />
     <ClInclude Include="..\..\include\prism\input.h" />
+    <ClInclude Include="..\..\include\prism\introtexthelper.h" />
     <ClInclude Include="..\..\include\prism\khash.h" />
     <ClInclude Include="..\..\include\prism\klib\khash.h" />
+    <ClInclude Include="..\..\include\prism\lifebar.h" />
     <ClInclude Include="..\..\include\prism\loadingscreen.h" />
     <ClInclude Include="..\..\include\prism\log.h" />
     <ClInclude Include="..\..\include\prism\logoscreen.h" />
@@ -148,6 +150,7 @@
     <ClInclude Include="..\..\include\prism\mugenspritefilereader.h" />
     <ClInclude Include="..\..\include\prism\mugentexthandler.h" />
     <ClInclude Include="..\..\include\prism\netplay.h" />
+    <ClInclude Include="..\..\include\prism\numberpopuphandler.h" />
     <ClInclude Include="..\..\include\prism\optionhandler.h" />
     <ClInclude Include="..\..\include\prism\physics.h" />
     <ClInclude Include="..\..\include\prism\physicshandler.h" />
@@ -208,6 +211,8 @@
     <ClCompile Include="..\..\filereader.cpp" />
     <ClCompile Include="..\..\geometry.cpp" />
     <ClCompile Include="..\..\input.cpp" />
+    <ClCompile Include="..\..\introtexthelper.cpp" />
+    <ClCompile Include="..\..\lifebar.cpp" />
     <ClCompile Include="..\..\loadingscreen.cpp" />
     <ClCompile Include="..\..\log.cpp" />
     <ClCompile Include="..\..\logoscreen.cpp" />
@@ -224,6 +229,7 @@
     <ClCompile Include="..\..\mugensoundfilereader.cpp" />
     <ClCompile Include="..\..\mugenspritefilereader.cpp" />
     <ClCompile Include="..\..\mugentexthandler.cpp" />
+    <ClCompile Include="..\..\numberpopuphandler.cpp" />
     <ClCompile Include="..\..\optionhandler.cpp" />
     <ClCompile Include="..\..\physics.cpp" />
     <ClCompile Include="..\..\physicshandler.cpp" />
