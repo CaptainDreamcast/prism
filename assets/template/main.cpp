@@ -6,9 +6,10 @@
 #include <prism/wrapper.h>
 #include <prism/system.h>
 #include <prism/stagehandler.h>
-#include <prism/logoscreen.h>
 #include <prism/mugentexthandler.h>
 #include <prism/debug.h>
+
+#include "gamescreen.h"
 
 #ifdef DREAMCAST
 KOS_INIT_FLAGS(INIT_DEFAULT);
@@ -41,7 +42,7 @@ int main(int argc, char** argv) {
 	#endif
 
 	setGameName("TEMPLATE");
-	setScreenSize(640, 480);
+	setScreenSize(320, 240);
 	
 	initPrismWrapperWithConfigFile("data/config.cfg");
 	setFont("$/rd/fonts/segoe.hdr", "$/rd/fonts/segoe.pkg");
@@ -55,8 +56,6 @@ int main(int argc, char** argv) {
 	}
 
 	if(isInDevelopMode()) {
-		ScreenSize sz = getScreenSize();
-		setDisplayedScreenSize(sz.x, sz.y);
 		disableWrapperErrorRecovery();	
 		setMinimumLogType(LOG_TYPE_NORMAL);
 	}
@@ -64,8 +63,7 @@ int main(int argc, char** argv) {
 		setMinimumLogType(LOG_TYPE_NONE);
 	}
 
-	setScreenAfterWrapperLogoScreen(getLogoScreenFromWrapper());
-	startScreenHandling(getLogoScreenFromWrapper());
+	startScreenHandling(getGameScreen());
 
 	exitGame();
 	

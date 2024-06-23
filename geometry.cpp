@@ -441,6 +441,16 @@ Vector2D clampPositionToGeoRectangle(const Vector2D& v, const GeoRectangle2D & t
 	return ret;
 }
 
+Vector2DI clampPositionToGeoRectangle(const Vector2DI& v, const GeoRectangle2D& tRect)
+{
+	Vector2DI ret = v;
+	ret.x = max(ret.x, int(tRect.mTopLeft.x));
+	ret.y = max(ret.y, int(tRect.mTopLeft.y));
+	ret.x = min(ret.x, int(tRect.mBottomRight.x));
+	ret.y = min(ret.y, int(tRect.mBottomRight.y));
+	return ret;
+}
+
 Vector3D clampPositionToGeoRectangle(const Vector3D & v, const GeoRectangle2D & tRect)
 {
 	Vector3D ret = v;
@@ -448,6 +458,26 @@ Vector3D clampPositionToGeoRectangle(const Vector3D & v, const GeoRectangle2D & 
 	ret.y = fmax(ret.y, tRect.mTopLeft.y);
 	ret.x = fmin(ret.x, tRect.mBottomRight.x);
 	ret.y = fmin(ret.y, tRect.mBottomRight.y);
+	return ret;
+}
+
+Vector3DI clampPositionToGeoRectangle(const Vector3DI& v, const GeoRectangle2D& tRect)
+{
+	Vector3DI ret = v;
+	ret.x = max(ret.x, int(tRect.mTopLeft.x));
+	ret.y = max(ret.y, int(tRect.mTopLeft.y));
+	ret.x = min(ret.x, int(tRect.mBottomRight.x));
+	ret.y = min(ret.y, int(tRect.mBottomRight.y));
+	return ret;
+}
+
+Vector3DI clampPositionToGeoRectangle(const Vector3DI& v, const GeoRectangle& tRect)
+{
+	Vector3DI ret = v;
+	ret.x = max(ret.x, int(tRect.mTopLeft.x));
+	ret.y = max(ret.y, int(tRect.mTopLeft.y));
+	ret.x = min(ret.x, int(tRect.mBottomRight.x));
+	ret.y = min(ret.y, int(tRect.mBottomRight.y));
 	return ret;
 }
 
@@ -529,14 +559,22 @@ Vector2D operator+(const Vector2D& a, const Vector2DI& b)
 	return Vector2D(a.x + b.x, a.y + b.y);
 }
 
-Vector3D operator+(const Vector3D & a, const Vector2D& b)
+Vector3D operator+(const Vector2D& a, const Vector3D& b)
 {
-	return Vector3D(a.x + b.x, a.y + b.y, a.z);
+	return Vector3D(a.x + b.x, a.y + b.y, b.z);
 }
 
-Vector3D operator+(const Vector3D & a, const Vector2DI& b)
+Vector3D operator+(const Vector2D& a, const Vector3DI& b)
 {
-	return Vector3D(a.x + b.x, a.y + b.y, a.z);
+	return Vector3D(a.x + b.x, a.y + b.y, b.z);
+}
+
+GeoRectangle2D operator+(const Vector2D& a, const GeoRectangle2D& b)
+{
+	GeoRectangle2D ret = b;
+	ret.mTopLeft = ret.mTopLeft + a;
+	ret.mBottomRight = ret.mBottomRight + a;
+	return ret;
 }
 
 Vector2D operator-(const Vector2D& a, const Vector2D& b)
@@ -549,9 +587,45 @@ Vector2D operator-(const Vector2D& a, const Vector2DI& b)
 	return Vector2D(a.x - b.x, a.y - b.y);
 }
 
+Vector3D operator-(const Vector2D& a, const Vector3D& b)
+{
+	return Vector3D(a.x - b.x, a.y - b.y, b.z);
+}
+Vector3D operator-(const Vector2D& a, const Vector3DI& b)
+{
+	return Vector3D(a.x - b.x, a.y - b.y, b.z);
+}
+GeoRectangle2D operator-(const Vector2D& a, const GeoRectangle2D& b)
+{
+	GeoRectangle2D ret = b;
+	ret.mTopLeft = a - ret.mTopLeft;
+	ret.mBottomRight = a - ret.mBottomRight;
+	return ret;
+}
+
+Vector3D operator+(const Vector3D & a, const Vector2D& b)
+{
+	return Vector3D(a.x + b.x, a.y + b.y, a.z);
+}
+
+Vector3D operator+(const Vector3D & a, const Vector2DI& b)
+{
+	return Vector3D(a.x + b.x, a.y + b.y, a.z);
+}
+
 Vector3D operator-(const Vector3D & a, const Vector2D& b)
 {
 	return Vector3D(a.x - b.x, a.y - b.y, a.z);
+}
+
+Vector3D operator-(const Vector3D& a, const Vector2DI& b)
+{
+	return Vector3D(a.x - b.x, a.y - b.y, a.z);
+}
+
+Vector3D operator-(const Vector3D& a, const Vector3DI& b)
+{
+	return Vector3D(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
 Vector2D operator*(const double & a, const Vector2D& b)
@@ -569,9 +643,123 @@ Vector2D operator*(const Vector2D& a, const Vector2D& b)
 	return Vector2D(a.x * b.x, a.y * b.y);
 }
 
+Vector2D operator+(const Vector2DI& a, const Vector2D& b)
+{
+	return Vector2D(a.x + b.x, a.y + b.y);
+}
+
+Vector3D operator+(const Vector2DI& a, const Vector3D& b)
+{
+	return Vector3D(a.x + b.x, a.y + b.y, b.z);
+}
+
+Vector3DI operator+(const Vector2DI& a, const Vector3DI& b)
+{
+	return Vector3DI(a.x + b.x, a.y + b.y, b.z);
+}
+
+Vector2D operator-(const Vector2DI& a, const Vector2D& b)
+{
+	return Vector2D(a.x - b.x, a.y - b.y);
+}
+
+Vector3D operator-(const Vector2DI& a, const Vector3D& b)
+{
+	return Vector3D(a.x - b.x, a.y - b.y, b.z);
+}
+
+Vector3DI operator-(const Vector2DI& a, const Vector3DI& b)
+{
+	return Vector3DI(a.x - b.x, a.y - b.y, b.z);
+}
+
+Vector2DI operator*(const Vector2DI& a, const int& b)
+{
+	return Vector2DI(a.x * b, a.y * b);
+}
+
+Vector2DI operator*(const Vector2DI& a, const Vector2DI& b)
+{
+	return Vector2DI(a.x * b.x, a.y * b.y);
+}
+
+Vector2DI operator/(const Vector2DI& a, const int& b)
+{
+	return Vector2DI(a.x / b, a.y / b);
+}
+
+int operator!=(const Vector2DI& a, const Vector2DI& b)
+{
+	return a.x != b.x || a.y != b.y;
+}
+
+Vector2D operator*(const double& a, const Vector2DI& b)
+{
+	return Vector2D(b.x * a, b.y * a);
+}
+
+Vector3DI operator*(const double& a, const Vector3DI& b)
+{
+	return Vector3DI(b.x * a, b.y * a, b.z * a);
+}
+
+Vector2D operator/(const double& a, const Vector2DI& b)
+{
+	return Vector2D(a / b.x, a / b.y);
+}
+
+Vector3D operator/(const double& a, const Vector3DI& b)
+{
+	return Vector3D(a / b.x, a / b.y, a / b.z);
+}
+
+Vector2DI operator*(const int& a, const Vector2DI& b)
+{
+	return Vector2DI(b.x * a, b.y * a);
+}
+
+Vector3DI operator*(const int& a, const Vector3DI& b)
+{
+	return Vector3DI(b.x * a, b.y * a, b.z * a);
+}
+
 Vector3D operator*(const Vector3D& a, const Vector2D& b)
 {
 	return Vector3D(a.x * b.x, a.y * b.y, a.z);
+}
+
+Vector3DI operator*(const Vector3DI& a, const int& b)
+{
+	return Vector3DI(a.x * b, a.y * b, a.z * b);
+}
+Vector3D operator*(const Vector3DI& a, const double& b)
+{
+	return Vector3D(a.x * b, a.y * b, a.z * b);
+}
+
+Vector3D operator+(const Vector3DI& a, const Vector2D& b)
+{
+	return Vector3D(a.x + b.x, a.y + b.y, a.z);
+}
+
+Vector3DI operator+(const Vector3DI& a, const Vector2DI& b)
+{
+	return Vector3DI(a.x + b.x, a.y + b.y, a.z);
+}
+
+Vector3D operator-(const Vector3DI& a, const Vector2D& b)
+{
+	return Vector3D(a.x - b.x, a.y - b.y, a.z);
+}
+
+Vector3DI operator-(const Vector3DI& a, const Vector2DI& b)
+{
+	return Vector3DI(a.x - b.x, a.y - b.y, a.z);
+}
+
+Vector3D operator-(const Vector3DI& a, const Vector3D& b)
+{
+	return Vector3D(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
 Vector2D operator/(const Vector2D& a, const double & b)
@@ -606,13 +794,6 @@ Vector3D operator*(const double & a, const Vector3D & b) {
 
 Vector3D operator*(const Vector3D& a, const double& b) {
 	return Vector3D(a.x * b, a.y * b, a.z * b);
-}
-
-void operator*=(Vector3D & a, const double & b)
-{
-	a.x *= b;
-	a.y *= b;
-	a.z *= b;
 }
 
 Vector3D operator/(const Vector3D& a, const double& b) {
@@ -684,15 +865,6 @@ Vector3DI operator-(const Vector3DI& a, const Vector3DI& b) {
 	return ret;
 }
 
-Vector3D operator-(const Vector3D& a, const Vector3DI & b)
-{
-	Vector3D ret = a;
-	ret.x -= b.x;
-	ret.y -= b.y;
-	ret.z -= b.z;
-	return ret;
-}
-
 Vector2D operator*(const Vector2DI & a, const double & b)
 {
 	return Vector2D(a.x * b, a.y * b);
@@ -758,4 +930,187 @@ GeoRectangle operator+(const GeoRectangle& a, const Position& b) {
 	ret.mTopLeft = a.mTopLeft + b;
 	ret.mBottomRight = a.mBottomRight + b;
 	return ret;
+}
+
+GeoRectangle2D operator-(const GeoRectangle2D& a, const Position2D& b)
+{
+	GeoRectangle2D ret;
+	ret.mTopLeft = a.mTopLeft - b;
+	ret.mBottomRight = a.mBottomRight - b;
+	return ret;
+}
+
+GeoRectangle2D operator/(const GeoRectangle2D& a, const double& b)
+{
+	GeoRectangle2D ret;
+	ret.mTopLeft = a.mTopLeft / b;
+	ret.mBottomRight = a.mBottomRight / b;
+	return ret;
+}
+
+Vector2D& operator+=(Vector2D& a, const Vector2D& b)
+{
+	a = a + b;
+	return a;
+}
+Vector2D& operator+=(Vector2D& a, const Vector2DI& b)
+{
+	a = a + b;
+	return a;
+}
+Vector2D& operator-=(Vector2D& a, const Vector2D& b)
+{
+	a = a - b;
+	return a;
+}
+Vector2D& operator-=(Vector2D& a, const Vector2DI& b)
+{
+	a = a - b;
+	return a;
+}
+Vector2D& operator*=(Vector2D& a, const double& b)
+{
+	a = a * b;
+	return a;
+}
+Vector2D& operator*=(Vector2D& a, const Vector2D& b)
+{
+	a = a * b;
+	return a;
+}
+Vector2D& operator/=(Vector2D& a, const double& b)
+{
+	a = a / b;
+	return a;
+}
+
+Vector2DI& operator+=(Vector2DI& a, const Vector2DI& b)
+{
+	a = a + b;
+	return a;
+}
+Vector2DI& operator-=(Vector2DI& a, const Vector2DI& b)
+{
+	a = a - b;
+	return a;
+}
+Vector2DI& operator*=(Vector2DI& a, const int& b)
+{
+	a = a * b;
+	return a;
+}
+Vector2DI& operator*=(Vector2DI& a, const Vector2DI& b)
+{
+	a = a * b;
+	return a;
+}
+Vector2DI& operator/=(Vector2DI& a, const int& b)
+{
+	a = a / b;
+	return a;
+}
+
+Vector3D& operator+=(Vector3D& a, const Vector2DI& b)
+{
+	a = a + b;
+	return a;
+}
+
+Vector3D& operator+=(Vector3D& a, const Vector3DI& b)
+{
+	a = a + b;
+	return a;
+}
+
+Vector3D& operator-=(Vector3D& a, const Vector2DI& b)
+{
+	a = a - b;
+	return a;
+}
+Vector3D& operator-=(Vector3D& a, const Vector3D& b)
+{
+	a = a - b;
+	return a;
+}
+Vector3D& operator-=(Vector3D& a, const Vector3DI& b)
+{
+	a = a - b;
+	return a;
+}
+Vector3D& operator*=(Vector3D& a, const double& b)
+{
+	a = a * b;
+	return a;
+}
+Vector3D& operator*=(Vector3D& a, const Vector3D& b)
+{
+	a = a * b;
+	return a;
+}
+Vector3D& operator*=(Vector3D& a, const Vector2D& b)
+{
+	a = a * b;
+	return a;
+}
+Vector3D& operator/=(Vector3D& a, const double& b)
+{
+	a = a / b;
+	return a;
+}
+
+Vector3DI& operator+=(Vector3DI& a, const Vector2DI& b)
+{
+	a = a + b;
+	return a;
+}
+Vector3DI& operator+=(Vector3DI& a, const Vector3DI& b)
+{
+	a = a + b;
+	return a;
+}
+Vector3DI& operator-=(Vector3DI& a, const Vector2DI& b)
+{
+	a = a - b;
+	return a;
+}
+Vector3DI& operator-=(Vector3DI& a, const Vector3DI& b)
+{
+	a = a - b;
+	return a;
+}
+Vector3DI& operator*=(Vector3DI& a, const int& b)
+{
+	a = a * b;
+	return a;
+}
+Vector3DI& operator*=(Vector3DI& a, const Vector3DI& b)
+{
+	a = a * b;
+	return a;
+}
+Vector3DI& operator/=(Vector3DI& a, const int& b)
+{
+	a = a / b;
+	return a;
+}
+
+GeoRectangle2D& operator+=(GeoRectangle2D& a, const Position2D& b)
+{
+	a = a + b;
+	return a;
+}
+GeoRectangle2D& operator-=(GeoRectangle2D& a, const Position2D& b)
+{
+	a = a - b;
+	return a;
+}
+GeoRectangle2D& operator*=(GeoRectangle2D& a, const double& b)
+{
+	a = a * b;
+	return a;
+}
+GeoRectangle2D& operator/=(GeoRectangle2D& a, const double& b)
+{
+	a = a / b;
+	return a;
 }

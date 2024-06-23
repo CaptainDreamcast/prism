@@ -1,1 +1,2 @@
-OBJS = main.o 
+OBJS = main.o \
+gamescreen.o

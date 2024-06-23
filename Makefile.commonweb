@@ -17,6 +17,7 @@ build_develop: $(OBJS)
 	-o web/game.html
 	-rm -f web/game.html
 	-cp $(PRISM_PATH)/web/assets/index.html web/index.html
+	-cp boot/index.html web/index.html
 
 complete: make_folder build_develop
 

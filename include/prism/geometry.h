@@ -136,8 +136,11 @@ int checkPointInRectangle(const GeoRectangle2D& tRect, const Position2D& tPoint)
 int checkIntersectCircRect(const Circle2D& tCirc, const GeoRectangle2D& tRect);
 
 Vector2D clampPositionToGeoRectangle(const Vector2D& v, const GeoRectangle2D& tRect);
+Vector2DI clampPositionToGeoRectangle(const Vector2DI& v, const GeoRectangle2D& tRect);
 Vector3D clampPositionToGeoRectangle(const Vector3D& v, const GeoRectangle2D& tRect);
 Vector3D clampPositionToGeoRectangle(const Vector3D& v, const GeoRectangle& tRect);
+Vector3DI clampPositionToGeoRectangle(const Vector3DI& v, const GeoRectangle2D& tRect);
+Vector3DI clampPositionToGeoRectangle(const Vector3DI& v, const GeoRectangle& tRect);
 GeoRectangle2D scaleGeoRectangleByFactor(const GeoRectangle2D& tRect, double tFac);
 GeoRectangle scaleGeoRectangleByFactor(const GeoRectangle& tRect, double tFac);
 GeoRectangle2D scaleGeoRectangleByFactor2D(const GeoRectangle2D& tRect, const Vector2D& tFac);
@@ -149,53 +152,133 @@ Vector3D interpolatePositionLinear(const Position& a, const Position& b, double 
 
 Vector2D operator+(const Vector2D& a, const Vector2D& b);
 Vector2D operator+(const Vector2D& a, const Vector2DI& b);
-Vector3D operator+(const Vector3D& a, const Vector2D& b);
-Vector3D operator+(const Vector3D& a, const Vector2DI& b);
+Vector3D operator+(const Vector2D& a, const Vector3D& b);
+Vector3D operator+(const Vector2D& a, const Vector3DI& b);
+GeoRectangle2D operator+(const Vector2D& a, const GeoRectangle2D& b);
 Vector2D operator-(const Vector2D& a, const Vector2D& b);
 Vector2D operator-(const Vector2D& a, const Vector2DI& b);
-Vector3D operator-(const Vector3D& a, const Vector2D& b);
-Vector2D operator*(const double& a, const Vector2D& b);
+Vector3D operator-(const Vector2D& a, const Vector3D& b);
+Vector3D operator-(const Vector2D& a, const Vector3DI& b);
 Vector2D operator*(const Vector2D& a, const double& b);
+// pairwise multiplication
 Vector2D operator*(const Vector2D& a, const Vector2D& b);
-Vector3D operator*(const Vector3D& a, const Vector2D& b);
 Vector2D operator/(const Vector2D& a, const double& b);
-Vector2D operator/(const double& a, const Vector2D& b);
 int operator==(const Vector2D& a, const Vector2D& b);
 int operator!=(const Vector2D& a, const Vector2D& b);
 
+Vector2D operator+(const Vector2DI& a, const Vector2D& b);
+Vector2DI operator+(const Vector2DI& a, const Vector2DI& b);
+Vector3D operator+(const Vector2DI& a, const Vector3D& b);
+Vector3DI operator+(const Vector2DI& a, const Vector3DI& b);
+Vector2D operator-(const Vector2DI& a, const Vector2D& b);
+Vector2DI operator-(const Vector2DI& a, const Vector2DI& b);
+Vector3D operator-(const Vector2DI& a, const Vector3D& b);
+Vector3DI operator-(const Vector2DI& a, const Vector3DI& b);
+Vector2DI operator*(const Vector2DI& a, const int& b);
+Vector2D operator*(const Vector2DI& a, const double& b);
+// pairwise multiplication
+Vector2DI operator*(const Vector2DI& a, const Vector2DI& b);
+Vector2DI operator/(const Vector2DI& a, const int& b);
+Vector2D operator/(const Vector2DI& a, const double& b);
+int operator==(const Vector2DI& a, const Vector2DI& b);
+int operator!=(const Vector2DI& a, const Vector2DI& b);
+
+Vector3D operator+(const Vector3D& a, const Vector2D& b);
+Vector3D operator+(const Vector3D& a, const Vector2DI& b);
 Vector3D operator+(const Vector3D& a, const Vector3D& b);
+Vector3D operator+(const Vector3D& a, const Vector3DI& b);
+GeoRectangle2D operator+(const Vector3D& a, const GeoRectangle2D& b);
+Vector3D operator-(const Vector3D& a, const Vector2D& b);
+Vector3D operator-(const Vector3D& a, const Vector2DI& b);
 Vector3D operator-(const Vector3D& a, const Vector3D& b);
-Vector3D operator*(const double& a, const Vector3D& b);
+Vector3D operator-(const Vector3D& a, const Vector3DI& b);
 Vector3D operator*(const Vector3D& a, const double& b);
-void operator*=(Vector3D& a, const double& b);
-Vector3D operator/(const Vector3D& a, const double& b);
-Vector3D operator/(const double& a, const Vector3D& b);
 // pairwise multiplication
 Vector3D operator*(const Vector3D& a, const Vector3D& b); 
+Vector3D operator*(const Vector3D& a, const Vector2D& b);
+Vector3D operator/(const Vector3D& a, const double& b);
 int operator==(const Vector3D& a, const Vector3D& b);
 int operator!=(const Vector3D& a, const Vector3D& b);
-Vector3D& operator+=(Vector3D& a, const Vector2D& b);
-Vector3D& operator+=(Vector3D& a, const Vector3D& b);
-Vector3D& operator-=(Vector3D& a, const Vector2D& b);
 
-Vector2DI operator+(const Vector2DI& a, const Vector2DI& b);
-Vector3DI operator+(const Vector3DI& a, const Vector3DI& b);
+Vector3D operator+(const Vector3DI& a, const Vector2D& b);
+Vector3DI operator+(const Vector3DI& a, const Vector2DI& b);
 Vector3D operator+(const Vector3DI& a, const Vector3D& b);
-Vector3D operator+(const Vector3D& a, const Vector3DI& b);
-Vector2DI operator-(const Vector2DI& a, const Vector2DI& b);
+Vector3DI operator+(const Vector3DI& a, const Vector3DI& b);
+Vector3D operator-(const Vector3DI& a, const Vector2D& b);
+Vector3DI operator-(const Vector3DI& a, const Vector2DI& b);
+Vector3D operator-(const Vector3DI& a, const Vector3D& b);
 Vector3DI operator-(const Vector3DI& a, const Vector3DI& b);
-Vector3D operator-(const Vector3D& a, const Vector3DI& b);
-Vector2D operator*(const Vector2DI& a, const double& b);
-Vector2D operator/(const Vector2DI& a, const double& b);
-Vector3D operator/(const Vector3DI& a, const double& b);
-Vector3DI operator/(const Vector3DI& a, const int& b);
+Vector3DI operator*(const Vector3DI& a, const int& b);
+Vector3D operator*(const Vector3DI& a, const double& b);
 // pairwise multiplication
 Vector3DI operator*(const Vector3DI& a, const Vector3DI& b);
-int operator==(const Vector2DI& a, const Vector2DI& b);
+Vector3DI operator/(const Vector3DI& a, const int& b);
+Vector3D operator/(const Vector3DI& a, const double& b);
 int operator==(const Vector3DI& a, const Vector3DI& b);
 int operator!=(const Vector3DI& a, const Vector3DI& b);
 
-GeoRectangle2D operator*(const GeoRectangle2D& a, const double& b);
+Vector2D operator*(const double& a, const Vector2D& b);
+Vector2D operator*(const double& a, const Vector2DI& b);
+Vector3D operator*(const double& a, const Vector3D& b);
+Vector3DI operator*(const double& a, const Vector3DI& b);
+
+Vector2D operator/(const double& a, const Vector2D& b);
+Vector2D operator/(const double& a, const Vector2DI& b);
+Vector3D operator/(const double& a, const Vector3D& b);
+Vector3D operator/(const double& a, const Vector3DI& b);
+
+Vector2DI operator*(const int& a, const Vector2DI& b);
+Vector3DI operator*(const int& a, const Vector3DI& b);
+
 GeoRectangle2D operator+(const GeoRectangle2D& a, const Position2D& b);
+GeoRectangle2D operator-(const GeoRectangle2D& a, const Position2D& b);
+GeoRectangle2D operator*(const GeoRectangle2D& a, const double& b);
+GeoRectangle2D operator/(const GeoRectangle2D& a, const double& b);
+
+
+Vector2D& operator+=(Vector2D& a, const Vector2D& b);
+Vector2D& operator+=(Vector2D& a, const Vector2DI& b);
+Vector2D& operator-=(Vector2D& a, const Vector2D& b);
+Vector2D& operator-=(Vector2D& a, const Vector2DI& b);
+Vector2D& operator*=(Vector2D& a, const double& b);
+// pairwise multiplication
+Vector2D& operator*=(Vector2D& a, const Vector2D& b);
+Vector2D& operator/=(Vector2D& a, const double& b);
+
+Vector2DI& operator+=(Vector2DI& a, const Vector2DI& b);
+Vector2DI& operator-=(Vector2DI& a, const Vector2DI& b);
+Vector2DI& operator*=(Vector2DI& a, const int& b);
+// pairwise multiplication
+Vector2DI& operator*=(Vector2DI& a, const Vector2DI& b);
+Vector2DI& operator/=(Vector2DI& a, const int& b);
+
+Vector3D& operator+=(Vector3D& a, const Vector2D& b);
+Vector3D& operator+=(Vector3D& a, const Vector2DI& b);
+Vector3D& operator+=(Vector3D& a, const Vector3D& b);
+Vector3D& operator+=(Vector3D& a, const Vector3DI& b);
+Vector3D& operator-=(Vector3D& a, const Vector2D& b);
+Vector3D& operator-=(Vector3D& a, const Vector2DI& b);
+Vector3D& operator-=(Vector3D& a, const Vector3D& b);
+Vector3D& operator-=(Vector3D& a, const Vector3DI& b);
+Vector3D& operator*=(Vector3D& a, const double& b);
+// pairwise multiplication
+Vector3D& operator*=(Vector3D& a, const Vector3D& b); 
+Vector3D& operator*=(Vector3D& a, const Vector2D& b);
+Vector3D& operator/=(Vector3D& a, const double& b);
+
+Vector3DI& operator+=(Vector3DI& a, const Vector2DI& b);
+Vector3DI& operator+=(Vector3DI& a, const Vector3DI& b);
+Vector3DI& operator-=(Vector3DI& a, const Vector2DI& b);
+Vector3DI& operator-=(Vector3DI& a, const Vector3DI& b);
+Vector3DI& operator*=(Vector3DI& a, const int& b);
+// pairwise multiplication
+Vector3DI& operator*=(Vector3DI& a, const Vector3DI& b);
+Vector3DI& operator/=(Vector3DI& a, const int& b);
+
+GeoRectangle2D& operator+=(GeoRectangle2D& a, const Position2D& b);
+GeoRectangle2D& operator-=(GeoRectangle2D& a, const Position2D& b);
+GeoRectangle2D& operator*=(GeoRectangle2D& a, const double& b);
+GeoRectangle2D& operator/=(GeoRectangle2D& a, const double& b);
+
 GeoRectangle operator*(const GeoRectangle& a, const double& b);
 GeoRectangle operator+(const GeoRectangle& a, const Position& b);

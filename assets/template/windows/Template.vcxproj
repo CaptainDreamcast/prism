@@ -110,9 +110,11 @@
   <ItemGroup>
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\assets.cpp" />
+    <ClCompile Include="..\gamescreen.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="..\gamescreen.h" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libogg-0.dll">

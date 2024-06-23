@@ -51,6 +51,7 @@ link_directories(
 add_executable(${PROJECT_NAME}
   ../main.cpp
   ../assets_web.cpp
+  ../gamescreen.cpp
 )
 
 # Library to link to (drop the -l prefix). This will mostly be stubs.
@@ -116,5 +117,4 @@ vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} ${PROJECT_NAME}.self
   FILE ../assets/data data
   FILE ../assets/debug debug
   FILE ../assets/font font
-  FILE ../assets/logo logo
 )
