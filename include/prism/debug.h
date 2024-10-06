@@ -23,3 +23,7 @@ void togglePrismDebugSideDisplayVisibility();
 int isPrismDebugConsoleVisible();
 void addPrismDebugConsoleCommand(const std::string& tCommand, std::string(*tCB)(void* tCaller, const std::string& tCommandInput), void* tCaller = NULL);
 void submitToPrismDebugConsole(const std::string& tText);
+
+#ifdef _WIN32
+void imguiDebugGeneral();
+#endif

@@ -51,6 +51,50 @@ static struct {
 	Microphone mMicrophone;
 } gPrismWindowsSoundData;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static void imguiPrismWindowsSoundData() {
+	if(ImGui::TreeNode("Sound Data"))
+	{
+		ImGui::Text("Volume: %d", gPrismWindowsSoundData.mVolume);
+		ImGui::Text("Panning: %f", gPrismWindowsSoundData.mPanning);
+		ImGui::Text("Has Loaded Track: %d", gPrismWindowsSoundData.mHasLoadedTrack);
+		ImGui::Text("Is Playing Track: %d", gPrismWindowsSoundData.mIsPlayingTrack);
+		ImGui::Text("Is Paused: %d", gPrismWindowsSoundData.mIsPaused);
+		ImGui::TreePop();
+	}
+}
+
+static void imguiPrismWindowsSoundMicrophone() {
+	if (ImGui::TreeNode("Microphone"))
+	{
+		ImGui::Text("Is Microphone Active: %d", gPrismWindowsSoundData.mMicrophone.mIsMicrophoneActive);
+		ImGui::Text("Sample Amount: %d", gPrismWindowsSoundData.mMicrophone.mSampleAmount);
+		ImGui::Text("Sample Sum: %d", gPrismWindowsSoundData.mMicrophone.mSampleSum);
+		ImGui::Text("Sample Pointer: %d", gPrismWindowsSoundData.mMicrophone.mSamplePointer);
+		ImGui::Text("Master Peak Volume: %d", gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume);
+		ImGui::TreePop();
+	}
+}
+
+void imguiSoundHardware() {
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "Sound HW", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("Drawing HW", &isWindowShown);
+		ImGui::Text("Volume: %f", getVolume());
+		ImGui::Text("Panning: %f", getPanningValue());
+		ImGui::Text("Microphone Volume: %f", getMicrophoneVolume());
+		imguiPrismWindowsSoundData();
+		imguiPrismWindowsSoundMicrophone();
+		ImGui::End();
+	}
+}
+#endif
+
 void initSound() {
 	gPrismWindowsSoundData.mPanning = 0;
 	if (!Mix_Init(MIX_INIT_OGG))

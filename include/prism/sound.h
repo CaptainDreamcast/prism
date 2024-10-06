@@ -29,3 +29,7 @@ void resumeMusic();
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint();
 double getMicrophoneVolume();
+
+#ifdef _WIN32
+void imguiSoundHardware();
+#endif

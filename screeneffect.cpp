@@ -58,6 +58,46 @@ static struct {
 	map<int, FadeIn> mFadeIns;
 } gScreenEffect;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static void imguiFadeIns() {
+	if (ImGui::TreeNode("Fade Ins"))
+	{
+		for (auto& e : gScreenEffect.mFadeIns)
+		{
+			ImGui::Text("Duration: %d", e.second.mDuration);
+			ImGui::Text("Size: %f, %f", e.second.mSize->x, e.second.mSize->y);
+			ImGui::Text("Alpha: %f", *e.second.mAlpha);
+			ImGui::Text("Amount: %d", e.second.mAnimationAmount);
+			ImGui::Text("Is Over: %d", e.second.mIsOverFunction(&e.second));
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiScreenEffectsData()
+{
+	ImGui::Text("Active: %d", gScreenEffect.mIsActive);
+	ImGui::Text("Z: %f", gScreenEffect.mZ);
+	ImGui::Text("Full Line Size: %d", gScreenEffect.mFullLineSize);
+	ImGui::Text("Fade Color: %f, %f, %f", gScreenEffect.mFadeColor.mR, gScreenEffect.mFadeColor.mG, gScreenEffect.mFadeColor.mB);
+	imguiFadeIns();
+}
+
+void imguiScreenEffects() {
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "ScreenEffects", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("ScreenEffects", &isWindowShown);
+		imguiScreenEffectsData();
+		ImGui::End();
+	}
+}
+#endif
+
 void initScreenEffects() {
 	gScreenEffect.mWhiteTexture = createWhiteTexture();
 	gScreenEffect.mFullLineSize = 10;

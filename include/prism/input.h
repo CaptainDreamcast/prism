@@ -244,3 +244,8 @@ bool hasPressedMouseRightSingle(int i);
 bool hasPressedMouseRight();
 bool hasPressedMouseRightFlankSingle(int i);
 bool hasPressedMouseRightFlank();
+
+#ifdef _WIN32
+void imguiInputGeneral();
+void imguiInputHardware();
+#endif

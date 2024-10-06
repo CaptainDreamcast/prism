@@ -103,3 +103,7 @@ void setPaletteFromARGB256Buffer(int tPaletteID, const Buffer& tBuffer);
 void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, const Buffer& tBuffer);
 
 double getRealFramerate();
+
+#ifdef _WIN32
+void imguiDrawingHardware();
+#endif

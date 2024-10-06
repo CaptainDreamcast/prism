@@ -30,3 +30,7 @@ int playRandomSoundEffectFromCollection(const SoundEffectCollection& tCollection
 
 double getSoundEffectVolume();
 void setSoundEffectVolume(double tVolume);
+
+#ifdef _WIN32
+void imguiSoundEffectsHardware();
+#endif

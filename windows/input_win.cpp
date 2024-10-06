@@ -59,6 +59,141 @@ static struct {
 	Controller mControllers[MAXIMUM_CONTROLLER_AMOUNT];
 } gPrismWindowsInputData;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static void imguiUsedKeyboards()
+{
+	if (ImGui::TreeNode("Used Keyboards"))
+	{
+		for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++)
+		{
+			ImGui::Text("Keyboard %d: %d", i, gPrismWindowsInputData.mUsedKeyboard[i]);
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiUsedKeyboardMappings()
+{
+	if (ImGui::TreeNode("Used Keyboard Mappings"))
+	{
+		for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++)
+		{
+			ImGui::Text("Keyboard Mapping %d: %d", i, gPrismWindowsInputData.mUsedKeyboardMapping[i]);
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiKeyboardKeyStates(std::deque<std::vector<Uint8>>& tKeyStates)
+{
+	if (ImGui::TreeNode("Key States"))
+	{
+		for (auto& e : tKeyStates)
+		{
+			for (int i = 0; i < SDL_NUM_SCANCODES; i++)
+			{
+				if (e[i]) {
+					ImGui::Text("Key %d", i);
+				}
+			}
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiKeyboardComfirmationStates(std::deque<Uint8>& tConfirmationStates)
+{
+	if (ImGui::TreeNode("Confirmation States"))
+	{
+		for (auto& e : tConfirmationStates)
+		{
+			ImGui::Text("Confirmation State: %d", e);
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiKeyboards()
+{
+	if (ImGui::TreeNode("Keyboards"))
+	{
+		for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++)
+		{
+			ImGui::Text("Keyboard %d", i);
+			ImGui::Text("Key State Pointer: %p", gPrismWindowsInputData.mKeyboards[i].mKeyStatePointer);
+			imguiKeyboardKeyStates(gPrismWindowsInputData.mKeyboards[i].mKeyStates);
+			imguiKeyboardComfirmationStates(gPrismWindowsInputData.mKeyboards[i].mConfirmationState);
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiButtonStates(std::deque<std::vector<Uint8>>& mButtonStates)
+{
+	if (ImGui::TreeNode("Button States"))
+	{
+		for (auto& e : mButtonStates)
+		{
+			for (int i = 0; i < CONTROLLER_BUTTON_AMOUNT_PRISM; i++)
+			{
+				if (e[i]) {
+					ImGui::Text("Button %d", i);
+				}
+			}
+		}
+		ImGui::TreePop();
+	}
+}	
+
+static void imguiControllers()
+{
+	if (ImGui::TreeNode("Controllers"))
+	{
+		for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++)
+		{
+			ImGui::Text("Controller %d", i);
+			ImGui::Text("Is Using Controller: %d", gPrismWindowsInputData.mControllers[i].mIsUsingController);
+			if (gPrismWindowsInputData.mControllers[i].mIsUsingController)
+			{
+				ImGui::Text("Controller: %p", gPrismWindowsInputData.mControllers[i].mController);
+				ImGui::Text("Haptic: %p", gPrismWindowsInputData.mControllers[i].mHaptic);
+				ImGui::Text("Is Rumbling: %d", gPrismWindowsInputData.mControllers[i].mIsRumbling);
+				ImGui::Text("Rumble Now: %d", gPrismWindowsInputData.mControllers[i].mRumbleNow);
+				ImGui::Text("Rumble Duration: %d", gPrismWindowsInputData.mControllers[i].mRumbleDuration);
+				imguiButtonStates(gPrismWindowsInputData.mControllers[i].mButtonStates);
+			}
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiWindowsInputData()
+{
+	imguiUsedKeyboards();
+	imguiUsedKeyboardMappings();
+	imguiKeyboards();
+	imguiControllers();
+
+	ImGui::Text("Input Delay: %d", gPrismWindowsInputData.mInputDelay);
+	ImGui::Text("Input Buffer: %d", gPrismWindowsInputData.mInputBuffer);
+	ImGui::Text("Input Wait Active: %d", gPrismWindowsInputData.mInputWait.mIsActive);
+}
+
+void imguiInputHardware() {
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "Input HW", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("Input HW", &isWindowShown);
+		imguiWindowsInputData();
+		ImGui::End();
+	}
+}
+#endif
+
 static int evaluateSDLButtonA(int i) {
 	if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
 	return SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_A);

@@ -501,6 +501,13 @@ static void drawWrapperImgui()
 	imguiPhysics();
 	imguiFileGeneral();
 	imguiFileHardware();
+	imguiDrawingHardware();
+	imguiSoundHardware();
+	imguiSoundEffectsHardware();
+	imguiScreenEffects();
+	imguiInputGeneral();
+	imguiInputHardware();
+	imguiDebugGeneral();
 }
 #endif
 

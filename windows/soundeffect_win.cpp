@@ -27,6 +27,55 @@ static struct {
 	map<int, Mix_Chunk*> mChunks;
 } gSoundEffectData;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static void imguiChunks()
+{
+	if (ImGui::TreeNode("Chunks"))
+	{
+		for (auto& e : gSoundEffectData.mChunks)
+		{
+			ImGui::Text("ID: %d", e.first); ImGui::SameLine();
+			ImGui::Text("Address: %p", e.second);
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiAllocatedChunks()
+{
+	if (ImGui::TreeNode("Allocated Chunks"))
+	{
+		for (auto& e : gSoundEffectData.mAllocatedChunks)
+		{
+			ImGui::Text("ID: %d", e.first); ImGui::SameLine(); 
+			ImGui::Text("Size: %d", e.second.mBuffer.mLength);
+		}
+		ImGui::TreePop();
+	}
+
+}
+
+static void imguiSoundEffectData() {
+	ImGui::Text("Volume: %f", gSoundEffectData.mVolume);
+	imguiAllocatedChunks();
+	imguiChunks();
+}
+
+void imguiSoundEffectsHardware() {
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "SoundEffects HW", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("SoundEffects HW", &isWindowShown);
+		imguiSoundEffectData();
+		ImGui::End();
+	}
+}
+#endif
+
 void initSoundEffects() {
 	gSoundEffectData.mVolume = 20;
 }

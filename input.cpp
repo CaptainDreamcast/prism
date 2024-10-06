@@ -34,6 +34,111 @@ static struct {
 	int mMainController;
 } gPrismGeneralInputData;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static void imguiPrevInputStatus(int i)
+{
+	ImGui::Text("Prev A: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_A_PRISM]);
+	ImGui::Text("Prev B: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_B_PRISM]);
+	ImGui::Text("Prev X: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_X_PRISM]);
+	ImGui::Text("Prev Y: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_Y_PRISM]);
+	ImGui::Text("Prev Left: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_LEFT_PRISM]);
+	ImGui::Text("Prev Right: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_RIGHT_PRISM]);
+	ImGui::Text("Prev Up: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_UP_PRISM]);
+	ImGui::Text("Prev Down: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_DOWN_PRISM]);
+	ImGui::Text("Prev L: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_L_PRISM]);
+	ImGui::Text("Prev R: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_R_PRISM]);
+	ImGui::Text("Prev Start: %d", gPrismGeneralInputData.mStatus[i].mPrev[CONTROLLER_START_PRISM]);
+}
+
+static void imguiCurrentInputStatus(int i)
+{
+	ImGui::Text("Current A: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_A_PRISM]);
+	ImGui::Text("Current B: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_B_PRISM]);
+	ImGui::Text("Current X: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_X_PRISM]);
+	ImGui::Text("Current Y: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_Y_PRISM]);
+	ImGui::Text("Current Left: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_LEFT_PRISM]);
+	ImGui::Text("Current Right: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_RIGHT_PRISM]);
+	ImGui::Text("Current Up: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_UP_PRISM]);
+	ImGui::Text("Current Down: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_DOWN_PRISM]);
+	ImGui::Text("Current L: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_L_PRISM]);
+	ImGui::Text("Current R: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_R_PRISM]);
+	ImGui::Text("Current Start: %d", gPrismGeneralInputData.mStatus[i].mCurrent[CONTROLLER_START_PRISM]);
+}
+
+static void imguiMousePrevInputStatus(int i)
+{
+	ImGui::Text("Prev Mouse Left: %d", gPrismGeneralInputData.mStatus[i].mMousePrev[MOUSE_LEFT_BUTTON_PRISM]);
+	ImGui::Text("Prev Mouse Right: %d", gPrismGeneralInputData.mStatus[i].mMousePrev[MOUSE_RIGHT_BUTTON_PRISM]);
+}
+
+static void imguiMouseCurrentInputStatus(int i)
+{
+	ImGui::Text("Current Mouse Left: %d", gPrismGeneralInputData.mStatus[i].mMouseCurrent[MOUSE_LEFT_BUTTON_PRISM]);
+	ImGui::Text("Current Mouse Right: %d", gPrismGeneralInputData.mStatus[i].mMouseCurrent[MOUSE_RIGHT_BUTTON_PRISM]);
+}
+
+static void imguiInputStatuses()
+{
+	if (ImGui::TreeNode("Input Statuses"))
+	{
+		for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++)
+		{
+			if (ImGui::TreeNode("Controller"))
+			{
+				imguiPrevInputStatus(i);
+				imguiCurrentInputStatus(i);
+				imguiMousePrevInputStatus(i);
+				imguiMouseCurrentInputStatus(i);
+			
+				ImGui::Text("Abort Prev: %d", gPrismGeneralInputData.mStatus[i].mAbortPrev);
+				ImGui::Text("Abort Current: %d", gPrismGeneralInputData.mStatus[i].mAbortCurrent);
+				ImGui::Text("Shot Prev: %d", gPrismGeneralInputData.mStatus[i].mShotPrev);
+				ImGui::Text("Shot Current: %d", gPrismGeneralInputData.mStatus[i].mShotCurrent);
+				ImGui::TreePop();
+			}
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiSetInputDatas()
+{
+	if (ImGui::TreeNode("Set Input Datas"))
+	{
+		for (int i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++)
+		{
+			ImGui::Text("Controller %d", i);
+			ImGui::Text("Is Active: %d", gPrismGeneralInputData.mSetInput[i].mIsActive);
+			ImGui::Text("Target Button: %d", gPrismGeneralInputData.mSetInput[i].mTargetButton);
+			ImGui::Text("Is Setting: %d", gPrismGeneralInputData.mSetInput[i].mIsSetting);
+			ImGui::Text("Is Setting Controller: %d", gPrismGeneralInputData.mSetInput[i].mIsSettingController);
+			ImGui::Text("Flank Check Done: %d", gPrismGeneralInputData.mSetInput[i].mFlankCheckDone);
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiGeneralInputData() {
+	ImGui::Text("Main Controller: %d", gPrismGeneralInputData.mMainController);
+	imguiInputStatuses();
+	imguiSetInputDatas();
+}
+
+void imguiInputGeneral() {
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "Input General", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("Input General", &isWindowShown);
+		imguiGeneralInputData();
+		ImGui::End();
+	}
+}
+#endif
+
 void resetInputForAllControllers() {
 	int i;
 	for (i = 0; i < MAXIMUM_CONTROLLER_AMOUNT; i++) {
@@ -405,6 +510,7 @@ static void updateInputFlanks() {
 		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mAbortPrev, &gPrismGeneralInputData.mStatus[i].mAbortCurrent, hasPressedAbortSingle(i));
 		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mShotPrev, &gPrismGeneralInputData.mStatus[i].mShotCurrent, hasShotGunSingle(i));
 		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mMousePrev[MOUSE_LEFT_BUTTON_PRISM], &gPrismGeneralInputData.mStatus[i].mMouseCurrent[MOUSE_LEFT_BUTTON_PRISM], hasPressedMouseLeftSingle(i));
+		updateInputFlagSingle(&gPrismGeneralInputData.mStatus[i].mMousePrev[MOUSE_RIGHT_BUTTON_PRISM], &gPrismGeneralInputData.mStatus[i].mMouseCurrent[MOUSE_RIGHT_BUTTON_PRISM], hasPressedMouseRightSingle(i));
 	}
 }
 

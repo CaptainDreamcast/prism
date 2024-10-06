@@ -82,6 +82,68 @@ static struct {
 
 } gPrismDebug;
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+
+static void imguiConsole()
+{
+	if (ImGui::TreeNode("Console"))
+	{
+		ImGui::Text("Archive Pointer: %d", gPrismDebug.mConsole.mArchivePointer);
+		ImGui::Text("Pointer Position: %d", gPrismDebug.mConsole.mPointerPosition);
+		ImGui::Text("Console Text: %s", gPrismDebug.mConsole.mConsoleText.data());
+		ImGui::Text("Has User Script: %d", gPrismDebug.mConsole.mHasUserScript);
+		ImGui::Text("Is Visible: %d", gPrismDebug.mConsole.mIsVisible);
+
+		ImGui::Text("Console Archive Texts");
+		ImGui::Indent();
+		for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
+		{
+			ImGui::Text("%d: %s", i, gPrismDebug.mConsole.mConsoleArchiveText[i].data());
+		}
+		ImGui::Unindent();
+
+		ImGui::TreePop();
+	}
+}
+
+static void imguiSideDisplay()
+{
+	if (ImGui::TreeNode("Side Display"))
+	{
+		ImGui::Text("FPS: %.1f", 1.0 / getRealFramerate());
+		ImGui::Text("Drawing Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
+		ImGui::Text("Update Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
+		ImGui::Text("Waiting Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
+		ImGui::Text("Drop Frame: %d", gPrismDebug.mSideDisplay.mDropFrameCounter);
+		ImGui::Text("Visible: %d", gPrismDebug.mSideDisplay.mIsVisible);
+		ImGui::TreePop();
+	}
+}
+
+static void imguiDebugData()
+{
+	ImGui::Text("Develop Mode: %d", gPrismDebug.mIsInDevelopMode);
+	ImGui::Text("Active: %d", gPrismDebug.mIsActive);
+	imguiSideDisplay();
+	imguiConsole();
+}
+
+void imguiDebugGeneral()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "Debug General", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("Debug General", &isWindowShown);
+		imguiDebugData();
+		ImGui::End();
+	}
+}
+
+#endif
+
 int isInDevelopMode() {
 	return gPrismDebug.mIsInDevelopMode;
 }

@@ -34,3 +34,7 @@ void unsetScreenWhite();
 
 TextureData getEmptyWhiteTexture();
 TextureData* getEmptyWhiteTextureReference();
+
+#ifdef _WIN32
+void imguiScreenEffects();
+#endif

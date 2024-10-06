@@ -255,6 +255,122 @@ static DrawingData gPrismWindowsDrawingData;
 
 extern SDL_Window* gSDLWindow;
 
+#ifdef _WIN32
+static void imguiOpenGLData()
+{
+	if (ImGui::TreeNode("OpenGL Data"))
+	{
+		ImGui::Text("Vendor: %s", (char*)glGetString(GL_VENDOR));
+		ImGui::Text("Renderer: %s", (char*)glGetString(GL_RENDERER));
+		ImGui::Text("Version: %s", (char*)glGetString(GL_VERSION));
+		ImGui::Text("GLSL: %s", (char*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+		ImGui::Text("Card Type: %d", gOpenGLData.mCardType);
+		ImGui::Text("Screen Scale: %f %f %f", gOpenGLData.mScreenScale.x, gOpenGLData.mScreenScale.y, gOpenGLData.mScreenScale.z);
+		ImGui::Text("Real Screen Size: %f %f %f", gOpenGLData.mRealScreenSize.x, gOpenGLData.mRealScreenSize.y, gOpenGLData.mRealScreenSize.z);
+		ImGui::Text("Subtraction Equation: %d", gOpenGLData.mSubtractionEquation);
+		ImGui::Text("Active Shader Flags: %d", gOpenGLData.mActiveShaderFlags);	
+		ImGui::TreePop();
+	}
+}
+
+static void imguiBookkeepingData()
+{	
+	if (ImGui::TreeNode("Bookkeeping Data"))
+	{
+		ImGui::Text("Frequency: %f", gBookkeepingData.mFrequency);
+		ImGui::Text("Frame Start Time: %f", gBookkeepingData.mFrameStartTime);
+		ImGui::Text("Real Framerate: %f", gBookkeepingData.mRealFramerate);
+		ImGui::Text("Is Frame Skipping Enabled: %d", gBookkeepingData.mIsFrameSkippingEnabled);
+		ImGui::Text("Drawing Start Time: %f", gBookkeepingData.mDrawingStartTime);
+		ImGui::Text("Drawing End Time: %f", gBookkeepingData.mDrawingEndTime);
+		ImGui::Text("Is Skipping Next Frame Draw Counter: %d", gBookkeepingData.mIsSkippingNextFrameDrawCounter);
+		ImGui::Text("Real Frame Start Time: %f", gBookkeepingData.mRealFrameStartTime);
+		ImGui::TreePop();
+	}
+}
+
+static void imguiDrawVector()
+{
+	if (ImGui::TreeNode("Draw Vector"))
+	{
+		for (size_t i = 0; i < gDrawVector.size(); i++)
+		{
+			if (ImGui::TreeNode(std::to_string(i).c_str()))
+			{
+				auto& element = gDrawVector[i];
+				if (element.mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_SPRITE)
+				{
+					auto spriteElement = element.asSpriteElement();
+					ImGui::Text("Type: Sprite");
+					ImGui::Text("Texture size: %d %d", spriteElement->mTexture.mTextureSize.x, spriteElement->mTexture.mTextureSize.y);
+					ImGui::Text("Top Left: %f %f", spriteElement->mTopLeft.x, spriteElement->mTopLeft.y);
+					ImGui::Text("Top Right: %f %f", spriteElement->mTopRight.x, spriteElement->mTopRight.y);
+					ImGui::Text("Bottom Left: %f %f", spriteElement->mBottomLeft.x, spriteElement->mBottomLeft.y);
+					ImGui::Text("Bottom Right: %f %f", spriteElement->mBottomRight.x, spriteElement->mBottomRight.y);
+					ImGui::Text("Texture Position: %f %f %f %f", spriteElement->mTexturePosition.topLeft.x, spriteElement->mTexturePosition.topLeft.y, spriteElement->mTexturePosition.bottomRight.x, spriteElement->mTexturePosition.bottomRight.y);
+					ImGui::Text("Z: %f", spriteElement->mZ);
+				}
+				else
+				{
+					auto truetypeElement = element.asTruetypeElement();
+					ImGui::Text("Type: Truetype");
+					ImGui::Text("Text: %s", truetypeElement->mText);
+					ImGui::Text("Font: %p", truetypeElement->mFont);
+					ImGui::Text("Pos: %f %f", truetypeElement->mPos.x, truetypeElement->mPos.y);
+					ImGui::Text("Text Size: %d %d %d", truetypeElement->mTextSize.x, truetypeElement->mTextSize.y, truetypeElement->mTextSize.z);
+					ImGui::Text("Color: %f %f %f", truetypeElement->mColor.x, truetypeElement->mColor.y, truetypeElement->mColor.z);
+					ImGui::Text("TextBoxWidth: %f", truetypeElement->mTextBoxWidth);
+					ImGui::Text("DrawRectangle: %f %f %f %f", truetypeElement->mDrawRectangle.mTopLeft.x, truetypeElement->mDrawRectangle.mTopLeft.y, truetypeElement->mDrawRectangle.mBottomRight.x, truetypeElement->mDrawRectangle.mBottomRight.y);
+					ImGui::Text("Z: %f", truetypeElement->mZ);
+				}
+				ImGui::TreePop();
+			}
+		}
+		ImGui::TreePop();
+	}
+}
+
+static void imguiPrimsWindowsDrawingData()
+{
+	if (ImGui::TreeNode("Prism Windows Drawing Data"))
+	{
+		ImGui::Text("a: %f", gPrismWindowsDrawingData.a);
+		ImGui::Text("r: %f", gPrismWindowsDrawingData.r);
+		ImGui::Text("g: %f", gPrismWindowsDrawingData.g);
+		ImGui::Text("b: %f", gPrismWindowsDrawingData.b);
+		ImGui::Text("rOffset: %f", gPrismWindowsDrawingData.rOffset);
+		ImGui::Text("gOffset: %f", gPrismWindowsDrawingData.gOffset);
+		ImGui::Text("bOffset: %f", gPrismWindowsDrawingData.bOffset);
+		ImGui::Text("Transformation Matrix: %p", gPrismWindowsDrawingData.mTransformationMatrix);
+		ImGui::Text("Effect Stack: ", gPrismWindowsDrawingData.mEffectStack);
+		ImGui::Text("Is Disabled: %d", gPrismWindowsDrawingData.mIsDisabled);
+		ImGui::Text("Blend Type: %d", gPrismWindowsDrawingData.mBlendType);
+		ImGui::Text("Is Color Solid: %d", gPrismWindowsDrawingData.mIsColorSolid);
+		ImGui::Text("Is Color Inversed: %d", gPrismWindowsDrawingData.mIsColorInversed);
+		ImGui::Text("Dest Alpha: %f", gPrismWindowsDrawingData.mDestAlpha);
+		ImGui::Text("Color Factor: %f", gPrismWindowsDrawingData.mColorFactor);
+		ImGui::Text("Palettes: %p %p %p %p", gPrismWindowsDrawingData.mPalettes[0], gPrismWindowsDrawingData.mPalettes[1], gPrismWindowsDrawingData.mPalettes[2], gPrismWindowsDrawingData.mPalettes[3]);
+		ImGui::TreePop();
+	}
+}
+
+void imguiDrawingHardware()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Prism", "Drawing HW", &isWindowShown);
+	if (isWindowShown)
+	{
+		ImGui::Begin("Drawing HW", &isWindowShown);
+		imguiOpenGLData();
+		imguiBookkeepingData();
+		imguiDrawVector();
+		imguiPrimsWindowsDrawingData();
+		ImGui::End();
+	}
+	
+}
+#endif
+
 static void detectOpenGLCardType() {
 	auto vendorString = std::string((char*)glGetString(GL_VENDOR));
 	turnStringLowercase(vendorString);
