@@ -8,6 +8,11 @@
 #include <prism/system.h>
 #include <prism/netplay.h>
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 #ifdef DREAMCAST
 #define PREVIOUS_FPS_AMOUNT 5
 #else
@@ -17,556 +22,555 @@
 #define CONSOLE_ARCHIVE_AMOUNT 5
 
 using namespace std;
+namespace prism {
 
-typedef struct SideDisplay_t {
-	double mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT];
-	int mFPSCounterTextID;
+	typedef struct SideDisplay_t {
+		double mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT];
+		int mFPSCounterTextID;
 
-	uint64_t mStartDrawingTime;
-	uint64_t mEndDrawingTime;
-	int mDrawingTimeCounterTextID;
+		uint64_t mStartDrawingTime;
+		uint64_t mEndDrawingTime;
+		int mDrawingTimeCounterTextID;
 
-	uint64_t mStartUpdateTime;
-	uint64_t mPreviousStartUpdateTime;
-	uint64_t mEndUpdateTime;
+		uint64_t mStartUpdateTime;
+		uint64_t mPreviousStartUpdateTime;
+		uint64_t mEndUpdateTime;
 
-	int mUpdateTimeCounterTextID;
+		int mUpdateTimeCounterTextID;
 
-	uint64_t mStartWaitingTime;
-	uint64_t mEndWaitingTime;
-	int mWaitingTimeCounterTextID;
+		uint64_t mStartWaitingTime;
+		uint64_t mEndWaitingTime;
+		int mWaitingTimeCounterTextID;
 
-	int mDropFrameCounter;
-	int mDropFrameCounterTextID;
+		int mDropFrameCounter;
+		int mDropFrameCounterTextID;
 
-	int mNetplayInputDelayTextID;
-	int mNetplaySyncFrameTextID;
-	int mNetplayReceivedFrameTextID;
-	int mNetplayFrameDifferenceTextID;
+		int mNetplayInputDelayTextID;
+		int mNetplaySyncFrameTextID;
+		int mNetplayReceivedFrameTextID;
+		int mNetplayFrameDifferenceTextID;
 
-	int mIsVisible = 1;
-} SideDisplay;
+		int mIsVisible = 1;
+	} SideDisplay;
 
-typedef struct {
-	void* mCaller;
-	string(*mCB)(void*, const std::string&);
-} ConsoleCommand;
+	typedef struct {
+		void* mCaller;
+		string(*mCB)(void*, const std::string&);
+	} ConsoleCommand;
 
-typedef struct {
-	AnimationHandlerElement* mBackgroundAnimationElement;
-	string mConsoleArchiveText[CONSOLE_ARCHIVE_AMOUNT];
-	int mConsoleArchiveTextID[CONSOLE_ARCHIVE_AMOUNT];
-	int mArchivePointer;
-	string mConsoleText;
-	int mConsoleTextID;
-	AnimationHandlerElement* mConsolePointerAnimationElement;
-	int mPointerPosition;
-	TextureData mWhiteTexture;
+	typedef struct {
+		AnimationHandlerElement* mBackgroundAnimationElement;
+		string mConsoleArchiveText[CONSOLE_ARCHIVE_AMOUNT];
+		int mConsoleArchiveTextID[CONSOLE_ARCHIVE_AMOUNT];
+		int mArchivePointer;
+		string mConsoleText;
+		int mConsoleTextID;
+		AnimationHandlerElement* mConsolePointerAnimationElement;
+		int mPointerPosition;
+		TextureData mWhiteTexture;
 
-	map<string, ConsoleCommand> mConsoleCommands;
+		map<string, ConsoleCommand> mConsoleCommands;
 
-	int mHasUserScript;
-	Buffer mUserScript;
-	BufferPointer mUserScriptPointer;
+		int mHasUserScript;
+		Buffer mUserScript;
+		BufferPointer mUserScriptPointer;
 
-	int mIsVisible;
-} Console;
+		int mIsVisible;
+	} Console;
 
-static struct {
+	static struct {
 
-	SideDisplay mSideDisplay;
-	Console mConsole;
+		SideDisplay mSideDisplay;
+		Console mConsole;
 
-	int mIsInDevelopMode;
-	int mIsActive;
+		int mIsInDevelopMode;
+		int mIsActive;
 
-} gPrismDebug;
+	} gPrismDebug;
 
 #ifdef _WIN32
-#include <imgui/imgui.h>
-#include "prism/windows/debugimgui_win.h"
-
-static void imguiConsole()
-{
-	if (ImGui::TreeNode("Console"))
+	static void imguiConsole()
 	{
-		ImGui::Text("Archive Pointer: %d", gPrismDebug.mConsole.mArchivePointer);
-		ImGui::Text("Pointer Position: %d", gPrismDebug.mConsole.mPointerPosition);
-		ImGui::Text("Console Text: %s", gPrismDebug.mConsole.mConsoleText.data());
-		ImGui::Text("Has User Script: %d", gPrismDebug.mConsole.mHasUserScript);
-		ImGui::Text("Is Visible: %d", gPrismDebug.mConsole.mIsVisible);
-
-		ImGui::Text("Console Archive Texts");
-		ImGui::Indent();
-		for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
+		if (ImGui::TreeNode("Console"))
 		{
-			ImGui::Text("%d: %s", i, gPrismDebug.mConsole.mConsoleArchiveText[i].data());
+			ImGui::Text("Archive Pointer: %d", gPrismDebug.mConsole.mArchivePointer);
+			ImGui::Text("Pointer Position: %d", gPrismDebug.mConsole.mPointerPosition);
+			ImGui::Text("Console Text: %s", gPrismDebug.mConsole.mConsoleText.data());
+			ImGui::Text("Has User Script: %d", gPrismDebug.mConsole.mHasUserScript);
+			ImGui::Text("Is Visible: %d", gPrismDebug.mConsole.mIsVisible);
+
+			ImGui::Text("Console Archive Texts");
+			ImGui::Indent();
+			for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
+			{
+				ImGui::Text("%d: %s", i, gPrismDebug.mConsole.mConsoleArchiveText[i].data());
+			}
+			ImGui::Unindent();
+
+			ImGui::TreePop();
 		}
-		ImGui::Unindent();
-
-		ImGui::TreePop();
 	}
-}
 
-static void imguiSideDisplay()
-{
-	if (ImGui::TreeNode("Side Display"))
+	static void imguiSideDisplay()
 	{
-		ImGui::Text("FPS: %.1f", 1.0 / getRealFramerate());
-		ImGui::Text("Drawing Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
-		ImGui::Text("Update Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
-		ImGui::Text("Waiting Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
-		ImGui::Text("Drop Frame: %d", gPrismDebug.mSideDisplay.mDropFrameCounter);
-		ImGui::Text("Visible: %d", gPrismDebug.mSideDisplay.mIsVisible);
-		ImGui::TreePop();
-	}
-}
-
-static void imguiDebugData()
-{
-	ImGui::Text("Develop Mode: %d", gPrismDebug.mIsInDevelopMode);
-	ImGui::Text("Active: %d", gPrismDebug.mIsActive);
-	imguiSideDisplay();
-	imguiConsole();
-}
-
-void imguiDebugGeneral()
-{
-	static bool isWindowShown = false;
-	imguiPrismAddTab("Prism", "Debug General", &isWindowShown);
-	if (isWindowShown)
-	{
-		ImGui::Begin("Debug General", &isWindowShown);
-		imguiDebugData();
-		ImGui::End();
-	}
-}
-
-#endif
-
-int isInDevelopMode() {
-	return gPrismDebug.mIsInDevelopMode;
-}
-
-void setDevelopMode() {
-	gPrismDebug.mIsInDevelopMode = 1;
-}
-
-static void toggleVisibility();
-
-static string showConsoleCB(void* tCaller, const string& tCommand) {
-	(void)tCaller;
-	(void)tCommand;
-	toggleVisibility();
-	return "";
-}
-
-static void unloadUserScript() {
-	freeBuffer(gPrismDebug.mConsole.mUserScript);
-	gPrismDebug.mConsole.mHasUserScript = 0;
-}
-
-static string abortscriptCB(void* tCaller, const string& tCommand) {
-	(void)tCaller;
-	(void)tCommand;
-	if (gPrismDebug.mConsole.mHasUserScript) {
-		unloadUserScript();
-	}
-	return "";
-}
-
-static string exitCB(void* tCaller, const string& tCommand) {
-	(void)tCaller;
-	(void)tCommand;
-	abortScreenHandling();
-	return "";
-}
-
-static void initDebugScript() {
-	gPrismDebug.mConsole.mHasUserScript = isFile("debug/user.cfg");
-	if (!gPrismDebug.mConsole.mHasUserScript) return;
-
-	gPrismDebug.mConsole.mUserScript = fileToBuffer("debug/user.cfg");
-	gPrismDebug.mConsole.mUserScriptPointer = getBufferPointer(gPrismDebug.mConsole.mUserScript);
-	addPrismDebugConsoleCommand("showconsole", showConsoleCB);
-	addPrismDebugConsoleCommand("abortscript", abortscriptCB);
-	addPrismDebugConsoleCommand("exit", exitCB);
-}
-
-void initDebug()
-{
-	addMugenFont(-2, "f6x9.fnt");
-	initDebugScript();
-}
-
-static void loadPrismDebug(void* tData) {
-	(void)tData;
-	setProfilingSectionMarkerCurrentFunction();
-
-	ScreenSize sz = getScreenSize();
-	double offset = (sz.y / 480.0) * 20;
-	int dy = 10;
-
-	gPrismDebug.mSideDisplay.mFPSCounterTextID = addMugenTextMugenStyle("00.0", Vector3D(sz.x - offset, offset, 95), Vector3DI(-1, 1, -1));
-
-	gPrismDebug.mSideDisplay.mStartDrawingTime = gPrismDebug.mSideDisplay.mEndDrawingTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy, 95), Vector3DI(-1, 1, -1));
-
-	gPrismDebug.mSideDisplay.mStartUpdateTime = gPrismDebug.mSideDisplay.mEndUpdateTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mPreviousStartUpdateTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy * 2, 95), Vector3DI(-1, 1, -1));
-
-	gPrismDebug.mSideDisplay.mStartWaitingTime = gPrismDebug.mSideDisplay.mEndWaitingTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy * 3, 95), Vector3DI(-1, 1, -1));
-
-	gPrismDebug.mSideDisplay.mDropFrameCounter = 0;
-	gPrismDebug.mSideDisplay.mDropFrameCounterTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 4, 95), Vector3DI(-1, 1, -1));
-
-#ifdef _WIN32
-	gPrismDebug.mSideDisplay.mNetplayInputDelayTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 5, 95), Vector3DI(-1, 1, -1));
-	gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 6, 95), Vector3DI(-1, 1, -1));
-	gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 7, 95), Vector3DI(-1, 1, -1));
-	gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 8, 95), Vector3DI(-1, 1, -1));
-#endif
-
-	gPrismDebug.mConsole.mWhiteTexture = createWhiteTexture();
-	gPrismDebug.mConsole.mIsVisible = 0;
-
-	gPrismDebug.mIsActive = 1;
-}
-
-static void setConsoleInvisible();
-
-static void unloadPrismDebug(void* tData) {
-	(void)tData;
-	setProfilingSectionMarkerCurrentFunction();
-
-	if (gPrismDebug.mConsole.mIsVisible) {
-		setConsoleInvisible();
-	}
-}
-
-static void updatePrismDebugSideDisplay() {
-	const auto fps = getRealFramerate();
-	const auto time = (1.0 / fps) * 1000.0;
-	double timeSum = time + gPrismDebug.mSideDisplay.mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT - 1];
-	for (int i = 1; i < PREVIOUS_FPS_AMOUNT; i++) {
-		timeSum += gPrismDebug.mSideDisplay.mPreviousFrameTimes[i - 1];
-		gPrismDebug.mSideDisplay.mPreviousFrameTimes[i - 1] = gPrismDebug.mSideDisplay.mPreviousFrameTimes[i];
-	}
-	gPrismDebug.mSideDisplay.mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT - 1] = time;
-
-	timeSum /= PREVIOUS_FPS_AMOUNT + 1;
-	const auto fpsSum = (1000.0 / timeSum);
-
-	if (gPrismDebug.mSideDisplay.mIsVisible) {
-		char text[200];
-		sprintf(text, "%.1f fps", fpsSum);
-		changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, text);
-
-		sprintf(text, "%lu drw", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
-		changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, text);
-
-		sprintf(text, "%lu upd", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
-		changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, text);
-
-		sprintf(text, "%lu wat", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
-		changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, text);
-
-		sprintf(text, "%d drp", gPrismDebug.mSideDisplay.mDropFrameCounter);
-		changeMugenText(gPrismDebug.mSideDisplay.mDropFrameCounterTextID, text);
-
-#ifdef _WIN32
-		if (isNetplayActive())
+		if (ImGui::TreeNode("Side Display"))
 		{
-			sprintf(text, "%d idl", getInputDelay());
-			changeMugenText(gPrismDebug.mSideDisplay.mNetplayInputDelayTextID, text);
+			ImGui::Text("FPS: %.1f", 1.0 / getRealFramerate());
+			ImGui::Text("Drawing Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
+			ImGui::Text("Update Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
+			ImGui::Text("Waiting Time: %lu", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
+			ImGui::Text("Drop Frame: %d", gPrismDebug.mSideDisplay.mDropFrameCounter);
+			ImGui::Text("Visible: %d", gPrismDebug.mSideDisplay.mIsVisible);
+			ImGui::TreePop();
+		}
+	}
 
-			sprintf(text, "%d sfr", getNetplaySyncFrame());
-			changeMugenText(gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID, text);
+	static void imguiDebugData()
+	{
+		ImGui::Text("Develop Mode: %d", gPrismDebug.mIsInDevelopMode);
+		ImGui::Text("Active: %d", gPrismDebug.mIsActive);
+		imguiSideDisplay();
+		imguiConsole();
+	}
 
-			sprintf(text, "%d rfr", getNetplayLastReceivedFrame());
-			changeMugenText(gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID, text);
+	void imguiDebugGeneral()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Debug General", &isWindowShown);
+		if (isWindowShown)
+		{
+			ImGui::Begin("Debug General", &isWindowShown);
+			imguiDebugData();
+			ImGui::End();
+		}
+	}
 
-			sprintf(text, "%d frd", getNetplaySyncFrame() - getNetplayLastReceivedFrame());
-			changeMugenText(gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID, text);
+#endif
+
+	int isInDevelopMode() {
+		return gPrismDebug.mIsInDevelopMode;
+	}
+
+	void setDevelopMode() {
+		gPrismDebug.mIsInDevelopMode = 1;
+	}
+
+	static void toggleVisibility();
+
+	static string showConsoleCB(void* tCaller, const string& tCommand) {
+		(void)tCaller;
+		(void)tCommand;
+		toggleVisibility();
+		return "";
+	}
+
+	static void unloadUserScript() {
+		freeBuffer(gPrismDebug.mConsole.mUserScript);
+		gPrismDebug.mConsole.mHasUserScript = 0;
+	}
+
+	static string abortscriptCB(void* tCaller, const string& tCommand) {
+		(void)tCaller;
+		(void)tCommand;
+		if (gPrismDebug.mConsole.mHasUserScript) {
+			unloadUserScript();
+		}
+		return "";
+	}
+
+	static string exitCB(void* tCaller, const string& tCommand) {
+		(void)tCaller;
+		(void)tCommand;
+		abortScreenHandling();
+		return "";
+	}
+
+	static void initDebugScript() {
+		gPrismDebug.mConsole.mHasUserScript = isFile("debug/user.cfg");
+		if (!gPrismDebug.mConsole.mHasUserScript) return;
+
+		gPrismDebug.mConsole.mUserScript = fileToBuffer("debug/user.cfg");
+		gPrismDebug.mConsole.mUserScriptPointer = getBufferPointer(gPrismDebug.mConsole.mUserScript);
+		addPrismDebugConsoleCommand("showconsole", showConsoleCB);
+		addPrismDebugConsoleCommand("abortscript", abortscriptCB);
+		addPrismDebugConsoleCommand("exit", exitCB);
+	}
+
+	void initDebug()
+	{
+		addMugenFont(-2, "f6x9.fnt");
+		initDebugScript();
+	}
+
+	static void loadPrismDebug(void* tData) {
+		(void)tData;
+		setProfilingSectionMarkerCurrentFunction();
+
+		ScreenSize sz = getScreenSize();
+		double offset = (sz.y / 480.0) * 20;
+		int dy = 10;
+
+		gPrismDebug.mSideDisplay.mFPSCounterTextID = addMugenTextMugenStyle("00.0", Vector3D(sz.x - offset, offset, 95), Vector3DI(-1, 1, -1));
+
+		gPrismDebug.mSideDisplay.mStartDrawingTime = gPrismDebug.mSideDisplay.mEndDrawingTime = getSystemTicks();
+		gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy, 95), Vector3DI(-1, 1, -1));
+
+		gPrismDebug.mSideDisplay.mStartUpdateTime = gPrismDebug.mSideDisplay.mEndUpdateTime = getSystemTicks();
+		gPrismDebug.mSideDisplay.mPreviousStartUpdateTime = getSystemTicks();
+		gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy * 2, 95), Vector3DI(-1, 1, -1));
+
+		gPrismDebug.mSideDisplay.mStartWaitingTime = gPrismDebug.mSideDisplay.mEndWaitingTime = getSystemTicks();
+		gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID = addMugenTextMugenStyle("000", Vector3D(sz.x - offset, offset + dy * 3, 95), Vector3DI(-1, 1, -1));
+
+		gPrismDebug.mSideDisplay.mDropFrameCounter = 0;
+		gPrismDebug.mSideDisplay.mDropFrameCounterTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 4, 95), Vector3DI(-1, 1, -1));
+
+#ifdef _WIN32
+		gPrismDebug.mSideDisplay.mNetplayInputDelayTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 5, 95), Vector3DI(-1, 1, -1));
+		gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 6, 95), Vector3DI(-1, 1, -1));
+		gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 7, 95), Vector3DI(-1, 1, -1));
+		gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 8, 95), Vector3DI(-1, 1, -1));
+#endif
+
+		gPrismDebug.mConsole.mWhiteTexture = createWhiteTexture();
+		gPrismDebug.mConsole.mIsVisible = 0;
+
+		gPrismDebug.mIsActive = 1;
+	}
+
+	static void setConsoleInvisible();
+
+	static void unloadPrismDebug(void* tData) {
+		(void)tData;
+		setProfilingSectionMarkerCurrentFunction();
+
+		if (gPrismDebug.mConsole.mIsVisible) {
+			setConsoleInvisible();
+		}
+	}
+
+	static void updatePrismDebugSideDisplay() {
+		const auto fps = getRealFramerate();
+		const auto time = (1.0 / fps) * 1000.0;
+		double timeSum = time + gPrismDebug.mSideDisplay.mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT - 1];
+		for (int i = 1; i < PREVIOUS_FPS_AMOUNT; i++) {
+			timeSum += gPrismDebug.mSideDisplay.mPreviousFrameTimes[i - 1];
+			gPrismDebug.mSideDisplay.mPreviousFrameTimes[i - 1] = gPrismDebug.mSideDisplay.mPreviousFrameTimes[i];
+		}
+		gPrismDebug.mSideDisplay.mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT - 1] = time;
+
+		timeSum /= PREVIOUS_FPS_AMOUNT + 1;
+		const auto fpsSum = (1000.0 / timeSum);
+
+		if (gPrismDebug.mSideDisplay.mIsVisible) {
+			char text[200];
+			sprintf(text, "%.1f fps", fpsSum);
+			changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, text);
+
+			sprintf(text, "%lu drw", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
+			changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, text);
+
+			sprintf(text, "%lu upd", (unsigned long)(gPrismDebug.mSideDisplay.mEndUpdateTime - gPrismDebug.mSideDisplay.mPreviousStartUpdateTime));
+			changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, text);
+
+			sprintf(text, "%lu wat", (unsigned long)(gPrismDebug.mSideDisplay.mEndWaitingTime - gPrismDebug.mSideDisplay.mStartWaitingTime));
+			changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, text);
+
+			sprintf(text, "%d drp", gPrismDebug.mSideDisplay.mDropFrameCounter);
+			changeMugenText(gPrismDebug.mSideDisplay.mDropFrameCounterTextID, text);
+
+#ifdef _WIN32
+			if (isNetplayActive())
+			{
+				sprintf(text, "%d idl", getInputDelay());
+				changeMugenText(gPrismDebug.mSideDisplay.mNetplayInputDelayTextID, text);
+
+				sprintf(text, "%d sfr", getNetplaySyncFrame());
+				changeMugenText(gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID, text);
+
+				sprintf(text, "%d rfr", getNetplayLastReceivedFrame());
+				changeMugenText(gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID, text);
+
+				sprintf(text, "%d frd", getNetplaySyncFrame() - getNetplayLastReceivedFrame());
+				changeMugenText(gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID, text);
+			}
+			else {
+				changeMugenText(gPrismDebug.mSideDisplay.mNetplayInputDelayTextID, "");
+				changeMugenText(gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID, "");
+				changeMugenText(gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID, "");
+				changeMugenText(gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID, "");
+			}
+#endif
 		}
 		else {
-			changeMugenText(gPrismDebug.mSideDisplay.mNetplayInputDelayTextID, "");
-			changeMugenText(gPrismDebug.mSideDisplay.mNetplaySyncFrameTextID, "");
-			changeMugenText(gPrismDebug.mSideDisplay.mNetplayReceivedFrameTextID, "");
-			changeMugenText(gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID, "");
-		}
-#endif
-	}
-	else {
-		changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, "");
-		changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, "");
-		changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, "");
-		changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, "");
-		changeMugenText(gPrismDebug.mSideDisplay.mDropFrameCounterTextID, "");
-	}
-}
-
-static void addConsoleText(const string& text) {
-	for (int i = CONSOLE_ARCHIVE_AMOUNT - 1; i > 0; i--) {
-		gPrismDebug.mConsole.mConsoleArchiveText[i] = gPrismDebug.mConsole.mConsoleArchiveText[i - 1];
-	}
-	gPrismDebug.mConsole.mConsoleArchiveText[0] = text;
-
-	if (gPrismDebug.mConsole.mIsVisible) {
-		for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++) {
-			changeMugenText(gPrismDebug.mConsole.mConsoleArchiveTextID[i], gPrismDebug.mConsole.mConsoleArchiveText[i].data());
+			changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, "");
+			changeMugenText(gPrismDebug.mSideDisplay.mDrawingTimeCounterTextID, "");
+			changeMugenText(gPrismDebug.mSideDisplay.mUpdateTimeCounterTextID, "");
+			changeMugenText(gPrismDebug.mSideDisplay.mWaitingTimeCounterTextID, "");
+			changeMugenText(gPrismDebug.mSideDisplay.mDropFrameCounterTextID, "");
 		}
 	}
-}
 
-static void updateConsoleText()
-{
-	double offset;
-	if (!gPrismDebug.mConsole.mPointerPosition) {
-		offset = 0;
-	}
-	else {
-		string prefix = gPrismDebug.mConsole.mConsoleText.substr(0, gPrismDebug.mConsole.mPointerPosition);
-		changeMugenText(gPrismDebug.mConsole.mConsoleTextID, prefix.data());
-		offset = getMugenTextSizeX(gPrismDebug.mConsole.mConsoleTextID) + 1;
-	}
-	changeMugenText(gPrismDebug.mConsole.mConsoleTextID, gPrismDebug.mConsole.mConsoleText.data());
-	setAnimationPosition(gPrismDebug.mConsole.mConsolePointerAnimationElement, Vector3D(20 + offset, 90, CONSOLE_Z + 1));
-}
+	static void addConsoleText(const string& text) {
+		for (int i = CONSOLE_ARCHIVE_AMOUNT - 1; i > 0; i--) {
+			gPrismDebug.mConsole.mConsoleArchiveText[i] = gPrismDebug.mConsole.mConsoleArchiveText[i - 1];
+		}
+		gPrismDebug.mConsole.mConsoleArchiveText[0] = text;
 
-static void clearConsoleInput() {
-	gPrismDebug.mConsole.mArchivePointer = -1;
-	gPrismDebug.mConsole.mPointerPosition = 0;
-	gPrismDebug.mConsole.mConsoleText.clear();
-	if (gPrismDebug.mConsole.mIsVisible) {
+		if (gPrismDebug.mConsole.mIsVisible) {
+			for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++) {
+				changeMugenText(gPrismDebug.mConsole.mConsoleArchiveTextID[i], gPrismDebug.mConsole.mConsoleArchiveText[i].data());
+			}
+		}
+	}
+
+	static void updateConsoleText()
+	{
+		double offset;
+		if (!gPrismDebug.mConsole.mPointerPosition) {
+			offset = 0;
+		}
+		else {
+			string prefix = gPrismDebug.mConsole.mConsoleText.substr(0, gPrismDebug.mConsole.mPointerPosition);
+			changeMugenText(gPrismDebug.mConsole.mConsoleTextID, prefix.data());
+			offset = getMugenTextSizeX(gPrismDebug.mConsole.mConsoleTextID) + 1;
+		}
+		changeMugenText(gPrismDebug.mConsole.mConsoleTextID, gPrismDebug.mConsole.mConsoleText.data());
+		setAnimationPosition(gPrismDebug.mConsole.mConsolePointerAnimationElement, Vector3D(20 + offset, 90, CONSOLE_Z + 1));
+	}
+
+	static void clearConsoleInput() {
+		gPrismDebug.mConsole.mArchivePointer = -1;
+		gPrismDebug.mConsole.mPointerPosition = 0;
+		gPrismDebug.mConsole.mConsoleText.clear();
+		if (gPrismDebug.mConsole.mIsVisible) {
+			updateConsoleText();
+		}
+	}
+
+	static void parseConsoleText() {
+		if (!gPrismDebug.mConsole.mConsoleText.size()) return;
+
+		const auto firstWord = gPrismDebug.mConsole.mConsoleText.substr(0, gPrismDebug.mConsole.mConsoleText.find(' '));
+		if (firstWord.size() > 0 && firstWord[0] == '#') return;
+
+		auto it = gPrismDebug.mConsole.mConsoleCommands.find(firstWord);
+		if (it != gPrismDebug.mConsole.mConsoleCommands.end()) {
+			auto command = it->second;
+			auto response = command.mCB(command.mCaller, gPrismDebug.mConsole.mConsoleText);
+			if (response.size()) {
+				addConsoleText(response);
+			}
+		}
+		else {
+			addConsoleText("Unknown command: " + firstWord);
+		}
+	}
+
+	static void submitConsoleText() {
+		addConsoleText(gPrismDebug.mConsole.mConsoleText);
+		parseConsoleText();
+		clearConsoleInput();
+	}
+
+	static void textInputReceived(void* /*tCaller*/, const std::string& tText) {
+		gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, tText);
+		gPrismDebug.mConsole.mPointerPosition += int(tText.size());
 		updateConsoleText();
 	}
-}
 
-static void parseConsoleText() {
-	if (!gPrismDebug.mConsole.mConsoleText.size()) return;
+	static void keyboardInputReceived(void* tCaller, KeyboardKeyPrism tKey) {
+		(void)tCaller;
 
-	const auto firstWord = gPrismDebug.mConsole.mConsoleText.substr(0, gPrismDebug.mConsole.mConsoleText.find(' '));
-	if (firstWord.size() > 0 && firstWord[0] == '#') return;
+		if (tKey == KEYBOARD_BACKSPACE_PRISM) {
+			if (gPrismDebug.mConsole.mPointerPosition > 0) {
+				gPrismDebug.mConsole.mConsoleText.erase(gPrismDebug.mConsole.mPointerPosition - 1, 1);
+				gPrismDebug.mConsole.mPointerPosition--;
+				updateConsoleText();
+			}
+		}
+		else if (tKey == KEYBOARD_DELETE_PRISM) {
+			if (gPrismDebug.mConsole.mPointerPosition < (int)gPrismDebug.mConsole.mConsoleText.size()) {
+				gPrismDebug.mConsole.mConsoleText.erase(gPrismDebug.mConsole.mPointerPosition, 1);
+				updateConsoleText();
+			}
+		}
+		else if (tKey == KEYBOARD_LEFT_PRISM) {
+			if (gPrismDebug.mConsole.mPointerPosition > 0) {
+				gPrismDebug.mConsole.mPointerPosition--;
+				updateConsoleText();
+			}
+		}
+		else if (tKey == KEYBOARD_RIGHT_PRISM) {
+			if (gPrismDebug.mConsole.mPointerPosition < (int)gPrismDebug.mConsole.mConsoleText.size()) {
+				gPrismDebug.mConsole.mPointerPosition++;
+				updateConsoleText();
+			}
+		}
+		else if (tKey == KEYBOARD_UP_PRISM) {
+			if (gPrismDebug.mConsole.mArchivePointer < CONSOLE_ARCHIVE_AMOUNT - 1) {
+				gPrismDebug.mConsole.mArchivePointer++;
+				gPrismDebug.mConsole.mConsoleText = gPrismDebug.mConsole.mConsoleArchiveText[gPrismDebug.mConsole.mArchivePointer];
+				gPrismDebug.mConsole.mPointerPosition = int(gPrismDebug.mConsole.mConsoleText.size());
+				updateConsoleText();
+			}
+		}
+		else if (tKey == KEYBOARD_DOWN_PRISM) {
+			if (gPrismDebug.mConsole.mArchivePointer > 0) {
+				gPrismDebug.mConsole.mArchivePointer--;
+				gPrismDebug.mConsole.mConsoleText = gPrismDebug.mConsole.mConsoleArchiveText[gPrismDebug.mConsole.mArchivePointer];
+				gPrismDebug.mConsole.mPointerPosition = int(gPrismDebug.mConsole.mConsoleText.size());
+				updateConsoleText();
+			}
+		}
+		else if (tKey == KEYBOARD_RETURN_PRISM) {
+			submitConsoleText();
+		}
 
-	auto it = gPrismDebug.mConsole.mConsoleCommands.find(firstWord);
-	if (it != gPrismDebug.mConsole.mConsoleCommands.end()) {
-		auto command = it->second;
-		auto response = command.mCB(command.mCaller, gPrismDebug.mConsole.mConsoleText);
-		if (response.size()) {
-			addConsoleText(response);
+		waitForButtonFromUserInputForKeyboard(0, keyboardInputReceived);
+	}
+
+	static void setConsoleVisible() {
+		gPrismDebug.mConsole.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, CONSOLE_Z), &gPrismDebug.mConsole.mWhiteTexture);
+		ScreenSize sz = getScreenSize();
+		setAnimationSize(gPrismDebug.mConsole.mBackgroundAnimationElement, Vector3D(sz.x, 100, 1), Vector3D(0, 0, 0));
+		setAnimationColor(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.3, 0.3, 0.3);
+		setAnimationTransparency(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.7);
+
+		for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
+		{
+			gPrismDebug.mConsole.mConsoleArchiveTextID[i] = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleArchiveText[i].data(), Vector3D(20, 75 - 10 * i, CONSOLE_Z + 1), Vector3DI(-2, 4, 1));
+		}
+
+		gPrismDebug.mConsole.mConsoleTextID = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleText.data(), Vector3D(20, 91, CONSOLE_Z + 1), Vector3DI(-2, 0, 1));
+
+		gPrismDebug.mConsole.mConsolePointerAnimationElement = playOneFrameAnimationLoop(Vector3D(20, 90, CONSOLE_Z + 1), &gPrismDebug.mConsole.mWhiteTexture);
+		setAnimationSize(gPrismDebug.mConsole.mConsolePointerAnimationElement, Vector3D(6, 1, 1), Vector3D(0, 0, 0));
+		setAnimationColor(gPrismDebug.mConsole.mConsolePointerAnimationElement, 1, 1, 1);
+		updateConsoleText();
+
+		waitForCharacterFromUserInput(0, textInputReceived);
+		waitForButtonFromUserInputForKeyboard(0, keyboardInputReceived);
+
+		gPrismDebug.mConsole.mArchivePointer = -1;
+		gPrismDebug.mConsole.mIsVisible = 1;
+	}
+
+	static void setConsoleInvisible() {
+		removeHandledAnimation(gPrismDebug.mConsole.mBackgroundAnimationElement);
+
+		for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
+		{
+			removeMugenText(gPrismDebug.mConsole.mConsoleArchiveTextID[i]);
+		}
+
+		removeMugenText(gPrismDebug.mConsole.mConsoleTextID);
+		removeHandledAnimation(gPrismDebug.mConsole.mConsolePointerAnimationElement);
+
+		cancelWaitingForCharacterFromUserInput(0);
+		cancelWaitingForButtonFromUserInput(0);
+
+		gPrismDebug.mConsole.mIsVisible = 0;
+	}
+
+	static void toggleVisibility() {
+		if (gPrismDebug.mConsole.mIsVisible) {
+			setConsoleInvisible();
+		}
+		else {
+			setConsoleVisible();
 		}
 	}
-	else {
-		addConsoleText("Unknown command: " + firstWord);
-	}
-}
 
-static void submitConsoleText() {
-	addConsoleText(gPrismDebug.mConsole.mConsoleText);
-	parseConsoleText();
-	clearConsoleInput();
-}
+	static void updatePrismDebugConsole() {
+		if (hasPressedKeyboardKeyFlank(KEYBOARD_CARET_PRISM)) {
+			toggleVisibility();
+		}
+	}
 
-static void textInputReceived(void* /*tCaller*/, const std::string& tText) {
-	gPrismDebug.mConsole.mConsoleText.insert(gPrismDebug.mConsole.mPointerPosition, tText);
-	gPrismDebug.mConsole.mPointerPosition += int(tText.size());
-	updateConsoleText();
-}
+	static void updatePrismUserScript() {
+		if (!gPrismDebug.mConsole.mHasUserScript) return;
 
-static void keyboardInputReceived(void* tCaller, KeyboardKeyPrism tKey) {
-	(void)tCaller;
+		gPrismDebug.mConsole.mConsoleText = readLineOrEOFFromTextStreamBufferPointer(&gPrismDebug.mConsole.mUserScriptPointer, gPrismDebug.mConsole.mUserScript);
+		if (isBufferPointerOver(gPrismDebug.mConsole.mUserScriptPointer, gPrismDebug.mConsole.mUserScript)) {
+			unloadUserScript();
+		}
 
-	if (tKey == KEYBOARD_BACKSPACE_PRISM) {
-		if (gPrismDebug.mConsole.mPointerPosition > 0) {
-			gPrismDebug.mConsole.mConsoleText.erase(gPrismDebug.mConsole.mPointerPosition - 1, 1);
-			gPrismDebug.mConsole.mPointerPosition--;
-			updateConsoleText();
-		}
-	}
-	else if (tKey == KEYBOARD_DELETE_PRISM) {
-		if (gPrismDebug.mConsole.mPointerPosition < (int)gPrismDebug.mConsole.mConsoleText.size()) {
-			gPrismDebug.mConsole.mConsoleText.erase(gPrismDebug.mConsole.mPointerPosition, 1);
-			updateConsoleText();
-		}
-	}
-	else if (tKey == KEYBOARD_LEFT_PRISM) {
-		if (gPrismDebug.mConsole.mPointerPosition > 0) {
-			gPrismDebug.mConsole.mPointerPosition--;
-			updateConsoleText();
-		}
-	}
-	else if (tKey == KEYBOARD_RIGHT_PRISM) {
-		if (gPrismDebug.mConsole.mPointerPosition < (int)gPrismDebug.mConsole.mConsoleText.size()) {
-			gPrismDebug.mConsole.mPointerPosition++;
-			updateConsoleText();
-		}
-	}
-	else if (tKey == KEYBOARD_UP_PRISM) {
-		if (gPrismDebug.mConsole.mArchivePointer < CONSOLE_ARCHIVE_AMOUNT - 1) {
-			gPrismDebug.mConsole.mArchivePointer++;
-			gPrismDebug.mConsole.mConsoleText = gPrismDebug.mConsole.mConsoleArchiveText[gPrismDebug.mConsole.mArchivePointer];
-			gPrismDebug.mConsole.mPointerPosition = int(gPrismDebug.mConsole.mConsoleText.size());
-			updateConsoleText();
-		}
-	}
-	else if (tKey == KEYBOARD_DOWN_PRISM) {
-		if (gPrismDebug.mConsole.mArchivePointer > 0) {
-			gPrismDebug.mConsole.mArchivePointer--;
-			gPrismDebug.mConsole.mConsoleText = gPrismDebug.mConsole.mConsoleArchiveText[gPrismDebug.mConsole.mArchivePointer];
-			gPrismDebug.mConsole.mPointerPosition = int(gPrismDebug.mConsole.mConsoleText.size());
-			updateConsoleText();
-		}
-	}
-	else if (tKey == KEYBOARD_RETURN_PRISM) {
 		submitConsoleText();
 	}
 
-	waitForButtonFromUserInputForKeyboard(0, keyboardInputReceived);
-}
+	static void updatePrismDebug(void* tData) {
+		(void)tData;
+		setProfilingSectionMarkerCurrentFunction();
 
-static void setConsoleVisible() {
-	gPrismDebug.mConsole.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, CONSOLE_Z), &gPrismDebug.mConsole.mWhiteTexture);
-	ScreenSize sz = getScreenSize();
-	setAnimationSize(gPrismDebug.mConsole.mBackgroundAnimationElement, Vector3D(sz.x, 100, 1), Vector3D(0, 0, 0));
-	setAnimationColor(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.3, 0.3, 0.3);
-	setAnimationTransparency(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.7);
+		updatePrismDebugSideDisplay();
+		updatePrismDebugConsole();
+		updatePrismUserScript();
+	}
 
-	for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
+	ActorBlueprint getPrismDebug()
 	{
-		gPrismDebug.mConsole.mConsoleArchiveTextID[i] = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleArchiveText[i].data(), Vector3D(20, 75 - 10 * i, CONSOLE_Z + 1), Vector3DI(-2, 4, 1));
+		return makeActorBlueprint(loadPrismDebug, unloadPrismDebug, updatePrismDebug);
 	}
 
-	gPrismDebug.mConsole.mConsoleTextID = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleText.data(), Vector3D(20, 91, CONSOLE_Z + 1), Vector3DI(-2, 0, 1));
-
-	gPrismDebug.mConsole.mConsolePointerAnimationElement = playOneFrameAnimationLoop(Vector3D(20, 90, CONSOLE_Z + 1), &gPrismDebug.mConsole.mWhiteTexture);
-	setAnimationSize(gPrismDebug.mConsole.mConsolePointerAnimationElement, Vector3D(6, 1, 1), Vector3D(0, 0, 0));
-	setAnimationColor(gPrismDebug.mConsole.mConsolePointerAnimationElement, 1, 1, 1);
-	updateConsoleText();
-
-	waitForCharacterFromUserInput(0, textInputReceived);
-	waitForButtonFromUserInputForKeyboard(0, keyboardInputReceived);
-
-	gPrismDebug.mConsole.mArchivePointer = -1;
-	gPrismDebug.mConsole.mIsVisible = 1;
-}
-
-static void setConsoleInvisible() {
-	removeHandledAnimation(gPrismDebug.mConsole.mBackgroundAnimationElement);
-
-	for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
+	void setPrismDebugUpdateStartTime()
 	{
-		removeMugenText(gPrismDebug.mConsole.mConsoleArchiveTextID[i]);
+		if (!gPrismDebug.mIsActive) return;
+		gPrismDebug.mSideDisplay.mEndDrawingTime = getSystemTicks();
+		gPrismDebug.mSideDisplay.mPreviousStartUpdateTime = gPrismDebug.mSideDisplay.mStartUpdateTime;
+		gPrismDebug.mSideDisplay.mStartUpdateTime = getSystemTicks();
 	}
 
-	removeMugenText(gPrismDebug.mConsole.mConsoleTextID);
-	removeHandledAnimation(gPrismDebug.mConsole.mConsolePointerAnimationElement);
-
-	cancelWaitingForCharacterFromUserInput(0);
-	cancelWaitingForButtonFromUserInput(0);
-
-	gPrismDebug.mConsole.mIsVisible = 0;
-}
-
-static void toggleVisibility() {
-	if (gPrismDebug.mConsole.mIsVisible) {
-		setConsoleInvisible();
-	}
-	else {
-		setConsoleVisible();
-	}
-}
-
-static void updatePrismDebugConsole() {
-	if (hasPressedKeyboardKeyFlank(KEYBOARD_CARET_PRISM)) {
-		toggleVisibility();
-	}
-}
-
-static void updatePrismUserScript() {
-	if (!gPrismDebug.mConsole.mHasUserScript) return;
-
-	gPrismDebug.mConsole.mConsoleText = readLineOrEOFFromTextStreamBufferPointer(&gPrismDebug.mConsole.mUserScriptPointer, gPrismDebug.mConsole.mUserScript);
-	if (isBufferPointerOver(gPrismDebug.mConsole.mUserScriptPointer, gPrismDebug.mConsole.mUserScript)) {
-		unloadUserScript();
+	void setPrismDebugDrawingStartTime()
+	{
+		if (!gPrismDebug.mIsActive) return;
+		gPrismDebug.mSideDisplay.mEndWaitingTime = getSystemTicks();
+		gPrismDebug.mSideDisplay.mStartDrawingTime = getSystemTicks();
 	}
 
-	submitConsoleText();
-}
+	void setPrismDebugWaitingStartTime()
+	{
+		if (!gPrismDebug.mIsActive) return;
+		gPrismDebug.mSideDisplay.mEndUpdateTime = getSystemTicks();
+		gPrismDebug.mSideDisplay.mStartWaitingTime = getSystemTicks();
+	}
 
-static void updatePrismDebug(void* tData) {
-	(void)tData;
-	setProfilingSectionMarkerCurrentFunction();
+	void setPrismDebugDropFrameCounter(int tDropFrameCounter)
+	{
+		gPrismDebug.mSideDisplay.mDropFrameCounter = tDropFrameCounter;
+	}
 
-	updatePrismDebugSideDisplay();
-	updatePrismDebugConsole();
-	updatePrismUserScript();
-}
+	int getPrismDebugSideDisplayVisibility()
+	{
+		if (!gPrismDebug.mIsActive) return 0;
+		return gPrismDebug.mSideDisplay.mIsVisible;
+	}
 
-ActorBlueprint getPrismDebug()
-{
-	return makeActorBlueprint(loadPrismDebug, unloadPrismDebug, updatePrismDebug);
-}
+	void setPrismDebugSideDisplayVisibility(int tIsVisible)
+	{
+		if (!gPrismDebug.mIsActive) return;
+		gPrismDebug.mSideDisplay.mIsVisible = tIsVisible;
+	}
 
-void setPrismDebugUpdateStartTime()
-{
-	if (!gPrismDebug.mIsActive) return;
-	gPrismDebug.mSideDisplay.mEndDrawingTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mPreviousStartUpdateTime = gPrismDebug.mSideDisplay.mStartUpdateTime;
-	gPrismDebug.mSideDisplay.mStartUpdateTime = getSystemTicks();
-}
+	void togglePrismDebugSideDisplayVisibility()
+	{
+		setPrismDebugSideDisplayVisibility(!getPrismDebugSideDisplayVisibility());
+	}
 
-void setPrismDebugDrawingStartTime()
-{
-	if (!gPrismDebug.mIsActive) return;
-	gPrismDebug.mSideDisplay.mEndWaitingTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mStartDrawingTime = getSystemTicks();
-}
+	int isPrismDebugConsoleVisible()
+	{
+		return gPrismDebug.mConsole.mIsVisible;
+	}
 
-void setPrismDebugWaitingStartTime()
-{
-	if (!gPrismDebug.mIsActive) return;
-	gPrismDebug.mSideDisplay.mEndUpdateTime = getSystemTicks();
-	gPrismDebug.mSideDisplay.mStartWaitingTime = getSystemTicks();
-}
+	void addPrismDebugConsoleCommand(const std::string& tCommand, std::string(*tCB)(void* tCaller, const std::string& tCommandInput), void* tCaller)
+	{
+		ConsoleCommand e;
+		e.mCaller = tCaller;
+		e.mCB = tCB;
+		gPrismDebug.mConsole.mConsoleCommands[tCommand] = e;
+	}
 
-void setPrismDebugDropFrameCounter(int tDropFrameCounter)
-{
-	gPrismDebug.mSideDisplay.mDropFrameCounter = tDropFrameCounter;
-}
-
-int getPrismDebugSideDisplayVisibility()
-{
-	if (!gPrismDebug.mIsActive) return 0;
-	return gPrismDebug.mSideDisplay.mIsVisible;
-}
-
-void setPrismDebugSideDisplayVisibility(int tIsVisible)
-{
-	if (!gPrismDebug.mIsActive) return;
-	gPrismDebug.mSideDisplay.mIsVisible = tIsVisible;
-}
-
-void togglePrismDebugSideDisplayVisibility()
-{
-	setPrismDebugSideDisplayVisibility(!getPrismDebugSideDisplayVisibility());
-}
-
-int isPrismDebugConsoleVisible()
-{
-	return gPrismDebug.mConsole.mIsVisible;
-}
-
-void addPrismDebugConsoleCommand(const std::string& tCommand, std::string(*tCB)(void *tCaller, const std::string& tCommandInput), void* tCaller)
-{
-	ConsoleCommand e;
-	e.mCaller = tCaller;
-	e.mCB = tCB;
-	gPrismDebug.mConsole.mConsoleCommands[tCommand] = e;
-}
-
-void submitToPrismDebugConsole(const std::string& tText) {
-	addConsoleText(tText);
+	void submitToPrismDebugConsole(const std::string& tText) {
+		addConsoleText(tText);
+	}
 }

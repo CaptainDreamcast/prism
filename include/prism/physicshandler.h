@@ -2,6 +2,8 @@
 
 #include "physics.h"
 
+namespace prism {
+
 struct PhysicsHandlerElement {
 	int mID;
 	PhysicsObject mObj;
@@ -34,3 +36,5 @@ void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* tElement, double tVeloc
 void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* tElement, const Vector3D& tDragCoefficient);
 void setHandledPhysicsGravity(PhysicsHandlerElement* tElement, const Vector3D& tGravity);
 void setHandledPhysicsSpeed(PhysicsHandlerElement* tElement, double tSpeed);
+
+}

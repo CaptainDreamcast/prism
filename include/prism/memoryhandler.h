@@ -6,6 +6,7 @@
 #ifdef DREAMCAST
 #include <kos.h>
 
+namespace prism {
 typedef pvr_ptr_t Texture;
 
 #elif defined _WIN32 || defined __EMSCRIPTEN__ || defined(VITA)
@@ -17,6 +18,8 @@ typedef pvr_ptr_t Texture;
 #include <SDL.h>
 #include <GL/glew.h>
 #endif
+
+namespace prism {
 
 #ifdef VITA
 typedef struct {
@@ -86,3 +89,5 @@ int getAllocatedMemoryBlockAmount();
 void imguiMemoryHandler();
 void imguiTextureMemory(const std::string_view& tName, const TextureMemory& tTextureMemory);
 #endif
+
+}

@@ -9,6 +9,8 @@
 
 #include "geometry.h"
 
+namespace prism {
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -47,3 +49,5 @@ Matrix4D createRotationZMatrix4D(double tAngle);
 Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, double tUp, double tBottom, double tNear, double tFar);
 
 Position rotateScaleTranslatePositionByMatrix4D(const Matrix4D& tMatrix, const Position& tPosition);
+
+}

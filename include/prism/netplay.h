@@ -3,6 +3,8 @@
 #include <string>
 #include <prism/file.h>
 
+namespace prism {
+
 void initNetplay();
 void shutdownNetplay();
 
@@ -24,3 +26,5 @@ void renegotiateNetplayConnection();
 
 int getNetplaySyncFrame();
 int getNetplayLastReceivedFrame();
+
+}

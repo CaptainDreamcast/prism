@@ -10,6 +10,8 @@
 #include <memory>
 #include <functional>
 
+namespace prism {
+
 template <class K, class V>
 void stl_new_map(std::map<K, V>& tMap) {
 	tMap.clear();
@@ -335,4 +337,6 @@ T& stl_list_at(std::list<T>& tList, size_t index) {
 	auto it = tList.begin();
 	std::advance(it, index);
 	return *it;
+}
+
 }

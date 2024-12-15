@@ -1,76 +1,119 @@
 #include "prism/lifebar.h"
 
 #include "prism/mugenanimationhandler.h"
-#include "prism/math.h"
 
-using namespace std;
+namespace prism {
 
-struct PrismLifeBarElement {
-    int mID;
-    MugenSpriteFile* mSprites;
-    MugenAnimationHandlerElement* mBGAnimation;
-    MugenAnimationHandlerElement* mFGAnimation;
-    int mValue;
-    int mMaxValue;
-};
+    class LifeBar {
+    public:
+        MugenAnimationHandlerElement* mFGElement;
+        MugenAnimationHandlerElement* mBGElement;
+        int mCurrentValue;
+        int mMaxValue;
+        int mFullSize;
+        LifeBarType mType;
 
-static struct {
-    int mNextID = 0;
-    std::map<int, PrismLifeBarElement> mList;
-} gPrismLifeBarData;
+        LifeBar(const Vector3D& tPosition, MugenSpriteFile& mSprites, MugenAnimations& mAnimations, int tFGAnimNo, int tBGAnimNo, LifeBarType tType, int tStartValue, int tMaxValue, int tFullSize, const Vector3D& tFGOffset)
+        {
+            mFGElement = addMugenAnimation(getMugenAnimation(&mAnimations, tFGAnimNo), &mSprites, tPosition + tFGOffset);
+            mBGElement = addMugenAnimation(getMugenAnimation(&mAnimations, tBGAnimNo), &mSprites, tPosition);
+            mCurrentValue = tStartValue;
+            mMaxValue = tMaxValue;
+            mFullSize = tFullSize;
+            mType = tType;
+        }
+        LifeBar() {}
 
-static void updateLifebarDisplay(PrismLifeBarElement* e) {
-    const auto ratio = (double)e->mValue / e->mMaxValue;
-    const auto spriteSize = getAnimationFirstElementSpriteSize(e->mFGAnimation->mAnimation, e->mSprites);
-    setMugenAnimationRectangleWidth(e->mFGAnimation, spriteSize.x * ratio);
-}
+        void unload()
+        {
+            removeMugenAnimation(mFGElement);
+            removeMugenAnimation(mBGElement);
+        }
 
-int addPrismLifebar(int tEntityID, const Vector3D& tPosition, const Vector2D& tFGOffset, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, int tBGAnimation, int tFGAnimation, int tStartValue, int tMaxValue)
-{
-    int id = gPrismLifeBarData.mNextID++;
-    PrismLifeBarElement e;
-    e.mID = id;
-    e.mSprites = tSprites;
-    e.mBGAnimation = addMugenAnimation(getMugenAnimation(tAnimations, tBGAnimation), tSprites, tPosition);
-    e.mFGAnimation = addMugenAnimation(getMugenAnimation(tAnimations, tFGAnimation), tSprites, tPosition + tFGOffset);
-    e.mValue = tStartValue;
-    e.mMaxValue = tMaxValue;
-    gPrismLifeBarData.mList[id] = e;
+        void updateInternal()
+        {
+            double percentage = ((double)mCurrentValue) / mMaxValue;
+            if (mType == LifeBarType::STRETCH) {
+                setMugenAnimationDrawScale(mFGElement, Vector2D(percentage * mFullSize, 1));
+            }
+            else if (mType == LifeBarType::WIDTH) {
+                setMugenAnimationRectangleWidth(mFGElement, int(percentage * mFullSize));
+            }
+        }
 
-    updateLifebarDisplay(&gPrismLifeBarData.mList[id]);
+        void updateByPercentage(double tPercentage)
+        {
+            mCurrentValue = (int)(tPercentage * mMaxValue);
+            updateInternal();
+        }
 
-    return id;
-}
+        void updateByValue(int tValue)
+        {
+            mCurrentValue = tValue;
+            updateInternal();
+        }
+    };
 
-int getPrismLifebarValue(int tID)
-{
-    return gPrismLifeBarData.mList[tID].mValue;
-}
+    static struct
+    {
+        std::map<int, LifeBar> mLifeBars;
+    } gLifeBarHandlerData;
 
-void setPrismLifebarValue(int tID, int tValue)
-{
-    auto e = &gPrismLifeBarData.mList[tID];
-    e->mValue = min(e->mMaxValue, max(0, tValue));
-    updateLifebarDisplay(e);
-}
 
-static void loadPrismLifebarHandler(void* tData) {
-    (void)tData;
-    gPrismLifeBarData.mList.clear();
-}
+    class LifeBarHandler {
+    public:
+        LifeBarHandler()
+        {
+            gLifeBarHandlerData.mLifeBars.clear();
+        }
+        ~LifeBarHandler()
+        {
+            gLifeBarHandlerData.mLifeBars.clear();
+        }
 
-static void unloadPrismLifebarHandler(void* tData) {
-    (void)tData;
+        void update()
+        {
+        }
+    };
 
-    for (auto& e : gPrismLifeBarData.mList) {
-        removeMugenAnimation(e.second.mBGAnimation);
-        removeMugenAnimation(e.second.mFGAnimation);
+    EXPORT_ACTOR_CLASS(LifeBarHandler);
+
+    int addLifeBar(const Vector3D& tPosition, MugenSpriteFile& mSprites, MugenAnimations& mAnimations, int tFGAnimNo, int tBGAnimNo, LifeBarType tType, int tStartValue, int tMaxValue, int tFullSize, const Vector3D& tFGOffset)
+    {
+        int id = stl_int_map_get_id();
+        gLifeBarHandlerData.mLifeBars[id] = LifeBar(tPosition, mSprites, mAnimations, tFGAnimNo, tBGAnimNo, tType, tStartValue, tMaxValue, tFullSize, tFGOffset);
+        return id;
+    }
+    void removeLifeBar(int tID)
+    {
+        gLifeBarHandlerData.mLifeBars[tID].unload();
+        gLifeBarHandlerData.mLifeBars.erase(tID);
     }
 
-    gPrismLifeBarData.mList.clear();
-}
+    int getLifeBarPercentage(int tID)
+    {
+        return gLifeBarHandlerData.mLifeBars[tID].mCurrentValue / gLifeBarHandlerData.mLifeBars[tID].mMaxValue;
+    }
+    void setLifeBarPercentage(int tID, double tPercentage)
+    {
+        gLifeBarHandlerData.mLifeBars[tID].updateByPercentage(tPercentage);
+    }
+    int getLifeBarValue(int tID)
+    {
+        return gLifeBarHandlerData.mLifeBars[tID].mCurrentValue;
+    }
+    void setLifeBarValue(int tID, int tValue)
+    {
+        gLifeBarHandlerData.mLifeBars[tID].updateByValue(tValue);
+    }
 
-ActorBlueprint getPrismLifebarHandler()
-{
-    return makeActorBlueprint(loadPrismLifebarHandler, unloadPrismLifebarHandler);
+    void removeAllLifebars()
+    {
+        for (auto& lifeBar : gLifeBarHandlerData.mLifeBars)
+        {
+            lifeBar.second.unload();
+        }
+        gLifeBarHandlerData.mLifeBars.clear();
+    }
+
 }

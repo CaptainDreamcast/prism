@@ -12,6 +12,7 @@
 #include "prism/math.h"
 
 using namespace std;
+namespace prism {
 
 void convertIntegerToStringFast(std::string& oRet, int tValue)
 {
@@ -1038,4 +1039,6 @@ void removePrismFlag(uint32_t& tFlag, uint32_t tValue) {
 
 int hasPrismFlag(const uint32_t& tFlag, uint32_t tValue) { 
 	return tFlag & tValue;
+}
+
 }

@@ -2,6 +2,8 @@
 
 #include "actorhandler.h"
 
+namespace prism {
+
 ActorBlueprint getClipboardHandler();
 
 void initClipboardForGame();
@@ -13,3 +15,5 @@ void clipf(char* tFormatString, ...);
 void clearClipboard();
 void setClipboardInvisible();
 void setClipboardVisible();
+
+}

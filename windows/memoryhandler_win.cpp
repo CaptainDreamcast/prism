@@ -2,10 +2,14 @@
 
 #include "prism/math.h"
 
-int getAvailableTextureMemory() {
-	return INF;
-}
+namespace prism {
 
-int getAvailableSoundMemory() {
-	return INF;
+	int getAvailableTextureMemory() {
+		return INF;
+	}
+
+	int getAvailableSoundMemory() {
+		return INF;
+	}
+
 }

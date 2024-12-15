@@ -3,6 +3,8 @@
 #include "geometry.h"
 #include "actorhandler.h"
 
+namespace prism {
+
 typedef void (*OptionCB)(void* caller);
 
 void setupOptionHandler();
@@ -19,3 +21,4 @@ void drawOptionHandler();
 
 ActorBlueprint getOptionHandlerBlueprint();
 
+}

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace prism {
+
 struct Vector3D;
 struct Vector3DI;
 
@@ -282,3 +284,5 @@ GeoRectangle2D& operator/=(GeoRectangle2D& a, const double& b);
 
 GeoRectangle operator*(const GeoRectangle& a, const double& b);
 GeoRectangle operator+(const GeoRectangle& a, const Position& b);
+
+}

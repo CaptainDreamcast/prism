@@ -3,6 +3,8 @@
 #include <prism/actorhandler.h>
 #include <prism/collision.h>
 
+namespace prism {
+
 struct CollisionListData;
 struct CollisionListElement;
 
@@ -27,3 +29,5 @@ int hasBlitzCollidedRight(int tEntityID);
 int hasBlitzCollidedThisFrame(int tEntityID, int tCollisionID);
 
 void removeAllBlitzCollisions(int tEntityID);
+
+}

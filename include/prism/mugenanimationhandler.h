@@ -8,6 +8,8 @@
 #include "mugenanimationreader.h"
 #include "collision.h"
 
+namespace prism {
+
 typedef int MugenDuration;
 struct CollisionListData;
 struct CollisionListElement;
@@ -253,3 +255,5 @@ void pauseMugenAnimationHandler();
 void unpauseMugenAnimationHandler();
 
 ActorBlueprint getMugenAnimationHandler();
+
+}

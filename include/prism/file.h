@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <string>
 
+namespace prism {
+
 #ifndef SEEK_SET
 #define 	SEEK_SET   0
 #define 	SEEK_CUR   1
@@ -118,3 +120,5 @@ void imguiFileGeneral();
 void imguiFileHardware();
 void imguiBuffer(const std::string_view& tName, const Buffer& tBuffer);
 #endif
+
+}

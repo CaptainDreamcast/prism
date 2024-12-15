@@ -1,6 +1,7 @@
 #pragma once
 
-
+namespace prism {
+	
 class ActorHandlerClass {
 
 public:
@@ -8,3 +9,5 @@ public:
 	ActorHandlerClass();
 
 };
+
+}

@@ -2,6 +2,8 @@
 
 #include "geometry.h"
 
+namespace prism {
+
 typedef Vector3D Velocity;
 typedef Vector3D Acceleration;
 typedef Vector3D Gravity;
@@ -34,3 +36,5 @@ void imguiPhysics();
 #endif
 
 #define makeAcceleration(x, y, z) Vector3D(x, y, z)
+
+}

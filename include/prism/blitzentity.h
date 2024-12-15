@@ -4,6 +4,8 @@
 #include "blitzcomponent.h"
 #include "actorhandler.h"
 
+namespace prism {
+
 ActorBlueprint getBlitzEntityHandler();
 
 int addBlitzEntity(const Position& tPos);
@@ -36,3 +38,5 @@ double getBlitzEntityDistance2D(int tID1, int tID2);
 Position* getBlitzEntityPositionReference(int tID);
 Vector3D* getBlitzEntityScaleReference(int tID);
 double* getBlitzEntityRotationZReference(int tID);
+
+}

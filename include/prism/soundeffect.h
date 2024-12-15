@@ -3,6 +3,8 @@
 #include <string>
 #include "file.h"
 
+namespace prism {
+
 typedef struct {
 	int mAmount;
 	int* mSoundEffects;
@@ -34,3 +36,5 @@ void setSoundEffectVolume(double tVolume);
 #ifdef _WIN32
 void imguiSoundEffectsHardware();
 #endif
+
+}

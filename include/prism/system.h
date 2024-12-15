@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+namespace prism {
+
 #ifdef _WIN32
 #define PERFORMANCE_FACTOR_INVERTED 1
 
@@ -66,3 +68,5 @@ void setSystemExitDisabled(int tIsExitDisabled);
 uint64_t getSystemTicks();
 uint64_t getUnixTimestampSeconds();
 uint64_t getUnixTimestampMilliseconds();
+
+}

@@ -7,6 +7,8 @@
 #include "file.h"
 #include "stlutil.h"
 
+namespace prism {
+
 #define MUGEN_DEF_STRING_LENGTH 500
 
 typedef enum {
@@ -158,3 +160,5 @@ Vector2DI getMugenDefVector2DIOrDefaultAsGroup(MugenDefScriptGroup* tGroup, cons
 
 GeoRectangle2D getMugenDefGeoRectangle2DOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const GeoRectangle2D& tDefault);
 GeoRectangle2D getMugenDefGeoRectangle2DOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const GeoRectangle2D& tDefault);
+
+}

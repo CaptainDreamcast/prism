@@ -8,132 +8,136 @@
 #include "prism/thread.h"
 #include "prism/system.h"
 
+namespace prism {
+
 #define BUF_SIZE 65536			/* Size of buffer */
 
 
-static struct {
+	static struct {
 
-	int mVolume;
-	double mPanning;
+		int mVolume;
+		double mPanning;
 
-	int mIsStreamingSoundFile;
-	
-    uint64_t mStreamStartTime;
-	
-} gData;
+		int mIsStreamingSoundFile;
 
-void initSound() {
-	gData.mVolume = 1;
-	gData.mPanning = 0;
-	snd_init();
+		uint64_t mStreamStartTime;
 
-	snd_stream_init();
-    	sndoggvorbis_init();
-}
+	} gData;
 
-void shutdownSound(){
+	void initSound() {
+		gData.mVolume = 1;
+		gData.mPanning = 0;
+		snd_init();
 
-}
+		snd_stream_init();
+		sndoggvorbis_init();
+	}
 
-double getVolume() {
-	return gData.mVolume;
-}
+	void shutdownSound() {
 
-void setVolume(double tVolume) {
-	gData.mVolume = (int)(15*tVolume);
-	spu_cdda_volume(gData.mVolume, gData.mVolume);
-}
+	}
 
-double getPanningValue() {
-	return gData.mPanning;
-}
+	double getVolume() {
+		return gData.mVolume;
+	}
 
-void setPanningValue(int /*tChannel*/, double tPanning) {
-	gData.mPanning = tPanning;
-}
+	void setVolume(double tVolume) {
+		gData.mVolume = (int)(15 * tVolume);
+		spu_cdda_volume(gData.mVolume, gData.mVolume);
+	}
 
-void playTrack(int tTrack) {
-	 cdrom_cdda_play(tTrack, tTrack, 15, CDDA_TRACKS);
-}
+	double getPanningValue() {
+		return gData.mPanning;
+	}
 
-void playTrackOnce(int tTrack) {
-	 cdrom_cdda_play(tTrack, tTrack, 0, CDDA_TRACKS);
-}
+	void setPanningValue(int /*tChannel*/, double tPanning) {
+		gData.mPanning = tPanning;
+	}
 
-void stopTrack() {
-	cdrom_cdda_pause();
-}
+	void playTrack(int tTrack) {
+		cdrom_cdda_play(tTrack, tTrack, 15, CDDA_TRACKS);
+	}
 
-void pauseTrack() {
-	cdrom_cdda_pause();
-}
+	void playTrackOnce(int tTrack) {
+		cdrom_cdda_play(tTrack, tTrack, 0, CDDA_TRACKS);
+	}
 
-void resumeTrack() {
-	cdrom_cdda_resume();
-}
+	void stopTrack() {
+		cdrom_cdda_pause();
+	}
 
-static uint64_t getCurrentTimeInMilliseconds() {
-    return getSystemTicks();
-}
+	void pauseTrack() {
+		cdrom_cdda_pause();
+	}
 
-static void streamMusicFileGeneral(const char* tPath, int tLoop) {
-	char fullPath[1024];
-	getFullPath(fullPath, tPath);	
-	sndoggvorbis_start(fullPath, tLoop);
-	
-    gData.mStreamStartTime = getCurrentTimeInMilliseconds();
+	void resumeTrack() {
+		cdrom_cdda_resume();
+	}
 
-	gData.mIsStreamingSoundFile = 1;
-}
+	static uint64_t getCurrentTimeInMilliseconds() {
+		return getSystemTicks();
+	}
 
-void streamMusicFile(const char* tPath) {
-    streamMusicFileGeneral(tPath, 1);
-}
+	static void streamMusicFileGeneral(const char* tPath, int tLoop) {
+		char fullPath[1024];
+		getFullPath(fullPath, tPath);
+		sndoggvorbis_start(fullPath, tLoop);
 
-void streamMusicFileOnce(const char* tPath) {
-	streamMusicFileGeneral(tPath, 0);
-}
+		gData.mStreamStartTime = getCurrentTimeInMilliseconds();
 
-void stopStreamingMusicFile() {
-	if(!gData.mIsStreamingSoundFile) return;
-	sndoggvorbis_stop();
-	gData.mIsStreamingSoundFile = 0;
-}
+		gData.mIsStreamingSoundFile = 1;
+	}
 
-uint64_t getStreamingSoundTimeElapsedInMilliseconds() {
-    if(!sndoggvorbis_isplaying()) {
-        gData.mIsStreamingSoundFile = 0;
-    }
-    return (uint64_t)(getCurrentTimeInMilliseconds() - gData.mStreamStartTime);
-}
+	void streamMusicFile(const char* tPath) {
+		streamMusicFileGeneral(tPath, 1);
+	}
 
-int isPlayingStreamingMusic() {
-	return gData.mIsStreamingSoundFile;
-}
+	void streamMusicFileOnce(const char* tPath) {
+		streamMusicFileGeneral(tPath, 0);
+	}
 
-void stopMusic() {
-	stopTrack();
-	stopStreamingMusicFile();
-}
+	void stopStreamingMusicFile() {
+		if (!gData.mIsStreamingSoundFile) return;
+		sndoggvorbis_stop();
+		gData.mIsStreamingSoundFile = 0;
+	}
 
-void pauseMusic() {
-    pauseTrack(); 
-    // TODO: pause streaming
-}
+	uint64_t getStreamingSoundTimeElapsedInMilliseconds() {
+		if (!sndoggvorbis_isplaying()) {
+			gData.mIsStreamingSoundFile = 0;
+		}
+		return (uint64_t)(getCurrentTimeInMilliseconds() - gData.mStreamStartTime);
+	}
 
-void resumeMusic() {
-    resumeTrack(); 
-    // TODO: resume streaming
-}
+	int isPlayingStreamingMusic() {
+		return gData.mIsStreamingSoundFile;
+	}
 
-static ActorBlueprint MicrophoneHandler; // TODO: implement microphone
+	void stopMusic() {
+		stopTrack();
+		stopStreamingMusicFile();
+	}
 
-ActorBlueprint getMicrophoneHandlerActorBlueprint()
-{
-	return MicrophoneHandler;
-}
+	void pauseMusic() {
+		pauseTrack();
+		// TODO: pause streaming
+	}
 
-double getMicrophoneVolume()
-{
-	return 0; // TODO: implement microphone
+	void resumeMusic() {
+		resumeTrack();
+		// TODO: resume streaming
+	}
+
+	static ActorBlueprint MicrophoneHandler; // TODO: implement microphone
+
+	ActorBlueprint getMicrophoneHandlerActorBlueprint()
+	{
+		return MicrophoneHandler;
+	}
+
+	double getMicrophoneVolume()
+	{
+		return 0; // TODO: implement microphone
+	}
+
 }

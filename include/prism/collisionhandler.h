@@ -4,6 +4,8 @@
 
 #include "collision.h"
 
+namespace prism {
+
 typedef void (*CollisionCallback)(void* tCaller, void* tCollisionData, int tOtherCollisionList);
 
 struct CollisionListElement {
@@ -54,3 +56,4 @@ void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition);
 void drawHandledCollisions();
 void activateCollisionHandlerDebugMode();
 
+}

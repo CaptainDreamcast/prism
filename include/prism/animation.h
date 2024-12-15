@@ -4,6 +4,8 @@
 
 #include "drawing.h"
 
+namespace prism {
+
 typedef double Duration;
 typedef uint32_t Frame;
 typedef void (*AnimationPlayerCB)(void* caller);
@@ -110,3 +112,5 @@ Position* getAnimationPositionReference(AnimationHandlerElement* tElement);
 void removeHandledAnimation(AnimationHandlerElement* tElement);
 int isHandledAnimation(AnimationHandlerElement* tElement);
 void shutdownAnimationHandler();
+
+}

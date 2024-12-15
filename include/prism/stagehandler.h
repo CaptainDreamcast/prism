@@ -4,6 +4,8 @@
 #include "tweening.h"
 #include "actorhandler.h"
 
+namespace prism {
+
 ActorBlueprint getStageHandler();
 
 void setStageHandlerNoDelayedLoading();
@@ -33,3 +35,5 @@ void addStageHandlerScreenShake(double tStrength);
 void setStageHandlerMaximumScreenShake(double tStrength);
 
 void loadStageFromScript(const char* tPath);
+
+}

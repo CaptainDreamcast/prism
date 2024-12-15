@@ -25,6 +25,12 @@
 #include "prism/debug.h"
 #include "prism/geometry.h"
 
+#ifndef __EMSCRIPTEN__
+#include <Windows.h>
+#endif
+
+namespace prism {
+
 static const GLchar *gVertexShader =
 "uniform mat4 ProjMtx;\n"
 "attribute vec2 Position;\n"
@@ -88,10 +94,6 @@ static const GLchar* gFragmentShader =
 "		gl_FragColor = vec4(dstColor.xyz * destinationBlendFactor + blendFactor * srcColor.xyz * srcColor.w, dstColor.w);\n"
 "	}\n"
 "}\n";
-
-#ifndef __EMSCRIPTEN__
-#include <Windows.h>
-#endif
 
 using namespace std;
 
@@ -1304,4 +1306,5 @@ void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, const B
 
 double getRealFramerate() {
 	return gBookkeepingData.mRealFramerate;
+}
 }

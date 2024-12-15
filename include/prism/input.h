@@ -1,15 +1,17 @@
 #pragma once
 
-#define MAXIMUM_CONTROLLER_AMOUNT 2
-
-#define PRISM_KEYBOARD_LOCAL	0
-#define PRISM_KEYBOARD_NETPLAY	1
-
 #include <stdio.h>
 #include <string>
 
 #include "geometry.h"
 #include "animation.h"
+
+namespace prism {
+
+#define MAXIMUM_CONTROLLER_AMOUNT 2
+
+#define PRISM_KEYBOARD_LOCAL	0
+#define PRISM_KEYBOARD_NETPLAY	1
 
 enum KeyboardKeyPrism : char {
 	KEYBOARD_A_PRISM,
@@ -249,3 +251,5 @@ bool hasPressedMouseRightFlank();
 void imguiInputGeneral();
 void imguiInputHardware();
 #endif
+
+}

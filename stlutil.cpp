@@ -1,3 +1,7 @@
 #include <prism/stlutil.h>
 
-int gSTLCounter;
+namespace prism {
+
+	int gSTLCounter;
+
+}

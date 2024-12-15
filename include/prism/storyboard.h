@@ -5,6 +5,8 @@
 
 #include "actorhandler.h"
 
+namespace prism {
+
 #define MaximumStoryModeLength				30
 
 #define StoryBoardMaximumTextSize			0x100
@@ -158,3 +160,5 @@ void setStoryboardFinishedCB(int tID, StoryboardFinishedCB tCB, void* tCaller);
 int isStoryboard(const char* tPath);
 
 ActorBlueprint getStoryboardHandlerActorBlueprint();
+
+}

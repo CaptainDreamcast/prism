@@ -11,6 +11,7 @@ tools/kompressor/windows/Release/*
 tools/mugendreamcastoptimizer/Debug/*
 tools/mugendreamcastoptimizer/Release/*
 tools/mugendreamcastoptimizer/.vs/*
+build/*
 
 *.aps
 *.exe

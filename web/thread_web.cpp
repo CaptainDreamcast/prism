@@ -3,46 +3,47 @@
 #include "prism/datastructures.h"
 #include "prism/memoryhandler.h"
 
+namespace prism {
 
+	void initThreading() {
+		// TODO
+	}
 
+	void shutdownThreading()
+	{
+		// TODO
+	}
 
-void initThreading() {
-	// TODO
-}
+	int startThread(void(tFunc)(void*), void* tCaller)
+	{
+		(void)tFunc;
+		(void)tCaller;
+		// TODO
+		return -1;
+	}
 
-void shutdownThreading()
-{
-	// TODO
-}
+	Semaphore createSemaphore(int tInitialAccessesAllowed)
+	{
+		(void)tInitialAccessesAllowed;
+		return NULL; // TODO
+	}
 
-int startThread(void(tFunc)(void *), void* tCaller)
-{
-	(void)tFunc;
-	(void)tCaller;
-	// TODO
-	return -1;
-}
+	void destroySemaphore(Semaphore tSemaphore)
+	{
+		(void)tSemaphore;
+		// TODO
+	}
 
-Semaphore createSemaphore(int tInitialAccessesAllowed)
-{
-	(void)tInitialAccessesAllowed;
-	return NULL; // TODO
-}
+	void lockSemaphore(Semaphore tSemaphore)
+	{
+		(void)tSemaphore;
+		// TODO
+	}
 
-void destroySemaphore(Semaphore tSemaphore)
-{
-	(void)tSemaphore;
-	// TODO
-}
+	void releaseSemaphore(Semaphore tSemaphore)
+	{
+		(void)tSemaphore;
+		// TODO
+	}
 
-void lockSemaphore(Semaphore tSemaphore)
-{
-	(void)tSemaphore;
-	// TODO
-}
-
-void releaseSemaphore(Semaphore tSemaphore)
-{
-	(void)tSemaphore;
-	// TODO
 }

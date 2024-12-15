@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+namespace prism {
+
 typedef struct {
 	uint32_t mSize;
 	uint32_t mOffset;
@@ -15,3 +17,5 @@ void resizeMemoryStackToCurrentSize(MemoryStack* tStack);
 
 void* allocMemoryOnMemoryStack(MemoryStack* tStack, uint32_t tSize);
 int canFitOnMemoryStack(MemoryStack* tStack, uint32_t tSize);
+
+}

@@ -4,6 +4,8 @@
 #include "geometry.h"
 #include "file.h"
 
+namespace prism {
+
 typedef struct {
   int x;
   int y;
@@ -57,3 +59,5 @@ void saveScreenShot(const char* tFileDir);
 void saveRGB32ToPNG(const Buffer& b, int tWidth, int tHeight, const char* tFileDir);
 
 void imguiTextureData(const std::string_view& tName, const TextureData& tTextureData);
+
+}

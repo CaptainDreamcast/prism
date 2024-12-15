@@ -8,318 +8,321 @@
 #include "prism/stlutil.h"
 
 using namespace std;
+namespace prism {
 
-typedef struct BlitzEntity_t{
-	int mID;
-	Position mPosition;
-	Vector3D mScale;
-	double mAngle;
+	typedef struct BlitzEntity_t {
+		int mID;
+		Position mPosition;
+		Vector3D mScale;
+		double mAngle;
 
-	int mHasParent;
+		int mHasParent;
 
-	struct BlitzEntity_t* mParent;
-	Position mPreviousParentPosition;
-	vector<BlitzComponent> mComponents; // contains owned BlitzComponent copy
+		struct BlitzEntity_t* mParent;
+		Position mPreviousParentPosition;
+		vector<BlitzComponent> mComponents; // contains owned BlitzComponent copy
 
-	int mIsMarkedForDeletion;
-} BlitzEntity;
+		int mIsMarkedForDeletion;
+	} BlitzEntity;
 
-static struct {
-	map<int, BlitzEntity> mEntities; // contains BlitzEntity
-} gBlitzEntityData;
+	static struct {
+		map<int, BlitzEntity> mEntities; // contains BlitzEntity
+	} gBlitzEntityData;
 
-static void loadBlitzMugenAnimationHandler(void* tData) {
-	(void)tData;
-	setProfilingSectionMarkerCurrentFunction();
-	gBlitzEntityData.mEntities.clear();
-}
-
-static void unloadBlitzMugenAnimationHandler(void* tData) {
-	(void)tData;
-	setProfilingSectionMarkerCurrentFunction();
-	gBlitzEntityData.mEntities.clear();
-}
-
-static void unregisterSingleEntityComponent(BlitzEntity* tCaller, BlitzComponent& tData) {
-	BlitzComponent* component = &tData;
-
-	component->mUnregisterEntity(tCaller->mID);
-}
-
-static void unloadBlitzEntity(BlitzEntity* e)
-{
-	stl_vector_map(e->mComponents, unregisterSingleEntityComponent, e);
-}
-
-static void updateEntityParentReferencePosition(BlitzEntity* e) {
-	if (!e->mHasParent) return;
-
-	Position parentPos = e->mParent->mPosition;
-	Position delta = vecSub(parentPos, e->mPreviousParentPosition);
-	e->mPosition = vecAdd(e->mPosition, delta);
-
-	e->mPreviousParentPosition = parentPos;
-}
-
-static int updateSingleEntity(void* tCaller, BlitzEntity& tData) {
-	(void)tCaller;
-	BlitzEntity* e = &tData;
-
-	if (e->mIsMarkedForDeletion) {
-		unloadBlitzEntity(e);
-		return 1;
+	static void loadBlitzMugenAnimationHandler(void* tData) {
+		(void)tData;
+		setProfilingSectionMarkerCurrentFunction();
+		gBlitzEntityData.mEntities.clear();
 	}
 
-	updateEntityParentReferencePosition(e);
-
-	return 0;
-}
-
-static void updateBlitzMugenAnimationHandler(void* tData) {
-	(void)tData;
-	setProfilingSectionMarkerCurrentFunction();
-	stl_int_map_remove_predicate(gBlitzEntityData.mEntities, updateSingleEntity);
-}
-
-ActorBlueprint getBlitzEntityHandler() {
-	return makeActorBlueprint(loadBlitzMugenAnimationHandler, unloadBlitzMugenAnimationHandler, updateBlitzMugenAnimationHandler);
-}
-
-int addBlitzEntity(const Position& tPos)
-{
-	int id = stl_int_map_push_back(gBlitzEntityData.mEntities, BlitzEntity());
-	BlitzEntity& e = gBlitzEntityData.mEntities[id];
-	e.mPosition = tPos;
-	e.mScale = Vector3D(1, 1, 1);
-	e.mAngle = 0;
-	e.mIsMarkedForDeletion = 0;
-	e.mHasParent = 0;
-	e.mID = id;
-	return e.mID;
-}
-
-static BlitzEntity* getBlitzEntity(int tID) {
-	if (!stl_map_contains(gBlitzEntityData.mEntities, tID)) {
-		logErrorFormat("Unable to find entity %d", tID);
-		recoverFromError();
+	static void unloadBlitzMugenAnimationHandler(void* tData) {
+		(void)tData;
+		setProfilingSectionMarkerCurrentFunction();
+		gBlitzEntityData.mEntities.clear();
 	}
 
-	return &gBlitzEntityData.mEntities[tID];
-}
+	static void unregisterSingleEntityComponent(BlitzEntity* tCaller, BlitzComponent& tData) {
+		BlitzComponent* component = &tData;
 
-void removeBlitzEntity(int tID)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		logError("Unable to remove camera entity");
-		recoverFromError();
+		component->mUnregisterEntity(tCaller->mID);
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	e->mIsMarkedForDeletion = 1;
-}
-
-void registerBlitzComponent(int tID, const BlitzComponent& tComponent)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) return;
-
-	BlitzEntity* e = getBlitzEntity(tID);
-	e->mComponents.push_back(tComponent);
-}
-
-void setBlitzEntityPosition(int tID, const Position& tPos)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		setBlitzCameraHandlerPosition(tPos);
-		return;
-	}
-	
-	BlitzEntity* e = getBlitzEntity(tID);
-	if (e->mHasParent) e->mPosition = vecAdd(tPos, e->mParent->mPosition);
-	else e->mPosition = tPos;
-}
-
-void setBlitzEntityPositionX(int tID, double tX)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		setBlitzCameraHandlerPositionX(tX);
-		return;
+	static void unloadBlitzEntity(BlitzEntity* e)
+	{
+		stl_vector_map(e->mComponents, unregisterSingleEntityComponent, e);
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	if (e->mHasParent) e->mPosition.x = tX + e->mParent->mPosition.x;
-	else e->mPosition.x = tX;
-}
+	static void updateEntityParentReferencePosition(BlitzEntity* e) {
+		if (!e->mHasParent) return;
 
-void setBlitzEntityPositionY(int tID, double tY)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		setBlitzCameraHandlerPositionY(tY);
-		return;
+		Position parentPos = e->mParent->mPosition;
+		Position delta = vecSub(parentPos, e->mPreviousParentPosition);
+		e->mPosition = vecAdd(e->mPosition, delta);
+
+		e->mPreviousParentPosition = parentPos;
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	if (e->mHasParent) e->mPosition.y = tY + e->mParent->mPosition.y;
-	else e->mPosition.y = tY;
-}
+	static int updateSingleEntity(void* tCaller, BlitzEntity& tData) {
+		(void)tCaller;
+		BlitzEntity* e = &tData;
 
-void setBlitzEntityPositionZ(int tID, double tZ)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		logWarning("[BlitzEntity] Trying to set z position of 2D camera. Ignoring.");
-		return;
+		if (e->mIsMarkedForDeletion) {
+			unloadBlitzEntity(e);
+			return 1;
+		}
+
+		updateEntityParentReferencePosition(e);
+
+		return 0;
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	if (e->mHasParent) e->mPosition.z = tZ + e->mParent->mPosition.z;
-	else e->mPosition.z = tZ;
-}
-
-void addBlitzEntityPosition(int tID, const Vector2D& tPos) {
-	setBlitzEntityPosition(tID, getBlitzEntityPosition(tID) + tPos);
-}
-void addBlitzEntityPosition(int tID, const Position& tPos) {
-	setBlitzEntityPosition(tID, getBlitzEntityPosition(tID) + tPos);
-}
-void addBlitzEntityPositionX(int tID, double tX) {
-	setBlitzEntityPositionX(tID, getBlitzEntityPositionX(tID) + tX);
-}
-void addBlitzEntityPositionY(int tID, double tY) {
-	setBlitzEntityPositionY(tID, getBlitzEntityPositionY(tID) + tY);
-}
-
-void setBlitzEntityScale2D(int tID, double tScale)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		setBlitzCameraHandlerScale2D(tScale);
-		return;
+	static void updateBlitzMugenAnimationHandler(void* tData) {
+		(void)tData;
+		setProfilingSectionMarkerCurrentFunction();
+		stl_int_map_remove_predicate(gBlitzEntityData.mEntities, updateSingleEntity);
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	e->mScale = Vector3D(tScale, tScale, 1);
-}
-
-void setBlitzEntityScaleX(int tID, double tScaleX)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		setBlitzCameraHandlerScaleX(tScaleX);
-		return;
+	ActorBlueprint getBlitzEntityHandler() {
+		return makeActorBlueprint(loadBlitzMugenAnimationHandler, unloadBlitzMugenAnimationHandler, updateBlitzMugenAnimationHandler);
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	e->mScale.x = tScaleX;
-}
-
-void setBlitzEntityScaleY(int tID, double tScaleY)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		setBlitzCameraHandlerScaleY(tScaleY);
-		return;
+	int addBlitzEntity(const Position& tPos)
+	{
+		int id = stl_int_map_push_back(gBlitzEntityData.mEntities, BlitzEntity());
+		BlitzEntity& e = gBlitzEntityData.mEntities[id];
+		e.mPosition = tPos;
+		e.mScale = Vector3D(1, 1, 1);
+		e.mAngle = 0;
+		e.mIsMarkedForDeletion = 0;
+		e.mHasParent = 0;
+		e.mID = id;
+		return e.mID;
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	e->mScale.x = tScaleY;
-}
+	static BlitzEntity* getBlitzEntity(int tID) {
+		if (!stl_map_contains(gBlitzEntityData.mEntities, tID)) {
+			logErrorFormat("Unable to find entity %d", tID);
+			recoverFromError();
+		}
 
-void setBlitzEntityRotationZ(int tID, double tAngle)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		setBlitzCameraHandlerRotationZ(tAngle);
-		return;
+		return &gBlitzEntityData.mEntities[tID];
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	e->mAngle = tAngle;
-}
+	void removeBlitzEntity(int tID)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			logError("Unable to remove camera entity");
+			recoverFromError();
+		}
 
-void addBlitzEntityRotationZ(int tID, double tAngle) {
-	setBlitzEntityRotationZ(tID, getBlitzEntityRotationZ(tID) + tAngle);
-}
-
-void setBlitzEntityParent(int tID, int tParentID)
-{
-	if (tID == getBlitzCameraHandlerEntityID() || tParentID == getBlitzCameraHandlerEntityID()) {
-		logWarning("Trying to use camera in parenting system. Unimplemented. Ignoring.");
-		return;
+		BlitzEntity* e = getBlitzEntity(tID);
+		e->mIsMarkedForDeletion = 1;
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	BlitzEntity* parent = getBlitzEntity(tParentID);
+	void registerBlitzComponent(int tID, const BlitzComponent& tComponent)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) return;
 
-	e->mParent = parent;
-	e->mPreviousParentPosition = parent->mPosition;
-	e->mHasParent = 1;
-
-}
-
-Position getBlitzEntityPosition(int tID)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		return getBlitzCameraHandlerPosition();
+		BlitzEntity* e = getBlitzEntity(tID);
+		e->mComponents.push_back(tComponent);
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	return e->mPosition;
-}
+	void setBlitzEntityPosition(int tID, const Position& tPos)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			setBlitzCameraHandlerPosition(tPos);
+			return;
+		}
 
-double getBlitzEntityPositionX(int tID)
-{
-	return getBlitzEntityPosition(tID).x;
-}
-
-double getBlitzEntityPositionY(int tID)
-{
-	return getBlitzEntityPosition(tID).y;
-}
-
-Vector3D getBlitzEntityScale(int tID)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		return getBlitzCameraHandlerScale();
+		BlitzEntity* e = getBlitzEntity(tID);
+		if (e->mHasParent) e->mPosition = vecAdd(tPos, e->mParent->mPosition);
+		else e->mPosition = tPos;
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	return e->mScale;
-}
+	void setBlitzEntityPositionX(int tID, double tX)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			setBlitzCameraHandlerPositionX(tX);
+			return;
+		}
 
-double getBlitzEntityRotationZ(int tID)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		return getBlitzCameraHandlerRotationZ();
-	}
-	BlitzEntity* e = getBlitzEntity(tID);
-	return e->mAngle;
-}
-
-double getBlitzEntityDistance2D(int tID1, int tID2)
-{
-	return vecLength2D(getBlitzEntityPosition(tID1) - getBlitzEntityPosition(tID2));
-}
-
-Position * getBlitzEntityPositionReference(int tID)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		return getBlitzCameraHandlerPositionReference();
+		BlitzEntity* e = getBlitzEntity(tID);
+		if (e->mHasParent) e->mPosition.x = tX + e->mParent->mPosition.x;
+		else e->mPosition.x = tX;
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	return &e->mPosition;
-}
+	void setBlitzEntityPositionY(int tID, double tY)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			setBlitzCameraHandlerPositionY(tY);
+			return;
+		}
 
-Vector3D * getBlitzEntityScaleReference(int tID)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		return getBlitzCameraHandlerScaleReference();
+		BlitzEntity* e = getBlitzEntity(tID);
+		if (e->mHasParent) e->mPosition.y = tY + e->mParent->mPosition.y;
+		else e->mPosition.y = tY;
 	}
 
-	BlitzEntity* e = getBlitzEntity(tID);
-	return &e->mScale;
-}
+	void setBlitzEntityPositionZ(int tID, double tZ)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			logWarning("[BlitzEntity] Trying to set z position of 2D camera. Ignoring.");
+			return;
+		}
 
-double * getBlitzEntityRotationZReference(int tID)
-{
-	if (tID == getBlitzCameraHandlerEntityID()) {
-		return getBlitzCameraHandlerRotationZReference();
+		BlitzEntity* e = getBlitzEntity(tID);
+		if (e->mHasParent) e->mPosition.z = tZ + e->mParent->mPosition.z;
+		else e->mPosition.z = tZ;
 	}
-	BlitzEntity* e = getBlitzEntity(tID);
-	return &e->mAngle;
+
+	void addBlitzEntityPosition(int tID, const Vector2D& tPos) {
+		setBlitzEntityPosition(tID, getBlitzEntityPosition(tID) + tPos);
+	}
+	void addBlitzEntityPosition(int tID, const Position& tPos) {
+		setBlitzEntityPosition(tID, getBlitzEntityPosition(tID) + tPos);
+	}
+	void addBlitzEntityPositionX(int tID, double tX) {
+		setBlitzEntityPositionX(tID, getBlitzEntityPositionX(tID) + tX);
+	}
+	void addBlitzEntityPositionY(int tID, double tY) {
+		setBlitzEntityPositionY(tID, getBlitzEntityPositionY(tID) + tY);
+	}
+
+	void setBlitzEntityScale2D(int tID, double tScale)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			setBlitzCameraHandlerScale2D(tScale);
+			return;
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		e->mScale = Vector3D(tScale, tScale, 1);
+	}
+
+	void setBlitzEntityScaleX(int tID, double tScaleX)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			setBlitzCameraHandlerScaleX(tScaleX);
+			return;
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		e->mScale.x = tScaleX;
+	}
+
+	void setBlitzEntityScaleY(int tID, double tScaleY)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			setBlitzCameraHandlerScaleY(tScaleY);
+			return;
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		e->mScale.x = tScaleY;
+	}
+
+	void setBlitzEntityRotationZ(int tID, double tAngle)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			setBlitzCameraHandlerRotationZ(tAngle);
+			return;
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		e->mAngle = tAngle;
+	}
+
+	void addBlitzEntityRotationZ(int tID, double tAngle) {
+		setBlitzEntityRotationZ(tID, getBlitzEntityRotationZ(tID) + tAngle);
+	}
+
+	void setBlitzEntityParent(int tID, int tParentID)
+	{
+		if (tID == getBlitzCameraHandlerEntityID() || tParentID == getBlitzCameraHandlerEntityID()) {
+			logWarning("Trying to use camera in parenting system. Unimplemented. Ignoring.");
+			return;
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		BlitzEntity* parent = getBlitzEntity(tParentID);
+
+		e->mParent = parent;
+		e->mPreviousParentPosition = parent->mPosition;
+		e->mHasParent = 1;
+
+	}
+
+	Position getBlitzEntityPosition(int tID)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			return getBlitzCameraHandlerPosition();
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		return e->mPosition;
+	}
+
+	double getBlitzEntityPositionX(int tID)
+	{
+		return getBlitzEntityPosition(tID).x;
+	}
+
+	double getBlitzEntityPositionY(int tID)
+	{
+		return getBlitzEntityPosition(tID).y;
+	}
+
+	Vector3D getBlitzEntityScale(int tID)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			return getBlitzCameraHandlerScale();
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		return e->mScale;
+	}
+
+	double getBlitzEntityRotationZ(int tID)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			return getBlitzCameraHandlerRotationZ();
+		}
+		BlitzEntity* e = getBlitzEntity(tID);
+		return e->mAngle;
+	}
+
+	double getBlitzEntityDistance2D(int tID1, int tID2)
+	{
+		return vecLength2D(getBlitzEntityPosition(tID1) - getBlitzEntityPosition(tID2));
+	}
+
+	Position* getBlitzEntityPositionReference(int tID)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			return getBlitzCameraHandlerPositionReference();
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		return &e->mPosition;
+	}
+
+	Vector3D* getBlitzEntityScaleReference(int tID)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			return getBlitzCameraHandlerScaleReference();
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		return &e->mScale;
+	}
+
+	double* getBlitzEntityRotationZReference(int tID)
+	{
+		if (tID == getBlitzCameraHandlerEntityID()) {
+			return getBlitzCameraHandlerRotationZReference();
+		}
+		BlitzEntity* e = getBlitzEntity(tID);
+		return &e->mAngle;
+	}
+
 }

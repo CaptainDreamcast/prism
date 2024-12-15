@@ -31,3 +31,4 @@
 #include "blitztimelineanimation.h"
 
 using namespace std;
+using namespace prism;

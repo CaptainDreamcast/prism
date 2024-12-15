@@ -2,6 +2,8 @@
 
 #include "file.h"
 
+namespace prism {
+
 enum FileReaderType {
 	FILE_READER_TYPE_NONE = 0,
 	FILE_READER_TYPE_BUFFER = 1,
@@ -25,3 +27,5 @@ FileReader getBufferFileReader();
 FileReader getFileFileReader();
 
 void initBufferFileReaderReadOnlyBuffer(FileReader* tReader, const Buffer& tBuffer);
+
+}

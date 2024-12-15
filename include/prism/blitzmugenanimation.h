@@ -4,6 +4,8 @@
 #include "mugenanimationhandler.h"
 #include "actorhandler.h"
 
+namespace prism {
+
 ActorBlueprint getBlitzMugenAnimationHandler();
 
 void addBlitzMugenAnimationComponent(int tEntityID, MugenSpriteFile* tSprites, MugenAnimations* tAnimations, int tStartAnimation);
@@ -80,3 +82,5 @@ int getBlitzMugenAnimationTimeWhenStepStarts(int tEntityID, int tStep);
 void setBlitzMugenAnimationCollisionDebug(int tEntityID, int tIsActive);
 
 std::list<MugenAnimationHandlerHitboxElement>& getBlitzMugenAnimationActiveHitboxes(int tEntityID);
+
+}

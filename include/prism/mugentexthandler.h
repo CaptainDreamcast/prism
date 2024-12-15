@@ -5,6 +5,8 @@
 #include "drawing.h"
 #include "animation.h"
 
+namespace prism {
+
 typedef enum {
 	MUGEN_TEXT_ALIGNMENT_LEFT,
 	MUGEN_TEXT_ALIGNMENT_CENTER,
@@ -53,3 +55,5 @@ Vector3D getMugenTextColor(int tIndex);
 
 MugenTextAlignment getMugenTextAlignmentFromMugenAlignmentIndex(int tIndex);
 Color getMugenTextColorFromMugenTextColorIndex(int tIndex);
+
+}

@@ -7,65 +7,68 @@
 
 using namespace std;
 
-typedef struct TimerElement_internal{
-	Duration mNow;
-	Duration mDuration;
-	TimerCB mCB;
-	void* mCaller;
+namespace prism {
 
-} TimerElement;
+	typedef struct TimerElement_internal {
+		Duration mNow;
+		Duration mDuration;
+		TimerCB mCB;
+		void* mCaller;
 
-static struct {
-	 map<int, TimerElement> mList;
-} gTimerData;
+	} TimerElement;
 
-int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller){
-	TimerElement e;
-	e.mNow = 0;
-	e.mDuration = tDuration;
-	e.mCB = tCB;
-	e.mCaller = tCaller;
+	static struct {
+		map<int, TimerElement> mList;
+	} gTimerData;
 
-	return stl_int_map_push_back(gTimerData.mList, e);
-}
+	int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller) {
+		TimerElement e;
+		e.mNow = 0;
+		e.mDuration = tDuration;
+		e.mCB = tCB;
+		e.mCaller = tCaller;
 
-void removeTimer(int tID)
-{
-	gTimerData.mList.erase(tID);
-}
-
-void setupTimer(){
-	gTimerData.mList.clear();
-}
-
-static int updateCB(void* tCaller, TimerElement& tData) {
-	(void) tCaller;
-	TimerElement* cur = &tData;
-	int isOver = handleDurationAndCheckIfOver(&cur->mNow, cur->mDuration);
-
-	if(isOver) {
-		if(cur->mCB)
-		{
-			cur->mCB(cur->mCaller);
-		}
-		return 1;
+		return stl_int_map_push_back(gTimerData.mList, e);
 	}
 
-	return 0;
-}
+	void removeTimer(int tID)
+	{
+		gTimerData.mList.erase(tID);
+	}
 
-void updateTimer(){
-	stl_int_map_remove_predicate(gTimerData.mList, updateCB);
-}
+	void setupTimer() {
+		gTimerData.mList.clear();
+	}
 
-void clearTimer(){
-	gTimerData.mList.clear();
-}
+	static int updateCB(void* tCaller, TimerElement& tData) {
+		(void)tCaller;
+		TimerElement* cur = &tData;
+		int isOver = handleDurationAndCheckIfOver(&cur->mNow, cur->mDuration);
 
-void shutdownTimer(){
-	clearTimer();
-}
+		if (isOver) {
+			if (cur->mCB)
+			{
+				cur->mCB(cur->mCaller);
+			}
+			return 1;
+		}
 
-int hasTimerFinished(int tID) {
-	return gTimerData.mList.find(tID) == gTimerData.mList.end();
+		return 0;
+	}
+
+	void updateTimer() {
+		stl_int_map_remove_predicate(gTimerData.mList, updateCB);
+	}
+
+	void clearTimer() {
+		gTimerData.mList.clear();
+	}
+
+	void shutdownTimer() {
+		clearTimer();
+	}
+
+	int hasTimerFinished(int tID) {
+		return gTimerData.mList.find(tID) == gTimerData.mList.end();
+	}
 }

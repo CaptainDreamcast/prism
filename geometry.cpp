@@ -8,6 +8,7 @@
 #include "prism/log.h"
 
 using namespace std;
+namespace prism {
 
 Vector2D::Vector2D(double x, double y)
 	: x(x)
@@ -1113,4 +1114,6 @@ GeoRectangle2D& operator/=(GeoRectangle2D& a, const double& b)
 {
 	a = a / b;
 	return a;
+}
+
 }

@@ -2,6 +2,8 @@
 
 #include "animation.h"
 
+namespace prism {
+
 typedef void (*TimerCB)(void* caller);
 
 int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller);
@@ -13,3 +15,5 @@ void clearTimer();
 void shutdownTimer();
 
 int hasTimerFinished(int tID);
+
+}

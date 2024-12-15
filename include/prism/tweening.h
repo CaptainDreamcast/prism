@@ -3,6 +3,8 @@
 #include "animation.h"
 #include "actorhandler.h"
 
+namespace prism {
+
 typedef double(*TweeningFunction)(double t);
 typedef void(*TweeningCBFunction)(void* tCaller);
 
@@ -17,3 +19,5 @@ double inverseQuadraticTweeningFunction(double t);
 double squareRootTweeningFunction(double t);
 double overshootTweeningFunction(double t);
 double transformAtEndTweeningFunction(double t);
+
+}

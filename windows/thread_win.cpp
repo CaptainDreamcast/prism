@@ -5,93 +5,96 @@
 #include "prism/datastructures.h"
 #include "prism/memoryhandler.h"
 
-typedef struct {
-	int mID;
-	DWORD mThreadID;
-	HANDLE mThreadHandle;
+namespace prism {
 
-	void(*mFunc)(void*);
-	void* mCaller;
-} ThreadData;
+	typedef struct {
+		int mID;
+		DWORD mThreadID;
+		HANDLE mThreadHandle;
 
-static struct {
-	IntMap mThreads;
-	Semaphore mThreadMapAccessSemaphore;
-} gPrismWindowsThreadData;
+		void(*mFunc)(void*);
+		void* mCaller;
+	} ThreadData;
 
-void initThreading() {
-	gPrismWindowsThreadData.mThreadMapAccessSemaphore = createSemaphore(1);
-	gPrismWindowsThreadData.mThreads = new_int_map();
-}
+	static struct {
+		IntMap mThreads;
+		Semaphore mThreadMapAccessSemaphore;
+	} gPrismWindowsThreadData;
 
-static int forceShutdownSingleThread(void* tCaller, void* tData) {
-	(void)tCaller;
-	ThreadData* e = (ThreadData*)tData;
+	void initThreading() {
+		gPrismWindowsThreadData.mThreadMapAccessSemaphore = createSemaphore(1);
+		gPrismWindowsThreadData.mThreads = new_int_map();
+	}
 
-	TerminateThread(e->mThreadHandle, 0);
+	static int forceShutdownSingleThread(void* tCaller, void* tData) {
+		(void)tCaller;
+		ThreadData* e = (ThreadData*)tData;
 
-	return 1;
-}
+		TerminateThread(e->mThreadHandle, 0);
 
-void shutdownThreading()
-{
-	lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
-	int_map_remove_predicate(&gPrismWindowsThreadData.mThreads, forceShutdownSingleThread, NULL);
-	delete_int_map(&gPrismWindowsThreadData.mThreads);
-	releaseSemaphore(&gPrismWindowsThreadData.mThreadMapAccessSemaphore);
-}
+		return 1;
+	}
 
-DWORD WINAPI threadFunction(LPVOID lpParam) {
-	ThreadData* e = (ThreadData*)lpParam;
+	void shutdownThreading()
+	{
+		lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+		int_map_remove_predicate(&gPrismWindowsThreadData.mThreads, forceShutdownSingleThread, NULL);
+		delete_int_map(&gPrismWindowsThreadData.mThreads);
+		releaseSemaphore(&gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+	}
 
-	e->mFunc(e->mCaller);
+	DWORD WINAPI threadFunction(LPVOID lpParam) {
+		ThreadData* e = (ThreadData*)lpParam;
 
-	CloseHandle(e->mThreadHandle);
-	lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
-	int_map_remove(&gPrismWindowsThreadData.mThreads, e->mID);
-	releaseSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+		e->mFunc(e->mCaller);
 
-	return 0;
-}
+		CloseHandle(e->mThreadHandle);
+		lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+		int_map_remove(&gPrismWindowsThreadData.mThreads, e->mID);
+		releaseSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
 
-int startThread(void(tFunc)(void *), void* tCaller)
-{
-	ThreadData* e = (ThreadData*)allocMemory(sizeof(ThreadData));
-	e->mFunc = tFunc;
-	e->mCaller = tCaller;
+		return 0;
+	}
 
-	lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
-	e->mID = int_map_push_back_owned(&gPrismWindowsThreadData.mThreads, e);
-	releaseSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+	int startThread(void(tFunc)(void*), void* tCaller)
+	{
+		ThreadData* e = (ThreadData*)allocMemory(sizeof(ThreadData));
+		e->mFunc = tFunc;
+		e->mCaller = tCaller;
 
-	e->mThreadHandle = CreateThread(NULL, 0, threadFunction, e, 0, &e->mThreadID);
-	return e->mID;
-}
+		lockSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
+		e->mID = int_map_push_back_owned(&gPrismWindowsThreadData.mThreads, e);
+		releaseSemaphore(gPrismWindowsThreadData.mThreadMapAccessSemaphore);
 
-Semaphore createSemaphore(int tInitialAccessesAllowed)
-{
-	HANDLE ret = CreateSemaphore(NULL, tInitialAccessesAllowed, 1, NULL);
-	return ret;
-}
+		e->mThreadHandle = CreateThread(NULL, 0, threadFunction, e, 0, &e->mThreadID);
+		return e->mID;
+	}
 
-void destroySemaphore(Semaphore tSemaphore)
-{
-	HANDLE sem = tSemaphore;
-	CloseHandle(sem);
-}
+	Semaphore createSemaphore(int tInitialAccessesAllowed)
+	{
+		HANDLE ret = CreateSemaphore(NULL, tInitialAccessesAllowed, 1, NULL);
+		return ret;
+	}
 
-void lockSemaphore(Semaphore tSemaphore)
-{
-	HANDLE sem = tSemaphore;
-	WaitForSingleObject(sem, INFINITE);
-}
+	void destroySemaphore(Semaphore tSemaphore)
+	{
+		HANDLE sem = tSemaphore;
+		CloseHandle(sem);
+	}
 
-void releaseSemaphore(Semaphore tSemaphore)
-{
-	HANDLE sem = tSemaphore;
-	ReleaseSemaphore(sem, 1, NULL);
-}
+	void lockSemaphore(Semaphore tSemaphore)
+	{
+		HANDLE sem = tSemaphore;
+		WaitForSingleObject(sem, INFINITE);
+	}
 
-void terminateSelfAsThread(int /*tReturnValue*/) {
-	std::terminate();
+	void releaseSemaphore(Semaphore tSemaphore)
+	{
+		HANDLE sem = tSemaphore;
+		ReleaseSemaphore(sem, 1, NULL);
+	}
+
+	void terminateSelfAsThread(int /*tReturnValue*/) {
+		std::terminate();
+	}
 }

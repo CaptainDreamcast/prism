@@ -4,6 +4,8 @@
 #include "soundeffect.h"
 #include "actorhandler.h"
 
+namespace prism {
+
 void setupTextHandler();
 void shutdownTextHandler();
 void updateTextHandler();
@@ -23,3 +25,5 @@ void addTextHandlerFont(int tID, const char* tHeaderPath, const char* tTexturePa
 void removeHandledText(int tID);
 
 ActorBlueprint getTextHandler();
+
+}

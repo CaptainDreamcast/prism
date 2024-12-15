@@ -5,86 +5,90 @@
 #include "prism/datastructures.h"
 #include "prism/memoryhandler.h"
 
-typedef struct {
-	int mID;
+namespace prism {
 
-	void(*mFunc)(void*);
-	void* mCaller;
+	typedef struct {
+		int mID;
 
-	kthread_t* mThreadHandle;
-} ThreadData;
+		void(*mFunc)(void*);
+		void* mCaller;
 
-static struct {
-	IntMap mThreads;
-	Semaphore mThreadMapAccessSemaphore;
-} gData;
+		kthread_t* mThreadHandle;
+	} ThreadData;
 
-void initThreading() {
-	gData.mThreadMapAccessSemaphore = createSemaphore(1);
-	gData.mThreads = new_int_map();
-}
+	static struct {
+		IntMap mThreads;
+		Semaphore mThreadMapAccessSemaphore;
+	} gData;
 
-void shutdownThreading()
-{
-	// TODO
-}
+	void initThreading() {
+		gData.mThreadMapAccessSemaphore = createSemaphore(1);
+		gData.mThreads = new_int_map();
+	}
 
-void* threadFunction(void* tCaller) {
-	ThreadData* e = (ThreadData*)tCaller;
+	void shutdownThreading()
+	{
+		// TODO
+	}
 
-	e->mFunc(e->mCaller);
+	void* threadFunction(void* tCaller) {
+		ThreadData* e = (ThreadData*)tCaller;
 
-	lockSemaphore(gData.mThreadMapAccessSemaphore);
-	int_map_remove(&gData.mThreads, e->mID);
-	releaseSemaphore(gData.mThreadMapAccessSemaphore);
+		e->mFunc(e->mCaller);
 
-	return NULL;
-}
+		lockSemaphore(gData.mThreadMapAccessSemaphore);
+		int_map_remove(&gData.mThreads, e->mID);
+		releaseSemaphore(gData.mThreadMapAccessSemaphore);
 
-int startThread(void(tFunc)(void *), void* tCaller)
-{
-	ThreadData* e = (ThreadData*)allocMemory(sizeof(ThreadData));
-	e->mFunc = tFunc;
-	e->mCaller = tCaller;
+		return NULL;
+	}
 
-	lockSemaphore(gData.mThreadMapAccessSemaphore);
-	e->mID = int_map_push_back_owned(&gData.mThreads, e);
-	releaseSemaphore(gData.mThreadMapAccessSemaphore);
+	int startThread(void(tFunc)(void*), void* tCaller)
+	{
+		ThreadData* e = (ThreadData*)allocMemory(sizeof(ThreadData));
+		e->mFunc = tFunc;
+		e->mCaller = tCaller;
 
-	kthread_attr_t attributes = { 1, THD_STACK_SIZE*20, NULL, 5, "" }; // TODO: fix stack size
+		lockSemaphore(gData.mThreadMapAccessSemaphore);
+		e->mID = int_map_push_back_owned(&gData.mThreads, e);
+		releaseSemaphore(gData.mThreadMapAccessSemaphore);
 
-	e->mThreadHandle = thd_create_ex(&attributes, threadFunction, e);
+		kthread_attr_t attributes = { 1, THD_STACK_SIZE * 20, NULL, 5, "" }; // TODO: fix stack size
 
-	return e->mID;
-}
+		e->mThreadHandle = thd_create_ex(&attributes, threadFunction, e);
 
-Semaphore createSemaphore(int tInitialAccessesAllowed)
-{
-	semaphore_t* ret = (semaphore_t*)malloc(sizeof(semaphore_t)); // TODO
-	ret->count = 0; // TODO: propose KOS fix
-	sem_init(ret, tInitialAccessesAllowed);
-	return ret;
-}
+		return e->mID;
+	}
 
-void destroySemaphore(Semaphore tSemaphore)
-{
-	semaphore_t* sem = (semaphore_t*)tSemaphore; 
-	sem_destroy(sem);
-	free(sem);
-}
+	Semaphore createSemaphore(int tInitialAccessesAllowed)
+	{
+		semaphore_t* ret = (semaphore_t*)malloc(sizeof(semaphore_t)); // TODO
+		ret->count = 0; // TODO: propose KOS fix
+		sem_init(ret, tInitialAccessesAllowed);
+		return ret;
+	}
 
-void lockSemaphore(Semaphore tSemaphore)
-{
-	semaphore_t* sem = (semaphore_t*)tSemaphore; 
-	sem_wait(sem);
-}
+	void destroySemaphore(Semaphore tSemaphore)
+	{
+		semaphore_t* sem = (semaphore_t*)tSemaphore;
+		sem_destroy(sem);
+		free(sem);
+	}
 
-void releaseSemaphore(Semaphore tSemaphore)
-{
-	semaphore_t* sem = (semaphore_t*)tSemaphore; 
-	sem_signal(sem);
-}
+	void lockSemaphore(Semaphore tSemaphore)
+	{
+		semaphore_t* sem = (semaphore_t*)tSemaphore;
+		sem_wait(sem);
+	}
 
-void terminateSelfAsThread(int tReturnValue) {
-	thd_exit((void*)tReturnValue);
+	void releaseSemaphore(Semaphore tSemaphore)
+	{
+		semaphore_t* sem = (semaphore_t*)tSemaphore;
+		sem_signal(sem);
+	}
+
+	void terminateSelfAsThread(int tReturnValue) {
+		thd_exit((void*)tReturnValue);
+	}
+
 }

@@ -16,6 +16,8 @@
 
 using namespace std;
 
+namespace prism {
+
 typedef enum {
 	MUGEN_FONT_TYPE_BITMAP,
 	MUGEN_FONT_TYPE_TRUETYPE,
@@ -1119,4 +1121,6 @@ Color getMugenTextColorFromMugenTextColorIndex(int tIndex)
 		recoverFromError();
 		return COLOR_WHITE;
 	}
+}
+
 }

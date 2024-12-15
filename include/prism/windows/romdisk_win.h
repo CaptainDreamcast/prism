@@ -2,6 +2,8 @@
 
 #include "prism/file.h"
 
+namespace prism {
+
 void initRomdisks();
 void shutdownRomdisks();
 FileHandler fileOpenRomdisk(char* tPath, int tFlags);
@@ -16,3 +18,5 @@ void mountRomdiskWindows(const char* tFilePath, const char* tMountPath);
 void unmountRomdiskWindows(const char* tMountPath);
 int isRomdiskPath(const char* tPath);
 int isRomdiskFileHandler(FileHandler tHandler);
+
+}

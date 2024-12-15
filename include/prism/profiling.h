@@ -11,6 +11,8 @@
 
 #include "system.h"
 
+namespace prism {
+
 #define timeAction(x) { \
 	uint64_t __timingStart = getSystemTicks(); \
 	x; \
@@ -52,3 +54,5 @@ inline void setProfilingSectionMarker(const char*) {}
 #define stopProfilingCapture() {}
 inline void saveProfilingCapture(const char*) {}
 #endif
+
+}

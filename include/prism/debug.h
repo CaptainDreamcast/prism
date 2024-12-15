@@ -6,6 +6,8 @@
 #include "prism/actorhandler.h"
 #include "prism/log.h"
 
+namespace prism {
+
 int isInDevelopMode();
 void setDevelopMode();
 
@@ -27,3 +29,5 @@ void submitToPrismDebugConsole(const std::string& tText);
 #ifdef _WIN32
 void imguiDebugGeneral();
 #endif
+
+}

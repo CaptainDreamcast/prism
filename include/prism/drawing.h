@@ -4,6 +4,8 @@
 #include "texture.h"
 #include "file.h"
 
+namespace prism {
+
 typedef struct {
   int x;
   int y;
@@ -107,3 +109,5 @@ double getRealFramerate();
 #ifdef _WIN32
 void imguiDrawingHardware();
 #endif
+
+}

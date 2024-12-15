@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
+namespace prism {
+
 void* createMemoryPool();
 void destroyMemoryPool(void* tPool);
 
@@ -12,3 +14,5 @@ void* callocPoolMemory(void* tPool, size_t nelem, size_t elsize);
 void* reallocPoolMemory(void* tPool, void *ptr, size_t size);
 void freePoolMemory(void* tPool, void *ptr);
 int isMemoryInPool(void* tPool, void* ptr);
+
+}

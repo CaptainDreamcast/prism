@@ -1,20 +1,24 @@
 #include "prism/netplay.h"
 
-void initNetplay() {}
-void shutdownNetplay() {}
+namespace prism {
 
-void startNetplayHosting() {}
-void stopNetplayHosting() {}
-bool joinNetplayHost(const std::string&, int) { return false; }
-bool isNetplayHost() { return false; }
-bool isNetplayActive() { return false; }
-bool isNetplayConnecting() { return false; }
+	void initNetplay() {}
+	void shutdownNetplay() {}
 
-void updateNetplay() {}
+	void startNetplayHosting() {}
+	void stopNetplayHosting() {}
+	bool joinNetplayHost(const std::string&, int) { return false; }
+	bool isNetplayHost() { return false; }
+	bool isNetplayActive() { return false; }
+	bool isNetplayConnecting() { return false; }
 
-void sendNetplayData(const Buffer&) {}
-void setNetplayConnectCB(void(*)(void*), void*) {}
-void setNetplaySyncCBs(Buffer(*)(void*), void*, int(*)(void*, const Buffer&, const Buffer&), void*) {}
-void setNetplayDesyncCB(void(*)(void*), void*) {}
-void setNetplayDisconnectCB(void(*)(void*, const std::string&), void*) {}
-void renegotiateNetplayConnection() {}
+	void updateNetplay() {}
+
+	void sendNetplayData(const Buffer&) {}
+	void setNetplayConnectCB(void(*)(void*), void*) {}
+	void setNetplaySyncCBs(Buffer(*)(void*), void*, int(*)(void*, const Buffer&, const Buffer&), void*) {}
+	void setNetplayDesyncCB(void(*)(void*), void*) {}
+	void setNetplayDisconnectCB(void(*)(void*, const std::string&), void*) {}
+	void renegotiateNetplayConnection() {}
+
+}

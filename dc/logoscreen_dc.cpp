@@ -1,3 +1,7 @@
 #include "prism/logoscreen.h"
 
-char gLogoScreenFileName[100] = "LOGO_DC";
+namespace prism {
+
+	char gLogoScreenFileName[100] = "LOGO_DC";
+
+}

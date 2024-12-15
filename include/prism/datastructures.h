@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+namespace prism {
+
 void convertIntegerToStringFast(std::string& oRet, int tValue);
 void convertFloatToStringFast(std::string& oRet, double tValue);
 
@@ -183,4 +185,6 @@ template<class C>
 inline int hasPrismFlagDynamic(uint32_t& tFlag, C tValue)
 {
 	return hasPrismFlag(tFlag, uint32_t(tValue));
+}
+
 }

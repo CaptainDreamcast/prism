@@ -2,7 +2,10 @@
 
 #include <math.h>
 
-double fstsqrt(double x) {
-	return sqrt(x);
-}
+namespace prism {
 
+	double fstsqrt(double x) {
+		return sqrt(x);
+	}
+
+}

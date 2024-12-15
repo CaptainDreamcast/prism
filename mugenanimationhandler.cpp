@@ -12,6 +12,8 @@
 
 using namespace std;
 
+namespace prism {
+
 static struct {
 	map<int, MugenAnimationHandlerElement> mAnimations;
 	Vector2D mPixelCenter = Vector2D(0.5, 0.5);
@@ -1266,4 +1268,6 @@ static void drawMugenAnimationHandler(void* tData) {
 
 ActorBlueprint getMugenAnimationHandler() {
 	return makeActorBlueprint(loadMugenAnimationHandler, unloadMugenAnimationHandler, updateMugenAnimationHandler, drawMugenAnimationHandler);
+}
+
 }

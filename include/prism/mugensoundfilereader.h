@@ -2,6 +2,8 @@
 
 #include "datastructures.h"
 
+namespace prism {
+
 typedef struct {
 	int mSoundEffectID;
 } MugenSoundSample;
@@ -22,3 +24,5 @@ int playMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, double
 int tryPlayMugenSound(MugenSounds* tSounds, int tGroup, int tSample);
 int tryPlayMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, double tVolume, int tChannel = -1, double tFrequencyMultiplier = 1.0, int tIsLooping = 0, double tPanning = 0.0);
 int hasMugenSound(MugenSounds* tSounds, int tGroup, int tSample);
+
+}

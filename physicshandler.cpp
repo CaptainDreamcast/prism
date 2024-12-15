@@ -12,124 +12,128 @@
 
 using namespace std;
 
-static struct {
-	int mIsActive;
-	map<int, PhysicsHandlerElement> mList;
-} gPhysicsHandler;
+namespace prism {
 
-void setupPhysicsHandler() {
-	if(gPhysicsHandler.mIsActive) shutdownPhysicsHandler();
-	gPhysicsHandler.mIsActive = 1;
-	gPhysicsHandler.mList.clear();
-}
+	static struct {
+		int mIsActive;
+		map<int, PhysicsHandlerElement> mList;
+	} gPhysicsHandler;
 
-void shutdownPhysicsHandler() {
-	if (!gPhysicsHandler.mIsActive) return;
-	stl_delete_map(gPhysicsHandler.mList);
-	gPhysicsHandler.mIsActive = 0;
-
-}
-
-static void handleSinglePhysicsObjectInList(void* tCaller, PhysicsHandlerElement &tData) {
-	(void) tCaller;
-	PhysicsHandlerElement* data = &tData;
-	if (data->mIsPaused) return;
-	data->mTimeDilatationNow += data->mTimeDilatation;
-	int updateAmount = (int)data->mTimeDilatationNow;
-	data->mTimeDilatationNow -= updateAmount;
-	while (updateAmount--) {
-		Gravity prevGravity = getGravity();
-		setGravity(data->mGravity);
-		setMaxVelocityDouble(data->mMaxVelocity);
-		setDragCoefficient(data->mDragCoefficient);
-		handlePhysics(&data->mObj);
-		resetMaxVelocity();
-		resetDragCoefficient();
-		setGravity(prevGravity);
+	void setupPhysicsHandler() {
+		if (gPhysicsHandler.mIsActive) shutdownPhysicsHandler();
+		gPhysicsHandler.mIsActive = 1;
+		gPhysicsHandler.mList.clear();
 	}
-}
 
-void updatePhysicsHandler() {
-	stl_int_map_map(gPhysicsHandler.mList, handleSinglePhysicsObjectInList);
-}
+	void shutdownPhysicsHandler() {
+		if (!gPhysicsHandler.mIsActive) return;
+		stl_delete_map(gPhysicsHandler.mList);
+		gPhysicsHandler.mIsActive = 0;
 
-PhysicsHandlerElement* addToPhysicsHandler(const Position& tPosition) {
-	PhysicsHandlerElement data;
-	resetPhysicsObject(&data.mObj);
-	data.mObj.mPosition = tPosition;
-	data.mMaxVelocity = INFINITY;
-	data.mDragCoefficient = Vector3D(0,0,0);
-	data.mGravity = getGravity();
-	data.mIsPaused = 0;
-	data.mTimeDilatation = 1.0;
-	data.mTimeDilatationNow = 0.0;
+	}
 
-	const auto id = stl_int_map_push_back(gPhysicsHandler.mList, data);
-	auto& element = gPhysicsHandler.mList[id];
-	element.mID = id;
-	return &element;
-}
+	static void handleSinglePhysicsObjectInList(void* tCaller, PhysicsHandlerElement& tData) {
+		(void)tCaller;
+		PhysicsHandlerElement* data = &tData;
+		if (data->mIsPaused) return;
+		data->mTimeDilatationNow += data->mTimeDilatation;
+		int updateAmount = (int)data->mTimeDilatationNow;
+		data->mTimeDilatationNow -= updateAmount;
+		while (updateAmount--) {
+			Gravity prevGravity = getGravity();
+			setGravity(data->mGravity);
+			setMaxVelocityDouble(data->mMaxVelocity);
+			setDragCoefficient(data->mDragCoefficient);
+			handlePhysics(&data->mObj);
+			resetMaxVelocity();
+			resetDragCoefficient();
+			setGravity(prevGravity);
+		}
+	}
 
-void removeFromPhysicsHandler(PhysicsHandlerElement* data) {
-	gPhysicsHandler.mList.erase(data->mID);
-}
+	void updatePhysicsHandler() {
+		stl_int_map_map(gPhysicsHandler.mList, handleSinglePhysicsObjectInList);
+	}
 
-PhysicsObject* getPhysicsFromHandler(PhysicsHandlerElement* data) {
-	return &data->mObj;
-}
+	PhysicsHandlerElement* addToPhysicsHandler(const Position& tPosition) {
+		PhysicsHandlerElement data;
+		resetPhysicsObject(&data.mObj);
+		data.mObj.mPosition = tPosition;
+		data.mMaxVelocity = INFINITY;
+		data.mDragCoefficient = Vector3D(0, 0, 0);
+		data.mGravity = getGravity();
+		data.mIsPaused = 0;
+		data.mTimeDilatation = 1.0;
+		data.mTimeDilatationNow = 0.0;
 
-Position getHandledPhysicsPosition(PhysicsHandlerElement* data)
-{
-	return data->mObj.mPosition;
-}
+		const auto id = stl_int_map_push_back(gPhysicsHandler.mList, data);
+		auto& element = gPhysicsHandler.mList[id];
+		element.mID = id;
+		return &element;
+	}
 
-Position* getHandledPhysicsPositionReference(PhysicsHandlerElement* data) {
-	return &data->mObj.mPosition;
-}
+	void removeFromPhysicsHandler(PhysicsHandlerElement* data) {
+		gPhysicsHandler.mList.erase(data->mID);
+	}
 
-Velocity * getHandledPhysicsVelocityReference(PhysicsHandlerElement* data)
-{
-	return &data->mObj.mVelocity;
-}
+	PhysicsObject* getPhysicsFromHandler(PhysicsHandlerElement* data) {
+		return &data->mObj;
+	}
 
-Acceleration* getHandledPhysicsAccelerationReference(PhysicsHandlerElement* data)
-{
-	return &data->mObj.mAcceleration;
-}
+	Position getHandledPhysicsPosition(PhysicsHandlerElement* data)
+	{
+		return data->mObj.mPosition;
+	}
 
-void addAccelerationToHandledPhysics(PhysicsHandlerElement* data, const Acceleration& tAccel) {
-	if (data->mIsPaused) return;
-	PhysicsObject* obj = &data->mObj;
-	obj->mAcceleration = vecAdd(obj->mAcceleration, tAccel);
-}
+	Position* getHandledPhysicsPositionReference(PhysicsHandlerElement* data) {
+		return &data->mObj.mPosition;
+	}
 
-void stopHandledPhysics(PhysicsHandlerElement* data) {
-	PhysicsObject* obj = &data->mObj;
-	obj->mVelocity = Vector3D(0, 0, 0);
-}
+	Velocity* getHandledPhysicsVelocityReference(PhysicsHandlerElement* data)
+	{
+		return &data->mObj.mVelocity;
+	}
 
-void pauseHandledPhysics(PhysicsHandlerElement* data)
-{
-	data->mIsPaused = 1;
-}
+	Acceleration* getHandledPhysicsAccelerationReference(PhysicsHandlerElement* data)
+	{
+		return &data->mObj.mAcceleration;
+	}
 
-void resumeHandledPhysics(PhysicsHandlerElement* data)
-{
-	data->mIsPaused = 0;
-}
+	void addAccelerationToHandledPhysics(PhysicsHandlerElement* data, const Acceleration& tAccel) {
+		if (data->mIsPaused) return;
+		PhysicsObject* obj = &data->mObj;
+		obj->mAcceleration = vecAdd(obj->mAcceleration, tAccel);
+	}
 
-void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* data, double tVelocity) {
-	data->mMaxVelocity = tVelocity;
-}
+	void stopHandledPhysics(PhysicsHandlerElement* data) {
+		PhysicsObject* obj = &data->mObj;
+		obj->mVelocity = Vector3D(0, 0, 0);
+	}
 
-void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* data, const Vector3D& tDragCoefficient) {
-	data->mDragCoefficient = tDragCoefficient;
-}
+	void pauseHandledPhysics(PhysicsHandlerElement* data)
+	{
+		data->mIsPaused = 1;
+	}
 
-void setHandledPhysicsGravity(PhysicsHandlerElement* data, const Vector3D& tGravity) {
-	data->mGravity = tGravity;
-}
+	void resumeHandledPhysics(PhysicsHandlerElement* data)
+	{
+		data->mIsPaused = 0;
+	}
 
-void setHandledPhysicsSpeed(PhysicsHandlerElement* data, double tSpeed) {
-	data->mTimeDilatation = tSpeed;
+	void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* data, double tVelocity) {
+		data->mMaxVelocity = tVelocity;
+	}
+
+	void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* data, const Vector3D& tDragCoefficient) {
+		data->mDragCoefficient = tDragCoefficient;
+	}
+
+	void setHandledPhysicsGravity(PhysicsHandlerElement* data, const Vector3D& tGravity) {
+		data->mGravity = tGravity;
+	}
+
+	void setHandledPhysicsSpeed(PhysicsHandlerElement* data, double tSpeed) {
+		data->mTimeDilatation = tSpeed;
+	}
+
 }

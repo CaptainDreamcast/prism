@@ -5,6 +5,8 @@
 #include "actorhandler.h"
 #include "physics.h"
 
+namespace prism {
+
 ActorBlueprint getBlitzPhysicsHandler();
 
 void addBlitzPhysicsComponent(int tEntityID);
@@ -21,3 +23,5 @@ void addBlitzPhysicsVelocityX(int tEntityID, double tX);
 double getBlitzPhysicsVelocityY(int tEntityID);
 void setBlitzPhysicsVelocityY(int tEntityID, double tY);
 void addBlitzPhysicsVelocityY(int tEntityID, double tY);
+
+}

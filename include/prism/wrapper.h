@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <memory>
 
+namespace prism {
+
 typedef void (*LoadScreenFunction)();
 typedef void (*UpdateScreenFunction)();
 typedef void (*DrawScreenFunction)();
@@ -100,3 +102,5 @@ void unloadPrismWrapperScreenForDebug();
 		gScreenContainer##tClassName = makeScreen(loadScreenContainer##tClassName, updateScreenContainer##tClassName, drawScreenContainer##tClassName, unloadScreenContainer##tClassName); \
 		return &gScreenContainer##tClassName; \
 	}
+
+}

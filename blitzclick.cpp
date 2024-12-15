@@ -7,89 +7,93 @@
 #include <prism/blitzmugenanimation.h>
 #include <prism/input.h>
 
-struct ClickEntry {
-    int mEntityID;
-    bool mIsPassiveHitboxCheck;
-    bool mIsClicked;
-};
+namespace prism {
 
-static struct {
-    std::map<int, ClickEntry> mEntries;
-} gBlitzClickData;
+    struct ClickEntry {
+        int mEntityID;
+        bool mIsPassiveHitboxCheck;
+        bool mIsClicked;
+    };
 
-static void unregisterEntity(int tEntityID);
+    static struct {
+        std::map<int, ClickEntry> mEntries;
+    } gBlitzClickData;
 
-static BlitzComponent getBlitzClickComponent() {
-	return makeBlitzComponent(unregisterEntity);
-}
+    static void unregisterEntity(int tEntityID);
 
-static void loadBlitzClickHandler(void*) {
-    gBlitzClickData.mEntries.clear();
-}
+    static BlitzComponent getBlitzClickComponent() {
+        return makeBlitzComponent(unregisterEntity);
+    }
 
-static void unloadBlitzClickHandler(void*) {
-    gBlitzClickData.mEntries.clear();
-}
+    static void loadBlitzClickHandler(void*) {
+        gBlitzClickData.mEntries.clear();
+    }
 
-static void updateSingleBlitzClickEntryPassiveAnimationHitbox(ClickEntry& e) {
-    const auto& activeHitBoxes = getBlitzMugenAnimationActiveHitboxes(e.mEntityID);
-    for (const auto& activeHitBox : activeHitBoxes) {
-        const auto offset = getBlitzEntityPosition(e.mEntityID);
-        const auto rectangle = activeHitBox.mCollider.mImpl.mRect;
-        const auto geoRect = GeoRectangle2D(rectangle.mTopLeft.x, rectangle.mTopLeft.y, rectangle.mBottomRight.x - rectangle.mTopLeft.x, rectangle.mBottomRight.y - rectangle.mTopLeft.y) + Vector2D(offset.x, offset.y);
-        if (isMouseInRectangle(geoRect)) {
-            e.mIsClicked = hasPressedMouseLeftFlank();
+    static void unloadBlitzClickHandler(void*) {
+        gBlitzClickData.mEntries.clear();
+    }
+
+    static void updateSingleBlitzClickEntryPassiveAnimationHitbox(ClickEntry& e) {
+        const auto& activeHitBoxes = getBlitzMugenAnimationActiveHitboxes(e.mEntityID);
+        for (const auto& activeHitBox : activeHitBoxes) {
+            const auto offset = getBlitzEntityPosition(e.mEntityID);
+            const auto rectangle = activeHitBox.mCollider.mImpl.mRect;
+            const auto geoRect = GeoRectangle2D(rectangle.mTopLeft.x, rectangle.mTopLeft.y, rectangle.mBottomRight.x - rectangle.mTopLeft.x, rectangle.mBottomRight.y - rectangle.mTopLeft.y) + Vector2D(offset.x, offset.y);
+            if (isMouseInRectangle(geoRect)) {
+                e.mIsClicked = hasPressedMouseLeftFlank();
+            }
+            else
+            {
+                e.mIsClicked = false;
+            }
+        }
+    }
+
+    static void updateSingleBlitzClickEntry(ClickEntry& e) {
+        if (e.mIsPassiveHitboxCheck)
+        {
+            updateSingleBlitzClickEntryPassiveAnimationHitbox(e);
         }
         else
         {
-            e.mIsClicked = false;
+            assert(false && "Unimplemented blitz click type.");
         }
     }
-}
 
-static void updateSingleBlitzClickEntry(ClickEntry& e) {
-    if(e.mIsPassiveHitboxCheck)
+    static void updateBlitzClickHandler(void*) {
+        for (auto& e : gBlitzClickData.mEntries) {
+            updateSingleBlitzClickEntry(e.second);
+        }
+    }
+
+    ActorBlueprint getBlitzClickHandler() {
+        return makeActorBlueprint(loadBlitzClickHandler, unloadBlitzClickHandler, updateBlitzClickHandler);
+    }
+
+    void addBlitzClickComponent(int tEntityID)
     {
-        updateSingleBlitzClickEntryPassiveAnimationHitbox(e);
+        ClickEntry e;
+        e.mEntityID = tEntityID;
+        e.mIsPassiveHitboxCheck = false;
+        registerBlitzComponent(tEntityID, getBlitzClickComponent());
+        gBlitzClickData.mEntries[tEntityID] = e;
     }
-    else
+
+    void addBlitzClickComponentPassiveAnimationHitbox(int tEntityID)
     {
-        assert(false && "Unimplemented blitz click type.");
+        addBlitzClickComponent(tEntityID);
+        auto& e = gBlitzClickData.mEntries[tEntityID];
+        e.mIsPassiveHitboxCheck = true;
+        e.mIsClicked = false;
     }
-}
 
-static void updateBlitzClickHandler(void*) {
-    for (auto& e : gBlitzClickData.mEntries) {
-        updateSingleBlitzClickEntry(e.second);
+    bool isBlitzEntityClicked(int tEntityID) {
+        assert(gBlitzClickData.mEntries.count(tEntityID));
+        return gBlitzClickData.mEntries[tEntityID].mIsClicked;
     }
-}
 
-ActorBlueprint getBlitzClickHandler(){
-	return makeActorBlueprint(loadBlitzClickHandler, unloadBlitzClickHandler, updateBlitzClickHandler);
-}
+    static void unregisterEntity(int tEntityID) {
+        gBlitzClickData.mEntries.erase(tEntityID);
+    }
 
-void addBlitzClickComponent(int tEntityID)
-{
-	ClickEntry e;
-	e.mEntityID = tEntityID;
-    e.mIsPassiveHitboxCheck = false;
-	registerBlitzComponent(tEntityID, getBlitzClickComponent());
-	gBlitzClickData.mEntries[tEntityID] = e;
-}
-
-void addBlitzClickComponentPassiveAnimationHitbox(int tEntityID)
-{
-    addBlitzClickComponent(tEntityID);
-    auto& e = gBlitzClickData.mEntries[tEntityID];
-    e.mIsPassiveHitboxCheck = true;
-    e.mIsClicked = false;
-}
-
-bool isBlitzEntityClicked(int tEntityID) {
-    assert(gBlitzClickData.mEntries.count(tEntityID));
-    return gBlitzClickData.mEntries[tEntityID].mIsClicked;
-}
-
-static void unregisterEntity(int tEntityID) {
-	gBlitzClickData.mEntries.erase(tEntityID);
 }

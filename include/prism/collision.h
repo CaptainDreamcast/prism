@@ -3,6 +3,8 @@
 #include "physics.h"
 #include "geometry.h"
 
+namespace prism {
+
 typedef GeoRectangle2D CollisionRect;
 typedef Circle2D CollisionCirc;
 
@@ -70,3 +72,5 @@ double getColliderUp(const Collider& tCollider);
 double getColliderDown(const Collider& tCollider);
 double getColliderRight(const Collider& tCollider);
 double getColliderLeft(const Collider& tCollider);
+
+}

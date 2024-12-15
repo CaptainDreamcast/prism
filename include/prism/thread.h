@@ -2,6 +2,8 @@
 
 #include "actorhandler.h"
 
+namespace prism {
+
 typedef void* Semaphore;
 
 void initThreading();
@@ -12,3 +14,5 @@ void destroySemaphore(Semaphore tSemaphore);
 void lockSemaphore(Semaphore tSemaphore);
 void releaseSemaphore(Semaphore tSemaphore); 
 void terminateSelfAsThread(int tReturnValue);
+
+}

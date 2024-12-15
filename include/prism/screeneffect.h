@@ -4,6 +4,8 @@
 #include "texture.h"
 #include "actorhandler.h"
 
+namespace prism {
+
 typedef void(*ScreenEffectFinishedCB)(void* tCaller);
 
 void initScreenEffects();
@@ -38,3 +40,5 @@ TextureData* getEmptyWhiteTextureReference();
 #ifdef _WIN32
 void imguiScreenEffects();
 #endif
+
+}

@@ -5,6 +5,8 @@
 #include "texture.h"
 #include "animation.h"
 
+namespace prism {
+
 typedef struct {
 	Position mAnchor;
 	Position mTranslation;
@@ -33,3 +35,5 @@ AnimationTree loadAnimationTree(char* tPath);
 int playAnimationTreeLoop(const Position& tPosition, const AnimationTree& tTree, char* tAnimation);
 void setAnimationTreeAnimation(AnimationTree* tTree, char* tAnimation);
 void setHandledAnimationTreeAnimation(int tID, char* tAnimation);
+
+}

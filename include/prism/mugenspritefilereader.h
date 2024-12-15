@@ -6,6 +6,7 @@
 #include "datastructures.h"
 #include "texture.h"
 
+namespace prism {
 
 typedef struct {
 	Vector2DI mOffset;
@@ -63,3 +64,5 @@ int hasMugenSprite(MugenSpriteFile* tSprites, int tGroup, int tSprite);
 void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector2DI& tSource, const Vector2DI& tDestination, int tPaletteID);
 
 void imguiMugenSpriteFile(MugenSpriteFile& tSprites, const std::string_view& tName);
+
+}

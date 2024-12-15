@@ -22,7 +22,14 @@
 
 #include "prism/lz5.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
+
+namespace prism {
 
 typedef struct {
 	char mSignature[12];
@@ -1459,9 +1466,6 @@ void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector2DI& tSo
 }
 
 #ifdef _WIN32
-#include <imgui/imgui.h>
-#include "prism/windows/debugimgui_win.h"
-
 static void imguiMugenSpriteFileSubSprite(MugenSpriteFileSubSprite& tSubSprite) {
 	ImGui::Text("Offset = %d / %d", tSubSprite.mOffset.x, tSubSprite.mOffset.y);
 	imguiTextureData("TextureData", tSubSprite.mTexture);
@@ -1529,3 +1533,4 @@ void imguiMugenSpriteFile(MugenSpriteFile& tSprites, const std::string_view& tNa
 	}
 }
 #endif
+}

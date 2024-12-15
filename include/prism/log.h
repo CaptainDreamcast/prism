@@ -5,6 +5,8 @@
 #include "datastructures.h"
 #include "file.h"
 
+namespace prism {
+
 typedef enum {
 	LOG_TYPE_NORMAL,
 	LOG_TYPE_WARNING,
@@ -111,3 +113,5 @@ void printLogColorStart(LogType tType);
 void printLogColorEnd(LogType tType);
 
 void hardwareLogToFile(FileHandler& tFileHandler, const char* tText);
+
+}

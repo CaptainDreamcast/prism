@@ -4,6 +4,8 @@
 
 #include "actorhandler.h"
 
+namespace prism {
+
 void initSound();
 void shutdownSound();
 
@@ -33,3 +35,5 @@ double getMicrophoneVolume();
 #ifdef _WIN32
 void imguiSoundHardware();
 #endif
+
+}

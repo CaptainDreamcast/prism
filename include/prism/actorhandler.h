@@ -5,6 +5,8 @@
 #include "stlutil.h"
 #include "profiling.h"
 
+namespace prism {
+
 typedef void(*LoadActorFunction)(void* tOptionalData);
 typedef void(*UpdateActorFunction)(void* tOptionalData);
 typedef void(*DrawActorFunction)(void* tOptionalData);
@@ -56,3 +58,5 @@ ActorBlueprint get##tClassName() \
 { \
 	return makeActorBlueprint(loadActorInternal##tClassName, unloadActorInternal##tClassName, updateActorInternal##tClassName); \
 } 
+
+}

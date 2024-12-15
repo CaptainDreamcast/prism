@@ -3,6 +3,8 @@
 #include "datastructures.h"
 #include "animation.h"
 
+namespace prism {
+
 typedef enum {
 	BLITZ_TIMELINE_ANIMATION_STEP_TYPE_INTERPOLATION_END,
 	BLITZ_TIMELINE_ANIMATION_STEP_TYPE_INTERPOLATION,
@@ -51,3 +53,5 @@ typedef struct {
 
 BlitzTimelineAnimations loadBlitzTimelineAnimations(const char* tPath);
 BlitzTimelineAnimation* getBlitzTimelineAnimation(BlitzTimelineAnimations* tAnimations, int tAnimationID);
+
+}

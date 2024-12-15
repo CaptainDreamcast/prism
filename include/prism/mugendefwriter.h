@@ -2,6 +2,8 @@
 
 #include "file.h"
 
+namespace prism {
+
 struct ModifiableMugenDefScript
 {
 	Buffer mOwnedBuffer;
@@ -17,3 +19,5 @@ void saveMugenDefFloat(ModifiableMugenDefScript* tScript, const char* tGroupName
 void saveMugenDefInteger(ModifiableMugenDefScript* tScript, const char* tGroupName, const char* tVariableName, int tValue);
 
 void saveMugenDefString(const std::string& tPath, const char* tGroupName, size_t tGroupOffset, const char* tVariableName, const std::string& tValue);
+
+}

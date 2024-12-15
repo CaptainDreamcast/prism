@@ -3,6 +3,8 @@
 #include "actorhandler.h"
 #include "geometry.h"
 
+namespace prism { 
+
 ActorBlueprint getBlitzCameraHandler();
 
 int isBlitzCameraHandlerEnabled();
@@ -30,3 +32,5 @@ int getBlitzCameraHandlerEntityID();
 const GeoRectangle2D& getBlitzCameraHandlerRange();
 void setBlitzCameraHandlerRange(const GeoRectangle2D& tRectangle);
 void setBlitzCameraPositionBasedOnCenterPoint(const Position& tCenter);
+
+}

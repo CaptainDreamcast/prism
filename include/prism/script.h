@@ -2,6 +2,8 @@
 
 #include "file.h"
 
+namespace prism {
+
 typedef struct {
 	Buffer mBuffer;
 } Script;
@@ -34,3 +36,4 @@ ScriptRegion getScriptRegionAtPosition(const ScriptPosition& tPos);
 int hasNextScriptWord(const ScriptPosition& tPos);
 ScriptPosition getNextScriptInstruction(const ScriptPosition& tPos);
 
+}

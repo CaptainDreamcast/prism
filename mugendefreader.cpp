@@ -12,6 +12,8 @@
 
 using namespace std;
 
+namespace prism {
+
 typedef struct MugenDefToken_t {
 	char* mValue;
 	struct MugenDefToken_t* mNext;
@@ -1800,4 +1802,6 @@ GeoRectangle2D getMugenDefGeoRectangle2DOrDefaultAsGroup(MugenDefScriptGroup* tG
 	else {
 		return tDefault;
 	}
+}
+
 }

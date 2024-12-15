@@ -8,6 +8,8 @@
 #include "mugenspritefilereader.h"
 #include "memorystack.h"
 
+namespace prism {
+
 typedef enum {
 	FACE_DIRECTION_LEFT,
 	FACE_DIRECTION_RIGHT
@@ -67,3 +69,5 @@ void destroyMugenAnimation(MugenAnimation* tAnimation);
 Vector2DI getAnimationFirstElementSpriteSize(MugenAnimation* tAnimation, MugenSpriteFile* tSprites);
 Vector2D getAnimationFirstElementSpriteOffset(MugenAnimation * tAnimation, MugenSpriteFile* tSprites);
 int isMugenAnimationStepDurationInfinite(int tDuration);
+
+}

@@ -6,6 +6,8 @@
 #include "collisionhandler.h"
 #include "actorhandler.h"
 
+namespace prism {
+
 typedef struct {
 	Vector mFrames; // holds Colliders
 
@@ -26,3 +28,5 @@ void removeHandledCollisionAnimation(int tID);
 
 void invertCollisionAnimationVertical(int tID);
 void setCollisionAnimationCenter(int tID, const Position& tCenter);
+
+}

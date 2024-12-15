@@ -4,29 +4,33 @@
 #include "prism/system.h"
 #include "prism/log.h"
 
-static struct {
-	int mIsScreenColored;
+namespace prism {
 
-} gData;
+	static struct {
+		int mIsScreenColored;
 
-void setScreenColor(Color tColor) {
-	if(gData.mIsScreenColored) return;
+	} gData;
 
-	double r, g, b;
-	getRGBFromColor(tColor, &r, &g, &b);
+	void setScreenColor(Color tColor) {
+		if (gData.mIsScreenColored) return;
 
-	setScreenBackgroundColorRGB(r, g, b);
+		double r, g, b;
+		getRGBFromColor(tColor, &r, &g, &b);
 
-	disableDrawing();
-	gData.mIsScreenColored = 1;
-}
+		setScreenBackgroundColorRGB(r, g, b);
 
-void setScreenBackgroundColorRGB(double tR, double tG, double tB) {
-	pvr_set_bg_color(tR, tG, tB);
-}
+		disableDrawing();
+		gData.mIsScreenColored = 1;
+	}
 
-void unsetScreenColor() {
-	if(!gData.mIsScreenColored) return;
-	enableDrawing();
-	gData.mIsScreenColored = 0;
+	void setScreenBackgroundColorRGB(double tR, double tG, double tB) {
+		pvr_set_bg_color(tR, tG, tB);
+	}
+
+	void unsetScreenColor() {
+		if (!gData.mIsScreenColored) return;
+		enableDrawing();
+		gData.mIsScreenColored = 0;
+	}
+
 }

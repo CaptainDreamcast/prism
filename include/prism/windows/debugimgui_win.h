@@ -6,6 +6,8 @@
 #include <map>
 #include <imgui/imgui.h>
 
+namespace prism {
+
 bool isImguiPrismActive();
 
 void imguiPrismInitAfterDrawingSetup();
@@ -89,4 +91,4 @@ void imguiIntMap(const std::string_view& tName, std::map<int, V>& tMap, void(*tE
 	}
 }
 
-
+}

@@ -2,8 +2,10 @@
 
 #include <kos.h>
 
-double fstsqrt(double x) {
-	return fsqrt(x);
+namespace prism {
+
+	double fstsqrt(double x) {
+		return fsqrt(x);
+	}
+
 }
-
-
