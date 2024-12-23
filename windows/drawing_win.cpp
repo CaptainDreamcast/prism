@@ -969,6 +969,8 @@ void stopDrawing() {
 	stopDrawingBookkeeping();
 }
 
+void waitForRendering() {}
+
 void waitForScreen() {
 	setProfilingSectionMarkerCurrentFunction();
 #ifndef __EMSCRIPTEN__

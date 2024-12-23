@@ -57,8 +57,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\vita\drawing_vita.cpp" />
+    <ClCompile Include="..\..\vita\input_vita.cpp" />
     <ClCompile Include="..\..\vita\log_vita.cpp" />
     <ClCompile Include="..\..\vita\memoryhandler_vita.cpp" />
+    <ClCompile Include="..\..\vita\screeneffect_vita.cpp" />
     <ClCompile Include="..\..\vita\soundeffect_vita.cpp" />
     <ClCompile Include="..\..\vita\sound_vita.cpp" />
     <ClCompile Include="..\..\vita\system_vita.cpp" />

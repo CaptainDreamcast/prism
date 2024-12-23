@@ -27,6 +27,7 @@ int hasBlitzCollidedLeft(int tEntityID);
 int hasBlitzCollidedRight(int tEntityID);
 
 int hasBlitzCollidedThisFrame(int tEntityID, int tCollisionID);
+std::vector<std::pair<int, CollisionListData*>> getBlitzCollidedEntitiesThisFrame(int tEntityID);
 
 void removeAllBlitzCollisions(int tEntityID);
 

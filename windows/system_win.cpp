@@ -110,15 +110,12 @@ namespace prism {
 	static void setToProgramDirectory() {
 #ifdef _WIN32
 		TCHAR wbuf[1024];
-		char buf[1024];
 		GetModuleFileName(NULL, wbuf, 1024);
 
-		auto len = wcstombs(buf, wbuf, 1024);
-		buf[len] = '\0';
-		char* end = strrchr(buf, '\\');
+		wchar_t* end = wcsrchr(wbuf, '\\');
 		end[1] = '\0';
 
-		_chdir(buf);
+		_wchdir(wbuf);
 #endif
 	}
 

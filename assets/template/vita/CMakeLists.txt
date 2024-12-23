@@ -56,51 +56,43 @@ add_executable(${PROJECT_NAME}
 
 # Library to link to (drop the -l prefix). This will mostly be stubs.
 target_link_libraries(${PROJECT_NAME}
-  prism
-  SDL_mixer
-  SDL2
-  mikmod
-  vorbisfile
-  vorbis
-  vorbisenc
-  ogg
-  vorbisidec
-  SDL_image
-  png
-  vitaGL
-  jpeg
-  webp
-  vitashark
-  FLAC
-  pthread
-  z
-  zstd
-  drakonsound
-  SceLibKernel_stub
-  SceShaccCg_stub
-  SceShaccCgExt
-  taihen_stub
-  mathneon
-  SceKernelDmacMgr_stub
-  libgpu_es4_ext_stub_weak
-  libIMGEGL_stub_weak
-  libGL_stub
-  SceGxm_stub
-  SceDisplay_stub
-  SceCtrl_stub
-  SceAppMgr_stub
-  SceAppUtil_stub
-  SceAudio_stub
-  SceAudioIn_stub
-  SceSysmodule_stub
-  SceIofilemgr_stub
-  SceCommonDialog_stub
-  SceTouch_stub
-  SceHid_stub
-  SceMotion_stub
-  ScePower_stub
-  SceProcessmgr_stub
-  SceIme_stub
+prism
+vita2d
+mikmod
+vorbisfile
+vorbis
+vorbisenc
+ogg
+vorbisidec
+png
+jpeg
+webp
+FLAC
+pthread
+z
+zstd
+drakonsound
+SceLibKernel_stub
+taihen_stub
+mathneon
+SceKernelDmacMgr_stub
+libgpu_es4_ext_stub_weak
+SceGxm_stub
+SceDisplay_stub
+SceCtrl_stub
+SceAppMgr_stub
+SceAppUtil_stub
+SceAudio_stub
+SceAudioIn_stub
+SceSysmodule_stub
+SceIofilemgr_stub
+SceCommonDialog_stub
+SceTouch_stub
+SceHid_stub
+SceMotion_stub
+ScePower_stub
+SceProcessmgr_stub
+SceIme_stub
 )
 
 ## Create Vita files

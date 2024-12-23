@@ -268,6 +268,8 @@ namespace prism {
 		//sem_signal(&gPVRAccessSemaphore);
 	}
 
+	void waitForRendering() {}
+
 	bool isSkippingDrawing() { return false; }
 	void setDrawingFrameSkippingEnabled(bool /*tIsEnabled*/) {}
 	void resetDrawingFrameStartTime() {}

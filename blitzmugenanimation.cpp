@@ -24,7 +24,7 @@ namespace prism {
 	} BlitzAnimationEntry;
 
 	static struct {
-		map<int, BlitzAnimationEntry> mEntities;
+		unordered_map<int, BlitzAnimationEntry> mEntities;
 	} gBlitzAnimationData;
 
 	static void loadBlitzMugenAnimationHandler(void* tData) {

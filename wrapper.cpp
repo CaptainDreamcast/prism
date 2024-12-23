@@ -404,6 +404,7 @@ namespace prism {
 	static void unloadScreen(Screen* tScreen) {
 		logg("Unloading handled screen");
 		stopWrapperMusic();
+		waitForRendering();
 
 		if (tScreen->mUnload) {
 			debugLog("Unloading user screen data");

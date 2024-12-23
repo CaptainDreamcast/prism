@@ -5,30 +5,8 @@
 #include <ctime>
 
 #include <stdlib.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <vitaGL.h>
-
-#ifdef __EMSCRIPTEN__
-#define GL3_PROTOTYPES 1
-#include <GL/glew.h>
-#include <GL/glu.h>
-
-#include <SDL_image.h>
-#elif defined _WIN32
-
-
-#define GL3_PROTOTYPES 1
-#include <GL/glew.h>
-#include <GL/glu.h>
-
-#include <SDL_image.h>
-#endif
-
-#ifdef _WIN32
-#include <windows.h>
-#include <direct.h>
-#endif
+#include <vita2d.h>
+#include <psp2/rtc.h> 
 
 #include "prism/log.h"
 #include "prism/geometry.h"
@@ -55,166 +33,82 @@ namespace prism {
 		int mDisplayedWindowSizeY;
 
 		char mGameName[100];
-	} gPrismWindowsSystemData;
-
-	SDL_Window* gSDLWindow;
-	SDL_GLContext gGLContext;
+	} gPrismVitaSystemData;
 
 	static void initScreenDefault() {
-		gPrismWindowsSystemData.mIsLoaded = 1;
-		gPrismWindowsSystemData.mScreenSizeX = gPrismWindowsSystemData.mDisplayedWindowSizeX = 960;
-		gPrismWindowsSystemData.mScreenSizeY = gPrismWindowsSystemData.mDisplayedWindowSizeY = 544;
+		gPrismVitaSystemData.mIsLoaded = 1;
+		gPrismVitaSystemData.mScreenSizeX = gPrismVitaSystemData.mDisplayedWindowSizeX = 960;
+		gPrismVitaSystemData.mScreenSizeY = gPrismVitaSystemData.mDisplayedWindowSizeY = 544;
 	}
 
 	void setGameName(const char* tName) {
-		strcpy(gPrismWindowsSystemData.mGameName, tName);
+		strcpy(gPrismVitaSystemData.mGameName, tName);
+		// UNSUPPORTED
 	}
 
 	void updateGameName(const char* tName)
 	{
-		strcpy(gPrismWindowsSystemData.mGameName, tName);
-		SDL_SetWindowTitle(gSDLWindow, gPrismWindowsSystemData.mGameName);
+		strcpy(gPrismVitaSystemData.mGameName, tName);
+		// UNSUPPORTED
 	}
 
-	void setIcon(const char* tPath)
+	void setIcon(const char*)
 	{
-		SDL_Surface* icon = IMG_Load(tPath);
-		SDL_SetWindowIcon(gSDLWindow, icon);
-		SDL_FreeSurface(icon);
+		// UNSUPPORTED
 	}
 
 	static void setToProgramDirectory() {
-#ifdef _WIN32
-		TCHAR wbuf[1024];
-		char buf[1024];
-		GetModuleFileName(NULL, wbuf, 1024);
-
-		int len = wcstombs(buf, wbuf, 1024);
-		buf[len] = '\0';
-		char* end = strrchr(buf, '\\');
-		end[1] = '\0';
-
-		_chdir(buf);
-#endif
+		// UNSUPPORTED
 	}
 
 	extern void setDrawingScreenScale(double tScaleX, double tScaleY);
 
-	static void initOpenGL() {
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-
-		gGLContext = SDL_GL_CreateContext(gSDLWindow);
-	}
-
-	/*
-	static void initGlew() {
-		glewExperimental = GL_TRUE;
-		glewInit();
-	}
-	*/
-
 	void initSystem() {
 
 		setToProgramDirectory();
-		SDL_setenv("VITA_PVR_OGL", "1", 1);
-		SDL_Init(SDL_INIT_EVERYTHING);
-		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 
-		if (gPrismWindowsSystemData.mGameName[0] == '\0') {
-			sprintf(gPrismWindowsSystemData.mGameName, "Unnamed libtari game port");
+		if (gPrismVitaSystemData.mGameName[0] == '\0') {
+			sprintf(gPrismVitaSystemData.mGameName, "Unnamed libtari game port");
 		}
-		SDL_setenv("VITA_PVR_OGL", "1", 1);
-		gSDLWindow = SDL_CreateWindow(gPrismWindowsSystemData.mGameName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 960, 544, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-
-		initOpenGL();
-
-		//initGlew();
 	}
 
 	void shutdownSystem() {
-		SDL_GL_DeleteContext(gGLContext);
-
-		SDL_DestroyWindow(gSDLWindow);
-
-		IMG_Quit();
-		SDL_Quit();
-	}
-
-	static void resizeWindow(SDL_Event* e) {
-		setDisplayedScreenSize(e->window.data1, e->window.data2);
-	}
-	static void checkWindowEvents(SDL_Event* e) {
-		if (e->window.event == SDL_WINDOWEVENT_RESIZED) {
-			resizeWindow(e);
-		}
 
 	}
-
-	Vector3D correctSDLWindowPosition(const Vector3D& v) {
-		ScreenSize sz = getScreenSize();
-		double scaleX = gPrismWindowsSystemData.mDisplayedWindowSizeX / (double)sz.x;
-		double scaleY = gPrismWindowsSystemData.mDisplayedWindowSizeY / (double)sz.y;
-		return vecScale3D(v, Vector3D(1 / scaleX, 1 / scaleY, 1));
-	}
-
-	extern void receiveCharacterInputFromSDL(const std::string& tText);
 
 	void updateSystem() {
-		setProfilingSectionMarkerCurrentFunction();
-		SDL_Event e;
-		while (SDL_PollEvent(&e) != 0) {
-			switch (e.type) {
-			case SDL_QUIT:
-				returnToMenu();
-				break;
-			case SDL_WINDOWEVENT:
-				checkWindowEvents(&e);
-				break;
-			case SDL_TEXTINPUT:
-				receiveCharacterInputFromSDL(e.text.text);
-				break;
-			default:
-				break;
-			}
-		}
 	}
 
 	void setScreen(int tX, int tY, int tFramerate, int tIsVGA) {
 		(void)tIsVGA;
 		(void)tFramerate;
-		if (!gPrismWindowsSystemData.mIsLoaded) initScreenDefault();
-		gPrismWindowsSystemData.mScreenSizeX = tX;
-		gPrismWindowsSystemData.mScreenSizeY = tY;
+		if (!gPrismVitaSystemData.mIsLoaded) initScreenDefault();
+		gPrismVitaSystemData.mScreenSizeX = tX;
+		gPrismVitaSystemData.mScreenSizeY = tY;
 	}
 
 	void setScreenSize(int tX, int tY) {
-		if (!gPrismWindowsSystemData.mIsLoaded) initScreenDefault();
+		if (!gPrismVitaSystemData.mIsLoaded) initScreenDefault();
 
-		gPrismWindowsSystemData.mScreenSizeX = tX;
-		gPrismWindowsSystemData.mScreenSizeY = tY;
+		gPrismVitaSystemData.mScreenSizeX = tX;
+		gPrismVitaSystemData.mScreenSizeY = tY;
 	}
 
 	ScreenSize getScreenSize() {
-		if (!gPrismWindowsSystemData.mIsLoaded) initScreenDefault();
+		if (!gPrismVitaSystemData.mIsLoaded) initScreenDefault();
 		ScreenSize ret;
-		ret.x = gPrismWindowsSystemData.mScreenSizeX;
-		ret.y = gPrismWindowsSystemData.mScreenSizeY;
+		ret.x = gPrismVitaSystemData.mScreenSizeX;
+		ret.y = gPrismVitaSystemData.mScreenSizeY;
 
 		return ret;
 	}
 
 	ScreenSize getDisplayedScreenSize()
 	{
-		if (!gPrismWindowsSystemData.mIsLoaded) initScreenDefault();
+		if (!gPrismVitaSystemData.mIsLoaded) initScreenDefault();
 		ScreenSize ret;
-		ret.x = gPrismWindowsSystemData.mDisplayedWindowSizeX;
-		ret.y = gPrismWindowsSystemData.mDisplayedWindowSizeY;
+		ret.x = gPrismVitaSystemData.mDisplayedWindowSizeX;
+		ret.y = gPrismVitaSystemData.mDisplayedWindowSizeY;
 		return ret;
 	}
 
@@ -263,7 +157,9 @@ namespace prism {
 	}
 
 	uint64_t getSystemTicks() {
-		return SDL_GetTicks();
+		SceRtcTick tick;
+		sceRtcGetCurrentTick(&tick);
+		return tick.tick;
 	}
 
 	uint64_t getUnixTimestampSeconds()

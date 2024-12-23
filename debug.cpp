@@ -7,6 +7,7 @@
 #include <prism/wrapper.h>
 #include <prism/system.h>
 #include <prism/netplay.h>
+#include <prism/screeneffect.h>
 
 #ifdef _WIN32
 #include <imgui/imgui.h>
@@ -232,7 +233,7 @@ namespace prism {
 		gPrismDebug.mSideDisplay.mNetplayFrameDifferenceTextID = addMugenTextMugenStyle("", Vector3D(sz.x - offset, offset + dy * 8, 95), Vector3DI(-1, 1, -1));
 #endif
 
-		gPrismDebug.mConsole.mWhiteTexture = createWhiteTexture();
+		gPrismDebug.mConsole.mWhiteTexture = getEmptyWhiteTexture();
 		gPrismDebug.mConsole.mIsVisible = 0;
 
 		gPrismDebug.mIsActive = 1;

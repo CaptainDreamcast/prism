@@ -1,6 +1,7 @@
 #include "prism/clipboardhandler.h"
 
 #include <string.h>
+#include <cstdarg>
 
 #include "prism/mugentexthandler.h"
 #include "prism/log.h"

@@ -18,6 +18,26 @@
 
 #ifdef __EMSCRIPTEN__
 #define SDL_strncasecmp SDL_strncasecmp
+#elif defined (VITA)
+static int caseIndependentCompareForRomdisk(const char* str1, const char* str2, size_t len) {
+	for (size_t i = 0; i < len; i++) {
+		char c1 = str1[i];
+		char c2 = str2[i];
+
+		if (c1 >= 'A' && c1 <= 'Z') c1 += 'a' - 'A';
+		if (c2 >= 'A' && c2 <= 'Z') c2 += 'a' - 'A';
+
+		if (c1 != c2) {
+			return c1 - c2;
+		}
+
+		if (c1 == '\0' || c2 == '\0') {
+			return (c2 == '\0') ? -1 : 1;
+		}
+	}
+	return 0;
+}
+#define SDL_strncasecmp caseIndependentCompareForRomdisk
 #endif
 
 namespace prism {

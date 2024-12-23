@@ -26,7 +26,7 @@ namespace prism {
 	} BlitzEntity;
 
 	static struct {
-		map<int, BlitzEntity> mEntities; // contains BlitzEntity
+		unordered_map<int, BlitzEntity> mEntities; // contains BlitzEntity
 	} gBlitzEntityData;
 
 	static void loadBlitzMugenAnimationHandler(void* tData) {

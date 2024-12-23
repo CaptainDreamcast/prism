@@ -16,7 +16,7 @@ namespace prism {
     };
 
     static struct {
-        std::map<int, ClickEntry> mEntries;
+        std::unordered_map<int, ClickEntry> mEntries;
     } gBlitzClickData;
 
     static void unregisterEntity(int tEntityID);

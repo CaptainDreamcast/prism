@@ -1,5 +1,7 @@
 #include "prism/blitzcollision.h"
 
+#include <unordered_set>
+
 #include "prism/datastructures.h"
 #include "prism/memoryhandler.h"
 #include "prism/blitzentity.h"
@@ -40,6 +42,12 @@ namespace prism {
 		BlitzCollisionObject* b;
 	} ActiveSolidCollision;
 
+	using CollidedEntity = std::pair<int, CollisionListData*>;
+	struct CollidedEntityHash {
+		std::size_t operator()(const CollidedEntity& k) const {
+			return std::hash<int>()(k.first) ^ std::hash<CollisionListData*>()(k.second);
+		}
+	};
 
 	typedef struct {
 		int mEntityID;
@@ -49,11 +57,12 @@ namespace prism {
 		int mIsLeftCollided;
 		int mIsRightCollided;
 
-		map<int, BlitzCollisionObject> mCollisionObjects;
+		unordered_map<int, BlitzCollisionObject> mCollisionObjects;
+		std::unordered_set<CollidedEntity, CollidedEntityHash> mCollidedEntities;
 	} CollisionEntry;
 
 	static struct {
-		map<int, CollisionEntry> mEntries;
+		unordered_map<int, CollisionEntry> mEntries;
 		list<ActiveSolidCollision> mActiveSolidCollisions;
 	} gBlitzCollisionData;
 
@@ -89,6 +98,7 @@ namespace prism {
 		updateSingleBlitzCollidedValue(&e->mIsBottomCollided);
 		updateSingleBlitzCollidedValue(&e->mIsLeftCollided);
 		updateSingleBlitzCollidedValue(&e->mIsRightCollided);
+		e->mCollidedEntities.clear();
 	}
 
 	static CollisionEntry* getBlitzCollisionEntry(int tEntityID) {
@@ -184,19 +194,29 @@ namespace prism {
 		BlitzCollisionObject* selfObject = (BlitzCollisionObject*)tCaller;
 		BlitzCollisionObject* otherObject = (BlitzCollisionObject*)tCollisionData;
 
-		if (selfObject->mIsSolid && otherObject->mIsSolid) {
-			if (selfObject->mIsMovable && !otherObject->mIsMovable) {
-				ActiveSolidCollision solidCollision;
-				solidCollision.a = selfObject;
-				solidCollision.b = otherObject;
-				gBlitzCollisionData.mActiveSolidCollisions.push_back(solidCollision);
+		auto isCollidingWithBlitz = stl_map_contains(gBlitzCollisionData.mEntries, otherObject->mEntityID);
+		if(isCollidingWithBlitz) {
+			if (selfObject->mIsSolid && otherObject->mIsSolid) {
+				if (selfObject->mIsMovable && !otherObject->mIsMovable) {
+					ActiveSolidCollision solidCollision;
+					solidCollision.a = selfObject;
+					solidCollision.b = otherObject;
+					gBlitzCollisionData.mActiveSolidCollisions.push_back(solidCollision);
+				}
 			}
 		}
 
 		list_map(&selfObject->mCollisionCallbacks, internalCollisionHandleSingleCB, otherObject);
 
 		selfObject->mHasCollidedThisFrame = 1;
-		otherObject->mHasCollidedThisFrame = 1;
+		if(isCollidingWithBlitz) {
+			otherObject->mHasCollidedThisFrame = 1;
+
+			auto ownCollisionEntry = getBlitzCollisionEntry(selfObject->mEntityID);
+			ownCollisionEntry->mCollidedEntities.insert(std::make_pair(otherObject->mEntityID, otherObject->mCollisionList));
+			auto otherCollisionEntry = getBlitzCollisionEntry(otherObject->mEntityID);
+			otherCollisionEntry->mCollidedEntities.insert(std::make_pair(selfObject->mEntityID, selfObject->mCollisionList));
+		}
 	}
 
 	void addBlitzCollisionComponent(int tEntityID)
@@ -349,6 +369,15 @@ namespace prism {
 		return object->mHasCollidedThisFrame;
 	}
 
+	std::vector<std::pair<int, CollisionListData*>> getBlitzCollidedEntitiesThisFrame(int tEntityID)
+	{
+		if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) {
+			return std::vector<std::pair<int, CollisionListData*>>();
+		}
+
+		CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
+		return std::vector<std::pair<int, CollisionListData*>>(e->mCollidedEntities.begin(), e->mCollidedEntities.end());
+	}
 
 	static int removeSingleCollisionObject(void*, BlitzCollisionObject& tData) {
 		BlitzCollisionObject* e = &tData;

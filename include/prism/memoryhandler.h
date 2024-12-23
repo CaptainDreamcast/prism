@@ -9,35 +9,35 @@
 namespace prism {
 typedef pvr_ptr_t Texture;
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined(VITA)
-
-#ifdef VITA
-#include <SDL2/SDL.h>
-#include <vitaGL.h>
-#else
+#elif defined _WIN32 || defined __EMSCRIPTEN__
 #include <SDL.h>
 #include <GL/glew.h>
-#endif
 
 namespace prism {
 
-#ifdef VITA
 typedef struct {
-	int mWidth;
-	int mHeight;
-	int mFormat;
-	void* mCpuData;
-} GLTextureAllocationData;
-#endif
-
-typedef struct {
-#ifdef VITA
-	GLTextureAllocationData mAllocationData;
-#endif
 	GLuint mTexture;
 } GLTextureData;
 
 typedef GLTextureData* Texture;
+
+#elif defined(VITA)
+
+#include <vita2d.h>
+#include <psp2/gxm.h>
+#include <psp2/types.h>
+#include <psp2/kernel/sysmem.h>
+
+namespace prism {
+
+	typedef struct {
+		vita2d_texture* mTexture;
+} VitaTextureData;
+
+typedef VitaTextureData* Texture;
+
+void* vitaGpuAlloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID* uid);
+void vitaGpuFree(SceUID uid);
 
 #endif
 
@@ -59,11 +59,7 @@ void* allocMemory(int tSize);
 void* allocClearedMemory(int tBlockAmount, int tBlockSize);
 void freeMemory(void* tData);
 void* reallocMemory(void* tData, int tSize);
-#ifdef VITA
-TextureMemory allocTextureMemory(int tSize, void* userData);
-#else
 TextureMemory allocTextureMemory(int tSize);
-#endif
 void freeTextureMemory(TextureMemory tMem);
 void referenceTextureMemory(TextureMemory tMem);
 

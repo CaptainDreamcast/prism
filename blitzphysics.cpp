@@ -25,7 +25,7 @@ namespace prism {
 	} PhysicsEntry;
 
 	static struct {
-		map<int, PhysicsEntry> mEntries;
+		unordered_map<int, PhysicsEntry> mEntries;
 	} gBlitzPhysicsData;
 
 	static void loadBlitzPhysicsHandler(void* tData) {

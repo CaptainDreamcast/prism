@@ -9,42 +9,40 @@
 namespace prism {
 
 #ifdef DREAMCAST
+
+#define MAX_DOT_COUNT 10
+
 	static struct {
 		int mTicks;
 	} gPrismLoadingScreenData;
 
-	extern semaphore_t gPVRAccessSemaphore;
+	extern semaphore_t gPVRAccessSemaphore; // seems like it might cause issues if bios text is drawn while loading textures (though I don't get why it would)
 
 	static void drawLoadingText() {
-
-		char text[100];
+		const auto sz = getScreenSize();
+		char text[10 + MAX_DOT_COUNT];
 		strcpy(text, "Loading");
 		int pos = strlen(text);
 		int i;
 		for (i = 0; i < gPrismLoadingScreenData.mTicks; i++) text[pos++] = '.';
+		for (;i < MAX_DOT_COUNT; i++) text[pos++] = ' ';
 		text[pos] = '\0';
-		drawMugenText(text, Vector3D(20, 20, 10), -1);
+		const auto vramWriteLocation = 20 * sz.x + 20;
+		bfont_draw_str(vram_s + vramWriteLocation, sz.x, 1, text);
 	}
 
 	static void loadScreenLoop() {
-
-
 		waitForScreen();
-
 		sem_wait(&gPVRAccessSemaphore);
-		startDrawing();
 		drawLoadingText();
-		stopDrawing();
 		sem_signal(&gPVRAccessSemaphore);
-		//printf("liv %d\n", gPrismLoadingScreenData.mTicks);
-		//thd_sleep(1000);
-
-		gPrismLoadingScreenData.mTicks = (gPrismLoadingScreenData.mTicks + 1) % 10;
+		gPrismLoadingScreenData.mTicks = (gPrismLoadingScreenData.mTicks + 1) % MAX_DOT_COUNT;
 	}
 
 
 	void startLoadingScreen(int* tHasFinishedLoadingReference)
 	{
+		bfont_set_encoding(BFONT_CODE_ISO8859_1);
 		setScreenBackgroundColorRGB(0, 0, 0);
 		gPrismLoadingScreenData.mTicks = 0;
 		while (!(*tHasFinishedLoadingReference)) {

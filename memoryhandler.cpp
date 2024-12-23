@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <zstd.h>
 
 
 #include "prism/stlutil.h"
@@ -16,15 +17,15 @@
 #include "prism/windows/debugimgui_win.h"
 #endif
 
-#if defined _WIN32 || defined __EMSCRIPTEN__ || defined(VITA)
+#ifdef DREAMCAST
 
-#include <zstd.h>
-#ifdef VITA
-#include <SDL2/SDL.h>
-#else
+#include <kos.h>
+#endif
+
+#if defined _WIN32 || defined __EMSCRIPTEN__
+
 #include <SDL.h>
 #include <GL/glew.h>
-#endif
 #include "prism/texture.h"
 #endif
 
@@ -35,9 +36,6 @@ namespace prism {
 	static void decompressMemory(TextureMemory tMem, void** tBuffer);
 
 #ifdef DREAMCAST
-
-#include <kos.h>
-#include <zstd.h>
 
 #define allocTextureHW pvr_mem_malloc
 #define freeTextureHW pvr_mem_free
@@ -65,11 +63,7 @@ namespace prism {
 #define virtualizeTextureHW virtualizeTextureDreamcast
 #define unvirtualizeTextureHW unvirtualizeTextureDreamcast
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined(VITA)
-#ifdef VITA
-	static void* getActiveUserData();
-#endif
-
+#elif defined _WIN32 || defined __EMSCRIPTEN__
 	void* allocGLTexture(size_t) {
 		GLTextureData* data = (GLTextureData*)malloc(sizeof(GLTextureData));
 		return data;
@@ -96,6 +90,37 @@ namespace prism {
 
 #define virtualizeTextureHW virtualizeTextureGL
 #define unvirtualizeTextureHW unvirtualizeTextureGL
+
+#elif defined(VITA)
+	void* allocVitaTexture(size_t) {
+		VitaTextureData* data = (VitaTextureData*)malloc(sizeof(VitaTextureData));
+		return data;
+	}
+
+	void freeVitaTexture(void* tData) {
+		VitaTextureData* e = (VitaTextureData*)tData;
+		e->mTexture->palette_UID = 0; // we do not allocate palettes inside vita2d
+		e->mTexture->depth_UID = 0; // not zeroed in vita2d apparently
+		e->mTexture->gxm_rtgt = 0;
+		vita2d_free_texture(e->mTexture);
+		free(tData);
+	}
+
+#define allocTextureHW allocVitaTexture
+#define freeTextureHW freeVitaTexture
+
+	void virtualizeTextureVita(const TextureMemory& tMem)
+	{
+		// Unsupported
+	}
+
+	void unvirtualizeTextureVita(const TextureMemory& tMem)
+	{
+		// Unsupported
+	}
+
+#define virtualizeTextureHW virtualizeTextureVita
+#define unvirtualizeTextureHW unvirtualizeTextureVita
 
 #endif
 
@@ -171,10 +196,6 @@ namespace prism {
 		int mAllocatedMemory;
 
 		int mIsCompressionActive;
-
-#ifdef VITA
-		void* mActiveUserData;
-#endif
 
 		int mActive;
 	} gMemoryHandler;
@@ -322,18 +343,6 @@ namespace prism {
 			imguiTextureMemoryUsageList();
 			ImGui::End();
 		}
-	}
-#endif
-
-#ifdef VITA
-	static void setActiveUserData(void* tUserData)
-	{
-		gMemoryHandler.mActiveUserData = tUserData;
-	}
-
-	static void* getActiveUserData()
-	{
-		return gMemoryHandler.mActiveUserData;
 	}
 #endif
 
@@ -693,18 +702,11 @@ namespace prism {
 		return resizeMemoryOnMemoryListStack(&gMemoryHandler.mMemoryStack, tData, tSize);
 	}
 
-#ifdef VITA
-	TextureMemory allocTextureMemory(int tSize, void* userData) {
-#else
 	TextureMemory allocTextureMemory(int tSize) {
-#endif
 		if (!tSize) {
 			return NULL;
 		}
 
-#ifdef VITA
-		setActiveUserData(userData);
-#endif
 		return (TextureMemory)addMemoryToMemoryListStack(&gMemoryHandler.mTextureMemoryStack, tSize);
 	}
 
@@ -769,9 +771,6 @@ namespace prism {
 		gMemoryHandler.mActive = 1;
 		gMemoryHandler.mIsCompressionActive = 0;
 		gMemoryHandler.mMemoryStack.mHead = -1;
-#ifdef VITA
-		gMemoryHandler.mActiveUserData = NULL;
-#endif
 		initMemoryListStack(&gMemoryHandler.mMemoryStack, getHashMapStrategyMainMemory());
 		initMemoryListStack(&gMemoryHandler.mTextureMemoryStack, getHashMapStrategyTextureMemory());
 		initTextureMemoryUsageList();
