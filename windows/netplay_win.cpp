@@ -238,6 +238,18 @@ namespace prism {
         return isNetplayActive() && !gNetplayData.mPeers.empty() && !gNetplayData.mConnectSyncFrame;
     }
 
+    bool isNetplaySyncing()
+    {
+        return isNetplayActive() && !gNetplayData.mPeers.empty() && (!gNetplayData.mConnectSyncFrame || (gNetplayData.mConnectSyncFrame && gNetplayData.mSyncedFrameIndex < gNetplayData.mConnectSyncFrame));
+    }
+
+    void shutdownScreenNetplay()
+    {
+        gNetplayData.mPreviousFrameSyncData.clear();
+        setNetplaySyncCBs(nullptr, nullptr, nullptr, nullptr);
+        setNetplayDesyncCB(nullptr, nullptr);
+    }
+
     static void createClient()
     {
         gNetplayData.mServer = enet_host_create(NULL /* client host */,
@@ -402,7 +414,7 @@ namespace prism {
         const auto isSame = gNetplayData.mSyncCheckCB(gNetplayData.mSyncCheckCB, correspondingFrameData, b);
         if (!isSame)
         {
-            logWarning("[Netplay] desync detected!");
+            logWarningFormat("[Netplay] desync detected on frame %d, last received package %d, frame delta %d!", gNetplayData.mSyncedFrameIndex, package->mSyncedFrameIndex, frameDelta);
             netplayLog("[Netplay] desync detected");
             if (gNetplayData.mDesyncCB) {
                 gNetplayData.mDesyncCB(gNetplayData.mDesyncCBCaller);
@@ -565,9 +577,8 @@ namespace prism {
 
     static int checkConfirmedInputAndWaitIfNecessary() {
         if (!gNetplayData.mConnectSyncFrame || (gNetplayData.mSyncedFrameIndex < gNetplayData.mConnectSyncFrame)) return 1;
-
-        int ret = isNetplayInputConfirmed();
-
+       
+        const auto ret = isNetplayInputConfirmed();
         if (!ret)
         {
             netplayLogFormat("[Netplay] Using unconfirmed input for frame %d.", gNetplayData.mSyncedFrameIndex - getInputDelay());

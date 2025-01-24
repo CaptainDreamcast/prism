@@ -9,15 +9,12 @@
 #include "prism/windows/debugimgui_win.h"
 #endif
 
-#ifdef VITA
-#include <SDL2/SDL.h>
-#else
 #include <SDL.h>
-#endif
 
 #include "prism/log.h"
 #include "prism/math.h"
 #include "prism/clipboardhandler.h"
+#include "prism/netplay.h"
 
 using namespace std;
 namespace prism {
@@ -585,7 +582,12 @@ namespace prism {
 
 	static void updateKeyboards()
 	{
-		updateKeyboardLocalKeyboard(PRISM_KEYBOARD_LOCAL);
+		if (isNetplaySyncing()) {
+			updateKeyboardRemoteKeyboard(PRISM_KEYBOARD_LOCAL);
+		}
+		else {
+			updateKeyboardLocalKeyboard(PRISM_KEYBOARD_LOCAL);
+		}
 		if (gPrismWindowsInputData.mUsedKeyboard[0] == PRISM_KEYBOARD_NETPLAY || gPrismWindowsInputData.mUsedKeyboard[1] == PRISM_KEYBOARD_NETPLAY) {
 			updateKeyboardRemoteKeyboard(PRISM_KEYBOARD_NETPLAY);
 		}

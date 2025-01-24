@@ -33,4 +33,10 @@ const GeoRectangle2D& getBlitzCameraHandlerRange();
 void setBlitzCameraHandlerRange(const GeoRectangle2D& tRectangle);
 void setBlitzCameraPositionBasedOnCenterPoint(const Position& tCenter);
 
+void setBlitzCameraScreenShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset);
+void setBlitzCameraScreenShakeDefault();
+
+void setBlitzCameraZoom(const Vector2D& tPosition, double tZoomFactor);
+void setBlitzCameraZoom(const GeoRectangle2D& tZoomArea);
+
 }

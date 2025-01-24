@@ -114,7 +114,7 @@ namespace prism {
 			return impl_.mSprite;
 		}
 
-		DrawListSpriteElement* asSpriteElement() {
+		const DrawListSpriteElement* asSpriteElement() const {
 			return &impl_.mSprite;
 		}
 
@@ -122,8 +122,12 @@ namespace prism {
 			return impl_.mTrueType;
 		}
 
-		DrawListTruetypeElement* asTruetypeElement() {
+		const DrawListTruetypeElement* asTruetypeElement() const {
 			return &impl_.mTrueType;
+		}
+
+		bool operator<(const DrawListElement& other) const {
+			return getZ() < other.getZ();
 		}
 
 		Type mType;
@@ -156,7 +160,7 @@ namespace prism {
 	} gBookkeepingData;
 
 	// We still need ordered drawing or alpha blending will stop working properly, it's not like on the dreamcast where rasterization is deferred
-	static vector<DrawListElement> gDrawVector;
+	static multiset<DrawListElement> gDrawVector;
 	static DrawingData gPrismWindowsDrawingData;
 
 	void setDrawingScreenScale(double tScaleX, double tScaleY);
@@ -260,7 +264,7 @@ namespace prism {
 		e.mTexturePosition = tTexturePosition;
 		e.mData = gPrismWindowsDrawingData;
 		e.mZ = tTopLeft.z;
-		gDrawVector.push_back(DrawListElement(e));
+		gDrawVector.insert(DrawListElement(e));
 	}
 
 	static void clearDrawVector() {
@@ -276,18 +280,11 @@ namespace prism {
 		clearDrawVector();
 	}
 
-	static bool cmpZ(const DrawListElement& tData1, const DrawListElement& tData2) {
-		double z1 = tData1.getZ();
-		double z2 = tData2.getZ();
-
-		return z1 < z2;
-	}
-
 	static void forceSingleValueToInteger(double* tVal) {
 		*tVal = floor(*tVal);
 	}
 
-	static void applyDrawingMatrixAndSetVertex(vita2d_texture_vertex* vertex, const Vector3D& tPos, Matrix4D* tMatrix) {
+	static void applyDrawingMatrixAndSetVertex(vita2d_texture_vertex* vertex, const Vector3D& tPos, const Matrix4D* tMatrix) {
 		auto finalPos = rotateScaleTranslatePositionByMatrix4D(*tMatrix, tPos);
 		forceSingleValueToInteger(&finalPos.x);
 		forceSingleValueToInteger(&finalPos.y);
@@ -297,8 +294,8 @@ namespace prism {
 	}
 
 	// tSrcRect in relative coords to texturesize, tDstRect in pixels
-	static void drawVitaTextureUniversal(vita2d_texture* tTexture, int tPaletteID, const GeoRectangle2D& tSrcRect, const Position2D& tTopLeft, const Position2D& tTopRight, const Position2D& tBottomLeft, const Position2D& tBottomRight, DrawingData* tData, ShaderBlendType tShaderBlendType, int tHasPalette, double tZ) {
-		Matrix4D* finalMatrix = &tData->mTransformationMatrix;
+	static void drawVitaTextureUniversal(vita2d_texture* tTexture, int tPaletteID, const GeoRectangle2D& tSrcRect, const Position2D& tTopLeft, const Position2D& tTopRight, const Position2D& tBottomLeft, const Position2D& tBottomRight, const DrawingData* tData, ShaderBlendType tShaderBlendType, int tHasPalette, double tZ) {
+		const Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
 		const auto vertexCount = 4;
 		vita2d_texture_vertex* vertices = (vita2d_texture_vertex*)vita2d_pool_memalign(
@@ -328,7 +325,7 @@ namespace prism {
 		vita2d_draw_array_textured(tTexture, SCE_GXM_PRIMITIVE_TRIANGLE_FAN, vertices, vertexCount, RGBA8(uint8_t(0xFF * tData->r), uint8_t(0xFF * tData->g), uint8_t(0xFF * tData->b), uint8_t(0xFF * tData->a)));
 	}
 
-	static void drawSortedSprite(DrawListSpriteElement* e) {
+	static void drawSortedSprite(const DrawListSpriteElement* e) {
 		GeoRectangle2D srcRect;
 		if (e->mTexturePosition.topLeft.x < e->mTexturePosition.bottomRight.x) {
 			srcRect.mTopLeft.x = e->mTexturePosition.topLeft.x / (double)(e->mTexture.mTextureSize.x);
@@ -358,9 +355,8 @@ namespace prism {
 		return tChar == ' ';
 	}
 
-	static void drawSorted(void* tCaller, DrawListElement& tData) {
-		(void)tCaller;
-		DrawListElement* e = &tData;
+	static void drawSorted(const DrawListElement& tData) {
+		const DrawListElement* e = &tData;
 		if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_SPRITE) {
 			auto sprite = e->asSpriteElement();
 			drawSortedSprite(sprite);
@@ -377,8 +373,9 @@ namespace prism {
 	}
 
 	void stopDrawing() {
-		sort(gDrawVector.begin(), gDrawVector.end(), cmpZ);
-		stl_vector_map(gDrawVector, drawSorted);
+		for (auto& drawElement : gDrawVector) {
+			drawSorted(drawElement);
+		}
 		clearDrawVector();
 
 		vita2d_end_drawing();
@@ -459,7 +456,7 @@ namespace prism {
 		e.mData = gPrismWindowsDrawingData;
 		e.mZ = tPosition.z;
 
-		gDrawVector.push_back(DrawListElement(e));
+		gDrawVector.insert(DrawListElement(e));
 		*/
 	}
 

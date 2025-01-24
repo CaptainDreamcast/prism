@@ -11,6 +11,8 @@ namespace prism {
 	bool isNetplayHost() { return false; }
 	bool isNetplayActive() { return false; }
 	bool isNetplayConnecting() { return false; }
+	bool isNetplaySyncing() { return false; }
+	void shutdownScreenNetplay() {}
 
 	void updateNetplay() {}
 

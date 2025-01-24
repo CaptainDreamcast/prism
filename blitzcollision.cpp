@@ -87,7 +87,9 @@ namespace prism {
 	static void resetSingleBlitzCollisionEntryCollisionObjectCollisionStates(CollisionEntry& tData)
 	{
 		for (auto& e : tData.mCollisionObjects) {
-			e.second.mHasCollidedThisFrame = 0;
+			// keep it around for a frame, this is executed after the base collision handler sets it in the callback
+			if (e.second.mHasCollidedThisFrame == 1) e.second.mHasCollidedThisFrame = 2;
+			else if (e.second.mHasCollidedThisFrame == 2) e.second.mHasCollidedThisFrame = 0;
 		}
 	}
 

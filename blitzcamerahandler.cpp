@@ -11,18 +11,27 @@ namespace prism {
 
 	static struct {
 		int mIsActive;
+		Position mBaseCameraPosition;
 		Position mCameraPosition;
 		Vector3D mScale;
 		double mAngle;
 		Position2D mEffectOffset;
 
 		GeoRectangle2D mCameraRange;
+
+		int mScreenShakeDurationLeft = 0;
+		double mScreenShakeFrequency;
+		int mScreenShakeAmplitude;
+		double mScreenShakePhaseOffset;
+		Vector2D mScreenShakeOffset;
 	} gBlitzCameraHandlerData;
 
 	static void loadBlitzCameraHandler(void* tData) {
 		(void)tData;
 		setProfilingSectionMarkerCurrentFunction();
 
+		gBlitzCameraHandlerData.mBaseCameraPosition = Vector3D(0, 0, 0);
+		gBlitzCameraHandlerData.mScreenShakeOffset = Vector2D(0, 0);
 		gBlitzCameraHandlerData.mCameraPosition = Vector3D(0, 0, 0);
 		gBlitzCameraHandlerData.mScale = Vector3D(1, 1, 1);
 		gBlitzCameraHandlerData.mAngle = 0;
@@ -32,9 +41,34 @@ namespace prism {
 		gBlitzCameraHandlerData.mIsActive = 1;
 	}
 
+	static double calculateShake(int t, double tPhaseOffset, double tFrequency, int tAmplitude) {
+		return sin(tPhaseOffset + t * (tFrequency / 360.0) * 2.0 * M_PI) * tAmplitude;
+	}
+
+	static void calculateAndSetFinalCameraPosition() {
+		gBlitzCameraHandlerData.mCameraPosition = gBlitzCameraHandlerData.mBaseCameraPosition + gBlitzCameraHandlerData.mScreenShakeOffset;
+	}
+
+	static void updateScreenShake() {
+		if (!gBlitzCameraHandlerData.mScreenShakeDurationLeft) return;
+
+		gBlitzCameraHandlerData.mScreenShakeDurationLeft--;
+		if (!gBlitzCameraHandlerData.mScreenShakeDurationLeft) {
+			gBlitzCameraHandlerData.mScreenShakeOffset = Vector2D(0, 0);
+		}
+		else {
+			gBlitzCameraHandlerData.mScreenShakeOffset = Vector2D(0, calculateShake(gBlitzCameraHandlerData.mScreenShakeDurationLeft, gBlitzCameraHandlerData.mScreenShakePhaseOffset, gBlitzCameraHandlerData.mScreenShakeFrequency, gBlitzCameraHandlerData.mScreenShakeAmplitude));
+		}
+		calculateAndSetFinalCameraPosition();
+	}
+
+	static void updateBlitzCameraHandler(void*) {
+		updateScreenShake();
+	}
+
 	ActorBlueprint getBlitzCameraHandler()
 	{
-		return makeActorBlueprint(loadBlitzCameraHandler);
+		return makeActorBlueprint(loadBlitzCameraHandler, nullptr, updateBlitzCameraHandler);
 	}
 
 	int isBlitzCameraHandlerEnabled()
@@ -54,20 +88,23 @@ namespace prism {
 
 	void setBlitzCameraHandlerPosition(const Position& tPos)
 	{
-		gBlitzCameraHandlerData.mCameraPosition = Vector3D(tPos.x, tPos.y, 0);
-		gBlitzCameraHandlerData.mCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mCameraPosition, gBlitzCameraHandlerData.mCameraRange);
+		gBlitzCameraHandlerData.mBaseCameraPosition = Vector3D(tPos.x, tPos.y, 0);
+		gBlitzCameraHandlerData.mBaseCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mBaseCameraPosition, gBlitzCameraHandlerData.mCameraRange);
+		calculateAndSetFinalCameraPosition();
 	}
 
 	void setBlitzCameraHandlerPositionX(double tX)
 	{
-		gBlitzCameraHandlerData.mCameraPosition.x = tX;
-		gBlitzCameraHandlerData.mCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mCameraPosition, gBlitzCameraHandlerData.mCameraRange);
+		gBlitzCameraHandlerData.mBaseCameraPosition.x = tX;
+		gBlitzCameraHandlerData.mBaseCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mBaseCameraPosition, gBlitzCameraHandlerData.mCameraRange);
+		calculateAndSetFinalCameraPosition();
 	}
 
 	void setBlitzCameraHandlerPositionY(double tY)
 	{
-		gBlitzCameraHandlerData.mCameraPosition.y = tY;
-		gBlitzCameraHandlerData.mCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mCameraPosition, gBlitzCameraHandlerData.mCameraRange);
+		gBlitzCameraHandlerData.mBaseCameraPosition.y = tY;
+		gBlitzCameraHandlerData.mBaseCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mBaseCameraPosition, gBlitzCameraHandlerData.mCameraRange);
+		calculateAndSetFinalCameraPosition();
 	}
 
 	Vector3D* getBlitzCameraHandlerScaleReference()
@@ -149,4 +186,28 @@ namespace prism {
 		setBlitzCameraHandlerPosition(topLeft);
 	}
 
+	void setBlitzCameraScreenShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset)
+	{
+		gBlitzCameraHandlerData.mScreenShakeDurationLeft = tDuration;
+		gBlitzCameraHandlerData.mScreenShakeFrequency = tFrequency;
+		gBlitzCameraHandlerData.mScreenShakeAmplitude = tAmplitude;
+		gBlitzCameraHandlerData.mScreenShakePhaseOffset = tPhaseOffset;
+	}
+
+	void setBlitzCameraScreenShakeDefault() {
+		setBlitzCameraScreenShake(10, 60.0, -4, 0.0);
+	}
+
+	void setBlitzCameraZoom(const Vector2D& tPosition, double tZoomFactor)
+	{
+		setBlitzCameraHandlerEffectPositionOffset(tPosition);
+		setBlitzCameraHandlerScale2D(tZoomFactor);
+	}
+	void setBlitzCameraZoom(const GeoRectangle2D& tZoomArea) {
+		const auto sz = getScreenSize();
+		const auto center = (tZoomArea.mTopLeft + tZoomArea.mBottomRight) / 2.0;
+		setBlitzCameraHandlerEffectPositionOffset(center);
+		setBlitzCameraHandlerScaleX(tZoomArea.mBottomRight.x / sz.x);
+		setBlitzCameraHandlerScaleY(tZoomArea.mBottomRight.y / sz.y);
+	}
 }

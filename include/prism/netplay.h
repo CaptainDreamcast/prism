@@ -14,6 +14,8 @@ bool joinNetplayHost(const std::string& tIP, int tPort);
 bool isNetplayHost();
 bool isNetplayActive();
 bool isNetplayConnecting();
+bool isNetplaySyncing();
+void shutdownScreenNetplay();
 
 void updateNetplay();
 

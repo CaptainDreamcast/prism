@@ -388,6 +388,8 @@ namespace prism {
 		shutdownTexturePool();
 		debugLog("Shutting down Timer");
 		shutdownTimer();
+		debugLog("Shutting down Screen Netplay");
+		shutdownScreenNetplay();
 
 		logFormat("Blocks allocated post-screen: %d.", getAllocatedMemoryBlockAmount());
 
@@ -527,7 +529,7 @@ namespace prism {
 		updateNetplay();
 		updateSystem();
 		updateInput();
-		if (isNetplayConnecting()) return;
+		if (isNetplaySyncing()) return;
 
 		if (gPrismWrapperData.mDebug.mIsPaused < 2 && !gPrismWrapperData.mIsPaused) {
 			updatePhysicsHandler();
@@ -622,12 +624,25 @@ namespace prism {
 #endif
 	}
 
+	static void resyncNetplayAfterScreenTransition() {
+		renegotiateNetplayConnection();
+
+		while (isNetplaySyncing())
+		{
+			updateNetplay();
+			updateSystem();
+			updateInput();
+			waitForScreen();
+		}
+		renegotiateNetplayConnection();	// we do it twice after ensuring that both clients have loaded, frame delay issues otherwise
+	}
+
 	static Screen* showScreen() {
 		logg("Show screen");
 
 		resetDrawingFrameStartTime();
 		if (isNetplayActive()) {
-			renegotiateNetplayConnection();
+			resyncNetplayAfterScreenTransition();
 		}
 #ifdef __EMSCRIPTEN__
 		emscripten_set_main_loop(performScreenIteration, 60, 1);

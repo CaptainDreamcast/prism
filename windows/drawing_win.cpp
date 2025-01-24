@@ -186,7 +186,7 @@ public:
 		return impl_.mSprite;
 	}
 
-	DrawListSpriteElement* asSpriteElement() {
+	const DrawListSpriteElement* asSpriteElement() const {
 		return &impl_.mSprite;
 	}
 
@@ -194,8 +194,12 @@ public:
 		return impl_.mTrueType;
 	}
 
-	DrawListTruetypeElement* asTruetypeElement() {
+	const DrawListTruetypeElement* asTruetypeElement() const {
 		return &impl_.mTrueType;
+	}
+
+	bool operator<(const DrawListElement& other) const {
+		return getZ() < other.getZ();
 	}
 
 	Type mType;
@@ -252,7 +256,7 @@ static struct {
 	double mRealFrameStartTime;
 } gBookkeepingData;
 
-static vector<DrawListElement> gDrawVector;
+static multiset<DrawListElement> gDrawVector;
 static DrawingData gPrismWindowsDrawingData;
 
 extern SDL_Window* gSDLWindow;
@@ -295,14 +299,15 @@ static void imguiDrawVector()
 {
 	if (ImGui::TreeNode("Draw Vector"))
 	{
+		auto drawVectorElement = gDrawVector.begin();
 		for (size_t i = 0; i < gDrawVector.size(); i++)
 		{
 			if (ImGui::TreeNode(std::to_string(i).c_str()))
 			{
-				auto& element = gDrawVector[i];
+				const auto& element = *drawVectorElement;
 				if (element.mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_SPRITE)
 				{
-					auto spriteElement = element.asSpriteElement();
+					const auto spriteElement = element.asSpriteElement();
 					ImGui::Text("Type: Sprite");
 					ImGui::Text("Texture size: %d %d", spriteElement->mTexture.mTextureSize.x, spriteElement->mTexture.mTextureSize.y);
 					ImGui::Text("Top Left: %f %f", spriteElement->mTopLeft.x, spriteElement->mTopLeft.y);
@@ -314,7 +319,7 @@ static void imguiDrawVector()
 				}
 				else
 				{
-					auto truetypeElement = element.asTruetypeElement();
+					const auto truetypeElement = element.asTruetypeElement();
 					ImGui::Text("Type: Truetype");
 					ImGui::Text("Text: %s", truetypeElement->mText);
 					ImGui::Text("Font: %p", truetypeElement->mFont);
@@ -327,6 +332,7 @@ static void imguiDrawVector()
 				}
 				ImGui::TreePop();
 			}
+			drawVectorElement++;
 		}
 		ImGui::TreePop();
 	}
@@ -661,7 +667,7 @@ void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft
 	e.mTexturePosition = tTexturePosition;
 	e.mData = gPrismWindowsDrawingData;
 	e.mZ = tTopLeft.z;
-	gDrawVector.push_back(DrawListElement(e));
+	gDrawVector.insert(DrawListElement(e));
 }
 
 static void clearDrawVector() {
@@ -696,13 +702,6 @@ static const PrismShader& getActivePrismShaderReference() {
 	return gOpenGLData.mPrismShader;
 }
 
-static bool cmpZ(const DrawListElement& tData1, const DrawListElement& tData2) {
-	double z1 = tData1.getZ();
-	double z2 = tData2.getZ();
-
-	return z1 < z2;
-}
-
 static void setSingleVertex(GLfloat* tDst, const Position2D& tPosition, double tU, double tV, const Position& tColor, double tAlpha, const Position& tColorOffset) {
 	tDst[0] = (GLfloat)tPosition.x;
 	tDst[1] = (GLfloat)tPosition.y;
@@ -718,9 +717,9 @@ static void setSingleVertex(GLfloat* tDst, const Position2D& tPosition, double t
 }
 
 // tSrcRect in relative coords to texturesize, tDstRect in pixels
-static void drawOpenGLTextureUniversal(int tTextureID, int tPaletteID, const GeoRectangle2D& tSrcRect, const Position2D& tTopLeft, const Position2D& tTopRight, const Position2D& tBottomLeft, const Position2D& tBottomRight, DrawingData* tData, ShaderBlendType tShaderBlendType, int tHasPalette) {
+static void drawOpenGLTextureUniversal(int tTextureID, int tPaletteID, const GeoRectangle2D& tSrcRect, const Position2D& tTopLeft, const Position2D& tTopRight, const Position2D& tBottomLeft, const Position2D& tBottomRight, const DrawingData* tData, ShaderBlendType tShaderBlendType, int tHasPalette) {
 	const auto& shader = getActivePrismShaderReference();
-	Matrix4D* finalMatrix = &tData->mTransformationMatrix;
+	const Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
 	float matrix[4][4];
 	for (int y = 0; y < 4; y++) {
@@ -759,7 +758,7 @@ static void drawOpenGLTextureUniversal(int tTextureID, int tPaletteID, const Geo
 	glActiveTexture(GL_TEXTURE0);
 }
 
-static void drawSortedSprite(DrawListSpriteElement* e) {
+static void drawSortedSprite(const DrawListSpriteElement* e) {
 	GeoRectangle2D srcRect;
 	if (e->mTexturePosition.topLeft.x < e->mTexturePosition.bottomRight.x) {
 		srcRect.mTopLeft.x = e->mTexturePosition.topLeft.x / (double)(e->mTexture.mTextureSize.x);
@@ -819,7 +818,7 @@ static void drawSortedSprite(DrawListSpriteElement* e) {
 	drawOpenGLTextureUniversal(texture->mTexture, e->mTexture.mPaletteID, srcRect, e->mTopLeft, e->mTopRight, e->mBottomLeft, e->mBottomRight, &e->mData, shaderBlendType, e->mTexture.mHasPalette);
 }
 
-static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle2D& tSrcRect, const GeoRectangle2D& tDstRect, DrawingData* tData, ShaderBlendType tShaderBlendType) {
+static void drawOpenGLTexture(GLuint tTextureID, const GeoRectangle2D& tSrcRect, const GeoRectangle2D& tDstRect, const DrawingData* tData, ShaderBlendType tShaderBlendType) {
 	drawOpenGLTextureUniversal(tTextureID, 0, tSrcRect, 
 		tDstRect.mTopLeft, 
 		Position2D(tDstRect.mBottomRight.x, tDstRect.mTopLeft.y), 
@@ -832,7 +831,7 @@ static int isTextPositionEmpty(char tChar) {
 	return tChar == ' ';
 }
 
-static void drawSortedTruetype(DrawListTruetypeElement* e) {
+static void drawSortedTruetype(const DrawListTruetypeElement* e) {
 	int l = int(strlen(e->mText));
 	if (!l) return;
 
@@ -909,16 +908,15 @@ static void drawSortedTruetype(DrawListTruetypeElement* e) {
 	}
 }
 
-static void drawSorted(void* tCaller, DrawListElement& tData) {
-	(void)tCaller;
-	DrawListElement* e = &tData;
+static void drawSorted(const DrawListElement& tData) {
+	const DrawListElement* e = &tData;
 
 	if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_SPRITE) {
-		auto sprite = e->asSpriteElement();
+		const auto sprite = e->asSpriteElement();
 		drawSortedSprite(sprite);
 	}
 	else if (e->mType == DrawListElement::Type::DRAW_LIST_ELEMENT_TYPE_TRUETYPE) {
-		auto sprite = e->asTruetypeElement();
+		const auto sprite = e->asTruetypeElement();
 		drawSortedTruetype(sprite);
 	}
 	else {
@@ -952,8 +950,9 @@ static void stopDrawingBookkeeping()
 void stopDrawing() {
 	setProfilingSectionMarkerCurrentFunction();
 
-	sort(gDrawVector.begin(), gDrawVector.end(), cmpZ);
-	stl_vector_map(gDrawVector, drawSorted);
+	for (auto& drawElement : gDrawVector) {
+		drawSorted(drawElement);
+	}
 	clearDrawVector();
 
 #ifndef __EMSCRIPTEN__
@@ -1103,7 +1102,7 @@ void drawTruetypeText(const char * tText, TruetypeFont tFont, const Position& tP
 	e.mData = gPrismWindowsDrawingData;
 	e.mZ = tPosition.z;
 
-	gDrawVector.push_back(DrawListElement(e));
+	gDrawVector.insert(DrawListElement(e));
 }
 
 void scaleDrawing(double tFactor, const Position& tScalePosition) {
