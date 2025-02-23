@@ -332,6 +332,16 @@ namespace prism {
 		e->mIsSolid = 0;
 	}
 
+	void removeBlitzCollision(int tEntityID, int tCollisionID)
+	{
+		BlitzCollisionObject* e = getBlitzCollisionObject(tEntityID, tCollisionID);
+		if (e->mOwnsCollisionHandlerObject) {
+			removeFromCollisionHandler(e->mCollisionHandlerElement);
+		}
+		delete_list(&e->mCollisionCallbacks);
+		gBlitzCollisionData.mEntries[tEntityID].mCollisionObjects.erase(tCollisionID);
+	}
+
 	int hasBlitzCollidedTop(int tEntityID)
 	{
 		if (!stl_map_contains(gBlitzCollisionData.mEntries, tEntityID)) return 0;

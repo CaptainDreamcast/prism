@@ -13,6 +13,7 @@
 #include "screeneffect.h"
 #include "tweening.h"
 #include "sound.h"
+#include "soundeffect.h"
 #include "stlutil.h"
 
 #include "mugendefreader.h"
