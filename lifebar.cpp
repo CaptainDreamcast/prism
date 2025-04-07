@@ -21,6 +21,7 @@ namespace prism {
             mMaxValue = tMaxValue;
             mFullSize = tFullSize;
             mType = tType;
+            updateInternal();
         }
         LifeBar() {}
 

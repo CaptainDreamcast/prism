@@ -428,7 +428,7 @@ static int isGroupToken(MugenDefToken* t) {
 
 static struct {
 	string mGroup;
-	int mDoubleIndex;
+	int mDoubleIndex = 9; // offset because starting with 0 crashed in Fate_Stay_Night.def stage by sheer luck
 } gScriptMaker;
 
 

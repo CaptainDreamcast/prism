@@ -165,22 +165,51 @@ static uint32_t get2DBufferIndex(uint32_t i, uint32_t j, uint32_t w) {
 	return j * w + i;
 }
 
+static int isRGBPalette(const Buffer& b)
+{
+	return b.mLength == 256 * 3;
+}
+
+static int isARGBPalette(const Buffer& b)
+{
+	return b.mLength == 256 * 4;
+}
+
 static TextureData loadTextureFromPalettedImageData1bppTo16ARGB(const Buffer& tPCXImageBuffer, const Buffer& tPaletteBuffer, int w, int h) {
 	uint8_t* output = (uint8_t*)allocMemory(w*h * 2);
 	uint8_t* img = (uint8_t*)tPCXImageBuffer.mData;
 	uint8_t* pal = (uint8_t*)tPaletteBuffer.mData;
 
-	int i, j;
-	for (j = 0; j < h; j++) {
-		for (i = 0; i < w; i++) {
-			uint8_t pid = img[get2DBufferIndex(i, j, w)];
-			uint8_t a = ((uint8_t)(pid == 0 ? 0 : 0xFF)) >> 4;
-			uint8_t r = ((uint8_t)pal[pid * 3 + 0]) >> 4;
-			uint8_t g = ((uint8_t)pal[pid * 3 + 1]) >> 4;
-			uint8_t b = ((uint8_t)pal[pid * 3 + 2]) >> 4;
+	if (isRGBPalette(tPaletteBuffer))
+	{
+		int i, j;
+		for (j = 0; j < h; j++) {
+			for (i = 0; i < w; i++) {
+				uint8_t pid = img[get2DBufferIndex(i, j, w)];
+				uint8_t a = ((uint8_t)(pid == 0 ? 0 : 0xFF)) >> 4;
+				uint8_t r = ((uint8_t)pal[pid * 3 + 0]) >> 4;
+				uint8_t g = ((uint8_t)pal[pid * 3 + 1]) >> 4;
+				uint8_t b = ((uint8_t)pal[pid * 3 + 2]) >> 4;
 
-			output[get2DBufferIndex(i, j, w) * 2 + 0] = (g << 4) | b;
-			output[get2DBufferIndex(i, j, w) * 2 + 1] = (a << 4) | r;
+				output[get2DBufferIndex(i, j, w) * 2 + 0] = (g << 4) | b;
+				output[get2DBufferIndex(i, j, w) * 2 + 1] = (a << 4) | r;
+			}
+		}
+	}
+	else
+	{
+		int i, j;
+		for (j = 0; j < h; j++) {
+			for (i = 0; i < w; i++) {
+				uint8_t pid = img[get2DBufferIndex(i, j, w)];
+				uint8_t a = ((uint8_t)pal[pid * 4 + 0]) >> 4;
+				uint8_t r = ((uint8_t)pal[pid * 4 + 1]) >> 4;
+				uint8_t g = ((uint8_t)pal[pid * 4 + 2]) >> 4;
+				uint8_t b = ((uint8_t)pal[pid * 4 + 3]) >> 4;
+
+				output[get2DBufferIndex(i, j, w) * 2 + 0] = (g << 4) | b;
+				output[get2DBufferIndex(i, j, w) * 2 + 1] = (a << 4) | r;
+			}
 		}
 	}
 
@@ -205,14 +234,30 @@ static TextureData loadTextureFromPalettedImageData1bppTo32ARGB(const Buffer& tP
 	uint8_t* img = (uint8_t*)tPCXImageBuffer.mData;
 	uint8_t* pal = (uint8_t*)tPaletteBuffer.mData;
 
-	int i, j;
-	for (j = 0; j < h; j++) {
-		for (i = 0; i < w; i++) {
-			uint8_t pid = img[get2DBufferIndex(i, j, w)];
-			output[get2DBufferIndex(i, j, w) * 4 + 0] = pal[pid * 3 + 2];
-			output[get2DBufferIndex(i, j, w) * 4 + 1] = pal[pid * 3 + 1];
-			output[get2DBufferIndex(i, j, w) * 4 + 2] = pal[pid * 3 + 0];
-			output[get2DBufferIndex(i, j, w) * 4 + 3] = pid == 0 ? 0 : 0xFF;
+	if (isRGBPalette(tPaletteBuffer))
+	{
+		int i, j;
+		for (j = 0; j < h; j++) {
+			for (i = 0; i < w; i++) {
+				uint8_t pid = img[get2DBufferIndex(i, j, w)];
+				output[get2DBufferIndex(i, j, w) * 4 + 0] = pal[pid * 3 + 2];
+				output[get2DBufferIndex(i, j, w) * 4 + 1] = pal[pid * 3 + 1];
+				output[get2DBufferIndex(i, j, w) * 4 + 2] = pal[pid * 3 + 0];
+				output[get2DBufferIndex(i, j, w) * 4 + 3] = pid == 0 ? 0 : 0xFF;
+			}
+		}
+	}
+	else
+	{
+		int i, j;
+		for (j = 0; j < h; j++) {
+			for (i = 0; i < w; i++) {
+				uint8_t pid = img[get2DBufferIndex(i, j, w)];
+				output[get2DBufferIndex(i, j, w) * 4 + 0] = pal[pid * 4 + 3];
+				output[get2DBufferIndex(i, j, w) * 4 + 1] = pal[pid * 4 + 2];
+				output[get2DBufferIndex(i, j, w) * 4 + 2] = pal[pid * 4 + 1];
+				output[get2DBufferIndex(i, j, w) * 4 + 3] = pal[pid * 4 + 0];
+			}
 		}
 	}
 
@@ -520,7 +565,7 @@ static Buffer parseRGBAPNG(png_structp* png_ptr, png_infop* info_ptr, int tHasAl
 	return makeBufferOwned(dst, width*height*4);
 }
 
-static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int width, int height)
+static Buffer parsePalettedPNGWithPNGPalette(png_structp* png_ptr, png_infop* info_ptr, int width, int height)
 {
 	uint8_t* dst = (uint8_t*)allocMemory(width*height * 4);
 
@@ -563,7 +608,37 @@ static Buffer parsePalettedPNG(png_structp* png_ptr, png_infop* info_ptr, int wi
 	return makeBufferOwned(dst, width*height * 4);
 }
 
-static Buffer loadARGB32BufferFromRawPNGBuffer(const Buffer& tRawPNGBuffer, int tWidth, int tHeight) {
+static Buffer parsePalettedPNGWithoutPalette(png_structp* png_ptr, png_infop* info_ptr, int width, int height)
+{
+	uint8_t* dst = (uint8_t*)allocMemory(width * height);
+
+	auto bytesPerRow = png_get_rowbytes(*png_ptr, *info_ptr);
+	uint8_t* rowData = (uint8_t*)allocMemory(int(bytesPerRow));
+
+	uint32_t rowIdx;
+	for (rowIdx = 0; rowIdx < (uint32_t)height; ++rowIdx)
+	{
+		png_read_row(*png_ptr, (png_bytep)rowData, NULL);
+
+		uint32_t rowOffset = rowIdx * width;
+		uint32_t byteIndex = 0;
+		uint32_t colIdx;
+		for (colIdx = 0; colIdx < (uint32_t)width; ++colIdx)
+		{
+			uint32_t targetPixelIndex = rowOffset + colIdx;
+			int index = rowData[byteIndex++];
+			assert(index <= 0xFF);
+			dst[targetPixelIndex] = index;
+		}
+		assert(byteIndex == bytesPerRow);
+	}
+
+	freeMemory(rowData);
+
+	return makeBufferOwned(dst, width * height);
+}
+
+static Buffer loadBufferFromRawPNGBuffer(const Buffer& tRawPNGBuffer, int tWidth, int tHeight, int tIsUsingPngPalette) {
 	BufferPointer p = getBufferPointer(tRawPNGBuffer);
 	
 	uint8_t* pngSignature = (uint8_t*)p;
@@ -628,7 +703,14 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(const Buffer& tRawPNGBuffer, int 
 		ret = parseRGBAPNG(&png_ptr, &info_ptr, 1, width, height);
 	}
 	else if (colorType == PNG_COLOR_TYPE_PALETTE) {
-		ret = parsePalettedPNG(&png_ptr, &info_ptr, width, height);
+		if (tIsUsingPngPalette)
+		{
+			ret = parsePalettedPNGWithPNGPalette(&png_ptr, &info_ptr, width, height);
+		}
+		else
+		{
+			ret = parsePalettedPNGWithoutPalette(&png_ptr, &info_ptr, width, height);
+		}
 	}
 	else {
 		logError("Unrecognized color type");
@@ -639,20 +721,6 @@ static Buffer loadARGB32BufferFromRawPNGBuffer(const Buffer& tRawPNGBuffer, int 
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
 	return ret;
-}
-
-static MugenSpriteFileSprite makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer& tRawPNGBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
-
-	Buffer argb32Buffer = loadARGB32BufferFromRawPNGBuffer(tRawPNGBuffer, tBytesPerLine, tHeight);
-	freeBuffer(tRawPNGBuffer);
-
-	auto subImageList = breakImageBufferUpIntoMultipleBuffers(argb32Buffer, tBytesPerLine, tWidth, tHeight, 4);
-	freeBuffer(argb32Buffer);
-
-	auto textures = loadTextureFromImageARGB32List(subImageList);
-	freeSubImageBufferList(subImageList);
-
-	return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
 }
 
 static MugenSpriteFileSprite makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(Buffer& tRawImageBuffer, const Buffer& tPaletteBuffer, int tIsUsingPaletteBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset) {
@@ -679,11 +747,43 @@ static MugenSpriteFileSprite makeMugenSpriteFileSpriteFromRawBuffer(Buffer& tRaw
 	return makeMugenSpriteFileSpriteFromRawAndPaletteBufferGeneral(tRawImageBuffer, makeBuffer(NULL, 0), 0, tWidth, tHeight, tBytesPerLine, tAxisOffset);
 }
 
+static MugenSpriteFileSprite makeMugenSpriteFileSpriteFromRawPNGBuffer(Buffer& tRawPNGBuffer, int tWidth, int tHeight, int tBytesPerLine, const Vector2D& tAxisOffset, int tColorDepth, const std::vector<MugenSpriteFilePalette>& tPalettes, int tPalette) {
+	if (tColorDepth == 8)
+	{
+		Buffer palettedBuffer = loadBufferFromRawPNGBuffer(tRawPNGBuffer, tBytesPerLine, tHeight, 0);
+		if (gPrismMugenSpriteFileReaderData.mIsUsingRealPalette && tPalette == 0) {
+			return makeMugenSpriteFileSpriteFromRawBuffer(palettedBuffer, tWidth, tHeight, tWidth, tAxisOffset);
+		}
+		else {
+			const auto& paletteElement = tPalettes[tPalette];
+			return makeMugenSpriteFileSpriteFromRawAndPaletteBuffer(palettedBuffer, paletteElement.mBuffer, tWidth, tHeight, tWidth, tAxisOffset);
+		}
+	}
+	else
+	{
+		Buffer argb32Buffer = loadBufferFromRawPNGBuffer(tRawPNGBuffer, tBytesPerLine, tHeight, 1);
+		freeBuffer(tRawPNGBuffer);
+
+		auto subImageList = breakImageBufferUpIntoMultipleBuffers(argb32Buffer, tBytesPerLine, tWidth, tHeight, 4);
+		freeBuffer(argb32Buffer);
+
+		auto textures = loadTextureFromImageARGB32List(subImageList);
+		freeSubImageBufferList(subImageList);
+
+		return makeMugenSpriteFileSprite(textures, makeTextureSize(tWidth, tHeight), tAxisOffset);
+	}
+}
+
 static void insertPaletteIntoMugenSpriteFile(MugenSpriteFile* tSprites, const Buffer& b, int tGroup = -1, int tItem = -1) {
-	assert(b.mLength == 256 * 3);
+	assert(isRGBPalette(b) || isARGBPalette(b));
 
 	if (gPrismMugenSpriteFileReaderData.mIsUsingRealPalette && tSprites->mPalettes.empty()) {
-		setPaletteFromBGR256WithFirstValueTransparentBuffer(gPrismMugenSpriteFileReaderData.mPaletteID, b);
+		if (isRGBPalette(b)) {
+			setPaletteFromBGR256WithFirstValueTransparentBuffer(gPrismMugenSpriteFileReaderData.mPaletteID, b);
+		}
+		else {
+			setPaletteFromARGB256Buffer(gPrismMugenSpriteFileReaderData.mPaletteID, b);
+		}
 	}
 
 	MugenSpriteFilePalette paletteElement;
@@ -904,19 +1004,19 @@ static Buffer processRawPalette2(Buffer tRaw) {
 	int n = tRaw.mLength / 4;
 
 	assert(n <= 256);
-	char* raw = (char*)tRaw.mData;
-	char* out = (char*)allocMemory(256 * 3);
-	memset(out, 0, 256 * 3);
+	uint8_t* raw = (uint8_t*)tRaw.mData;
+	uint8_t* out = (uint8_t*)allocMemory(256 * 4);
+	memset(out, 0, 256 * 4);
 
 	int i = 0;
 	for (i = 0; i < n; i++) {
-		out[3 * i + 0] = raw[4 * i +  0];
-		out[3 * i + 1] = raw[4 * i + 1];
-		out[3 * i + 2] = raw[4 * i + 2];
+		out[4 * i + 1] = raw[4 * i + 0];
+		out[4 * i + 2] = raw[4 * i + 1];
+		out[4 * i + 3] = raw[4 * i + 2];
+		out[4 * i + 0] = (i == 0) ? 0 : raw[4 * i + 3];
 	}
 
-
-	return makeBufferOwned(out, 256 * 3);
+	return makeBufferOwned(out, 256 * 4);
 }
 
 static void loadSinglePalette2(SFFHeader2* tHeader, MugenSpriteFile* tDst) {
@@ -1042,6 +1142,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tH
 
 	int isPaletted = sprite.mFormat == 0 || sprite.mFormat == 2 || sprite.mFormat == 4;
 	int isRawPNG = sprite.mFormat == 10 || sprite.mFormat == 11 || sprite.mFormat == 12;
+	const int palette = tHasPalette ? sprite.mPaletteIndex + 1 : sprite.mPaletteIndex;
 
 	MugenSpriteFileSprite e;
 	if (isPaletted) {
@@ -1049,7 +1150,6 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tH
 
 		Buffer rawBuffer = readRawSprite2(&sprite, tHeader);
 
-		const int palette = tHasPalette ? sprite.mPaletteIndex + 1 : sprite.mPaletteIndex;
 		if (gPrismMugenSpriteFileReaderData.mIsUsingRealPalette && palette == 0) {
 			e =  makeMugenSpriteFileSpriteFromRawBuffer(rawBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, Vector2D(sprite.mAxisX, sprite.mAxisY));
 		}
@@ -1066,7 +1166,7 @@ static void loadSingleSprite2(SFFHeader2* tHeader, MugenSpriteFile* tDst, int tH
 		gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &textureWidth, 2);
 		gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, &textureHeight, 2);
 		Buffer pngBuffer = gPrismMugenSpriteFileReaderData.mReader.mReadBufferReadOnly(&gPrismMugenSpriteFileReaderData.mReader, sprite.mDataLength);
-		e = makeMugenSpriteFileSpriteFromRawPNGBuffer(pngBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, Vector2D(sprite.mAxisX, sprite.mAxisY));
+		e = makeMugenSpriteFileSpriteFromRawPNGBuffer(pngBuffer, sprite.mWidth, sprite.mHeight, sprite.mWidth, Vector2D(sprite.mAxisX, sprite.mAxisY), sprite.mColorDepth, tDst->mPalettes, palette);
 		gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, originalPosition);
 	}
 	else {
@@ -1459,7 +1559,15 @@ void remapMugenSpriteFilePalette(MugenSpriteFile* tSprites, const Vector2DI& tSo
 	for (int i = 0; i < int(tSprites->mPalettes.size()); i++) {
 		auto& paletteElement = tSprites->mPalettes[i];
 		if (paletteElement.mGroup != tDestination.x || paletteElement.mItem != tDestination.y) continue;
-		setPaletteFromBGR256WithFirstValueTransparentBuffer(tPaletteID, paletteElement.mBuffer);
+		assert(isRGBPalette(paletteElement.mBuffer) || isARGBPalette(paletteElement.mBuffer));
+		if (isRGBPalette(paletteElement.mBuffer))
+		{
+			setPaletteFromBGR256WithFirstValueTransparentBuffer(tPaletteID, paletteElement.mBuffer);
+		}
+		else
+		{
+			setPaletteFromARGB256Buffer(tPaletteID, paletteElement.mBuffer);
+		}
 		tSprites->mPaletteMappedGroup = paletteElement.mGroup;
 		tSprites->mPaletteMappedItem = paletteElement.mItem;
 	}
