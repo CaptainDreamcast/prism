@@ -9,7 +9,7 @@
 namespace prism {
 typedef pvr_ptr_t Texture;
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__
+#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined LINUX
 #include <SDL.h>
 #include <GL/glew.h>
 

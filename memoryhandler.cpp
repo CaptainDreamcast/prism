@@ -63,7 +63,7 @@ namespace prism {
 #define virtualizeTextureHW virtualizeTextureDreamcast
 #define unvirtualizeTextureHW unvirtualizeTextureDreamcast
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__
+#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined LINUX
 	void* allocGLTexture(size_t) {
 		GLTextureData* data = (GLTextureData*)malloc(sizeof(GLTextureData));
 		return data;

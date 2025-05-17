@@ -1,0 +1,12 @@
+include Makefile.common
+
+CXXFLAGS += -Wall -O2 -std=c++17 -DLINUX -I ./include `pkg-config --libs --cflags sdl2` `pkg-config --libs --cflags libpng`
+
+libprism.a: $(OBJS)
+	ar rcs $@ $(OBJS)
+	-mkdir -p bin
+	mv $@ bin/$@
+
+clean:
+	-rm -f *.o
+	-rm -r -f bin

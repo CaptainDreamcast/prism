@@ -50,7 +50,7 @@ namespace prism {
 	typedef struct _wof_chunk_hdr_t {
 		int prev;
 
-		int allocator;
+		intptr_t allocator;
 		/* flags */
 		int last : 1;
 		int used : 1;
@@ -393,7 +393,7 @@ namespace prism {
 		extra->prev = chunk->len;
 		extra->used = FALSE;
 		extra->jumbo = FALSE;
-		extra->allocator = (int)allocator;
+		extra->allocator = reinterpret_cast<intptr_t>(allocator);
 
 		/* Correctly update the following chunk's back-pointer */
 		if (!last) {
@@ -442,7 +442,7 @@ namespace prism {
 		extra->prev = chunk->len;
 		extra->used = FALSE;
 		extra->jumbo = FALSE;
-		extra->allocator = (int)allocator;
+		extra->allocator = reinterpret_cast<intptr_t>(allocator);
 
 		/* Correctly update the following chunk's back-pointer */
 		if (!last) {
@@ -504,7 +504,7 @@ namespace prism {
 		chunk->last = TRUE;
 		chunk->prev = 0;
 		chunk->len = WOF_BLOCK_SIZE - WOF_BLOCK_HEADER_SIZE;
-		chunk->allocator = (int)allocator;
+		chunk->allocator = reinterpret_cast<intptr_t>(allocator);
 
 		/* now push that chunk onto the master list */
 		wof_push_master(allocator, chunk);
@@ -555,7 +555,7 @@ namespace prism {
 		chunk->last = TRUE;
 		chunk->used = TRUE;
 		chunk->jumbo = TRUE;
-		chunk->allocator = (int)allocator;
+		chunk->allocator = reinterpret_cast<intptr_t>(allocator);
 		chunk->len = 0;
 		chunk->prev = 0;
 
@@ -937,7 +937,7 @@ namespace prism {
 		wof_allocator_t* allocator = (wof_allocator_t*)tPool;
 		wof_chunk_hdr_t* chunk;
 		chunk = WOF_DATA_TO_CHUNK(ptr);
-		return chunk->allocator == (int)allocator;
+		return chunk->allocator == reinterpret_cast<intptr_t>(allocator);
 	}
 
 }

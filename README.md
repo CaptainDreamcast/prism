@@ -1,6 +1,8 @@
-# Prism - Library for Dreamcast / Windows game development
+[![CD](https://github.com/humbertodias/prism/actions/workflows/cd.yml/badge.svg)](https://github.com/humbertodias/prism/actions/workflows/cd.yml)
 
-A loose collection of components that are often used in games (e.g.: physics, collisions, animations, etc.). The Dreamcast part requires KallistiOS, the Windows part requires SDL.  
+# Prism - Library for Dreamcast / Windows / Linux game development
+
+A loose collection of components that are often used in games (e.g.: physics, collisions, animations, etc.). The Dreamcast part requires KallistiOS, the Windows/Linux part requires SDL2.  
   
 ## Dreamcast Usage
 Clone in your `$(KOS_ROOT)/addons` folder and compile this library with `make`.  
