@@ -187,7 +187,7 @@ namespace prism {
 		logString(ret.mPointer);
 		logString(tName);
 		recoverFromError();
-#if defined(DREAMCAST) || defined(__EMSCRIPTEN__)
+#if defined(DREAMCAST) || defined(__EMSCRIPTEN__) || defined(__linux__)
 		return ret;
 #endif
 	}

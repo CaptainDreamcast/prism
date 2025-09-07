@@ -1,12 +1,24 @@
 include Makefile.common
 
-CXXFLAGS += -Wall -O2 -std=c++17 -DLINUX -I ./include `pkg-config --libs --cflags sdl2` `pkg-config --libs --cflags libpng`
+OBJS += linux/drawing_linux.o linux/texture_linux.o linux/input_linux.o \
+linux/framerateselect_linux.o linux/file_linux.o linux/math_linux.o linux/system_linux.o linux/log_linux.o \
+linux/soundeffect_linux.o linux/sound_linux.o linux/memoryhandler_linux.o web/netplay_web.o linux/romdisk_linux.o \
+linux/saveload_linux.o linux/screeneffect_linux.o linux/logoscreen_linux.o \
+web/thread_web.o
 
-libprism.a: $(OBJS)
-	ar rcs $@ $(OBJS)
-	-mkdir -p bin
-	mv $@ bin/$@
+CXXFLAGS += -DNDEBUG -I ./include -I ./external/imgui/inc `sdl2-config --cflags` -std=c++17 -O2
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(AR) -rc $@ $^
+
+%.o : %.cpp
+	$(CC) -c $(CXXFLAGS) -o $@ $<
+
+%.o : %.c
+	$(CC) -c -o $@ $<
 
 clean:
 	-rm -f *.o
-	-rm -r -f bin
+	-rm -rf linux/*.o
