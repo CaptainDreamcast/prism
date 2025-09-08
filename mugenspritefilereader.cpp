@@ -1000,7 +1000,26 @@ static void loadSFFHeader2(SFFHeader2* tHeader) {
 	gPrismMugenSpriteFileReaderData.mReader.mRead(&gPrismMugenSpriteFileReaderData.mReader, tHeader, sizeof(SFFHeader2));
 }
 
-static Buffer processRawPalette2(Buffer tRaw) {
+static Buffer processRawPalette2FixedAlpha(Buffer tRaw) {
+	int n = tRaw.mLength / 4;
+
+	assert(n <= 256);
+	char* raw = (char*)tRaw.mData;
+	char* out = (char*)allocMemory(256 * 3);
+	memset(out, 0, 256 * 3);
+
+	int i = 0;
+	for (i = 0; i < n; i++)
+	{
+		out[3 * i + 0] = raw[4 * i + 0];
+		out[3 * i + 1] = raw[4 * i + 1];
+		out[3 * i + 2] = raw[4 * i + 2];
+	}
+
+	return makeBufferOwned(out, 256 * 3);
+}
+
+static Buffer processRawPalette2AlphaFromBuffer(Buffer tRaw) {
 	int n = tRaw.mLength / 4;
 
 	assert(n <= 256);
@@ -1017,6 +1036,27 @@ static Buffer processRawPalette2(Buffer tRaw) {
 	}
 
 	return makeBufferOwned(out, 256 * 4);
+}
+
+static bool isUsingSpecialPalette2Loading(Buffer tRaw) // SF2_Ryu (the HD remake one) expects its alpha values to be respected, which seemingly breaks all other SFFv2 1.0 palettes
+{
+	int n = tRaw.mLength / 4;
+	assert(n <= 256);
+	
+	uint8_t* raw = (uint8_t*)tRaw.mData;
+	return n == 256 && raw[3] != 0x0; // no clue if this even holds up
+}
+
+static Buffer processRawPalette2(Buffer tRaw) 
+{
+	if (isUsingSpecialPalette2Loading(tRaw))
+	{
+		return processRawPalette2AlphaFromBuffer(tRaw);
+	}
+	else
+	{
+		return processRawPalette2FixedAlpha(tRaw);
+	}
 }
 
 static void loadSinglePalette2(SFFHeader2* tHeader, MugenSpriteFile* tDst) {

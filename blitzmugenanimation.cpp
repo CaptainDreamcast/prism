@@ -395,7 +395,6 @@ namespace prism {
 	void setBlitzMugenAnimationNoLoop(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
-		setMugenAnimationNoLoop(e->mAnimationElement);
 		setMugenAnimationCallback(e->mAnimationElement, blitzMugenAnimationFinishedCB, e);
 	}
 

@@ -287,6 +287,9 @@
     <ClInclude Include="..\..\include\prism\numberpopuphandler.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\mugeneffecttexthandler.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\drawing_win.cpp">
@@ -557,6 +560,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\numberpopuphandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mugeneffecttexthandler.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>

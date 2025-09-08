@@ -145,6 +145,7 @@
     <ClInclude Include="..\..\include\prism\mugenanimationreader.h" />
     <ClInclude Include="..\..\include\prism\mugendefreader.h" />
     <ClInclude Include="..\..\include\prism\mugendefwriter.h" />
+    <ClInclude Include="..\..\include\prism\mugeneffecttexthandler.h" />
     <ClInclude Include="..\..\include\prism\mugenscriptparser.h" />
     <ClInclude Include="..\..\include\prism\mugensoundfilereader.h" />
     <ClInclude Include="..\..\include\prism\mugenspritefilereader.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="..\..\mugenanimationreader.cpp" />
     <ClCompile Include="..\..\mugendefreader.cpp" />
     <ClCompile Include="..\..\mugendefwriter.cpp" />
+    <ClCompile Include="..\..\mugeneffecttexthandler.cpp" />
     <ClCompile Include="..\..\mugenscriptparser.cpp" />
     <ClCompile Include="..\..\mugensoundfilereader.cpp" />
     <ClCompile Include="..\..\mugenspritefilereader.cpp" />
