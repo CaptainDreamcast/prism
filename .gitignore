@@ -1,3 +1,5 @@
+tools/release/*
+
 *.o
 
 .git_*

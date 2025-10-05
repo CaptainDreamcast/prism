@@ -12,6 +12,7 @@ dc-tool_*
 filesystem
 concept
 build
+tools
 assets.cpp
 assets/debug/*
 

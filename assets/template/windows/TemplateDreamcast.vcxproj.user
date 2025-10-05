@@ -7,9 +7,9 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>Template run_in_assets</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments></LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>C:\DEV\TOOLS\ubunturun.bat</LocalDebuggerCommand>
+    <LocalDebuggerCommand>$(SolutionDir)..\tools\emu_dreamcast\create_and_run_dc_emu.bat</LocalDebuggerCommand>
     <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
   </PropertyGroup>
 </Project>
