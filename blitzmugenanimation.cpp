@@ -122,6 +122,12 @@ namespace prism {
 		changeMugenAnimation(e->mAnimationElement, getMugenAnimation(e->mAnimations, tAnimationNumber));
 	}
 
+	bool hasBlitzMugenAnimation(int tEntityID, int tAnimationNumber)
+	{
+		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
+		return hasMugenAnimation(e->mAnimations, tAnimationNumber);
+	}
+
 	void setBlitzMugenAnimationSprites(int tEntityID, MugenSpriteFile* tSprites)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);

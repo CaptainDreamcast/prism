@@ -11,6 +11,8 @@ set directory=.
 set source_dir=%0\..\..\..\assets\template
 set target_dir=%directory%\%1
 
+if exist %target_dir% goto :over
+
 xcopy /E /I /Y %source_dir% %target_dir%
 
 set cur_file=%target_dir%\main.cpp

@@ -14,6 +14,7 @@ MugenAnimationHandlerElement* getBlitzMugenAnimationElement(int tEntityID);
 void changeBlitzMugenAnimation(int tEntityID, int tAnimationNumber);
 void changeBlitzMugenAnimationWithStartStep(int tEntityID, int tAnimationNumber, int tStep);
 void changeBlitzMugenAnimationIfDifferent(int tEntityID, int tAnimationNumber);
+bool hasBlitzMugenAnimation(int tEntityID, int tAnimationNumber);
 
 void setBlitzMugenAnimationSprites(int tEntityID, MugenSpriteFile* tSprites);
 void setBlitzMugenAnimationAnimations(int tEntityID, MugenAnimations* tAnimations);

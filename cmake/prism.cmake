@@ -28,6 +28,7 @@ target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/curl-7.88.
 target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/gpt4all/gpt4all-backend)
 target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/enet-1.3.17/include)
 target_include_directories(prism PUBLIC C:/DEV/PROJECTS/addons/prism/external/imgui/inc)
+target_include_directories(prism PUBLIC C:/DEV/PROJECTS/addons/prism/external/imgui_texteditor/inc)
 target_include_directories(prism PUBLIC C:/DEV/PROJECTS/addons/prism/include)
 
 target_compile_definitions(prism PUBLIC UNICODE)

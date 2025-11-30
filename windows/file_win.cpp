@@ -13,6 +13,7 @@
 #ifdef _WIN32
 #include <imgui/imgui.h>
 #include "prism/windows/debugimgui_win.h"
+#include <prism/windows/imgui/filemanager.h>
 #endif 
 
 extern char romdisk_buffer[];
@@ -138,6 +139,10 @@ namespace prism {
 
 		char path[1024];
 		getFullPath(path, tPath);
+
+#ifdef _WIN32
+		imgui::addDebugFileUsage(tPath);
+#endif
 
 		if (isRomdiskPath(path)) {
 			return fileOpenRomdisk(path, tFlags);

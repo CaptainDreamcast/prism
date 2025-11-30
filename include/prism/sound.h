@@ -28,6 +28,7 @@ int isPlayingStreamingMusic();
 void stopMusic();
 void pauseMusic();
 void resumeMusic();
+void crossFadeMusicLayer(const char* tNewPath, bool tIsLooping);
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint();
 double getMicrophoneVolume();

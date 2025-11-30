@@ -52,6 +52,7 @@
 
 #ifdef _WIN32
 #include "prism/windows/debugimgui_win.h"
+#include "prism/windows/imgui/filemanager.h"
 #endif
 
 namespace prism {
@@ -334,6 +335,12 @@ namespace prism {
 
 		if (isInDevelopMode()) {
 			instantiateActor(getPrismDebug());
+#ifdef _WIN32
+			if (isImguiPrismActive())
+			{
+				instantiateActor(imgui::getImguiFileManager());
+			}
+#endif
 		}
 
 		debugLog("Setting up input flanks");
@@ -515,6 +522,8 @@ namespace prism {
 		imguiInputGeneral();
 		imguiInputHardware();
 		imguiDebugGeneral();
+		imgui::fileManagerImguiRender();
+
 	}
 #endif
 
@@ -523,6 +532,7 @@ namespace prism {
 #ifdef _WIN32
 		if (isImguiPrismActive())
 		{
+			imguiPrismUpdate();
 			imguiPrismStartFrame();
 		}
 #endif

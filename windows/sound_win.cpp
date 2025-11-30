@@ -53,6 +53,7 @@ namespace prism {
 		int mIsPaused;
 		Mix_Music* mTrackChunk;
 		uint64_t mTimeWhenMusicPlaybackStarted;
+		int mMusicChannel;
 
 		Microphone mMicrophone;
 	} gPrismWindowsSoundData;
@@ -221,7 +222,7 @@ namespace prism {
 		playMusicPath(tPath);
 		Mix_HookMusicFinished(musicFinishedCB);
 
-		Mix_PlayMusic(gPrismWindowsSoundData.mTrackChunk, tLoopAmount);
+		gPrismWindowsSoundData.mMusicChannel = Mix_PlayMusic(gPrismWindowsSoundData.mTrackChunk, tLoopAmount);
 		gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
 
 		gPrismWindowsSoundData.mIsPaused = 0;
@@ -236,6 +237,17 @@ namespace prism {
 	void streamMusicFileOnce(const char* tPath)
 	{
 		streamMusicFileGeneral(tPath, 0);
+	}
+
+	void crossFadeMusicLayer(const char* tNewPath, bool tIsLooping)
+	{
+		if (!isPlayingStreamingMusic()) return;
+		auto previousStartTime = gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted;
+		auto timeMs = getStreamingSoundTimeElapsedInMilliseconds();
+		stopStreamingMusicFile();
+		streamMusicFileGeneral(tNewPath, tIsLooping ? -1 : 0);
+		gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted = previousStartTime;
+		Mix_SetMusicPosition(timeMs / 1000.0);
 	}
 
 	void stopStreamingMusicFile()

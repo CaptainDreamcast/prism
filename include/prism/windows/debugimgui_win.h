@@ -14,6 +14,8 @@ void imguiPrismInitAfterDrawingSetup();
 
 void imguiPrismProcessEvent(SDL_Event* tEvent);
 
+void imguiPrismUpdate();
+
 void imguiPrismStartFrame();
 
 void imguiPrismRenderStart();

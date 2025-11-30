@@ -28,6 +28,12 @@
     <Filter Include="external\imgui\src">
       <UniqueIdentifier>{3ad5cb96-df56-4806-9e6b-c3ba42385437}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hdr\windows\imgui">
+      <UniqueIdentifier>{8c4dfbdb-acb4-4f02-9f9c-beb279545de4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\windows\imgui">
+      <UniqueIdentifier>{e51daf60-7046-4d16-8b09-c43d8fa64c43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -245,6 +251,9 @@
     <ClInclude Include="..\..\include\prism\netplay.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\external\imgui_texteditor\inc\imgui_texteditor\imgui_texteditor.h">
+      <Filter>external\imgui\inc</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\external\imgui\inc\imgui\imgui.h">
       <Filter>external\imgui\inc</Filter>
     </ClInclude>
@@ -275,6 +284,9 @@
     <ClInclude Include="..\..\include\prism\windows\debugimgui_win.h">
       <Filter>hdr\windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\windows\debugimgui_texteditor_win.h">
+      <Filter>hdr\windows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl3.h">
       <Filter>external\imgui\inc</Filter>
     </ClInclude>
@@ -289,6 +301,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\prism\mugeneffecttexthandler.h">
       <Filter>hdr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\prism\windows\imgui\filemanager.h">
+      <Filter>hdr\windows\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -526,6 +541,9 @@
     <ClCompile Include="..\netplay_win.cpp">
       <Filter>src\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\external\imgui_texteditor\src\imgui_texteditor.cpp">
+      <Filter>external\imgui\src</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\external\imgui\src\imgui.cpp">
       <Filter>external\imgui\src</Filter>
     </ClCompile>
@@ -553,6 +571,9 @@
     <ClCompile Include="..\debugimgui_win.cpp">
       <Filter>src\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\debugimgui_texteditor_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\external\imgui\src\imgui_impl_opengl3.cpp">
       <Filter>external\imgui\src</Filter>
     </ClCompile>
@@ -564,6 +585,9 @@
     </ClCompile>
     <ClCompile Include="..\..\mugeneffecttexthandler.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imgui\filemanager.cpp">
+      <Filter>src\windows\imgui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
