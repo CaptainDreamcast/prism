@@ -560,8 +560,13 @@ namespace prism {
 	static void updateKeyboardLocalKeyboard(int i) {
 		updateKeyStateArraySize(i);
 #ifdef _WIN32
-		auto& io = ImGui::GetIO();
-		if (!io.WantTextInput)
+		bool wantTextInput = true;
+		if (isImguiPrismActive())
+		{
+			auto& io = ImGui::GetIO();
+			wantTextInput = io.WantTextInput;
+		}
+		if (wantTextInput)
 #endif
 		{
 			memcpy(gPrismWindowsInputData.mKeyboards[i].mKeyStates.front().data(), gPrismWindowsInputData.mKeyboards[i].mKeyStatePointer, SDL_NUM_SCANCODES);

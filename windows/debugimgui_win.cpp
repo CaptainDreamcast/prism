@@ -31,29 +31,33 @@ namespace prism {
 
     void imguiPrismInitAfterDrawingSetup()
     {
-        // Setup Dear ImGui context
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;      // Enable Gamepad Controls
+        if (isInDevelopMode())
+        {
+            // Setup Dear ImGui context
+            IMGUI_CHECKVERSION();
+            ImGui::CreateContext();
+            ImGuiIO& io = ImGui::GetIO(); (void)io;
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;      // Enable Gamepad Controls
 
-        // Setup Dear ImGui style
-        ImGui::StyleColorsDark();
+            // Setup Dear ImGui style
+            ImGui::StyleColorsDark();
 
-        // Setup Platform/Renderer backends
-        ImGui_ImplSDL2_InitForOpenGL(gSDLWindow, gGLContext);
-        ImGui_ImplOpenGL3_Init();
+            // Setup Platform/Renderer backends
+            ImGui_ImplSDL2_InitForOpenGL(gSDLWindow, gGLContext);
+            ImGui_ImplOpenGL3_Init();
 
-        prism::imgui::initTextEditorHandler();
+            prism::imgui::initTextEditorHandler();
 
-        gImguiPrismData.mIsShowingTaskbar = false;
-        gImguiPrismData.mIsActive = true;
+            gImguiPrismData.mIsShowingTaskbar = false;
+            gImguiPrismData.mIsActive = true;
+        }
     }
 
     void imguiPrismProcessEvent(SDL_Event* tEvent)
     {
+        if (!gImguiPrismData.mIsActive) return;
         ImGui_ImplSDL2_ProcessEvent(tEvent);
     }
 
@@ -139,6 +143,7 @@ namespace prism {
 
     void imguiPrismShutdown()
     {
+        if (!gImguiPrismData.mIsActive) return;
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
