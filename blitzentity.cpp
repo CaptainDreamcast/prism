@@ -174,6 +174,26 @@ namespace prism {
 		if (e->mHasParent) e->mPosition.z = tZ + e->mParent->mPosition.z;
 		else e->mPosition.z = tZ;
 	}
+	void setBlitzEntityPositionXY(int tID, const Vector2D& tPos)
+	{
+		if (tID == getBlitzCameraHandlerEntityID())
+		{
+			setBlitzCameraHandlerPosition(tPos.xyz(0));
+			return;
+		}
+
+		BlitzEntity* e = getBlitzEntity(tID);
+		if (e->mHasParent)
+		{
+			e->mPosition.x = tPos.x + e->mParent->mPosition.x;
+			e->mPosition.y = tPos.y + e->mParent->mPosition.y;
+		}
+		else
+		{
+			e->mPosition.x = tPos.x;
+			e->mPosition.y = tPos.y;
+		}
+	}
 
 	void addBlitzEntityPosition(int tID, const Vector2D& tPos) {
 		setBlitzEntityPosition(tID, getBlitzEntityPosition(tID) + tPos);
@@ -270,6 +290,11 @@ namespace prism {
 	double getBlitzEntityPositionY(int tID)
 	{
 		return getBlitzEntityPosition(tID).y;
+	}
+
+	double getBlitzEntityPositionZ(int tID)
+	{
+		return getBlitzEntityPosition(tID).z;
 	}
 
 	Vector3D getBlitzEntityScale(int tID)

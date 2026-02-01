@@ -58,7 +58,7 @@ namespace prism {
 		int mIsRightCollided;
 
 		unordered_map<int, BlitzCollisionObject> mCollisionObjects;
-		std::unordered_set<CollidedEntity, CollidedEntityHash> mCollidedEntities;
+		std::unordered_set<CollidedEntity, CollidedEntityHash> mCollidedEntities[2]; // [0] is current frame for use in CBs, [1] is last frame for access
 	} CollisionEntry;
 
 	static struct {
@@ -100,7 +100,7 @@ namespace prism {
 		updateSingleBlitzCollidedValue(&e->mIsBottomCollided);
 		updateSingleBlitzCollidedValue(&e->mIsLeftCollided);
 		updateSingleBlitzCollidedValue(&e->mIsRightCollided);
-		e->mCollidedEntities.clear();
+		e->mCollidedEntities[1] = std::move(e->mCollidedEntities[0]);
 	}
 
 	static CollisionEntry* getBlitzCollisionEntry(int tEntityID) {
@@ -215,9 +215,9 @@ namespace prism {
 			otherObject->mHasCollidedThisFrame = 1;
 
 			auto ownCollisionEntry = getBlitzCollisionEntry(selfObject->mEntityID);
-			ownCollisionEntry->mCollidedEntities.insert(std::make_pair(otherObject->mEntityID, otherObject->mCollisionList));
+			ownCollisionEntry->mCollidedEntities[0].insert(std::make_pair(otherObject->mEntityID, otherObject->mCollisionList));
 			auto otherCollisionEntry = getBlitzCollisionEntry(otherObject->mEntityID);
-			otherCollisionEntry->mCollidedEntities.insert(std::make_pair(selfObject->mEntityID, selfObject->mCollisionList));
+			otherCollisionEntry->mCollidedEntities[0].insert(std::make_pair(selfObject->mEntityID, selfObject->mCollisionList));
 		}
 	}
 
@@ -388,7 +388,7 @@ namespace prism {
 		}
 
 		CollisionEntry* e = &gBlitzCollisionData.mEntries[tEntityID];
-		return std::vector<std::pair<int, CollisionListData*>>(e->mCollidedEntities.begin(), e->mCollidedEntities.end());
+		return std::vector<std::pair<int, CollisionListData*>>(e->mCollidedEntities[1].begin(), e->mCollidedEntities[1].end());
 	}
 
 	static int removeSingleCollisionObject(void*, BlitzCollisionObject& tData) {
