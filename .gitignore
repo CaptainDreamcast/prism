@@ -36,5 +36,6 @@ build/*
 *.iobj
 *.cache
 *.psd
+*.a
 
 bin/*

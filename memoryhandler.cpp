@@ -17,12 +17,17 @@
 #include "prism/windows/debugimgui_win.h"
 #endif
 
+#ifdef __linux__
+#include "imgui/imgui.h"
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 #ifdef DREAMCAST
 
 #include <kos.h>
 #endif
 
-#if defined _WIN32 || defined __EMSCRIPTEN__
+#if defined _WIN32 || defined __EMSCRIPTEN__ || defined __linux__
 
 #include <SDL.h>
 #include <GL/glew.h>
@@ -63,7 +68,7 @@ namespace prism {
 #define virtualizeTextureHW virtualizeTextureDreamcast
 #define unvirtualizeTextureHW unvirtualizeTextureDreamcast
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__
+#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined __linux__
 	void* allocGLTexture(size_t) {
 		GLTextureData* data = (GLTextureData*)malloc(sizeof(GLTextureData));
 		return data;
@@ -200,7 +205,7 @@ namespace prism {
 		int mActive;
 	} gMemoryHandler;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__linux__)
 	static std::string_view allocationStrategyToString(const AllocationStrategy& allocationStrategy)
 	{
 		if (allocationStrategy.mMalloc == malloc) return "Hash Map Strategy Main Memory";
@@ -213,8 +218,8 @@ namespace prism {
 		{
 			GLTextureData* data = (GLTextureData*)tTextureMemory->mData;
 			ImGui::Text("%d", data->mTexture);
-			ImGui::Text("%d", tTextureMemory->mSize);
-			ImGui::Text("%d", tTextureMemory->mIsCompressed ? tTextureMemory->mCompressedSize : 0);
+			ImGui::Text("%ld", tTextureMemory->mSize);
+			ImGui::Text("%ld", tTextureMemory->mIsCompressed ? tTextureMemory->mCompressedSize : 0);
 			ImGui::Text("%d", tTextureMemory->mIsVirtual);
 			ImGui::Text("%d", tTextureMemory->mIsCompressed);
 			ImGui::TreePop();
@@ -226,8 +231,8 @@ namespace prism {
 		GLTextureData* data = (GLTextureData*)tTextureMemory->mData;
 		ImGui::TableNextRow(); ImGui::TableNextColumn();
 		ImGui::Text("%d", data->mTexture); ImGui::TableNextColumn();
-		ImGui::Text("%d", tTextureMemory->mSize); ImGui::TableNextColumn();
-		ImGui::Text("%d", tTextureMemory->mIsCompressed ? tTextureMemory->mCompressedSize : 0); ImGui::TableNextColumn();
+		ImGui::Text("%ld", tTextureMemory->mSize); ImGui::TableNextColumn();
+		ImGui::Text("%ld", tTextureMemory->mIsCompressed ? tTextureMemory->mCompressedSize : 0); ImGui::TableNextColumn();
 		ImGui::Text("%d", tTextureMemory->mIsVirtual); ImGui::TableNextColumn();
 		ImGui::Text("%d", tTextureMemory->mIsCompressed);
 	}
@@ -245,7 +250,7 @@ namespace prism {
 				{
 					if (ImGui::TreeNode(std::to_string(row).c_str()))
 					{
-						ImGui::Text("Size = %d", tMemoryListStack.mMaps[row].mMap.size());
+						ImGui::Text("Size = %ld", tMemoryListStack.mMaps[row].mMap.size());
 						if (ImGui::TreeNode("Elements"))
 						{
 							static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
@@ -260,7 +265,7 @@ namespace prism {
 									{
 										ImGui::TableNextRow();
 										ImGui::TableNextColumn();
-										ImGui::Text("%X", pointer);
+										ImGui::Text("%p", pointer);
 									}
 									ImGui::EndTable();
 								}

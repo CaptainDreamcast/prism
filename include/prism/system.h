@@ -60,6 +60,7 @@ double getInverseFramerateFactor();
 void setVGA();
 int isOnDreamcast();
 int isOnWindows();
+int isOnLinux();
 int isOnWeb();
 int isOnVita();
 

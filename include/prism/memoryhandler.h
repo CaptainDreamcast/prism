@@ -9,7 +9,7 @@
 namespace prism {
 typedef pvr_ptr_t Texture;
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__
+#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined __linux__
 #include <SDL.h>
 #include <GL/glew.h>
 
@@ -81,7 +81,7 @@ int getAvailableSoundMemory();
 
 int getAllocatedMemoryBlockAmount();
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__linux__)
 void imguiMemoryHandler();
 void imguiTextureMemory(const std::string_view& tName, const TextureMemory& tTextureMemory);
 #endif

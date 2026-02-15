@@ -18,7 +18,7 @@ namespace prism {
 
 typedef int FileHandler;
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined VITA
+#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined VITA || defined __linux__
 
 #define O_RDONLY	0x1
 #define O_WRONLY	0x2
