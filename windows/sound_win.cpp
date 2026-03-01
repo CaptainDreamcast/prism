@@ -4,12 +4,13 @@
 #include <stdio.h>
 #include <algorithm>
 
-#include <SDL.h>
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-#include <SDL2/SDL_mixer.h>
+#include <fmod/api/core/inc/fmod.hpp>
+#include <fmod/api/core/inc/fmod_errors.h>
 #elif defined _WIN32
-#include <SDL_mixer.h>
+#include <FMOD Studio API Windows/api/core/inc/fmod.hpp>
+#include <FMOD Studio API Windows/api/core/inc/fmod_errors.h>
 #endif
 
 #include "prism/log.h"
@@ -45,24 +46,34 @@ namespace prism {
 
 	static struct {
 
-		int mVolume;
+		int mChannelCount;
+
+		double mVolume;
 		double mPanning;
 
 		int mHasLoadedTrack;
 		int mIsPlayingTrack;
+		bool mShouldUnloadTrack;
 		int mIsPaused;
-		Mix_Music* mTrackChunk;
+
+		FMOD::System* mSystem;
+		FMOD::Sound* mTrack;
+		FMOD::Channel* mChannel;
+
 		uint64_t mTimeWhenMusicPlaybackStarted;
 		int mMusicChannel;
 
 		Microphone mMicrophone;
 	} gPrismWindowsSoundData;
 
+	FMOD::System* getPrismFmodSystem() { return gPrismWindowsSoundData.mSystem; }
+	int getPrismSoundChannelCount() { return gPrismWindowsSoundData.mChannelCount; }
+
 #ifdef _WIN32
 	static void imguiPrismWindowsSoundData() {
 		if (ImGui::TreeNode("Sound Data"))
 		{
-			ImGui::Text("Volume: %d", gPrismWindowsSoundData.mVolume);
+			ImGui::Text("Volume: %f", gPrismWindowsSoundData.mVolume);
 			ImGui::Text("Panning: %f", gPrismWindowsSoundData.mPanning);
 			ImGui::Text("Has Loaded Track: %d", gPrismWindowsSoundData.mHasLoadedTrack);
 			ImGui::Text("Is Playing Track: %d", gPrismWindowsSoundData.mIsPlayingTrack);
@@ -100,69 +111,105 @@ namespace prism {
 #endif
 
 	void initSound() {
+
+		gPrismWindowsSoundData.mChannelCount = 64;
+
 		gPrismWindowsSoundData.mPanning = 0;
-		if (!Mix_Init(MIX_INIT_OGG))
+		
+		void* extraDriverData = nullptr;
+		FMOD_RESULT result = FMOD::System_Create(&gPrismWindowsSoundData.mSystem);
+		if (result != FMOD_OK)
 		{
-			logErrorFormat("Unable to init SDL Mixer: %s", SDL_GetError());
+			logErrorFormat("Unable to create FMOD System: %s", FMOD_ErrorString(result));
 		}
-		if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == -1)
+
+		result = gPrismWindowsSoundData.mSystem->init(gPrismWindowsSoundData.mChannelCount, FMOD_INIT_NORMAL, extraDriverData);
+		if (result != FMOD_OK)
 		{
-			logErrorFormat("Unable to open audio: %s", SDL_GetError());
+			logErrorFormat("Unable to init FMOD System: %s", FMOD_ErrorString(result));
 		}
-		if (Mix_AllocateChannels(1024) != 1024)
-		{
-			logErrorFormat("Unable to allocate mixer channels: %s", SDL_GetError());
-		}
+
 		gPrismWindowsSoundData.mHasLoadedTrack = 0;
 		gPrismWindowsSoundData.mIsPlayingTrack = 0;
+		gPrismWindowsSoundData.mShouldUnloadTrack = false;
+		gPrismWindowsSoundData.mTrack = nullptr;
+		gPrismWindowsSoundData.mChannel = nullptr;
 
 		setVolume(0.2);
 		gPrismWindowsSoundData.mMicrophone.mIsMicrophoneActive = 0;
 	}
 
 	void shutdownSound() {
-		Mix_CloseAudio();
+		FMOD_RESULT result = gPrismWindowsSoundData.mSystem->close();
+		if (result != FMOD_OK)
+		{
+			logErrorFormat("Unable to close FMOD System: %s", FMOD_ErrorString(result));
+		}
+
+		result = gPrismWindowsSoundData.mSystem->release();
+		if (result != FMOD_OK)
+		{
+			logErrorFormat("Unable to release FMOD System: %s", FMOD_ErrorString(result));
+		}
+	}
+
+	static void unloadTrack() {
+		assert(gPrismWindowsSoundData.mHasLoadedTrack);
+
+		FMOD_RESULT result = gPrismWindowsSoundData.mTrack->release();
+		if (result != FMOD_OK)
+		{
+			logErrorFormat("Unable to unload track: %s", FMOD_ErrorString(result));
+		}
+		gPrismWindowsSoundData.mHasLoadedTrack = 0;
+	}
+
+	void updateSound() {
+		gPrismWindowsSoundData.mSystem->update();
+		if (gPrismWindowsSoundData.mShouldUnloadTrack)
+		{
+			gPrismWindowsSoundData.mIsPlayingTrack = 0;
+			unloadTrack();
+			gPrismWindowsSoundData.mShouldUnloadTrack = false;
+		}
 	}
 
 	double getVolume() {
-		return gPrismWindowsSoundData.mVolume / 128.0;
+		return gPrismWindowsSoundData.mVolume;
 	}
 
 	void setVolume(double tVolume) {
-		gPrismWindowsSoundData.mVolume = (int)(tVolume * 128);
-		Mix_VolumeMusic(gPrismWindowsSoundData.mVolume);
+		gPrismWindowsSoundData.mVolume = tVolume;
+		if (gPrismWindowsSoundData.mIsPlayingTrack)
+		{
+			gPrismWindowsSoundData.mChannel->setVolume((float)gPrismWindowsSoundData.mVolume);
+		}
 	}
 
 	double getPanningValue() {
 		return gPrismWindowsSoundData.mPanning;
 	}
 
-	void setPanningValue(int tChannel, double tPanning)
+	void setPanningValue(double tPanning)
 	{
 		gPrismWindowsSoundData.mPanning = tPanning;
-		tPanning = (tPanning + 1) * 0.5; // [-1, 1] -> [0, 1]
-		const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
-		Mix_SetPanning(tChannel, 255 - right, right);
+		if (gPrismWindowsSoundData.mIsPlayingTrack)
+		{
+			gPrismWindowsSoundData.mChannel->setPan((float)gPrismWindowsSoundData.mPanning);
+		}
 	}
 
 	static void playMusicPath(const char* tPath) {
 		char fullPath[1024];
 		getFullPath(fullPath, tPath);
 
-		Buffer tBuffer = fileToBuffer(fullPath);
-		SDL_RWops* rwOps = SDL_RWFromConstMem(tBuffer.mData, tBuffer.mLength);
-		gPrismWindowsSoundData.mTrackChunk = Mix_LoadMUS_RW(rwOps, 1);
-		if (!gPrismWindowsSoundData.mTrackChunk) {
-			logErrorFormat("Unable to play sound %s: %s", tPath, SDL_GetError());
+		FMOD_RESULT result = gPrismWindowsSoundData.mSystem->createStream(tPath, FMOD_LOOP_NORMAL | FMOD_2D, nullptr, &gPrismWindowsSoundData.mTrack);
+		if (result != FMOD_OK)
+		{
+			logErrorFormat("Unable to create stream %s: %s", fullPath, FMOD_ErrorString(result));
 		}
+
 		gPrismWindowsSoundData.mHasLoadedTrack = 1;
-	}
-
-	static void unloadTrack() {
-		assert(gPrismWindowsSoundData.mHasLoadedTrack);
-
-		Mix_FreeMusic(gPrismWindowsSoundData.mTrackChunk);
-		gPrismWindowsSoundData.mHasLoadedTrack = 0;
 	}
 
 	static void streamMusicFileGeneral(const char* tPath, int tLoopAmount);
@@ -188,13 +235,13 @@ namespace prism {
 	{
 		if (!gPrismWindowsSoundData.mIsPlayingTrack) return;
 
-		Mix_HaltMusic();
+		gPrismWindowsSoundData.mChannel->stop();
 	}
 
 	void pauseTrack()
 	{
 		if (!gPrismWindowsSoundData.mIsPlayingTrack || gPrismWindowsSoundData.mIsPaused) return;
-		Mix_PauseMusic();
+		gPrismWindowsSoundData.mChannel->setPaused(true);
 		gPrismWindowsSoundData.mIsPaused = 1;
 	}
 
@@ -202,7 +249,7 @@ namespace prism {
 	{
 		if (!gPrismWindowsSoundData.mIsPlayingTrack || !gPrismWindowsSoundData.mIsPaused) return;
 
-		Mix_ResumeMusic();
+		gPrismWindowsSoundData.mChannel->setPaused(false);
 		gPrismWindowsSoundData.mIsPaused = 0;
 	}
 
@@ -211,18 +258,25 @@ namespace prism {
 		playTrackGeneral(tTrack, 0);
 	}
 
-	static void musicFinishedCB() {
-		gPrismWindowsSoundData.mIsPlayingTrack = 0;
-
-		Mix_FreeMusic(gPrismWindowsSoundData.mTrackChunk);
-		gPrismWindowsSoundData.mHasLoadedTrack = 0;
+	static FMOD_RESULT fmodCallback(FMOD_CHANNELCONTROL* /*channelcontrol*/, FMOD_CHANNELCONTROL_TYPE /*controltype*/, FMOD_CHANNELCONTROL_CALLBACK_TYPE callbacktype, void* /*commanddata1*/, void* /*commanddata2*/)
+	{
+		if (callbacktype == FMOD_CHANNELCONTROL_CALLBACK_END)
+		{
+			gPrismWindowsSoundData.mShouldUnloadTrack = true;
+		}
+		return FMOD_OK;
 	}
 
 	static void streamMusicFileGeneral(const char* tPath, int tLoopAmount) {
 		playMusicPath(tPath);
-		Mix_HookMusicFinished(musicFinishedCB);
 
-		gPrismWindowsSoundData.mMusicChannel = Mix_PlayMusic(gPrismWindowsSoundData.mTrackChunk, tLoopAmount);
+		gPrismWindowsSoundData.mSystem->playSound(gPrismWindowsSoundData.mTrack, nullptr, true, &gPrismWindowsSoundData.mChannel);
+		gPrismWindowsSoundData.mChannel->setCallback(fmodCallback);
+		gPrismWindowsSoundData.mChannel->setVolume((float)gPrismWindowsSoundData.mVolume);
+		gPrismWindowsSoundData.mChannel->setPan((float)gPrismWindowsSoundData.mPanning);
+		gPrismWindowsSoundData.mChannel->setLoopCount(tLoopAmount);
+		gPrismWindowsSoundData.mChannel->setPaused(false);
+
 		gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted = SDL_GetTicks();
 
 		gPrismWindowsSoundData.mIsPaused = 0;
@@ -247,7 +301,7 @@ namespace prism {
 		stopStreamingMusicFile();
 		streamMusicFileGeneral(tNewPath, tIsLooping ? -1 : 0);
 		gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted = previousStartTime;
-		Mix_SetMusicPosition(timeMs / 1000.0);
+		gPrismWindowsSoundData.mChannel->setPosition((unsigned int)timeMs, FMOD_TIMEUNIT_MS);
 	}
 
 	void stopStreamingMusicFile()

@@ -127,7 +127,7 @@ struct MugenAnimationHandlerElement {
 	double mShearLowerOffsetX;
 	int mIsSpriteOffsetForcedToCenter;
 
-	double mCoordinateSystemScale;
+	Vector2D mCoordinateSystemScale;
 
 	int mIsCollisionDebugActive;
 };
@@ -244,7 +244,7 @@ void setMugenAnimationColorInverted(MugenAnimationHandlerElement* tElement, int 
 
 double getMugenAnimationShearLowerOffsetX(MugenAnimationHandlerElement* tElement);
 void setMugenAnimationShearX(MugenAnimationHandlerElement* tElement, double tLowerScaleDeltaX, double tLowerOffsetX);
-void setMugenAnimationCoordinateSystemScale(MugenAnimationHandlerElement* tElement, double tCoordinateSystemScale);
+void setMugenAnimationCoordinateSystemScale(MugenAnimationHandlerElement* tElement, const Vector2D& tCoordinateSystemScale);
 void setMugenAnimationIsSpriteOffsetForcedToCenter(MugenAnimationHandlerElement* tElement, int tIsSpriteOffsetForcedToCenter);
 
 std::list<MugenAnimationHandlerHitboxElement>& getMugenAnimationActiveHitboxes(MugenAnimationHandlerElement* tElement);

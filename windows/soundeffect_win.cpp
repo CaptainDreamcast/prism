@@ -2,9 +2,12 @@
 
 #include <SDL.h>
 #ifdef __EMSCRIPTEN__
-#include <SDL2/SDL_mixer.h>
+#include <emscripten.h>
+#include <fmod/api/core/inc/fmod.hpp>
+#include <fmod/api/core/inc/fmod_errors.h>
 #elif defined _WIN32
-#include <SDL_mixer.h>
+#include <FMOD Studio API Windows/api/core/inc/fmod.hpp>
+#include <FMOD Studio API Windows/api/core/inc/fmod_errors.h>
 #endif
 
 #include <algorithm>
@@ -14,6 +17,7 @@
 #include "prism/datastructures.h"
 #include "prism/memoryhandler.h"
 #include "prism/stlutil.h"
+#include "prism/log.h"
 
 #ifdef _WIN32
 #include <imgui/imgui.h>
@@ -25,33 +29,99 @@ namespace prism {
 
 	typedef struct {
 		Buffer mBuffer;
-	} SoundEffectEntry;
+		FMOD::Sound* mLoadedSound;
+	} SoundEffectLoaded;
 
 	static struct {
 		double mVolume;
-		map<int, SoundEffectEntry> mAllocatedChunks;
-		map<int, Mix_Chunk*> mChunks;
+		map<int, SoundEffectLoaded> mLoaded;
+		std::vector<FMOD::Channel*> mSfxChannels;
 	} gSoundEffectData;
 
+	extern FMOD::System* getPrismFmodSystem();
+	extern int getPrismSoundChannelCount();
+
 #ifdef _WIN32
-	static void imguiChunks()
+	static void imguiSoundEffectsPlaying()
 	{
-		if (ImGui::TreeNode("Chunks"))
+		if (ImGui::TreeNode("Playing SoundEffects"))
 		{
-			for (auto& e : gSoundEffectData.mChunks)
+			ImGui::Columns(7, "SfxColumns");
+			ImGui::Text("Slot"); ImGui::NextColumn();
+			ImGui::Text("Ptr"); ImGui::NextColumn();
+			ImGui::Text("Playing"); ImGui::NextColumn();
+			ImGui::Text("Paused"); ImGui::NextColumn();
+			ImGui::Text("Volume"); ImGui::NextColumn();
+			ImGui::Text("Freq"); ImGui::NextColumn();
+			ImGui::Text("Pos (ms)"); ImGui::NextColumn();
+			ImGui::Separator();
+
+			for (size_t i = 0; i < gSoundEffectData.mSfxChannels.size(); ++i)
 			{
-				ImGui::Text("ID: %d", e.first); ImGui::SameLine();
-				ImGui::Text("Address: %p", e.second);
+				FMOD::Channel* ch = gSoundEffectData.mSfxChannels[i];
+
+				ImGui::Text("%zu", i);
+				ImGui::NextColumn();
+
+				if (!ch)
+				{
+					ImGui::Text("nullptr");
+					ImGui::NextColumn();
+					ImGui::Text("-"); ImGui::NextColumn();
+					ImGui::Text("-"); ImGui::NextColumn();
+					ImGui::Text("-"); ImGui::NextColumn();
+					ImGui::Text("-"); ImGui::NextColumn();
+					ImGui::Text("-"); ImGui::NextColumn();
+					continue;
+				}
+
+				ImGui::Text("%p", (void*)ch);
+				ImGui::NextColumn();
+
+				bool playing = false;
+				ch->isPlaying(&playing);
+
+				if (playing)
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.3f, 1.0f, 0.3f, 1.0f));
+				else
+					ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+
+				ImGui::Text("%s", playing ? "Yes" : "No");
+				ImGui::NextColumn();
+
+				ImGui::PopStyleColor();
+
+				bool paused = false;
+				ch->getPaused(&paused);
+				ImGui::Text("%s", paused ? "Yes" : "No");
+				ImGui::NextColumn();
+
+				float volume = 0.0f;
+				ch->getVolume(&volume);
+				ImGui::Text("%.2f", volume);
+				ImGui::NextColumn();
+
+				float freq = 0.0f;
+				ch->getFrequency(&freq);
+				ImGui::Text("%.1f", freq);
+				ImGui::NextColumn();
+
+				unsigned int pos = 0;
+				ch->getPosition(&pos, FMOD_TIMEUNIT_MS);
+				ImGui::Text("%u", pos);
+				ImGui::NextColumn();
 			}
+
+			ImGui::Columns(1);
 			ImGui::TreePop();
 		}
 	}
 
-	static void imguiAllocatedChunks()
+	static void imguiSoundEffectsLoaded()
 	{
-		if (ImGui::TreeNode("Allocated Chunks"))
+		if (ImGui::TreeNode("Loaded SoundEffects"))
 		{
-			for (auto& e : gSoundEffectData.mAllocatedChunks)
+			for (auto& e : gSoundEffectData.mLoaded)
 			{
 				ImGui::Text("ID: %d", e.first); ImGui::SameLine();
 				ImGui::Text("Size: %d", e.second.mBuffer.mLength);
@@ -63,8 +133,8 @@ namespace prism {
 
 	static void imguiSoundEffectData() {
 		ImGui::Text("Volume: %f", gSoundEffectData.mVolume);
-		imguiAllocatedChunks();
-		imguiChunks();
+		imguiSoundEffectsLoaded();
+		imguiSoundEffectsPlaying();
 	}
 
 	void imguiSoundEffectsHardware() {
@@ -80,45 +150,49 @@ namespace prism {
 #endif
 
 	void initSoundEffects() {
-		gSoundEffectData.mVolume = 20;
+		gSoundEffectData.mVolume = 1.0;
+		gSoundEffectData.mSfxChannels.resize(getPrismSoundChannelCount() - 1, nullptr);
 	}
 
 	void setupSoundEffectHandler() {
-		gSoundEffectData.mAllocatedChunks.clear();
-		gSoundEffectData.mChunks.clear();
+		gSoundEffectData.mLoaded.clear();
 	}
 
-	static void unloadSoundEffectEntry(SoundEffectEntry* e) {
+	static void unloadLoadedSoundEffect(SoundEffectLoaded* e) {
+		FMOD_RESULT result = e->mLoadedSound->release();
+		if (result != FMOD_OK)
+		{
+			logErrorFormat("Unable to unload sound effect: %s", FMOD_ErrorString(result));
+		}
 		freeBuffer(e->mBuffer);
 	}
 
-	static int unloadSingleSoundEffect(void* tCaller, SoundEffectEntry& tData) {
+	static int unloadSingleSoundEffect(void* tCaller, SoundEffectLoaded& tData) {
 		(void)tCaller;
-		SoundEffectEntry* e = &tData;
-		unloadSoundEffectEntry(e);
-		return 1;
-	}
-
-	static int unloadSingleChunkEntry(void* tCaller, Mix_Chunk*& tData) {
-		(void)tCaller;
-		Mix_FreeChunk(tData);
+		SoundEffectLoaded* e = &tData;
+		unloadLoadedSoundEffect(e);
 		return 1;
 	}
 
 	void shutdownSoundEffectHandler() {
-		stl_int_map_remove_predicate(gSoundEffectData.mAllocatedChunks, unloadSingleSoundEffect);
-		gSoundEffectData.mAllocatedChunks.clear();
+		stopAllSoundEffects();
 
-		stl_int_map_remove_predicate(gSoundEffectData.mChunks, unloadSingleChunkEntry);
-		gSoundEffectData.mChunks.clear();
+		stl_int_map_remove_predicate(gSoundEffectData.mLoaded, unloadSingleSoundEffect);
+		gSoundEffectData.mLoaded.clear();
 	}
 
 	void setSoundEffectCompression(int /*tIsEnabled*/) {} // no need for compression in web/windows
 
 	static int addBufferToSoundEffectHandler(Buffer tBuffer) {
-		SoundEffectEntry e;
+		SoundEffectLoaded e;
 		e.mBuffer = tBuffer;
-		return stl_int_map_push_back(gSoundEffectData.mAllocatedChunks, e);
+		FMOD_CREATESOUNDEXINFO createSoundInfo{ sizeof(FMOD_CREATESOUNDEXINFO) , e.mBuffer.mLength };
+		FMOD_RESULT result = getPrismFmodSystem()->createSound((char*)tBuffer.mData, FMOD_CREATESAMPLE | FMOD_OPENMEMORY | FMOD_LOOP_NORMAL, &createSoundInfo, &e.mLoadedSound);
+		if (result != FMOD_OK)
+		{
+			logErrorFormat("Unable to load sound effect: %s", FMOD_ErrorString(result));
+		}
+		return stl_int_map_push_back(gSoundEffectData.mLoaded, e);
 	}
 
 	int loadSoundEffect(const char* tPath) {
@@ -135,17 +209,9 @@ namespace prism {
 	}
 
 	void unloadSoundEffect(int tID) {
-		SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
-		unloadSoundEffectEntry(e);
-		gSoundEffectData.mAllocatedChunks.erase(tID);
-	}
-
-	static void tryEraseChannelChunk(int tChannel) {
-		setProfilingSectionMarkerCurrentFunction();
-		if (stl_map_contains(gSoundEffectData.mChunks, tChannel)) {
-			Mix_FreeChunk(gSoundEffectData.mChunks[tChannel]);
-			gSoundEffectData.mChunks.erase(tChannel);
-		}
+		auto e = &gSoundEffectData.mLoaded[tID];
+		unloadLoadedSoundEffect(e);
+		gSoundEffectData.mLoaded.erase(tID);
 	}
 
 	int playSoundEffect(int tID) {
@@ -153,52 +219,83 @@ namespace prism {
 		return playSoundEffectChannel(tID, -1, getSoundEffectVolume());
 	}
 
-	static int parseVolume(double tVolume) {
-		return (int)(tVolume * 128);
+	static bool isSlotFree(int i) {
+		if (!gSoundEffectData.mSfxChannels[i]) return true;
+		bool playing = false;
+		if (gSoundEffectData.mSfxChannels[i]->isPlaying(&playing) != FMOD_OK) return true;
+		return !playing;
 	}
 
-	int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreqMul*/, int tIsLooping)
+	static int allocSlot(int requested) {
+		if (requested >= 0)
+		{
+			return requested % (int)gSoundEffectData.mSfxChannels.size();
+		}
+
+		for (int i = 0; i < (int)gSoundEffectData.mSfxChannels.size(); ++i)
+		{
+			if (isSlotFree(i)) return i;
+		}
+
+		logWarning("Unable to find free sound effect slot, defauting to 0");
+		return 0;
+	}
+
+	int playSoundEffectChannel(int tID, int tChannel, double tVolume, double tFreqMul, int tIsLooping)
 	{
 		setProfilingSectionMarkerCurrentFunction();
-		SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
-		SDL_RWops* rwOps = SDL_RWFromConstMem(e->mBuffer.mData, e->mBuffer.mLength);
-		Mix_Chunk* chunk = Mix_LoadWAV_RW(rwOps, 0);
-		int channel = Mix_PlayChannel(tChannel, chunk, tIsLooping);
-		Mix_Volume(channel, parseVolume(tVolume));
-		tryEraseChannelChunk(channel);
+		auto e = &gSoundEffectData.mLoaded[tID];
+		
+		const int slot = allocSlot(tChannel);
+		if (!isSlotFree(slot) && gSoundEffectData.mSfxChannels[slot])
+		{
+			gSoundEffectData.mSfxChannels[slot]->stop();
+			gSoundEffectData.mSfxChannels[slot] = nullptr;
+		}
 
-		gSoundEffectData.mChunks[channel] = chunk;
-		return channel;
+		FMOD_RESULT r = getPrismFmodSystem()->playSound(e->mLoadedSound, nullptr, true, &gSoundEffectData.mSfxChannels[slot]);
+		if (r != FMOD_OK || !gSoundEffectData.mSfxChannels[slot]) return -1;
+
+		gSoundEffectData.mSfxChannels[slot]->setVolume((float)tVolume);
+
+		float base = 0.0f;
+		gSoundEffectData.mSfxChannels[slot]->getFrequency(&base);
+		gSoundEffectData.mSfxChannels[slot]->setFrequency(base * (float)tFreqMul);
+		gSoundEffectData.mSfxChannels[slot]->setLoopCount(tIsLooping ? -1 : 0);
+		gSoundEffectData.mSfxChannels[slot]->setPaused(false);
+
+		return slot;
+	}
+
+	bool isSlotValidAndActive(int tChannel)
+	{
+		return tChannel < gSoundEffectData.mSfxChannels.size() && !isSlotFree(tChannel);
 	}
 
 	void stopSoundEffect(int tChannel) {
 		setProfilingSectionMarkerCurrentFunction();
-		Mix_HaltChannel(tChannel);
-		tryEraseChannelChunk(tChannel);
-	}
-
-	static void stopSingleSoundEffectCB(int tChannel, Mix_Chunk*& /*tChunk*/) {
-		setProfilingSectionMarkerCurrentFunction();
-		Mix_HaltChannel(tChannel);
-		tryEraseChannelChunk(tChannel);
+		if (!isSlotValidAndActive(tChannel)) return;
+		gSoundEffectData.mSfxChannels[tChannel]->stop();
 	}
 
 	void stopAllSoundEffects() {
 		setProfilingSectionMarkerCurrentFunction();
-		stl_int_map_map(gSoundEffectData.mChunks, stopSingleSoundEffectCB);
+		for (int channel = 0; channel < int(gSoundEffectData.mSfxChannels.size()); channel++)
+		{
+			stopSoundEffect(channel);
+		}
 	}
 
 	void panSoundEffect(int tChannel, double tPanning)
 	{
 		setProfilingSectionMarkerCurrentFunction();
-		tPanning = (tPanning + 1.0) * 0.5; // [-1, 1] --> [0, 1]
-		const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
-		Mix_SetPanning(tChannel, 255 - right, right);
+		if (!isSlotValidAndActive(tChannel)) return;
+		gSoundEffectData.mSfxChannels[tChannel]->setPan((float)tPanning);
 	}
 
 	int isSoundEffectPlayingOnChannel(int tChannel) {
 		setProfilingSectionMarkerCurrentFunction();
-		return Mix_Playing(tChannel);
+		return isSlotValidAndActive(tChannel);
 	}
 
 	double getSoundEffectVolume() {
@@ -208,7 +305,13 @@ namespace prism {
 	void setSoundEffectVolume(double tVolume) {
 		setProfilingSectionMarkerCurrentFunction();
 		gSoundEffectData.mVolume = tVolume;
-		Mix_Volume(-1, parseVolume(gSoundEffectData.mVolume));
+		for (int channel = 0; channel < int(gSoundEffectData.mSfxChannels.size()); channel++)
+		{
+			if (isSlotValidAndActive(channel))
+			{
+				gSoundEffectData.mSfxChannels[channel]->setVolume((float)tVolume);
+			}
+		}
 	}
 
 }

@@ -43,14 +43,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbisfile-3.dll">
-      <Filter>DLLs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libvorbis-0.dll">
-      <Filter>DLLs</Filter>
-    </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\libogg-0.dll">
-      <Filter>DLLs</Filter>
+    <CopyFileToFolders Include="..\..\addons\prism\windows\vs17\DLL\fmod.dll">
+      <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>
 </Project>

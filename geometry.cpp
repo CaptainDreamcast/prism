@@ -821,6 +821,11 @@ Vector3D operator+(const Vector3D& a, const Vector3DI& b) {
 	return Vector3D(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
+GeoRectangle2D operator+(const Vector3D& a, const GeoRectangle2D& b)
+{
+	return b + a.xy();
+}
+
 Vector3D operator*(const Vector3D& a, const Vector3D& b) {
 	Vector3D ret;
 	ret.x = a.x * b.x;

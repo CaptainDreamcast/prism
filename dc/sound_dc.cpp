@@ -37,6 +37,8 @@ namespace prism {
 
 	}
 
+	void updateSound() {}
+
 	double getVolume() {
 		return gData.mVolume;
 	}
@@ -50,7 +52,7 @@ namespace prism {
 		return gData.mPanning;
 	}
 
-	void setPanningValue(int /*tChannel*/, double tPanning) {
+	void setPanningValue(double tPanning) {
 		gData.mPanning = tPanning;
 	}
 
@@ -127,6 +129,8 @@ namespace prism {
 		resumeTrack();
 		// TODO: resume streaming
 	}
+
+	void crossFadeMusicLayer(const char* /*tNewPath*/, bool /*tIsLooping*/) {}
 
 	static ActorBlueprint MicrophoneHandler; // TODO: implement microphone
 

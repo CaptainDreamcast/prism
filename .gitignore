@@ -1,4 +1,6 @@
-tools/release/*
+tools/release/web/external/*
+tools/release/vita/external/*
+tools/release/dreamcast/tools/*
 
 *.o
 
@@ -38,3 +40,7 @@ build/*
 *.psd
 
 bin/*
+
+windows/vs17/LIB/fmod_vc.lib
+windows/vs17/DLL/fmod.dll
+web/LIB/libfmod.a

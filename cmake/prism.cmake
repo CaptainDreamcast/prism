@@ -16,7 +16,7 @@ add_library(prism STATIC ${PRISM_SOURCES})
 # Add include paths
 target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2-2.0.7/include)
 target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2_image-2.0.1)
-target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2_mixer-2.0.1)
+target_include_directories(prism PUBLIC C:/Program Files (x86)/FMOD SoundSystem)
 target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2_ttf-2.0.14)
 target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/lpng1632)
 target_include_directories(prism PUBLIC C:/DEV/PLATFORMS/WINDOWS/LIBS/glew-2.1.0/include)
@@ -57,10 +57,10 @@ set_target_properties(SDL2_image PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2_image-2.0.1"
 )
 
-add_library(SDL2_mixer STATIC IMPORTED)
-set_target_properties(SDL2_mixer PROPERTIES
-  IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/../windows/vs17/LIB/SDL2_mixer.lib"
-  INTERFACE_INCLUDE_DIRECTORIES "C:/DEV/PLATFORMS/WINDOWS/LIBS/SDL2_mixer-2.0.1"
+add_library(fmod STATIC IMPORTED)
+set_target_properties(fmod PROPERTIES
+  IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/../windows/vs17/LIB/fmod_vc.lib"
+  INTERFACE_INCLUDE_DIRECTORIES "C:/Program Files (x86)/FMOD SoundSystem"
 )
 
 add_library(SDL2_ttf STATIC IMPORTED)

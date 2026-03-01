@@ -43,6 +43,7 @@
 #include "prism/blitzcollision.h"
 #include "prism/blitzclick.h"
 #include "prism/blitzparticles.h"
+#include "prism/blitzplatforming.h"
 #include "prism/thread.h"
 #include "prism/loadingscreen.h"
 #include "prism/errorscreen.h"
@@ -328,6 +329,7 @@ namespace prism {
 			instantiateActor(getBlitzMugenAnimationHandler());
 			instantiateActor(getBlitzMugenSoundHandler());
 			instantiateActor(getBlitzCollisionHandler());
+			instantiateActor(getBlitzPlatformingHandler());
 			instantiateActor(getBlitzClickHandler());
 			instantiateActor(getBlitzPhysicsHandler());
 			instantiateActor(getBlitzTimelineAnimationHandler());
@@ -538,6 +540,7 @@ namespace prism {
 #endif
 		updateNetplay();
 		updateSystem();
+		updateSound();
 		updateInput();
 		if (isNetplaySyncing()) return;
 

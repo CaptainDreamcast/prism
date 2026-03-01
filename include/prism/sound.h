@@ -8,11 +8,12 @@ namespace prism {
 
 void initSound();
 void shutdownSound();
+void updateSound();
 
 double getVolume();
 void setVolume(double tVolume);
 double getPanningValue();
-void setPanningValue(int tChannel, double tPanning);
+void setPanningValue(double tPanning);
 
 void playTrack(int tTrack);
 void stopTrack();

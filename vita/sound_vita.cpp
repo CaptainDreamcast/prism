@@ -48,6 +48,8 @@ namespace prism {
 
 	}
 
+	void updateSound() {}
+
 	double getVolume() {
 		return gPrismWindowsSoundData.mVolume;
 	}
@@ -61,7 +63,7 @@ namespace prism {
 		return (gPrismWindowsSoundData.mPanning / 128.0) - 1.0;
 	}
 
-	void setPanningValue(int tChannel, double tPanning)
+	void setPanningValue(double tPanning)
 	{
 		//Mix_SetPanning(tChannel, tPanning);
 	}
@@ -182,6 +184,7 @@ namespace prism {
 		resumeTrack();
 	}
 
+	void crossFadeMusicLayer(const char* /*tNewPath*/, bool /*tIsLooping*/) {}
 
 	static void startMicrophone(void* tData)
 	{

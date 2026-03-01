@@ -30,6 +30,7 @@
 #include "blitzparticles.h"
 #include "blitzphysics.h"
 #include "blitztimelineanimation.h"
+#include "blitzplatforming.h"
 
 using namespace std;
 using namespace prism;

@@ -305,6 +305,9 @@
     <ClInclude Include="..\..\include\prism\windows\imgui\filemanager.h">
       <Filter>hdr\windows\imgui</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\blitzplatforming.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\drawing_win.cpp">
@@ -588,6 +591,9 @@
     </ClCompile>
     <ClCompile Include="..\imgui\filemanager.cpp">
       <Filter>src\windows\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\blitzplatforming.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

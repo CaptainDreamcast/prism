@@ -289,7 +289,7 @@ MugenAnimationHandlerElement* addMugenAnimation(MugenAnimation* tStartAnimation,
 	e.mHasLooped = 0;
 	e.mHasShear = 0;
 	e.mIsSpriteOffsetForcedToCenter = 0;
-	e.mCoordinateSystemScale = 1.0;
+	e.mCoordinateSystemScale = Vector2D(1.0, 1.0);
 	e.mIsCollisionDebugActive = 0;
 
 	e.mR = e.mG = e.mB = e.mAlpha = e.mDestinationAlpha = e.mColorFactor = 1;
@@ -860,7 +860,7 @@ void setMugenAnimationShearX(MugenAnimationHandlerElement* e, double tLowerScale
 	e->mShearLowerOffsetX = tLowerScaleOffsetX;
 }
 
-void setMugenAnimationCoordinateSystemScale(MugenAnimationHandlerElement* e, double tCoordinateSystemScale)
+void setMugenAnimationCoordinateSystemScale(MugenAnimationHandlerElement* e, const Vector2D& tCoordinateSystemScale)
 {
 	e->mCoordinateSystemScale = tCoordinateSystemScale;
 }
