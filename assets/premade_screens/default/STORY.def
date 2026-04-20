@@ -1,0 +1,27 @@
+[Header]
+Sprites = game/INTRO.sff
+
+[STORYSTART]
+
+[Image 1]
+anim = 1
+
+[Text 1]
+Speaker = " "
+Text = "You stopped the alien invasion with the acid rain that was going on in the background, but that doesn't really matter."
+
+[Image 1]
+anim = 2
+
+[Text 1]
+Speaker = " "
+Text = "It doesn't matter because you finally have the super rare limited edition Nekoko figurine. You have become the king of anime and thus ruler of earth."
+
+[Image 1]
+anim = 3
+
+[Text 1]
+Speaker = " "
+Text = "That's the moral of the story, don't always stay in a shelter, take some risks every once in a while, and you too can become king of the earth. Thanks a lot for playing! The end! Your super speedrun time: "
+
+[Title]

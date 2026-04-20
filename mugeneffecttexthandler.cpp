@@ -32,6 +32,7 @@ typedef struct {
 	double mR;
 	double mG;
 	double mB;
+	double mAlpha;
 
 	double mScale;
 
@@ -184,6 +185,7 @@ static void drawSingleBitmapText(MugenEffectText* e) {
 	double factor = getNewMugenFontFactor() * e->mScale;
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
+	setDrawingTransparency(e->mAlpha);
 
 	auto& spriteGroup = bitmapFont.mSprites.mGroups[0];
 
@@ -221,6 +223,7 @@ static void drawSingleBitmapText(MugenEffectText* e) {
 	}
 
 	setDrawingBaseColorAdvanced(1, 1, 1);
+	setDrawingTransparency(1.0);
 }
 
 static void drawSingleTruetypeText(MugenEffectText* e) {
@@ -393,6 +396,8 @@ static void drawSingleElecbyteText(MugenEffectText* e) {
 	double factor = getOriginalMugenFontFactor() * e->mScale;
 
 	setMugenEffectTextToBaseEffect(e);
+	setDrawingTransparency(e->mAlpha);
+
 	int i;
 	Position p = vecAdd2D(e->mPosition, Vector3D(font->mOffset.x, font->mOffset.y, 0));
 	Position start = p;
@@ -428,6 +433,7 @@ static void drawSingleElecbyteText(MugenEffectText* e) {
 	}
 
 	setDrawingBaseColorAdvanced(1, 1, 1);
+	setDrawingTransparency(1.0);
 }
 
 static void drawSingleText(void* tCaller, MugenEffectText& tData) {
@@ -492,7 +498,7 @@ int addMugenEffectText(const char* tText, const Position& tPosition, int tFont)
 	e.mFont = getUsedMugenFontFromAvailable(tFont);
 	e.mScale = 1;
 	e.mPosition = vecSub(tPosition, Vector3D(0, e.mFont->mSize.y * e.mScale, 0));
-	e.mR = e.mG = e.mB = 1;
+	e.mR = e.mG = e.mB = e.mAlpha = 1;
 	e.mBaseColor = Vector3D(e.mR, e.mG, e.mB);
 	e.mAlignment = MUGEN_TEXT_ALIGNMENT_LEFT;
 	e.mRectangle = GeoRectangle2D(-INF / 2, -INF / 2, INF, INF);
@@ -718,6 +724,18 @@ void setMugenEffectTextScale(int tID, double tScale)
 	Position p = getMugenEffectTextPosition(tID);
 	e->mScale = tScale;
 	setMugenEffectTextPosition(tID, p);
+}
+
+double getMugenEffectTextTransparency(int tID)
+{
+	MugenEffectText* e = &gMugenEffectTextHandler.mHandledTexts[tID];
+	return e->mAlpha;
+}
+
+void setMugenEffectTextTransparency(int tID, double tOpacity)
+{
+	MugenEffectText* e = &gMugenEffectTextHandler.mHandledTexts[tID];
+	e->mAlpha = tOpacity;
 }
 
 const char* getMugenEffectTextText(int tID)

@@ -129,6 +129,7 @@
     <ClInclude Include="..\..\include\prism\file.h" />
     <ClInclude Include="..\..\include\prism\filereader.h" />
     <ClInclude Include="..\..\include\prism\framerateselectscreen.h" />
+    <ClInclude Include="..\..\include\prism\windowfocusscreen.h" />
     <ClInclude Include="..\..\include\prism\geometry.h" />
     <ClInclude Include="..\..\include\prism\input.h" />
     <ClInclude Include="..\..\include\prism\introtexthelper.h" />
@@ -260,6 +261,7 @@
     <ClCompile Include="..\drawing_win.cpp" />
     <ClCompile Include="..\file_win.cpp" />
     <ClCompile Include="..\framerateselect_win.cpp" />
+    <ClCompile Include="..\windowfocusscreen_win.cpp" />
     <ClCompile Include="..\imgui\filemanager.cpp" />
     <ClCompile Include="..\input_win.cpp" />
     <ClCompile Include="..\logoscreen_win.cpp" />

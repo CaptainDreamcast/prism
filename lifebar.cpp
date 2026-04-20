@@ -4,7 +4,8 @@
 
 namespace prism {
 
-    class LifeBar {
+    class LifeBar
+    {
     public:
         MugenAnimationHandlerElement* mFGElement;
         MugenAnimationHandlerElement* mBGElement;
@@ -34,10 +35,12 @@ namespace prism {
         void updateInternal()
         {
             double percentage = ((double)mCurrentValue) / mMaxValue;
-            if (mType == LifeBarType::STRETCH) {
+            if (mType == LifeBarType::STRETCH)
+            {
                 setMugenAnimationDrawScale(mFGElement, Vector2D(percentage * mFullSize, 1));
             }
-            else if (mType == LifeBarType::WIDTH) {
+            else if (mType == LifeBarType::WIDTH)
+            {
                 setMugenAnimationRectangleWidth(mFGElement, int(percentage * mFullSize));
             }
         }
@@ -52,6 +55,12 @@ namespace prism {
         {
             mCurrentValue = tValue;
             updateInternal();
+        }
+
+        void setVisibility(int tIsVisible)
+        {
+            setMugenAnimationVisibility(mFGElement, tIsVisible);
+            setMugenAnimationVisibility(mBGElement, tIsVisible);
         }
     };
 
@@ -106,6 +115,11 @@ namespace prism {
     void setLifeBarValue(int tID, int tValue)
     {
         gLifeBarHandlerData.mLifeBars[tID].updateByValue(tValue);
+    }
+
+    void setLifeBarVisibility(int tID, int tIsVisible)
+    {
+        gLifeBarHandlerData.mLifeBars[tID].setVisibility(tIsVisible);
     }
 
     void removeAllLifebars()

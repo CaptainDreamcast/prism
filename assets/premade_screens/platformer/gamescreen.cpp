@@ -41,6 +41,7 @@
 - TILES ALONE 33
 - TILES Below 34
 - TILES Below + Window 35
+- Spikes 36
 
 - Spawn 40
 - Goal 41
@@ -64,9 +65,15 @@
 - ENEMY 20
 - Spawn 30
 - Floating numbers 35
-- Mask Effect 40
 - UI 50
 
+
+--- SFX
+PLAYER JUMP 1 0
+PLAYER DEATH 1 2
+ENEMY SHOOTING 1 5
+LOSE JINGLE 100 0
+VICTORY JINGLE 100 0
 
 */
 
@@ -85,8 +92,8 @@ public:
         load();
     }
 
-    double sfxVol = 0.0;
-    double jingleVol = 0.0;
+    double sfxVol = 0.2;
+    double jingleVol = 1.0;
 
     MugenSpriteFile mSprites;
     MugenAnimations mAnimations;
@@ -99,11 +106,6 @@ public:
     }
 
     void load() {
-        if (gGameScreenData.mLevel <= 1)
-        {
-            streamMusicFile("game/GAME.ogg");
-            pauseMusic();
-        }
         loadFiles();
         loadGeneral();
         loadBG();
@@ -116,6 +118,7 @@ public:
         loadVictory();
         loadLoss();
 
+        streamMusicFile("game/GAME.ogg");
         //activateCollisionHandlerDebugMode();
     }
 
@@ -136,15 +139,20 @@ public:
     void loadGeneral() {
         loadCollisions();
     }
-    CollisionListData* playerCollisionList;
+    CollisionListData* playerCollisionListShots;
+    CollisionListData* playerCollisionListSpikes;
     CollisionListData* enemyShotCollisionList;
+        CollisionListData* spikeCollisionList;
     CollisionListData* tileCollisionList;
     void loadCollisions() {
-        playerCollisionList = addCollisionListToHandler();
+        playerCollisionListShots = addCollisionListToHandler();
+        playerCollisionListSpikes = addCollisionListToHandler();
         enemyShotCollisionList = addCollisionListToHandler();
+        spikeCollisionList = addCollisionListToHandler();
         tileCollisionList = addCollisionListToHandler();
-        addCollisionHandlerCheck(playerCollisionList, enemyShotCollisionList);
-        addCollisionHandlerCheck(playerCollisionList, tileCollisionList);
+        addCollisionHandlerCheck(playerCollisionListShots, enemyShotCollisionList);
+        addCollisionHandlerCheck(playerCollisionListSpikes, spikeCollisionList);
+        addCollisionHandlerCheck(tileCollisionList, enemyShotCollisionList);
     }
 
     // BG
@@ -185,6 +193,7 @@ public:
         ENEMY_MOVEMENT = 4,
         PLAYER_SPAWN = 8,
         PLAYER_GOAL = 16,
+        SPIKE = 32,
     };
     std::vector<std::vector<int>> levelTileFlags;
     std::vector<std::vector<int>> levelTileEntities;
@@ -215,6 +224,10 @@ public:
         {
             spawnSolid(tile);
         }
+        if (flags & int(TileFlags::SPIKE))
+        {
+            spawnPlayerGoal(tile);
+        }
         if (flags & int(TileFlags::ENEMY_SPAWN))
         {
             spawnEnemy(tile);
@@ -233,9 +246,21 @@ public:
         auto pos = tile2TopLeftPos(tile);
         auto entityId = addBlitzEntity(pos.xyz(5));
         addBlitzMugenAnimationComponent(entityId, &mSprites, &mAnimations, 30);
-        addBlitzPlatformingSolidTileComponent(entityId, CollisionRect(0, 0, 16, 16));
+        addBlitzPlatformingSolidTileComponent(entityId, CollisionRect(0, 0.5, 16, 15.5));
+        addBlitzCollisionComponent(entityId);
+        addBlitzCollisionRect(entityId, tileCollisionList, CollisionRect(0, 0, 16, 16));
         levelTileEntities[tile.y][tile.x] = entityId;
     }
+
+    void spawnSpike(const Vector2DI& tile) {
+        auto pos = tile2PlacementPos(tile);
+        auto entityId = addBlitzEntity(pos.xyz(5));
+        addBlitzMugenAnimationComponent(entityId, &mSprites, &mAnimations, 36);
+        addBlitzCollisionComponent(entityId);
+        addBlitzCollisionRect(entityId, spikeCollisionList, CollisionRect(-7, -1, 14, 1));
+        levelTileEntities[tile.y][tile.x] = entityId;
+    }
+
     void spawnEnemy(const Vector2DI& tile) {
         addEnemy(tile);
     }
@@ -261,13 +286,15 @@ public:
 
     // PLAYER
     int playerEntity;
-    int playerCollisionId;
+    int playerCollisionIdShots;
+    int playerCollisionIdSpikes;
     bool playerIsDying = false;
     void loadPlayer() {
         auto pos = tile2PlacementPos(playerStartTile);
         playerEntity = addBlitzEntity(pos.xyz(10));
         addBlitzMugenAnimationComponent(playerEntity, &mSprites, &mAnimations, 10);
-        playerCollisionId = addBlitzCollisionRect(playerEntity, playerCollisionList, CollisionRect(-4, -16, 8, 16));
+        playerCollisionIdSpikes = addBlitzCollisionRect(playerEntity, playerCollisionListSpikes, CollisionRect(-4, -16, 8, 16));
+        playerCollisionIdShots = addBlitzCollisionRect(playerEntity, playerCollisionListShots, CollisionRect(-1, -6, 3, 2));
         addBlitzPlatformingPlayerComponent(playerEntity, CollisionRect(-4, -16, 8, 16));
     }
     void updatePlayer() {
@@ -342,7 +369,7 @@ public:
     }
 
     void updatePlayerHit() {
-        if (!playerIsDying && hasBlitzCollidedThisFrame(playerEntity, playerCollisionId))
+        if (!playerIsDying && (hasBlitzCollidedThisFrame(playerEntity, playerCollisionIdShots) || hasBlitzCollidedThisFrame(playerEntity, playerCollisionIdSpikes)))
         {
             auto collidedEntities = getBlitzCollidedEntitiesThisFrame(playerEntity);
             bool hasCollidedWithBullet = false;
@@ -758,8 +785,6 @@ public:
         uiAnimationTicks++;
         if (uiAnimationTicks > 120 || (uiAnimationTicks > 1 && hasPressedStartFlank()))
         {
-            resumeMusic();
-            crossFadeMusicLayer("game/GAME.ogg", true);
             setMugenAnimationVisibility(getReadyElement, 0);
             setMugenTextVisibility(waveText, 0);
             isShowingGetReady = false;

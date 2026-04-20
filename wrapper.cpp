@@ -804,6 +804,11 @@ namespace prism {
 		unloadScreen(gPrismWrapperData.mScreen);
 	}
 
+	bool getWrapperAbortEnabled()
+	{
+		return !gPrismWrapperData.mIsAbortDisabled;
+	}
+
 	void setWrapperAbortEnabled(bool isEnabled)
 	{
 		gPrismWrapperData.mIsAbortDisabled = !isEnabled;

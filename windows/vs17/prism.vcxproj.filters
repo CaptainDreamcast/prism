@@ -74,6 +74,9 @@
     <ClInclude Include="..\..\include\prism\framerateselectscreen.h">
       <Filter>hdr</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\prism\windowfocusscreen.h">
+      <Filter>hdr</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\prism\geometry.h">
       <Filter>hdr</Filter>
     </ClInclude>
@@ -317,6 +320,9 @@
       <Filter>src\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\framerateselect_win.cpp">
+      <Filter>src\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\windowfocusscreen_win.cpp">
       <Filter>src\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\input_win.cpp">

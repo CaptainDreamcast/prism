@@ -77,33 +77,42 @@ namespace prism {
 	}
 
 	typedef struct {
-		uint8_t mBuffer1[8]; // 8
-		uint32_t mMagic; // 12
-		uint8_t mBuffer2[8]; // 20
+		char mRiffIdentifier[4]; // 4
+		uint32_t m_SizeMinus8; // 8
+		char mMagic[4]; // 12
+		char mFormatIdentifier[4]; // 16
+		uint32_t mFormatSize; // 20
 		uint16_t mFormat; // 22
 		uint16_t mStereo; // 24
 		uint32_t mHertz; // 28
 		uint8_t mBuffer3[6]; //34
 		uint16_t mBitSize; //36
-		uint8_t mBuffer4[4]; //40
-		uint32_t mLen; // 44
 	} WaveHeader;
+
+	typedef struct
+	{
+		char mDataMagic[4]; //4
+		uint32_t mLen; // 8
+	} WaveDataHeader;
 
 	static Buffer upsampleBuffer8Bit(const Buffer& tBuffer) {
 		auto header = (WaveHeader*)tBuffer.mData;
-		uint32_t totalLength = sizeof(WaveHeader) + header->mLen * 2;
+		uint32_t dataHeaderOffset = header->mFormatSize + 20; // subchunk1 + subchunk1 header (8 bytes) + riff header (12 bytes)
+		auto dataHeader = (WaveDataHeader*)((char*)tBuffer.mData + dataHeaderOffset); 
+		uint32_t totalLength = dataHeaderOffset + sizeof(WaveDataHeader) + dataHeader->mLen * 2;
 
 		void* fullData = allocMemory(totalLength);
 		auto newHeader = (WaveHeader*)fullData;
 		*newHeader = *header;
 		newHeader->mBitSize = 16;
-		newHeader->mLen *= 2;
+		auto newDataHeader = (WaveDataHeader*)((char*)fullData + dataHeaderOffset);
+		newDataHeader->mLen = dataHeader->mLen * 2;
 
-		uint8_t* src = ((uint8_t*)tBuffer.mData) + sizeof(WaveHeader);
-		int16_t* dst = (int16_t*)(((uint8_t*)fullData) + sizeof(WaveHeader));
+		uint8_t* src = ((uint8_t*)tBuffer.mData) + dataHeaderOffset + sizeof(WaveDataHeader);
+		int16_t* dst = (int16_t*)((uint8_t*)fullData + dataHeaderOffset + sizeof(WaveDataHeader));
 
 		int dstPos = 0;
-		size_t copyLength = header->mLen - (header->mLen % 2);
+		size_t copyLength = dataHeader->mLen - (dataHeader->mLen % 2);
 		for (size_t srcPos = 0; srcPos < copyLength; srcPos++) {
 			dst[dstPos] = (int16_t(src[srcPos]) - 128) << 8;
 			dstPos += 1;
@@ -114,20 +123,23 @@ namespace prism {
 
 	static Buffer downsampleBuffer32Bit(const Buffer& tBuffer) {
 		auto header = (WaveHeader*)tBuffer.mData;
-		uint32_t totalLength = sizeof(WaveHeader) + header->mLen / 2;
+		uint32_t dataHeaderOffset = header->mFormatSize + 20; // subchunk1 + subchunk1 header (8 bytes) + riff header (12 bytes)
+		auto dataHeader = (WaveDataHeader*)((char*)tBuffer.mData + dataHeaderOffset);
+		uint32_t totalLength = dataHeaderOffset + sizeof(WaveDataHeader) + dataHeader->mLen / 2;
 
 		void* fullData = allocMemory(totalLength);
 		auto newHeader = (WaveHeader*)fullData;
 		*newHeader = *header;
 		newHeader->mFormat = 0x01;
 		newHeader->mBitSize = 16;
-		newHeader->mLen /= 2;
+		auto newDataHeader = (WaveDataHeader*)((char*)fullData + dataHeaderOffset);
+		newDataHeader->mLen = dataHeader->mLen / 2;
 
-		float* src = (float*)(((uint8_t*)tBuffer.mData) + sizeof(WaveHeader));
-		int16_t* dst = (int16_t*)(((uint8_t*)fullData) + sizeof(WaveHeader));
+		float* src = (float*)((uint8_t*)tBuffer.mData + dataHeaderOffset + sizeof(WaveDataHeader));
+		int16_t* dst = (int16_t*)((uint8_t*)fullData + dataHeaderOffset + sizeof(WaveDataHeader));
 
 		int dstPos = 0;
-		size_t baseLength = header->mLen / 2;
+		size_t baseLength = dataHeader->mLen / 2;
 		size_t copyLength = baseLength - (baseLength % 2);
 		for (size_t srcPos = 0; srcPos < copyLength; srcPos++) {
 			float fval = src[srcPos] * 2 - 1;
@@ -152,12 +164,26 @@ namespace prism {
 		}
 	}
 
+	static bool checkSoundEffectBufferValidity(const Buffer& tBuffer)
+	{
+		const auto header = (WaveHeader*)tBuffer.mData;
+		const auto magicString = (const char*)(&header->mMagic);
+		return magicString[0] == 'W' && magicString[1] == 'A' && magicString[2] == 'V' && magicString[3] == 'E';
+	}
+
 	int loadSoundEffectFromBuffer(const Buffer& tBuffer) {
+		if (!checkSoundEffectBufferValidity(tBuffer))
+		{
+			logWarning("[Soundeffect_Vita] Trying to load invalid sound effect buffer");
+			return -1;
+		}
 		Buffer ownedBuffer = resampleBufferIfNecessary(tBuffer);
 		return addBufferToSoundEffectHandler(ownedBuffer);
 	}
 
 	void unloadSoundEffect(int tID) {
+		if (tID == -1) return;
+
 		SoundEffectEntry* e = &gSoundEffectData.mAllocatedChunks[tID];
 		unloadSoundEffectEntry(e);
 		gSoundEffectData.mAllocatedChunks.erase(tID);

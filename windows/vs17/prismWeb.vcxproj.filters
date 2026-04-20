@@ -26,5 +26,8 @@
     <ClCompile Include="..\..\web\thread_web.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\web\windowfocusscreen_web.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

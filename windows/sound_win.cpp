@@ -200,6 +200,10 @@ namespace prism {
 	}
 
 	static void playMusicPath(const char* tPath) {
+		if (gPrismWindowsSoundData.mIsPlayingTrack) stopTrack();
+		if (gPrismWindowsSoundData.mHasLoadedTrack) unloadTrack();
+		gPrismWindowsSoundData.mShouldUnloadTrack = false;
+
 		char fullPath[1024];
 		getFullPath(fullPath, tPath);
 
@@ -236,6 +240,7 @@ namespace prism {
 		if (!gPrismWindowsSoundData.mIsPlayingTrack) return;
 
 		gPrismWindowsSoundData.mChannel->stop();
+		gPrismWindowsSoundData.mIsPlayingTrack = 0;
 	}
 
 	void pauseTrack()
@@ -270,7 +275,11 @@ namespace prism {
 	static void streamMusicFileGeneral(const char* tPath, int tLoopAmount) {
 		playMusicPath(tPath);
 
-		gPrismWindowsSoundData.mSystem->playSound(gPrismWindowsSoundData.mTrack, nullptr, true, &gPrismWindowsSoundData.mChannel);
+		auto result = gPrismWindowsSoundData.mSystem->playSound(gPrismWindowsSoundData.mTrack, nullptr, false, &gPrismWindowsSoundData.mChannel);
+		if (result != FMOD_OK)
+		{
+			logErrorFormat("Unable to play sound %s: %s", tPath, FMOD_ErrorString(result));
+		}
 		gPrismWindowsSoundData.mChannel->setCallback(fmodCallback);
 		gPrismWindowsSoundData.mChannel->setVolume((float)gPrismWindowsSoundData.mVolume);
 		gPrismWindowsSoundData.mChannel->setPan((float)gPrismWindowsSoundData.mPanning);

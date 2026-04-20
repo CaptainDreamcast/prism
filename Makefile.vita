@@ -3,7 +3,7 @@ include Makefile.common
 OBJS += vita/drawing_vita.o vita/texture_vita.o vita/input_vita.o \
 windows/framerateselect_win.o windows/file_win.o windows/math_win.o vita/system_vita.o vita/log_vita.o \
 windows/saveload_win.o vita/soundeffect_vita.o vita/sound_vita.o vita/memoryhandler_vita.o web/netplay_web.o \
-vita/screeneffect_vita.o windows/logoscreen_win.o web/thread_web.o windows/romdisk_win.o
+vita/screeneffect_vita.o windows/logoscreen_win.o web/thread_web.o windows/romdisk_win.o windows/windowfocusscreen_win.o
 
 
 PHONY := all package clean

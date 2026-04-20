@@ -25,6 +25,8 @@ int getMugenEffectTextVisibility(int tID);
 void setMugenEffectTextVisibility(int tID, int tIsVisible);
 double getMugenEffectTextSizeX(int tID);
 void setMugenEffectTextScale(int tID, double tScale); // only for bitmap fonts for now
+double getMugenEffectTextTransparency(int tID);
+void setMugenEffectTextTransparency(int tID, double tOpacity);
 
 const char* getMugenEffectTextText(int tID);
 const char* getMugenEffectTextDisplayedText(int tID);

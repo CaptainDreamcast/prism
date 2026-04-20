@@ -19,6 +19,7 @@ int getLifeBarPercentage(int tID);
 void setLifeBarPercentage(int tID, double tPercentage);
 int getLifeBarValue(int tID);
 void setLifeBarValue(int tID, int tValue);
+void setLifeBarVisibility(int tID, int tIsVisible);
 
 void removeAllLifebars();
 

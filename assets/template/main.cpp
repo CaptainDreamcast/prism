@@ -1,4 +1,5 @@
 #include <prism/framerateselectscreen.h>
+#include <prism/windowfocusscreen.h>
 #include <prism/physics.h>
 #include <prism/file.h>
 #include <prism/drawing.h>
@@ -50,8 +51,7 @@ int main(int argc, char** argv) {
 	addMugenFont(-1, "font/f4x6.fnt");
 	
 	logg("Check framerate");
-	FramerateSelectReturnType framerateReturnType = selectFramerate();
-	if (framerateReturnType == FRAMERATE_SCREEN_RETURN_ABORT) {
+	if (selectFramerate() == FRAMERATE_SCREEN_RETURN_ABORT) {
 		exitGame();
 	}
 
@@ -63,7 +63,13 @@ int main(int argc, char** argv) {
 		setMinimumLogType(LOG_TYPE_NONE);
 	}
 
-	startScreenHandling(getGameScreen());
+	const auto startScreen = getGameScreen();
+#ifdef __EMSCRIPTEN__
+	setWindowFocusScreenNextScreen(startScreen);
+	startScreenHandling(getWindowFocusScreen());
+#else
+	startScreenHandling(startScreen);
+#endif
 
 	exitGame();
 	

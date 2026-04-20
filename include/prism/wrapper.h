@@ -40,6 +40,7 @@ void setWrapperBetweenScreensCB(void(*tCB)(void*), void* tCaller);
 void setWrapperIsPausingTracksBetweenScreens(int tIsPausingTracks);
 void setWrapperToExhibitionMode();
 void setWrapperToNonExhibitionMode();
+bool getWrapperAbortEnabled();
 void setWrapperAbortEnabled(bool isEnabled);
 
 void setWrapperTitleScreen(Screen* tTitleScreen);
