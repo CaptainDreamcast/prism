@@ -31,7 +31,7 @@ namespace prism {
 
     void imguiPrismInitAfterDrawingSetup()
     {
-        if (isInDevelopMode() && false) // TODO: fix random crash with imgui opening files
+        if (isInDevelopMode())
         {
             // Setup Dear ImGui context
             IMGUI_CHECKVERSION();

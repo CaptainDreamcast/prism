@@ -7,6 +7,12 @@
 #include <prism/math.h>
 #include <prism/stlutil.h>
 
+#ifdef _WIN32
+#include <vector>
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 
 namespace prism {
@@ -29,6 +35,56 @@ namespace prism {
 		map<int, Tween> mTweens;
 		int mIsActive;
 	} gTweening;
+
+#ifdef _WIN32
+	static std::vector<int> gImguiTweensToRemove;
+
+	void imguiTweeningHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Tweening", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Tweening", &isWindowShown);
+		ImGui::Text("IsActive = %d", gTweening.mIsActive);
+		ImGui::Text("Active Tweens = %d", (int)gTweening.mTweens.size());
+		ImGui::Separator();
+
+		gImguiTweensToRemove.clear();
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("Tweens", 6, flags, ImVec2(0, 260)))
+		{
+			ImGui::TableSetupColumn("ID");
+			ImGui::TableSetupColumn("Value");
+			ImGui::TableSetupColumn("Start");
+			ImGui::TableSetupColumn("End");
+			ImGui::TableSetupColumn("Progress");
+			ImGui::TableSetupColumn("");
+			ImGui::TableHeadersRow();
+
+			for (auto& entryPair : gTweening.mTweens)
+			{
+				const int id = entryPair.first;
+				Tween& e = entryPair.second;
+				ImGui::PushID(id);
+				ImGui::TableNextRow(); ImGui::TableNextColumn();
+				ImGui::Text("%d", id); ImGui::TableNextColumn();
+				ImGui::Text("%.3f", e.mDst ? *e.mDst : 0.0); ImGui::TableNextColumn();
+				ImGui::Text("%.3f", e.mStart); ImGui::TableNextColumn();
+				ImGui::Text("%.3f", e.mEnd); ImGui::TableNextColumn();
+				const float fraction = e.mDuration > 0 ? (float)(e.mNow / e.mDuration) : 0.0f;
+				ImGui::ProgressBar(fraction); ImGui::TableNextColumn();
+				if (ImGui::SmallButton("Remove")) gImguiTweensToRemove.push_back(id);
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+
+		for (int id : gImguiTweensToRemove) removeTween(id);
+		gImguiTweensToRemove.clear();
+		ImGui::End();
+	}
+#endif
 
 	static void unloadTweening(void*);
 	static void loadTweening(void*)

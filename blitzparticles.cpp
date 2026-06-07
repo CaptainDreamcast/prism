@@ -5,6 +5,11 @@
 #include "prism/blitzcamerahandler.h"
 #include "prism/profiling.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 namespace prism {
 
 	typedef struct {
@@ -25,6 +30,48 @@ namespace prism {
 		TextureData mWhiteTexture;
 		IntMap mParticles;
 	} gBlitzParticlesData;
+
+#ifdef _WIN32
+	static int gImguiParticleRowIndex;
+
+	static void imguiParticleEntry(void* tCaller, void* tData)
+	{
+		(void)tCaller;
+		if (gImguiParticleRowIndex >= 200) return;
+		ParticleEntry* e = (ParticleEntry*)tData;
+		ImGui::TableNextRow(); ImGui::TableNextColumn();
+		ImGui::Text("%d", gImguiParticleRowIndex++); ImGui::TableNextColumn();
+		ImGui::Text("%.0f %.0f", e->mPos.x, e->mPos.y); ImGui::TableNextColumn();
+		ImGui::Text("%.0f/%.0f", e->mNow, e->mLifeTime); ImGui::TableNextColumn();
+		ImGui::Text("%.2f %.2f %.2f", e->mColor.x, e->mColor.y, e->mColor.z);
+	}
+
+	void imguiBlitzParticleHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Blitz", "Particle Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Blitz Particle Handler", &isWindowShown);
+		ImGui::Text("Particles = %d", int_map_size(&gBlitzParticlesData.mParticles));
+		ImGui::TextDisabled("(table capped at 200 rows)");
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("Particles", 4, flags, ImVec2(0, 280)))
+		{
+			ImGui::TableSetupColumn("#");
+			ImGui::TableSetupColumn("Position");
+			ImGui::TableSetupColumn("Now/Life");
+			ImGui::TableSetupColumn("Color");
+			ImGui::TableHeadersRow();
+			gImguiParticleRowIndex = 0;
+			int_map_map(&gBlitzParticlesData.mParticles, imguiParticleEntry, NULL);
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 
 	static void loadParticleHandler(void* tData) {

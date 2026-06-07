@@ -16,4 +16,6 @@ void shutdownTimer();
 
 int hasTimerFinished(int tID);
 
+void imguiTimer();
+
 }

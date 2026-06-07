@@ -15,4 +15,6 @@ void lockSemaphore(Semaphore tSemaphore);
 void releaseSemaphore(Semaphore tSemaphore); 
 void terminateSelfAsThread(int tReturnValue);
 
+void imguiThread();
+
 }

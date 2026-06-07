@@ -10,6 +10,11 @@
 #include <prism/system.h>
 #include <prism/stlutil.h>
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 
 namespace prism {
@@ -19,6 +24,55 @@ static struct {
 	Vector2D mPixelCenter = Vector2D(0.5, 0.5);
 	int mIsPaused;
 } gMugenAnimationHandler;
+
+#ifdef _WIN32
+void imguiMugenAnimationHandler()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Mugen", "Animation Handler", &isWindowShown);
+	if (!isWindowShown) return;
+
+	ImGui::Begin("Mugen Animation Handler", &isWindowShown);
+	ImGui::Text("Animations = %d", (int)gMugenAnimationHandler.mAnimations.size());
+	ImGui::Text("Handler Paused = %d", gMugenAnimationHandler.mIsPaused);
+	ImGui::Text("Pixel Center = %.2f, %.2f", gMugenAnimationHandler.mPixelCenter.x, gMugenAnimationHandler.mPixelCenter.y);
+	ImGui::Separator();
+
+	static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+	if (ImGui::BeginTable("MugenAnimations", 8, flags, ImVec2(0, 300)))
+	{
+		ImGui::TableSetupColumn("ID");
+		ImGui::TableSetupColumn("Anim");
+		ImGui::TableSetupColumn("Step");
+		ImGui::TableSetupColumn("Sprite");
+		ImGui::TableSetupColumn("Facing");
+		ImGui::TableSetupColumn("Alpha");
+		ImGui::TableSetupColumn("Hitboxes");
+		ImGui::TableSetupColumn("Paused");
+		ImGui::TableHeadersRow();
+
+		for (auto& entryPair : gMugenAnimationHandler.mAnimations)
+		{
+			MugenAnimationHandlerElement& e = entryPair.second;
+			ImGui::PushID(e.mID);
+			ImGui::TableNextRow(); ImGui::TableNextColumn();
+			ImGui::Text("%d", e.mID); ImGui::TableNextColumn();
+			ImGui::Text("%d", getMugenAnimationAnimationNumber(&e)); ImGui::TableNextColumn();
+			ImGui::Text("%d/%d", getMugenAnimationAnimationStep(&e), getMugenAnimationAnimationStepAmount(&e)); ImGui::TableNextColumn();
+			Vector3DI spr = getMugenAnimationSprite(&e);
+			ImGui::Text("%d,%d", spr.x, spr.y); ImGui::TableNextColumn();
+			ImGui::Text("%c%c", e.mIsFacingRight ? 'R' : 'L', e.mIsFacingDown ? 'D' : 'U'); ImGui::TableNextColumn();
+			ImGui::Text("%.2f", e.mAlpha); ImGui::TableNextColumn();
+			ImGui::Text("%d", (int)e.mActiveHitboxes.size()); ImGui::TableNextColumn();
+			bool paused = e.mIsPaused != 0;
+			if (ImGui::Checkbox("##paused", &paused)) { if (paused) pauseMugenAnimation(&e); else unpauseMugenAnimation(&e); }
+			ImGui::PopID();
+		}
+		ImGui::EndTable();
+	}
+	ImGui::End();
+}
+#endif
 
 void setMugenAnimationHandlerPixelCenter(const Vector2D& tPixelCenter)
 {

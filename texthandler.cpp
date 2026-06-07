@@ -8,6 +8,11 @@
 #include "prism/memoryhandler.h"
 #include "prism/stlutil.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 namespace prism {
 
 	typedef struct {
@@ -42,6 +47,50 @@ namespace prism {
 		List mTexts;
 		std::map<int, std::pair<std::string, std::string>> mFonts; // stores (HeaderPath, TexturePath)
 	} gPrismTextHandlerData;
+
+#ifdef _WIN32
+	static int gImguiTextRowIndex;
+
+	static void imguiTextEntry(void* tCaller, void* tData)
+	{
+		(void)tCaller;
+		HandledText* e = (HandledText*)tData;
+		ImGui::TableNextRow(); ImGui::TableNextColumn();
+		ImGui::Text("%d", gImguiTextRowIndex++); ImGui::TableNextColumn();
+		ImGui::Text("%d", e->mFont); ImGui::TableNextColumn();
+		ImGui::Text("%d/%d", (int)strlen(e->mDrawnText), (int)strlen(e->mText)); ImGui::TableNextColumn();
+		ImGui::Text("%.0f/%.0f", e->mNow, e->mDuration); ImGui::TableNextColumn();
+		ImGui::TextUnformatted(e->mText);
+	}
+
+	void imguiTextHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Text Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Text Handler", &isWindowShown);
+		ImGui::Text("IsActive = %d", gPrismTextHandlerData.mIsActive);
+		ImGui::Text("Texts = %d", list_size(&gPrismTextHandlerData.mTexts));
+		ImGui::Text("Registered Fonts = %d", (int)gPrismTextHandlerData.mFonts.size());
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("Texts", 5, flags, ImVec2(0, 260)))
+		{
+			ImGui::TableSetupColumn("#");
+			ImGui::TableSetupColumn("Font");
+			ImGui::TableSetupColumn("Built");
+			ImGui::TableSetupColumn("Now/Dur");
+			ImGui::TableSetupColumn("Text");
+			ImGui::TableHeadersRow();
+			gImguiTextRowIndex = 0;
+			list_map(&gPrismTextHandlerData.mTexts, imguiTextEntry, NULL);
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 	void setupTextHandler() {
 		if (gPrismTextHandlerData.mIsActive) {

@@ -13,4 +13,6 @@ void stopBlitzTimelineAnimation(int tEntityID, int tAnimationID);
 void stopAllBlitzTimelineAnimations(int tEntityID);
 void setBlitzTimelineAnimationCB(int tEntityID, int tAnimationID, int tCBID, void(*tCB)(void*), void * tCaller);
 
+void imguiBlitzTimelineAnimationHandler();
+
 }

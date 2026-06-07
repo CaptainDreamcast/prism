@@ -256,4 +256,6 @@ void unpauseMugenAnimationHandler();
 
 ActorBlueprint getMugenAnimationHandler();
 
+void imguiMugenAnimationHandler();
+
 }

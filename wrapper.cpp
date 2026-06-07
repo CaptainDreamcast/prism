@@ -524,6 +524,28 @@ namespace prism {
 		imguiInputGeneral();
 		imguiInputHardware();
 		imguiDebugGeneral();
+		imguiTimer();
+		imguiTexturePool();
+		imguiActorHandler();
+		imguiThread();
+		imguiPhysicsHandler();
+		imguiTweeningHandler();
+		imguiClipboardHandler();
+		imguiCollisionHandler();
+		imguiTextHandler();
+		imguiCollisionAnimationHandler();
+		imguiAnimationHandler();
+		imguiStageHandler();
+		imguiMugenAnimationHandler();
+		imguiMugenTextHandler();
+		imguiBlitzEntityHandler();
+		imguiBlitzCameraHandler();
+		imguiBlitzParticleHandler();
+		imguiBlitzMugenSoundHandler();
+		imguiBlitzPhysicsHandler();
+		imguiBlitzCollisionHandler();
+		imguiBlitzMugenAnimationHandler();
+		imguiBlitzTimelineAnimationHandler();
 		imgui::fileManagerImguiRender();
 
 	}

@@ -28,6 +28,8 @@
 - Player walking 11
 - Player dying 12
 - Player winning 13
+- Player shooting 14
+- Player jumping 15
 
 - ENEMY 20
 - Enemy walking 21
@@ -46,8 +48,10 @@
 - Spawn 40
 - Goal 41
 
-- Bullet 60
-- Bullet hit 61
+- Enemy Bullet 60
+- Enemy Bullet hit 61
+- Player Bullet 62
+- Player Bullet hit 63
 
 - Start UI 70
 - Loss UI 71
@@ -72,6 +76,8 @@
 PLAYER JUMP 1 0
 PLAYER DEATH 1 2
 ENEMY SHOOTING 1 5
+ENEMY HIT 1 6
+PLAYER SHOOTING 1 7
 LOSE JINGLE 100 0
 VICTORY JINGLE 100 0
 
@@ -142,17 +148,23 @@ public:
     CollisionListData* playerCollisionListShots;
     CollisionListData* playerCollisionListSpikes;
     CollisionListData* enemyShotCollisionList;
-        CollisionListData* spikeCollisionList;
+    CollisionListData* enemyCollisionList;
+    CollisionListData* playerShotCollisionList;
+    CollisionListData* spikeCollisionList;
     CollisionListData* tileCollisionList;
     void loadCollisions() {
         playerCollisionListShots = addCollisionListToHandler();
         playerCollisionListSpikes = addCollisionListToHandler();
         enemyShotCollisionList = addCollisionListToHandler();
+        enemyCollisionList = addCollisionListToHandler();
+        playerShotCollisionList = addCollisionListToHandler();
         spikeCollisionList = addCollisionListToHandler();
         tileCollisionList = addCollisionListToHandler();
         addCollisionHandlerCheck(playerCollisionListShots, enemyShotCollisionList);
         addCollisionHandlerCheck(playerCollisionListSpikes, spikeCollisionList);
+        addCollisionHandlerCheck(enemyCollisionList, playerShotCollisionList);
         addCollisionHandlerCheck(tileCollisionList, enemyShotCollisionList);
+        addCollisionHandlerCheck(tileCollisionList, playerShotCollisionList);
     }
 
     // BG
@@ -226,7 +238,7 @@ public:
         }
         if (flags & int(TileFlags::SPIKE))
         {
-            spawnPlayerGoal(tile);
+            spawnSpike(tile);
         }
         if (flags & int(TileFlags::ENEMY_SPAWN))
         {
@@ -314,8 +326,34 @@ public:
         {
             updatePlayerWalking();
             updatePlayerJumping();
+            updatePlayerShooting();
             updatePlayerDying();
         }
+    }
+
+    int playerShotCooldown = 0;
+    void updatePlayerShooting() {
+        if (playerShotCooldown)
+        {
+            playerShotCooldown--;
+            return;
+        }
+
+        if (hasPressedB())
+        {
+            addPlayerShot();
+            tryPlayMugenSoundAdvanced(&mSounds, 1, 7, sfxVol);
+            playerShotCooldown = 30;
+        }
+    }
+
+    void addPlayerShot()
+    {
+        const auto dx = getBlitzMugenAnimationIsFacingRight(playerEntity) ? 1.0 : -1.0;
+        auto shotOffset = Vector2D(-2, -9);
+        if (!getBlitzMugenAnimationIsFacingRight(playerEntity)) shotOffset.x *= -1;
+        addGeneralShot(getBlitzEntityPosition(playerEntity).xy() + shotOffset, playerShotCollisionList, 62, 33.0, 4, Vector2D(dx, 0.0));
+        changeBlitzMugenAnimationIfDifferent(playerEntity, 14);
     }
 
     CollisionRect playerCollisionRect = CollisionRect(-4, -16, 8, 16);
@@ -331,6 +369,15 @@ public:
         }
     }
 
+    bool canPlayerAnimationIdle()
+    {
+        auto anim = getBlitzMugenAnimationAnimationNumber(playerEntity);
+        auto step = getBlitzMugenAnimationAnimationStep(playerEntity);
+        auto stepCount = getBlitzMugenAnimationAnimationStepAmount(playerEntity);
+        if (anim == 14 && step < stepCount - 1) return false;
+        return true;
+    }
+
     void updatePlayerWalking() {
         double delta = 0;
         if (hasPressedLeft())
@@ -344,13 +391,23 @@ public:
             setBlitzMugenAnimationFaceDirection(playerEntity, 1);
         }
 
-        if (delta && !isBlitzPlatformingPlayerJumping(playerEntity))
+        if (canPlayerAnimationIdle())
         {
-            changeBlitzMugenAnimationIfDifferent(playerEntity, 11);
-        }
-        else
-        {
-            changeBlitzMugenAnimationIfDifferent(playerEntity, 10);
+            if (delta && !isBlitzPlatformingPlayerJumping(playerEntity))
+            {
+                changeBlitzMugenAnimationIfDifferent(playerEntity, 11);
+            }
+            else
+            {
+                if (isBlitzPlatformingPlayerJumping(playerEntity))
+                {
+                    changeBlitzMugenAnimationIfDifferent(playerEntity, 15);
+                }
+                else
+                {
+                    changeBlitzMugenAnimationIfDifferent(playerEntity, 10);
+                }
+            }
         }
 
         addBlitzPlatformingPlayerMovement(playerEntity, delta);
@@ -375,7 +432,7 @@ public:
             bool hasCollidedWithBullet = false;
             for (auto& e : collidedEntities)
             {
-                if (e.second == enemyShotCollisionList)
+                if (e.second == enemyShotCollisionList || e.second == spikeCollisionList)
                 {
                     hasCollidedWithBullet = true;
                     break;
@@ -395,11 +452,13 @@ public:
     {
         int entityId;
         int activeCollision;
+        int playerShotCollision;
         Vector2DI currentTile;
         int isFacingRight;
         int detectionTicks = 0;
         int shootingTicks = 0;
         bool isDying = false;
+        int stunningTicks = 0;
         bool isToBeRemoved = false;
     };
     std::map<int, Enemy> mEnemies;
@@ -431,10 +490,11 @@ public:
     void addEnemy(const Vector2DI& tile) {
         auto entityId = addBlitzEntity(tile2PlacementPos(tile).xyz(20));
         addBlitzMugenAnimationComponent(entityId, &mSprites, &mAnimations, 20);
-        auto activeCollision = addBlitzCollisionAttackMugen(entityId, enemyShotCollisionList);
+        auto activeCollision = addBlitzCollisionRect(entityId, enemyShotCollisionList, CollisionRect(-4, -16, 8, 16)); 
+        auto playerShotCollision = addBlitzCollisionAttackMugen(entityId, enemyCollisionList);
         int faceDirection = randfromInteger(0, 4) % 2;
         setBlitzMugenAnimationFaceDirection(entityId, faceDirection);
-        mEnemies[entityId] = Enemy{ entityId, activeCollision, tile, faceDirection };
+        mEnemies[entityId] = Enemy{ entityId, activeCollision, playerShotCollision, tile, faceDirection };
     }
     void unloadEnemy(Enemy& e) {
         removeBlitzEntity(e.entityId);
@@ -445,7 +505,37 @@ public:
         updateSingleEnemyDetection(e);
         updateSingleEnemyShoot(e);
         updateSingleEnemyDying(e);
+        updateSingleEnemyStunning(e);
         updateSingleEnemyOver(e);
+    }
+
+    bool isEnemyStunned(Enemy& e)
+    {
+        return e.stunningTicks;
+    }
+
+    void updateSingleEnemyStunning(Enemy& e)
+    {
+        updateSingleEnemyStunningStart(e);
+        updateSingleEnemyStunningEnd(e);
+    }
+
+    void updateSingleEnemyStunningStart(Enemy& e)
+    {
+        if (isEnemyStunned(e)) return;
+
+        if (hasBlitzCollidedThisFrame(e.entityId, e.playerShotCollision))
+        {
+            changeBlitzMugenAnimationIfDifferent(e.entityId, 24);
+            tryPlayMugenSoundAdvanced(&mSounds, 1, 6, sfxVol);
+            e.stunningTicks = 360;
+        }
+    }
+
+    void updateSingleEnemyStunningEnd(Enemy& e)
+    {
+        if (!isEnemyStunned(e)) return;
+        e.stunningTicks--;
     }
 
     bool isSolid(const Vector2DI& tile)
@@ -542,10 +632,12 @@ public:
     }
 
     void updateSingleEnemyMovement(Enemy& e) {
+        if (isEnemyStunned(e)) return;
         if (isEnemyDetecting(e)) return;
         if (isEnemyShooting(e)) return;
         if (!canEnemyMove(e))
         {
+            changeBlitzMugenAnimationIfDifferent(e.entityId, 20);
             updateEnemyTurning(e);
             return;
         }
@@ -553,13 +645,16 @@ public:
         if (!canEnemyMoveForward(e))
         {
             turnEnemyAround(e);
+            changeBlitzMugenAnimationIfDifferent(e.entityId, 20);
         }
         else
         {
             moveEnemyForward(e);
+            changeBlitzMugenAnimationIfDifferent(e.entityId, 21);
         }
     }
     void updateSingleEnemyDetection(Enemy& e) {
+        if (isEnemyStunned(e)) return;
         if (isEnemyShooting(e)) return;
         if (canEnemySeePlayer(e))
         {
@@ -573,11 +668,11 @@ public:
         }
         else
         {
-            changeBlitzMugenAnimationIfDifferent(e.entityId, 20);
             e.detectionTicks = 0;
         }
     }
     void updateSingleEnemyShoot(Enemy& e) {
+        if (isEnemyStunned(e)) return;
         if (!isEnemyShooting(e)) return;
 
         if (e.shootingTicks % 30 == 1)

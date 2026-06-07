@@ -13,6 +13,11 @@
 #include "prism/math.h"
 #include "prism/stlutil.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 
 namespace prism {
@@ -408,6 +413,51 @@ static struct {
 	map<int, MugenText> mHandledTexts;
 
 } gMugenTextHandler;
+
+#ifdef _WIN32
+void imguiMugenTextHandler()
+{
+	static bool isWindowShown = false;
+	imguiPrismAddTab("Mugen", "Text Handler", &isWindowShown);
+	if (!isWindowShown) return;
+
+	ImGui::Begin("Mugen Text Handler", &isWindowShown);
+	ImGui::Text("Texts = %d", (int)gMugenTextHandler.mHandledTexts.size());
+	ImGui::Text("Fonts = %d", (int)gMugenFontData.mFonts.size());
+	ImGui::Separator();
+
+	static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+	if (ImGui::BeginTable("MugenTexts", 6, flags, ImVec2(0, 300)))
+	{
+		ImGui::TableSetupColumn("ID");
+		ImGui::TableSetupColumn("Vis");
+		ImGui::TableSetupColumn("Scale");
+		ImGui::TableSetupColumn("Position");
+		ImGui::TableSetupColumn("Built");
+		ImGui::TableSetupColumn("Text");
+		ImGui::TableHeadersRow();
+
+		for (auto& entryPair : gMugenTextHandler.mHandledTexts)
+		{
+			const int id = entryPair.first;
+			MugenText& e = entryPair.second;
+			ImGui::PushID(id);
+			ImGui::TableNextRow(); ImGui::TableNextColumn();
+			ImGui::Text("%d", id); ImGui::TableNextColumn();
+			bool visible = e.mIsVisible != 0;
+			if (ImGui::Checkbox("##vis", &visible)) e.mIsVisible = visible ? 1 : 0;
+			ImGui::TableNextColumn();
+			ImGui::Text("%.2f", e.mScale); ImGui::TableNextColumn();
+			ImGui::Text("%.0f %.0f", e.mPosition.x, e.mPosition.y); ImGui::TableNextColumn();
+			ImGui::Text("%d/%d", (int)strlen(e.mDisplayText), (int)strlen(e.mText)); ImGui::TableNextColumn();
+			ImGui::TextUnformatted(e.mText);
+			ImGui::PopID();
+		}
+		ImGui::EndTable();
+	}
+	ImGui::End();
+}
+#endif
 
 static void loadMugenTextHandlerActor(void* tData) {
 	(void) tData;

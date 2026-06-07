@@ -29,4 +29,6 @@ void removeHandledCollisionAnimation(int tID);
 void invertCollisionAnimationVertical(int tID);
 void setCollisionAnimationCenter(int tID, const Position& tCenter);
 
+void imguiCollisionAnimationHandler();
+
 }

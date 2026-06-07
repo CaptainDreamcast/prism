@@ -4,6 +4,11 @@
 #include "prism/log.h"
 #include "prism/system.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 namespace prism {
 
 	CollisionAnimation makeEmptyCollisionAnimation() {
@@ -59,6 +64,46 @@ namespace prism {
 
 
 	} HandledCollisionAnimation;
+
+#ifdef _WIN32
+	static int gImguiCollisionAnimRowIndex;
+
+	static void imguiCollisionAnimationEntry(void* tCaller, void* tData)
+	{
+		(void)tCaller;
+		HandledCollisionAnimation* e = (HandledCollisionAnimation*)tData;
+		ImGui::TableNextRow(); ImGui::TableNextColumn();
+		ImGui::Text("%d", gImguiCollisionAnimRowIndex++); ImGui::TableNextColumn();
+		ImGui::Text("%.1f %.1f", e->mPosition.x, e->mPosition.y); ImGui::TableNextColumn();
+		ImGui::Text("%d", e->mIsInverted); ImGui::TableNextColumn();
+		ImGui::Text("%d", (int)e->mAnimation.mAnimation.mFrame);
+	}
+
+	void imguiCollisionAnimationHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Collision Animation", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Collision Animation Handler", &isWindowShown);
+		ImGui::Text("Animations = %d", list_size(&gPrismCollisionAnimationData.mList));
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("CollisionAnimations", 4, flags, ImVec2(0, 260)))
+		{
+			ImGui::TableSetupColumn("#");
+			ImGui::TableSetupColumn("Position");
+			ImGui::TableSetupColumn("Inverted");
+			ImGui::TableSetupColumn("Frame");
+			ImGui::TableHeadersRow();
+			gImguiCollisionAnimRowIndex = 0;
+			list_map(&gPrismCollisionAnimationData.mList, imguiCollisionAnimationEntry, NULL);
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 	static void loadCollisionAnimationHandler(void*) {
 		setProfilingSectionMarkerCurrentFunction();

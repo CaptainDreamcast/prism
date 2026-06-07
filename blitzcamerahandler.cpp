@@ -7,6 +7,11 @@
 #include "prism/system.h"
 #include "prism/geometry.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 namespace prism {
 
 	static struct {
@@ -25,6 +30,30 @@ namespace prism {
 		double mScreenShakePhaseOffset;
 		Vector2D mScreenShakeOffset;
 	} gBlitzCameraHandlerData;
+
+#ifdef _WIN32
+	void imguiBlitzCameraHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Blitz", "Camera Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		auto& d = gBlitzCameraHandlerData;
+		ImGui::Begin("Blitz Camera Handler", &isWindowShown);
+		ImGui::Text("IsActive = %d", d.mIsActive);
+		Position basePos = d.mBaseCameraPosition;
+		if (ImGui::DragScalarN("Base Position", ImGuiDataType_Double, &basePos.x, 2, 0.5f)) setBlitzCameraHandlerPosition(basePos);
+		ImGui::Text("Camera Position = %.1f, %.1f", d.mCameraPosition.x, d.mCameraPosition.y);
+		ImGui::DragScalarN("Scale", ImGuiDataType_Double, &d.mScale.x, 2, 0.01f);
+		ImGui::DragScalar("Angle", ImGuiDataType_Double, &d.mAngle, 0.01f);
+		ImGui::Text("Effect Offset = %.1f, %.1f", d.mEffectOffset.x, d.mEffectOffset.y);
+		ImGui::Separator();
+		ImGui::Text("Screen Shake Left = %d", d.mScreenShakeDurationLeft);
+		ImGui::Text("Shake Offset = %.2f, %.2f", d.mScreenShakeOffset.x, d.mScreenShakeOffset.y);
+		if (ImGui::SmallButton("Trigger Shake")) setBlitzCameraScreenShakeDefault();
+		ImGui::End();
+	}
+#endif
 
 	static void loadBlitzCameraHandler(void* tData) {
 		(void)tData;

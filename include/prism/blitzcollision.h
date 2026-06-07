@@ -32,4 +32,6 @@ std::vector<std::pair<int, CollisionListData*>> getBlitzCollidedEntitiesThisFram
 
 void removeAllBlitzCollisions(int tEntityID);
 
+void imguiBlitzCollisionHandler();
+
 }

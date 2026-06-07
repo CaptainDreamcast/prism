@@ -41,4 +41,6 @@ Position* getBlitzEntityPositionReference(int tID);
 Vector3D* getBlitzEntityScaleReference(int tID);
 double* getBlitzEntityRotationZReference(int tID);
 
+void imguiBlitzEntityHandler();
+
 }

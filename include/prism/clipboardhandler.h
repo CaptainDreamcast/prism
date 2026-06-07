@@ -16,4 +16,6 @@ void clearClipboard();
 void setClipboardInvisible();
 void setClipboardVisible();
 
+void imguiClipboardHandler();
+
 }

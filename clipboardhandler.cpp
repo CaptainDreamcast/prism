@@ -8,6 +8,11 @@
 #include "prism/system.h"
 #include "prism/geometry.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 namespace prism {
 
 #define CLIPBOARD_LINE_AMOUNT 10
@@ -20,6 +25,32 @@ namespace prism {
 
 		int mIsVisible;
 	} gPrismClipboardHandlerData;
+
+#ifdef _WIN32
+	void imguiClipboardHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Clipboard", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Clipboard", &isWindowShown);
+		bool visible = gPrismClipboardHandlerData.mIsVisible != 0;
+		if (ImGui::Checkbox("Visible", &visible))
+		{
+			if (visible) setClipboardVisible();
+			else setClipboardInvisible();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Clear")) clearClipboard();
+		ImGui::Text("Lines = %d / %d", gPrismClipboardHandlerData.mLineAmount, CLIPBOARD_LINE_AMOUNT);
+		ImGui::Separator();
+		for (int i = 0; i < gPrismClipboardHandlerData.mLineAmount; i++)
+		{
+			ImGui::Text("%2d: %s", i, gPrismClipboardHandlerData.mLines[i]);
+		}
+		ImGui::End();
+	}
+#endif
 
 	void initClipboardForGame() {
 		memset(gPrismClipboardHandlerData.mLines, 0, sizeof gPrismClipboardHandlerData.mLines);

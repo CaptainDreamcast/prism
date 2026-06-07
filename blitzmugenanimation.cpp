@@ -7,6 +7,11 @@
 #include "prism/system.h"
 #include "prism/stlutil.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 namespace prism {
 
@@ -26,6 +31,49 @@ namespace prism {
 	static struct {
 		unordered_map<int, BlitzAnimationEntry> mEntities;
 	} gBlitzAnimationData;
+
+#ifdef _WIN32
+	void imguiBlitzMugenAnimationHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Blitz", "Mugen Animation Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Blitz Mugen Animation Handler", &isWindowShown);
+		ImGui::Text("Entities = %d", (int)gBlitzAnimationData.mEntities.size());
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("BlitzMugenAnims", 4, flags, ImVec2(0, 300)))
+		{
+			ImGui::TableSetupColumn("Entity");
+			ImGui::TableSetupColumn("Static");
+			ImGui::TableSetupColumn("Anim");
+			ImGui::TableSetupColumn("Step");
+			ImGui::TableHeadersRow();
+
+			for (auto& entryPair : gBlitzAnimationData.mEntities)
+			{
+				BlitzAnimationEntry& e = entryPair.second;
+				ImGui::TableNextRow(); ImGui::TableNextColumn();
+				ImGui::Text("%d", e.mEntityID); ImGui::TableNextColumn();
+				ImGui::Text("%d", e.mIsStatic); ImGui::TableNextColumn();
+				if (e.mAnimationElement)
+				{
+					ImGui::Text("%d", getMugenAnimationAnimationNumber(e.mAnimationElement)); ImGui::TableNextColumn();
+					ImGui::Text("%d/%d", getMugenAnimationAnimationStep(e.mAnimationElement), getMugenAnimationAnimationStepAmount(e.mAnimationElement));
+				}
+				else
+				{
+					ImGui::TextUnformatted("-"); ImGui::TableNextColumn();
+					ImGui::TextUnformatted("-");
+				}
+			}
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 	static void loadBlitzMugenAnimationHandler(void* tData) {
 		(void)tData;

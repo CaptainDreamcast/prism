@@ -56,4 +56,6 @@ void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition);
 void drawHandledCollisions();
 void activateCollisionHandlerDebugMode();
 
+void imguiCollisionHandler();
+
 }

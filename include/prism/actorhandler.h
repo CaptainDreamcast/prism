@@ -36,6 +36,8 @@ void setActorUnpausable(int tID);
 void removeActor(int tID);
 void* getActorData(int tID);
 
+void imguiActorHandler();
+
 #define EXPORT_ACTOR_CLASS(tClassName) \
 static std::unique_ptr<tClassName> g##tClassName; \
  \

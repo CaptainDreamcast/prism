@@ -10,6 +10,12 @@
 #include "prism/timer.h"
 #include "prism/stlutil.h"
 
+#ifdef _WIN32
+#include <vector>
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 namespace prism {
 	static struct {
@@ -123,6 +129,59 @@ namespace prism {
 		map<int, AnimationHandlerElement> mList;
 		int mIsLoaded;
 	} gAnimationHandler;
+
+#ifdef _WIN32
+	static std::vector<AnimationHandlerElement*> gImguiAnimationsToRemove;
+
+	void imguiAnimationHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Animation Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Animation Handler", &isWindowShown);
+		ImGui::Text("IsLoaded = %d", gAnimationHandler.mIsLoaded);
+		ImGui::Text("Animations = %d", (int)gAnimationHandler.mList.size());
+		ImGui::Separator();
+
+		gImguiAnimationsToRemove.clear();
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("Animations", 7, flags, ImVec2(0, 280)))
+		{
+			ImGui::TableSetupColumn("ID");
+			ImGui::TableSetupColumn("Frame");
+			ImGui::TableSetupColumn("Position");
+			ImGui::TableSetupColumn("Visible");
+			ImGui::TableSetupColumn("Loop");
+			ImGui::TableSetupColumn("Alpha");
+			ImGui::TableSetupColumn("");
+			ImGui::TableHeadersRow();
+
+			for (auto& entryPair : gAnimationHandler.mList)
+			{
+				AnimationHandlerElement& e = entryPair.second;
+				ImGui::PushID(e.mID);
+				ImGui::TableNextRow(); ImGui::TableNextColumn();
+				ImGui::Text("%d", e.mID); ImGui::TableNextColumn();
+				ImGui::Text("%u/%u", (unsigned int)e.mAnimation.mFrame, (unsigned int)e.mAnimation.mFrameAmount); ImGui::TableNextColumn();
+				ImGui::Text("%.0f %.0f %.0f", e.mPosition.x, e.mPosition.y, e.mPosition.z); ImGui::TableNextColumn();
+				bool visible = e.mIsVisible != 0;
+				if (ImGui::Checkbox("##vis", &visible)) e.mIsVisible = visible ? 1 : 0;
+				ImGui::TableNextColumn();
+				ImGui::Text("%d", e.mIsLooped); ImGui::TableNextColumn();
+				if (e.mHasTransparency) ImGui::Text("%.2f", e.mTransparency); else ImGui::TextUnformatted("-");
+				ImGui::TableNextColumn();
+				if (ImGui::SmallButton("Remove")) gImguiAnimationsToRemove.push_back(&e);
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+
+		for (AnimationHandlerElement* e : gImguiAnimationsToRemove) removeHandledAnimation(e);
+		gImguiAnimationsToRemove.clear();
+		ImGui::End();
+	}
+#endif
 
 	void setupAnimationHandler() {
 		if (gAnimationHandler.mIsLoaded) {

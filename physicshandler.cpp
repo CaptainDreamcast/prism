@@ -10,6 +10,12 @@
 #include "prism/memoryhandler.h"
 #include "prism/stlutil.h"
 
+#ifdef _WIN32
+#include <vector>
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 
 namespace prism {
@@ -18,6 +24,58 @@ namespace prism {
 		int mIsActive;
 		map<int, PhysicsHandlerElement> mList;
 	} gPhysicsHandler;
+
+#ifdef _WIN32
+	static std::vector<PhysicsHandlerElement*> gImguiPhysicsToRemove;
+
+	void imguiPhysicsHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Physics Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Physics Handler", &isWindowShown);
+		ImGui::Text("IsActive = %d", gPhysicsHandler.mIsActive);
+		ImGui::Text("Elements = %d", (int)gPhysicsHandler.mList.size());
+		ImGui::Separator();
+
+		gImguiPhysicsToRemove.clear();
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("PhysicsElements", 6, flags, ImVec2(0, 260)))
+		{
+			ImGui::TableSetupColumn("ID");
+			ImGui::TableSetupColumn("Position");
+			ImGui::TableSetupColumn("Velocity");
+			ImGui::TableSetupColumn("Paused");
+			ImGui::TableSetupColumn("Speed");
+			ImGui::TableSetupColumn("");
+			ImGui::TableHeadersRow();
+
+			for (auto& entryPair : gPhysicsHandler.mList)
+			{
+				PhysicsHandlerElement& e = entryPair.second;
+				ImGui::PushID(e.mID);
+				ImGui::TableNextRow(); ImGui::TableNextColumn();
+				ImGui::Text("%d", e.mID); ImGui::TableNextColumn();
+				ImGui::Text("%.1f %.1f %.1f", e.mObj.mPosition.x, e.mObj.mPosition.y, e.mObj.mPosition.z); ImGui::TableNextColumn();
+				ImGui::Text("%.2f %.2f %.2f", e.mObj.mVelocity.x, e.mObj.mVelocity.y, e.mObj.mVelocity.z); ImGui::TableNextColumn();
+				bool paused = e.mIsPaused != 0;
+				if (ImGui::Checkbox("##paused", &paused)) e.mIsPaused = paused ? 1 : 0;
+				ImGui::TableNextColumn();
+				ImGui::SetNextItemWidth(80);
+				ImGui::DragScalar("##speed", ImGuiDataType_Double, &e.mTimeDilatation, 0.01f);
+				ImGui::TableNextColumn();
+				if (ImGui::SmallButton("Remove")) gImguiPhysicsToRemove.push_back(&e);
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+
+		for (PhysicsHandlerElement* e : gImguiPhysicsToRemove) removeFromPhysicsHandler(e);
+		gImguiPhysicsToRemove.clear();
+		ImGui::End();
+	}
+#endif
 
 	void setupPhysicsHandler() {
 		if (gPhysicsHandler.mIsActive) shutdownPhysicsHandler();

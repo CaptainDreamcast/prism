@@ -134,6 +134,7 @@ namespace prism::imgui {
 			if (it != mScripts.end())
 			{
 				it->second.count--;
+				if (it->second.count <= 0) mScripts.erase(it);
 			}
 		}
 
@@ -147,7 +148,9 @@ namespace prism::imgui {
 		if (!gImguiFileManagerData.isActive) return;
 		char path[1024];
 		getFullPath(path, tPath);
-		if (!fopen(path, "rb")) return;
+		FILE* probe = fopen(path, "rb");
+		if (!probe) return;
+		fclose(probe);
 		gImguiFileManager->addDebugFileUsage(tPath, tType);
 
 	}

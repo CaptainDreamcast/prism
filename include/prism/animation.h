@@ -113,4 +113,6 @@ void removeHandledAnimation(AnimationHandlerElement* tElement);
 int isHandledAnimation(AnimationHandlerElement* tElement);
 void shutdownAnimationHandler();
 
+void imguiAnimationHandler();
+
 }

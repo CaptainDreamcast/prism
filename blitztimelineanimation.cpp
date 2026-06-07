@@ -8,6 +8,11 @@
 #include "prism/blitzmugenanimation.h"
 #include "prism/blitzphysics.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 namespace prism {
 
 	typedef struct {
@@ -33,6 +38,39 @@ namespace prism {
 	static struct {
 		IntMap mEntries;
 	} gBlitzTimelineAnimationData;
+
+#ifdef _WIN32
+	static void imguiBlitzTimelineEntry(void* tCaller, void* tData)
+	{
+		(void)tCaller;
+		BlitzTimelineAnimationEntry* e = (BlitzTimelineAnimationEntry*)tData;
+		ImGui::TableNextRow(); ImGui::TableNextColumn();
+		ImGui::Text("%d", e->mEntityID); ImGui::TableNextColumn();
+		ImGui::Text("%d", int_map_size(&e->mActiveAnimations));
+	}
+
+	void imguiBlitzTimelineAnimationHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Blitz", "Timeline Animation Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Blitz Timeline Animation Handler", &isWindowShown);
+		ImGui::Text("Entries = %d", int_map_size(&gBlitzTimelineAnimationData.mEntries));
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("BlitzTimelines", 2, flags, ImVec2(0, 280)))
+		{
+			ImGui::TableSetupColumn("Entity");
+			ImGui::TableSetupColumn("Active Animations");
+			ImGui::TableHeadersRow();
+			int_map_map(&gBlitzTimelineAnimationData.mEntries, imguiBlitzTimelineEntry, NULL);
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 	static void loadBlitzTimelineAnimationHandler(void* tData) {
 		(void)tData;

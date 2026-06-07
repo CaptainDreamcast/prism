@@ -12,6 +12,11 @@
 
 #include <algorithm>
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 namespace prism {
 
@@ -27,6 +32,44 @@ namespace prism {
 	static struct {
 		unordered_map<int, PhysicsEntry> mEntries;
 	} gBlitzPhysicsData;
+
+#ifdef _WIN32
+	void imguiBlitzPhysicsHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Blitz", "Physics Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Blitz Physics Handler", &isWindowShown);
+		ImGui::Text("Entries = %d", (int)gBlitzPhysicsData.mEntries.size());
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("BlitzPhysics", 4, flags, ImVec2(0, 280)))
+		{
+			ImGui::TableSetupColumn("Entity");
+			ImGui::TableSetupColumn("Velocity");
+			ImGui::TableSetupColumn("Gravity");
+			ImGui::TableSetupColumn("");
+			ImGui::TableHeadersRow();
+
+			for (auto& entryPair : gBlitzPhysicsData.mEntries)
+			{
+				PhysicsEntry& e = entryPair.second;
+				ImGui::PushID(e.mEntityID);
+				ImGui::TableNextRow(); ImGui::TableNextColumn();
+				ImGui::Text("%d", e.mEntityID); ImGui::TableNextColumn();
+				ImGui::SetNextItemWidth(140);
+				ImGui::DragScalarN("##vel", ImGuiDataType_Double, &e.mVelocity.x, 2, 0.1f); ImGui::TableNextColumn();
+				ImGui::Text("%.2f %.2f", e.mGravity.x, e.mGravity.y); ImGui::TableNextColumn();
+				if (ImGui::SmallButton("Stop")) e.mVelocity = Vector3D(0, 0, 0);
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 	static void loadBlitzPhysicsHandler(void* tData) {
 		(void)tData;

@@ -102,4 +102,6 @@ Vector3D getMugenTextColor(int tIndex);
 MugenTextAlignment getMugenTextAlignmentFromMugenAlignmentIndex(int tIndex);
 Color getMugenTextColorFromMugenTextColorIndex(int tIndex);
 
+void imguiMugenTextHandler();
+
 }

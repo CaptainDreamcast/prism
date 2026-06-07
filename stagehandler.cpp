@@ -12,6 +12,11 @@
 #include "prism/math.h"
 #include "prism/texturepool.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 
 namespace prism {
@@ -75,6 +80,53 @@ namespace prism {
 		int mIsLoadingTexturesDirectly;
 		ScreenShake mShake;
 	} gPrismStageHandlerData;
+
+#ifdef _WIN32
+	static int gImguiStageRowIndex;
+
+	static void imguiStageEntry(void* tCaller, void* tData)
+	{
+		(void)tCaller;
+		SingleBackgroundData* e = (SingleBackgroundData*)tData;
+		ImGui::TableNextRow(); ImGui::TableNextColumn();
+		ImGui::Text("%d", gImguiStageRowIndex++); ImGui::TableNextColumn();
+		ImGui::Text("%.2f %.2f", e->mScrollingFactor.x, e->mScrollingFactor.y); ImGui::TableNextColumn();
+		ImGui::Text("%.1f", e->mZ); ImGui::TableNextColumn();
+		ImGui::Text("%d", e->mIsVisible); ImGui::TableNextColumn();
+		ImGui::Text("%.0f %.0f", e->mPhysics.mPosition.x, e->mPhysics.mPosition.y); ImGui::TableNextColumn();
+		ImGui::Text("%d", list_size(&e->mPatchList));
+	}
+
+	void imguiStageHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Stage Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Stage Handler", &isWindowShown);
+		ImGui::Text("Backgrounds = %d", list_size(&gPrismStageHandlerData.mList));
+		ImGui::Text("LoadTexturesDirectly = %d", gPrismStageHandlerData.mIsLoadingTexturesDirectly);
+		ImGui::Text("Screen Shake = %.2f (max %.2f)", gPrismStageHandlerData.mShake.mStrength, gPrismStageHandlerData.mShake.mMaximum);
+		if (ImGui::SmallButton("Add Screen Shake")) addStageHandlerScreenShake(10);
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("Backgrounds", 6, flags, ImVec2(0, 260)))
+		{
+			ImGui::TableSetupColumn("#");
+			ImGui::TableSetupColumn("ScrollFactor");
+			ImGui::TableSetupColumn("Z");
+			ImGui::TableSetupColumn("Visible");
+			ImGui::TableSetupColumn("Position");
+			ImGui::TableSetupColumn("Patches");
+			ImGui::TableHeadersRow();
+			gImguiStageRowIndex = 0;
+			list_map(&gPrismStageHandlerData.mList, imguiStageEntry, NULL);
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 	static void loadStageHandler(void*) {
 		setProfilingSectionMarkerCurrentFunction();

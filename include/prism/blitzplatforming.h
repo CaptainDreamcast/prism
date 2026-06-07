@@ -12,6 +12,9 @@ namespace prism {
 	bool isBlitzPlatformingPlayerJumping(int tEntityID);
 	void setBlitzPlatformingPlayerMovementXStopped(int tEntityID);
 
+	void setBlitzPlatformClampedToScreen(bool tIsClamped);
+	void setBlitzPlatformGravity(double tGravity);
+
 	void addBlitzPlatformingSolidTileComponent(int tEntityID, const CollisionRect& tCollisionRect);
 
 	void removeBlitzPlatformingComponent(int tEntityID);

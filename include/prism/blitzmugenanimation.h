@@ -84,4 +84,6 @@ void setBlitzMugenAnimationCollisionDebug(int tEntityID, int tIsActive);
 
 std::list<MugenAnimationHandlerHitboxElement>& getBlitzMugenAnimationActiveHitboxes(int tEntityID);
 
+void imguiBlitzMugenAnimationHandler();
+
 }

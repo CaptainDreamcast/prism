@@ -12,6 +12,11 @@
 #include "prism/geometry.h"
 #include <prism/stlutil.h>
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 namespace prism {
 
@@ -36,6 +41,68 @@ namespace prism {
 
 		int mIsOwningColliders;
 	} gCollisionHandler;
+
+#ifdef _WIN32
+	void imguiCollisionHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Collision Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Collision Handler", &isWindowShown);
+		ImGui::Text("Collision Lists = %d", (int)gCollisionHandler.mCollisionLists.size());
+		ImGui::Text("Collision List Pairs = %d", (int)gCollisionHandler.mCollisionListPairs.size());
+		ImGui::Text("OwningColliders = %d", gCollisionHandler.mIsOwningColliders);
+		ImGui::Text("Debug Active = %d", gCollisionHandler.mDebug.mIsActive);
+		ImGui::Separator();
+
+		if (ImGui::TreeNode("Lists"))
+		{
+			static ImGuiTableFlags listFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+			if (ImGui::BeginTable("CollisionLists", 3, listFlags))
+			{
+				ImGui::TableSetupColumn("List ID");
+				ImGui::TableSetupColumn("Elements");
+				ImGui::TableSetupColumn("Scheduled For Deletion");
+				ImGui::TableHeadersRow();
+				for (auto& listPair : gCollisionHandler.mCollisionLists)
+				{
+					CollisionListData& list = listPair.second;
+					int scheduled = 0;
+					for (auto& elemPair : list.mCollisionElements)
+						if (elemPair.second.mIsScheduledForDeletion) scheduled++;
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+					ImGui::Text("%d", list.mID); ImGui::TableNextColumn();
+					ImGui::Text("%d", (int)list.mCollisionElements.size()); ImGui::TableNextColumn();
+					ImGui::Text("%d", scheduled);
+				}
+				ImGui::EndTable();
+			}
+			ImGui::TreePop();
+		}
+
+		if (ImGui::TreeNode("Check Pairs"))
+		{
+			static ImGuiTableFlags pairFlags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+			if (ImGui::BeginTable("CollisionPairs", 2, pairFlags))
+			{
+				ImGui::TableSetupColumn("List 1 ID");
+				ImGui::TableSetupColumn("List 2 ID");
+				ImGui::TableHeadersRow();
+				for (auto& pairEntry : gCollisionHandler.mCollisionListPairs)
+				{
+					CollisionListPair& pair = pairEntry.second;
+					ImGui::TableNextRow(); ImGui::TableNextColumn();
+					ImGui::Text("%d", pair.mList1 ? pair.mList1->mID : -1); ImGui::TableNextColumn();
+					ImGui::Text("%d", pair.mList2 ? pair.mList2->mID : -1);
+				}
+				ImGui::EndTable();
+			}
+			ImGui::TreePop();
+		}
+		ImGui::End();
+	}
+#endif
 
 	void setupCollisionHandler() {
 		gCollisionHandler.mCollisionLists.clear();

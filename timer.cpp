@@ -5,6 +5,11 @@
 
 #include "prism/stlutil.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 
 namespace prism {
@@ -20,6 +25,52 @@ namespace prism {
 	static struct {
 		map<int, TimerElement> mList;
 	} gTimerData;
+
+	void removeTimer(int tID);
+
+#ifdef _WIN32
+	void imguiTimer()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Timer", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Timer", &isWindowShown);
+		ImGui::Text("Active Timers = %d", (int)gTimerData.mList.size());
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+		if (ImGui::BeginTable("Timers", 5, flags))
+		{
+			ImGui::TableSetupColumn("ID");
+			ImGui::TableSetupColumn("Now");
+			ImGui::TableSetupColumn("Duration");
+			ImGui::TableSetupColumn("Progress");
+			ImGui::TableSetupColumn("");
+			ImGui::TableHeadersRow();
+
+			int timerToRemove = -1;
+			for (auto& entryPair : gTimerData.mList)
+			{
+				const int id = entryPair.first;
+				TimerElement& e = entryPair.second;
+				ImGui::PushID(id);
+				ImGui::TableNextRow(); ImGui::TableNextColumn();
+				ImGui::Text("%d", id); ImGui::TableNextColumn();
+				ImGui::Text("%.1f", e.mNow); ImGui::TableNextColumn();
+				ImGui::Text("%.1f", e.mDuration); ImGui::TableNextColumn();
+				const float fraction = e.mDuration > 0 ? (float)(e.mNow / e.mDuration) : 0.0f;
+				ImGui::ProgressBar(fraction); ImGui::TableNextColumn();
+				if (ImGui::SmallButton("Remove")) timerToRemove = id;
+				ImGui::PopID();
+			}
+			ImGui::EndTable();
+
+			if (timerToRemove != -1) removeTimer(timerToRemove);
+		}
+		ImGui::End();
+	}
+#endif
 
 	int addTimerCB(Duration tDuration, TimerCB tCB, void* tCaller) {
 		TimerElement e;

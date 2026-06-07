@@ -12,6 +12,11 @@
 #include "prism/blitzphysics.h"
 #include "prism/stlutil.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 namespace prism {
 
@@ -65,6 +70,43 @@ namespace prism {
 		unordered_map<int, CollisionEntry> mEntries;
 		list<ActiveSolidCollision> mActiveSolidCollisions;
 	} gBlitzCollisionData;
+
+#ifdef _WIN32
+	void imguiBlitzCollisionHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Blitz", "Collision Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Blitz Collision Handler", &isWindowShown);
+		ImGui::Text("Entries = %d", (int)gBlitzCollisionData.mEntries.size());
+		ImGui::Text("Active Solid Collisions = %d", (int)gBlitzCollisionData.mActiveSolidCollisions.size());
+		ImGui::TextDisabled("T/B/L/R = Top/Bottom/Left/Right collided");
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY;
+		if (ImGui::BeginTable("BlitzCollisions", 4, flags, ImVec2(0, 300)))
+		{
+			ImGui::TableSetupColumn("Entity");
+			ImGui::TableSetupColumn("T/B/L/R");
+			ImGui::TableSetupColumn("Objects");
+			ImGui::TableSetupColumn("Collided");
+			ImGui::TableHeadersRow();
+
+			for (auto& entryPair : gBlitzCollisionData.mEntries)
+			{
+				CollisionEntry& e = entryPair.second;
+				ImGui::TableNextRow(); ImGui::TableNextColumn();
+				ImGui::Text("%d", e.mEntityID); ImGui::TableNextColumn();
+				ImGui::Text("%d%d%d%d", e.mIsTopCollided, e.mIsBottomCollided, e.mIsLeftCollided, e.mIsRightCollided); ImGui::TableNextColumn();
+				ImGui::Text("%d", (int)e.mCollisionObjects.size()); ImGui::TableNextColumn();
+				ImGui::Text("%d", (int)e.mCollidedEntities[1].size());
+			}
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 	static void loadBlitzCollisionHandler(void* tData) {
 		(void)tData;

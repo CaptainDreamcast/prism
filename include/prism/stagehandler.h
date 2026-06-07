@@ -36,4 +36,6 @@ void setStageHandlerMaximumScreenShake(double tStrength);
 
 void loadStageFromScript(const char* tPath);
 
+void imguiStageHandler();
+
 }

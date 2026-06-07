@@ -1,5 +1,6 @@
 #include "prism/blitzplatforming.h"
 
+#include <algorithm>
 #include <unordered_map>
 #include <prism/log.h>
 #include <prism/blitzcomponent.h>
@@ -24,6 +25,8 @@ namespace prism {
 	static struct
 	{
         bool mIsPaused;
+        bool mIsClampedToScreen = false;
+        double mGravity = 3.0;
 
 		std::unordered_map<int, BlitzPlatformingPlayerData> mPlayerEntries;
 		std::unordered_map<int, BlitzPlatformingTileData> mTileEntries;
@@ -233,6 +236,10 @@ namespace prism {
             pos->x += e.mVelocity.x;
         }
         pos->y += e.mVelocity.y;
+        if (gBlitzPlatformingData.mIsClampedToScreen)
+        {
+            pos->x = std::clamp(pos->x, 0.0, 320.0);
+        }
         e.mVelocity.x *= 0.85;
         e.mAcceleration = Vector2D(0, 0);
     }
@@ -348,7 +355,7 @@ namespace prism {
 	void addBlitzPlatformingPlayerJump(int tEntityID)
 	{
         auto e = getBlitzPlatformingPlayerData(tEntityID);
-        e->mAcceleration.y = -3;
+        e->mAcceleration.y = -gBlitzPlatformingData.mGravity;
         e->mIsJumping = true;
 	}
 
@@ -370,6 +377,15 @@ namespace prism {
         auto e = getBlitzPlatformingPlayerData(tEntityID);
         e->mAcceleration.x = 0.f;
         e->mVelocity.x = 0.f;
+    }
+
+    void setBlitzPlatformClampedToScreen(bool tIsClamped)
+    {
+        gBlitzPlatformingData.mIsClampedToScreen = tIsClamped;
+    }
+	void setBlitzPlatformGravity(double tGravity)
+    {
+        gBlitzPlatformingData.mGravity = tGravity;
     }
 
 	void addBlitzPlatformingSolidTileComponent(int tEntityID, const CollisionRect& tCollisionRect)

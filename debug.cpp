@@ -130,6 +130,8 @@ namespace prism {
 	{
 		ImGui::Text("Develop Mode: %d", gPrismDebug.mIsInDevelopMode);
 		ImGui::Text("Active: %d", gPrismDebug.mIsActive);
+		bool sideVisible = gPrismDebug.mSideDisplay.mIsVisible != 0;
+		if (ImGui::Checkbox("Side Display Visible", &sideVisible)) setPrismDebugSideDisplayVisibility(sideVisible);
 		imguiSideDisplay();
 		imguiConsole();
 	}

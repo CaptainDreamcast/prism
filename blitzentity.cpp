@@ -7,6 +7,12 @@
 #include "prism/blitzcamerahandler.h"
 #include "prism/stlutil.h"
 
+#ifdef _WIN32
+#include <cstdio>
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 using namespace std;
 namespace prism {
 
@@ -28,6 +34,46 @@ namespace prism {
 	static struct {
 		unordered_map<int, BlitzEntity> mEntities; // contains BlitzEntity
 	} gBlitzEntityData;
+
+#ifdef _WIN32
+	void imguiBlitzEntityHandler()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Blitz", "Entity Handler", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Blitz Entity Handler", &isWindowShown);
+		ImGui::Text("Entities = %d", (int)gBlitzEntityData.mEntities.size());
+		ImGui::Separator();
+
+		const int cameraID = getBlitzCameraHandlerEntityID();
+		for (auto& entryPair : gBlitzEntityData.mEntities)
+		{
+			BlitzEntity& e = entryPair.second;
+			ImGui::PushID(e.mID);
+
+			char header[64];
+			sprintf(header, "Entity %d%s", e.mID, e.mID == cameraID ? " (camera)" : "");
+			if (ImGui::TreeNode(header))
+			{
+				ImGui::DragScalarN("Position", ImGuiDataType_Double, &e.mPosition.x, 3, 0.5f);
+				ImGui::DragScalarN("Scale", ImGuiDataType_Double, &e.mScale.x, 3, 0.01f);
+				ImGui::DragScalar("Angle", ImGuiDataType_Double, &e.mAngle, 0.01f);
+				ImGui::Text("HasParent = %d", e.mHasParent);
+				if (e.mHasParent && e.mParent) ImGui::Text("Parent ID = %d", e.mParent->mID);
+				ImGui::Text("Components = %d", (int)e.mComponents.size());
+				ImGui::Text("MarkedForDeletion = %d", e.mIsMarkedForDeletion);
+				if (e.mID != cameraID)
+				{
+					if (ImGui::SmallButton("Delete")) removeBlitzEntity(e.mID);
+				}
+				ImGui::TreePop();
+			}
+			ImGui::PopID();
+		}
+		ImGui::End();
+	}
+#endif
 
 	static void loadBlitzMugenAnimationHandler(void* tData) {
 		(void)tData;

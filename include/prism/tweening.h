@@ -20,4 +20,6 @@ double squareRootTweeningFunction(double t);
 double overshootTweeningFunction(double t);
 double transformAtEndTweeningFunction(double t);
 
+void imguiTweeningHandler();
+
 }

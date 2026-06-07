@@ -26,4 +26,6 @@ void removeHandledText(int tID);
 
 ActorBlueprint getTextHandler();
 
+void imguiTextHandler();
+
 }

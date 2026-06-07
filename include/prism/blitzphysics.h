@@ -24,4 +24,6 @@ double getBlitzPhysicsVelocityY(int tEntityID);
 void setBlitzPhysicsVelocityY(int tEntityID, double tY);
 void addBlitzPhysicsVelocityY(int tEntityID, double tY);
 
+void imguiBlitzPhysicsHandler();
+
 }

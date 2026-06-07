@@ -69,13 +69,21 @@ namespace prism {
 	static void imguiFadeIns() {
 		if (ImGui::TreeNode("Fade Ins"))
 		{
+			ImGui::Text("Count: %d", (int)gScreenEffect.mFadeIns.size());
 			for (auto& e : gScreenEffect.mFadeIns)
 			{
-				ImGui::Text("Duration: %d", e.second.mDuration);
-				ImGui::Text("Size: %f, %f", e.second.mSize->x, e.second.mSize->y);
-				ImGui::Text("Alpha: %f", *e.second.mAlpha);
-				ImGui::Text("Amount: %d", e.second.mAnimationAmount);
-				ImGui::Text("Is Over: %d", e.second.mIsOverFunction(&e.second));
+				ImGui::PushID(e.first);
+				if (ImGui::TreeNode("Fade In"))
+				{
+					ImGui::Text("ID: %d", e.first);
+					ImGui::Text("Duration: %.0f", e.second.mDuration);
+					ImGui::Text("Size: %f, %f", e.second.mSize->x, e.second.mSize->y);
+					ImGui::Text("Alpha: %f", *e.second.mAlpha);
+					ImGui::Text("Amount: %d", e.second.mAnimationAmount);
+					ImGui::Text("Is Over: %d", e.second.mIsOverFunction(&e.second));
+					ImGui::TreePop();
+				}
+				ImGui::PopID();
 			}
 			ImGui::TreePop();
 		}

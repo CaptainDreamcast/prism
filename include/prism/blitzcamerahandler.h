@@ -39,4 +39,6 @@ void setBlitzCameraScreenShakeDefault();
 void setBlitzCameraZoom(const Vector2D& tPosition, double tZoomFactor);
 void setBlitzCameraZoom(const GeoRectangle2D& tZoomArea);
 
+void imguiBlitzCameraHandler();
+
 }

@@ -5,6 +5,11 @@
 #include "prism/memoryhandler.h"
 #include "prism/system.h"
 
+#ifdef _WIN32
+#include <imgui/imgui.h>
+#include "prism/windows/debugimgui_win.h"
+#endif
+
 namespace prism {
 
 	typedef struct {
@@ -19,6 +24,44 @@ namespace prism {
 
 		int mIsLoaded;
 	} gTexturePool;
+
+#ifdef _WIN32
+	static void imguiTexturePoolEntry(void* tCaller, char* tKey, void* tData)
+	{
+		(void)tCaller;
+		TexturePoolEntry* e = (TexturePoolEntry*)tData;
+		ImGui::TableNextRow(); ImGui::TableNextColumn();
+		ImGui::Text("%s", tKey); ImGui::TableNextColumn();
+		ImGui::Text("%s", e->mPath); ImGui::TableNextColumn();
+		ImGui::Text("%d", e->mCounter); ImGui::TableNextColumn();
+		ImGui::Text("%d", getTextureHash(e->mTexture));
+	}
+
+	void imguiTexturePool()
+	{
+		static bool isWindowShown = false;
+		imguiPrismAddTab("Prism", "Texture Pool", &isWindowShown);
+		if (!isWindowShown) return;
+
+		ImGui::Begin("Texture Pool", &isWindowShown);
+		ImGui::Text("IsLoaded = %d", gTexturePool.mIsLoaded);
+		ImGui::Text("Loaded Textures = %d", string_map_size(&gTexturePool.mPathToLoadedTexture));
+		ImGui::Separator();
+
+		static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+		if (ImGui::BeginTable("Textures", 4, flags))
+		{
+			ImGui::TableSetupColumn("Key");
+			ImGui::TableSetupColumn("Path");
+			ImGui::TableSetupColumn("RefCount");
+			ImGui::TableSetupColumn("Texture Hash");
+			ImGui::TableHeadersRow();
+			string_map_map(&gTexturePool.mPathToLoadedTexture, imguiTexturePoolEntry, NULL);
+			ImGui::EndTable();
+		}
+		ImGui::End();
+	}
+#endif
 
 	void setupTexturePool() {
 		if (gTexturePool.mIsLoaded) {

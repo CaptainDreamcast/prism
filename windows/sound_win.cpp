@@ -59,6 +59,7 @@ namespace prism {
 		FMOD::System* mSystem;
 		FMOD::Sound* mTrack;
 		FMOD::Channel* mChannel;
+		Buffer mTrackBuffer; // TODO: fix crash when this is unloaded between screens
 
 		uint64_t mTimeWhenMusicPlaybackStarted;
 		int mMusicChannel;
@@ -161,6 +162,8 @@ namespace prism {
 		{
 			logErrorFormat("Unable to unload track: %s", FMOD_ErrorString(result));
 		}
+
+		freeBuffer(gPrismWindowsSoundData.mTrackBuffer);
 		gPrismWindowsSoundData.mHasLoadedTrack = 0;
 	}
 
@@ -204,13 +207,22 @@ namespace prism {
 		if (gPrismWindowsSoundData.mHasLoadedTrack) unloadTrack();
 		gPrismWindowsSoundData.mShouldUnloadTrack = false;
 
-		char fullPath[1024];
-		getFullPath(fullPath, tPath);
+		gPrismWindowsSoundData.mTrackBuffer = fileToBuffer(tPath);
 
-		FMOD_RESULT result = gPrismWindowsSoundData.mSystem->createStream(tPath, FMOD_LOOP_NORMAL | FMOD_2D, nullptr, &gPrismWindowsSoundData.mTrack);
+		FMOD_CREATESOUNDEXINFO exInfo = {};
+		exInfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
+		exInfo.length = gPrismWindowsSoundData.mTrackBuffer.mLength;
+
+		FMOD_RESULT result = gPrismWindowsSoundData.mSystem->createStream(
+			(const char*)gPrismWindowsSoundData.mTrackBuffer.mData,
+			FMOD_LOOP_NORMAL | FMOD_2D | FMOD_OPENMEMORY_POINT,
+			&exInfo,
+			&gPrismWindowsSoundData.mTrack);
 		if (result != FMOD_OK)
 		{
-			logErrorFormat("Unable to create stream %s: %s", fullPath, FMOD_ErrorString(result));
+			logErrorFormat("Unable to create stream %s: %s", tPath, FMOD_ErrorString(result));
+			freeBuffer(gPrismWindowsSoundData.mTrackBuffer);
+			return;
 		}
 
 		gPrismWindowsSoundData.mHasLoadedTrack = 1;

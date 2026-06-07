@@ -37,4 +37,6 @@ void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* tElement, const Vec
 void setHandledPhysicsGravity(PhysicsHandlerElement* tElement, const Vector3D& tGravity);
 void setHandledPhysicsSpeed(PhysicsHandlerElement* tElement, double tSpeed);
 
+void imguiPhysicsHandler();
+
 }
