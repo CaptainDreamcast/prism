@@ -51,13 +51,13 @@ int checkCollisionCircRect(const CollisionCirc& tCirc, const CollisionRect& tRec
 int checkCollisionCollider(const Collider& tCollider1, const Collider& tCollider2);
 
 CollisionObjectRect makeCollisionObjectRect(const Position2D& tTopLeft, const Position2D& tBottomRight, PhysicsObject* tPhysics);
-CollisionObjectCirc makeCollisionObjectCirc(const Position2D& tCenter, double tRadius, PhysicsObject* tPhysics);
+CollisionObjectCirc makeCollisionObjectCirc(const Position2D& tCenter, float tRadius, PhysicsObject* tPhysics);
 CollisionRect adjustCollisionObjectRect(CollisionObjectRect* tObj);
 CollisionCirc adjustCollisionObjectCirc(CollisionObjectCirc* tObj);
 
 
 CollisionRect makeCollisionRect(const Position2D& tTopLeft, const Position2D& tBottomRight);
-CollisionCirc makeCollisionCirc(const Position2D& tCenter, double tRadius);
+CollisionCirc makeCollisionCirc(const Position2D& tCenter, float tRadius);
 
 int checkCollisionObjectCirc(const CollisionObjectCirc& tObj1, const CollisionObjectCirc& tObj2);
 int checkCollisionObjectRect(const CollisionObjectRect& tObj1, const CollisionObjectRect& tObj2);
@@ -68,9 +68,9 @@ Collider makeColliderFromCirc(const CollisionCirc& tCirc);
 void setColliderBasePosition(Collider* tCollider, Position* tBasePosition);
 void destroyCollider(Collider* tCollider);
 
-double getColliderUp(const Collider& tCollider);
-double getColliderDown(const Collider& tCollider);
-double getColliderRight(const Collider& tCollider);
-double getColliderLeft(const Collider& tCollider);
+float getColliderUp(const Collider& tCollider);
+float getColliderDown(const Collider& tCollider);
+float getColliderRight(const Collider& tCollider);
+float getColliderLeft(const Collider& tCollider);
 
 }

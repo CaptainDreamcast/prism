@@ -21,6 +21,62 @@ extern int romdisk_buffer_length;
 
 namespace prism {
 
+#ifdef __linux__
+#include <dirent.h>
+#include <strings.h>
+#include <sys/stat.h>
+
+	static int resolvePathCaseInsensitive(const char* tPath, char* oResolved, size_t tResolvedSize) {
+		char base[1024];
+		const char* p = tPath;
+		if (*p == '/') {
+			strcpy(base, "/");
+			p++;
+		}
+		else {
+			strcpy(base, ".");
+			if (!strncmp(p, "./", 2)) p += 2;
+		}
+
+		char component[512];
+		while (*p) {
+			const char* slash = strchr(p, '/');
+			size_t len = slash ? size_t(slash - p) : strlen(p);
+			if (len >= sizeof(component)) return 0;
+			memcpy(component, p, len);
+			component[len] = '\0';
+
+			char candidate[1024];
+			if (snprintf(candidate, sizeof(candidate), "%s/%s", base, component) >= (int)sizeof(candidate)) return 0;
+			struct stat sb;
+			if (stat(candidate, &sb) != 0) {
+				DIR* dir = opendir(base);
+				if (!dir) return 0;
+				int found = 0;
+				struct dirent* entry;
+				while ((entry = readdir(dir))) {
+					if (!strcasecmp(entry->d_name, component)) {
+						snprintf(candidate, sizeof(candidate), "%s/%s", base, entry->d_name);
+						found = 1;
+						break;
+					}
+				}
+				closedir(dir);
+				if (!found) return 0;
+			}
+			strcpy(base, candidate);
+			p += len;
+			while (*p == '/') p++;
+		}
+
+		if (strlen(base) >= tResolvedSize) return 0;
+		strcpy(oResolved, base);
+		return 1;
+	}
+#endif
+
+
+
 	static struct {
 		char cwd[1024];
 		char mFileSystem[1024];
@@ -172,7 +228,16 @@ namespace prism {
 			recoverFromError();
 		}
 
-		return fopen(path, flags);
+		auto ret = fopen(path, flags);
+#ifdef __linux__
+		if (!ret && tFlags == O_RDONLY) {
+			char resolved[1024];
+			if (resolvePathCaseInsensitive(path, resolved, sizeof(resolved))) {
+				ret = fopen(resolved, flags);
+			}
+		}
+#endif
+		return ret;
 	}
 
 	int fileClose(FileHandler tHandler) {

@@ -48,7 +48,7 @@ namespace prism {
         gNumberPopupHandler.mList.clear();
     }
 
-    int addPrismNumberPopup(int tValue, const Position& tPos, int tFont, const Vector3D& tVelocity, double tScale, int tColor, int tDuration)
+    int addPrismNumberPopup(int tValue, const Position& tPos, int tFont, const Vector3D& tVelocity, float tScale, int tColor, int tDuration)
     {
         int id = gNumberPopupHandler.mNextID++;
         NumberPopup e;

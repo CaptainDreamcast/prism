@@ -10,6 +10,7 @@
 #include "prism/log.h"
 #include "prism/math.h"
 #include "prism/stlutil.h"
+#include "prism/tweening.h"
 
 #ifdef _WIN32
 #include <imgui/imgui.h>
@@ -32,7 +33,7 @@ namespace prism {
 		Vector3D* mSize;
 
 		PhysicsHandlerElement* mAlphaPhysicsElement;
-		double* mAlpha;
+		float* mAlpha;
 
 		Duration mDuration;
 
@@ -43,9 +44,9 @@ namespace prism {
 	} FadeIn;
 
 	typedef struct {
-		double mR;
-		double mG;
-		double mB;
+		float mR;
+		float mG;
+		float mB;
 
 	} FadeColor;
 
@@ -54,7 +55,7 @@ namespace prism {
 	static struct {
 		TextureData mWhiteTexture;
 		int mIsActive;
-		double mZ;
+		float mZ;
 
 		int mFullLineSize;
 
@@ -63,6 +64,12 @@ namespace prism {
 		FadeColor mFadeColor;
 
 		map<int, FadeIn> mFadeIns;
+
+		AnimationHandlerElement* mTintElement;
+		FadeColor mTintColor;
+		float mTintAlpha;
+		int mTintTweenID;
+		float mTintZ;
 	} gScreenEffect;
 
 #ifdef _WIN32
@@ -117,6 +124,12 @@ namespace prism {
 		gScreenEffect.mScreenFillElement = NULL;
 		gScreenEffect.mFadeColor.mR = gScreenEffect.mFadeColor.mG = gScreenEffect.mFadeColor.mB = 0;
 
+		gScreenEffect.mTintElement = NULL;
+		gScreenEffect.mTintColor.mR = gScreenEffect.mTintColor.mG = gScreenEffect.mTintColor.mB = 0;
+		gScreenEffect.mTintAlpha = 0;
+		gScreenEffect.mTintTweenID = -1;
+		gScreenEffect.mTintZ = gScreenEffect.mZ - 1;
+
 		gScreenEffect.mIsActive = 1;
 	}
 
@@ -127,16 +140,24 @@ namespace prism {
 		gScreenEffect.mIsActive = 0;
 	}
 
+	static void resetTintState() {
+		gScreenEffect.mTintElement = NULL; // let animation handler clean this properly
+		gScreenEffect.mTintAlpha = 0;
+		gScreenEffect.mTintTweenID = -1;
+	}
+
 	static void loadScreenEffectHandler(void* tData) {
 		(void)tData;
 		setProfilingSectionMarkerCurrentFunction();
 		gScreenEffect.mFadeIns.clear();
+		resetTintState();
 	}
 
 	static void unloadScreenEffectHandler(void* tData) {
 		(void)tData;
 		setProfilingSectionMarkerCurrentFunction();
 		gScreenEffect.mFadeIns.clear();
+		resetTintState();
 	}
 
 	static void unloadedBehaviour(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
@@ -182,13 +203,19 @@ namespace prism {
 		return 0;
 	}
 
+	static void applyTint();
+
 	static void updateScreenEffectHandler(void* tData) {
 		(void)tData;
 		setProfilingSectionMarkerCurrentFunction();
 		stl_int_map_remove_predicate(gScreenEffect.mFadeIns, updateFadeIn);
+
+		if (gScreenEffect.mTintTweenID != -1 && gScreenEffect.mTintElement) {
+			applyTint();
+		}
 	}
 
-	static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller, const Vector3D& tStartPatchSize, const Vector3D& tFullPatchSize, const Vector3D& tSizeDelta, double tStartAlpha, double tAlphaDelta, IsScreenEffectOverFunction tIsOverFunc) {
+	static void addFadeIn_internal(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller, const Vector3D& tStartPatchSize, const Vector3D& tFullPatchSize, const Vector3D& tSizeDelta, float tStartAlpha, float tAlphaDelta, IsScreenEffectOverFunction tIsOverFunc) {
 		if (!gScreenEffect.mIsActive) {
 			unloadedBehaviour(tDuration, tOptionalCB, tCaller);
 			return;
@@ -239,13 +266,13 @@ namespace prism {
 	}
 
 	void addFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
-		double da = -1 / (double)tDuration;
+		float da = -1 / (float)tDuration;
 		Vector3D patchSize = Vector3D(getScreenSize().x, getScreenSize().y, 1);
 		addFadeIn_internal(tDuration, tOptionalCB, tCaller, patchSize, patchSize, Vector3D(0, 0, 0), 1, da, isFadeInOver);
 	}
 
 	void addVerticalLineFadeIn(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
-		double dy = -gScreenEffect.mFullLineSize / (double)tDuration;
+		float dy = -gScreenEffect.mFullLineSize / (float)tDuration;
 		addFadeIn_internal(tDuration, tOptionalCB, tCaller, Vector3D(getScreenSize().x, gScreenEffect.mFullLineSize + 1, 1), Vector3D(getScreenSize().x, gScreenEffect.mFullLineSize, 1), Vector3D(0, dy, 0), 1, 0, isVerticalLineFadeInOver);
 	}
 
@@ -281,7 +308,7 @@ namespace prism {
 	}
 
 	void addFadeOut(Duration tDuration, ScreenEffectFinishedCB tOptionalCB, void* tCaller) {
-		double da = 1 / (double)tDuration;
+		auto da = 1 / (float)tDuration;
 		Vector3D patchSize = Vector3D(getScreenSize().x, getScreenSize().y, 1);
 		FadeOutData* e = (FadeOutData*)allocMemory(sizeof(FadeOutData));
 		e->mCB = tOptionalCB;
@@ -294,22 +321,121 @@ namespace prism {
 		getRGBFromColor(tColor, &gScreenEffect.mFadeColor.mR, &gScreenEffect.mFadeColor.mG, &gScreenEffect.mFadeColor.mB);
 	}
 
-	void setFadeColorRGB(double r, double g, double b) {
+	void setFadeColorRGB(float r, float g, float b) {
 		gScreenEffect.mFadeColor.mR = r;
 		gScreenEffect.mFadeColor.mG = g;
 		gScreenEffect.mFadeColor.mB = b;
 	}
 
-	void setScreenEffectZ(double tZ)
+	void setScreenEffectZ(float tZ)
 	{
 		gScreenEffect.mZ = tZ;
+	}
+
+	static void ensureTintElement() {
+		if (gScreenEffect.mTintElement) return;
+
+		ScreenSize screen = getScreenSize();
+		Position p = Vector3D(0, 0, gScreenEffect.mTintZ);
+		gScreenEffect.mTintElement = playAnimationLoop(p, &gScreenEffect.mWhiteTexture, createOneFrameAnimation(), makeRectangleFromTexture(gScreenEffect.mWhiteTexture));
+		setAnimationSize(gScreenEffect.mTintElement, Vector3D(screen.x, screen.y, 1), Vector3D(0, 0, 0));
+	}
+
+	static void applyTint() {
+		if (!gScreenEffect.mTintElement) return;
+		setAnimationColor(gScreenEffect.mTintElement, gScreenEffect.mTintColor.mR, gScreenEffect.mTintColor.mG, gScreenEffect.mTintColor.mB);
+		setAnimationTransparency(gScreenEffect.mTintElement, gScreenEffect.mTintAlpha);
+	}
+
+	static void cancelTintTween() {
+		if (gScreenEffect.mTintTweenID != -1) {
+			removeTween(gScreenEffect.mTintTweenID);
+			gScreenEffect.mTintTweenID = -1;
+		}
+	}
+
+	void removeScreenTint() {
+		cancelTintTween();
+		gScreenEffect.mTintAlpha = 0;
+		if (gScreenEffect.mTintElement) {
+			removeHandledAnimation(gScreenEffect.mTintElement);
+			gScreenEffect.mTintElement = NULL;
+		}
+	}
+
+	void setScreenTintRGBA(float tR, float tG, float tB, float tAlpha) {
+		if (!gScreenEffect.mIsActive) return;
+
+		cancelTintTween();
+		gScreenEffect.mTintColor.mR = tR;
+		gScreenEffect.mTintColor.mG = tG;
+		gScreenEffect.mTintColor.mB = tB;
+		gScreenEffect.mTintAlpha = tAlpha;
+
+		if (tAlpha <= 0) {
+			removeScreenTint();
+			return;
+		}
+
+		ensureTintElement();
+		applyTint();
+	}
+
+	void setScreenTint(Color tColor, float tAlpha) {
+		float r, g, b;
+		getRGBFromColor(tColor, &r, &g, &b);
+		setScreenTintRGBA(r, g, b, tAlpha);
+	}
+
+	static void tintTweenOverCB(void* tCaller) {
+		(void)tCaller;
+		gScreenEffect.mTintTweenID = -1;
+		if (gScreenEffect.mTintAlpha <= 0) {
+			removeScreenTint();
+		}
+	}
+
+	void tweenScreenTintRGBA(float tR, float tG, float tB, float tStartAlpha, float tEndAlpha, Duration tDuration, TweeningFunction tFunc) {
+		if (!gScreenEffect.mIsActive) return;
+
+		cancelTintTween();
+		gScreenEffect.mTintColor.mR = tR;
+		gScreenEffect.mTintColor.mG = tG;
+		gScreenEffect.mTintColor.mB = tB;
+		gScreenEffect.mTintAlpha = tStartAlpha;
+
+		ensureTintElement();
+		applyTint();
+
+		gScreenEffect.mTintTweenID = tweenDouble(&gScreenEffect.mTintAlpha, tStartAlpha, tEndAlpha, tFunc, tDuration, tintTweenOverCB, NULL);
+	}
+
+	void tweenScreenTint(Color tColor, float tStartAlpha, float tEndAlpha, Duration tDuration, TweeningFunction tFunc) {
+		float r, g, b;
+		getRGBFromColor(tColor, &r, &g, &b);
+		tweenScreenTintRGBA(r, g, b, tStartAlpha, tEndAlpha, tDuration, tFunc);
+	}
+
+	void setScreenTintZ(float tZ) {
+		gScreenEffect.mTintZ = tZ;
+		if (gScreenEffect.mTintElement) {
+			setAnimationPosition(gScreenEffect.mTintElement, Vector3D(0, 0, tZ));
+		}
+	}
+
+	void addDamageFlashColored(Color tColor, float tStartAlpha, Duration tDuration) {
+		tweenScreenTint(tColor, tStartAlpha, 0, tDuration, inverseQuadraticTweeningFunction);
+	}
+
+	void addDamageFlash(Duration tDuration) {
+		addDamageFlashColored(COLOR_RED, 0.5, tDuration);
 	}
 
 	void drawColoredRectangle(const GeoRectangle& tRect, Color tColor) {
 		if (!gScreenEffect.mIsActive) return;
 
-		double dx = (tRect.mBottomRight.x - tRect.mTopLeft.x);
-		double dy = (tRect.mBottomRight.y - tRect.mTopLeft.y);
+		float dx = (tRect.mBottomRight.x - tRect.mTopLeft.x);
+		float dy = (tRect.mBottomRight.y - tRect.mTopLeft.y);
 		dx /= gScreenEffect.mWhiteTexture.mTextureSize.x;
 		dy /= gScreenEffect.mWhiteTexture.mTextureSize.y;
 
@@ -323,8 +449,8 @@ namespace prism {
 	{
 		if (tA.y != tB.y) return;
 
-		double x = min(tA.x, tB.x);
-		double w = (double)abs((double)(tB.x - tA.x));
+		float x = min(tA.x, tB.x);
+		auto w = (float)abs((float)(tB.x - tA.x));
 		drawColoredRectangle(GeoRectangle(x, tA.y, tA.z, w, 1), tColor);
 	}
 

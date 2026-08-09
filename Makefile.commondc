@@ -1,9 +1,10 @@
 TARGET = 1ST_READ
 
 OBJS += romdisk.o
-OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -DDREAMCAST -Wall -fpermissive -Wno-format-overflow
+OPTFLAGS=-O3 -fomit-frame-pointer -fno-delayed-branch -fsingle-precision-constant -Wdouble-promotion -DDREAMCAST -Wall -fpermissive -Wno-format-overflow
 KOS_CPPFLAGS+= $(OPTFLAGS)
-CXXFLAGS += -DNDEBUG -std=c++17 -Wall -O2
+CXXFLAGS += -DNDEBUG -std=c++17 -Wall -O2 -D_GLIBCXX11_USE_C99_STDIO=1 -fsingle-precision-constant -Wdouble-promotion
+# D_GLIBCXX11_USE_C99_STDIO needed or to_string(double) does not exist under GCC15
 KOS_ROMDISK_DIR = romdisk_boot
 
 complete: make_filesystem build_develop

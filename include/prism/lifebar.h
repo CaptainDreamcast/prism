@@ -16,7 +16,7 @@ int addLifeBar(const Vector3D& tPosition, MugenSpriteFile& mSprites, MugenAnimat
 void removeLifeBar(int tID);
 
 int getLifeBarPercentage(int tID);
-void setLifeBarPercentage(int tID, double tPercentage);
+void setLifeBarPercentage(int tID, float tPercentage);
 int getLifeBarValue(int tID);
 void setLifeBarValue(int tID, int tValue);
 void setLifeBarVisibility(int tID, int tIsVisible);

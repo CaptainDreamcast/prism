@@ -109,7 +109,7 @@ namespace prism {
 		while (true) {
 			const auto line = readLineOrEOFFromTextStreamBufferPointer(&p, tScript->mOwnedBuffer);
 			if (isBufferPointerOver(p, tScript->mOwnedBuffer)) break;
-			if (line.size() > 0 && line[0] != '[') continue;
+			if (line.empty() || line[0] != '[') continue; // only real group headers count towards the offset
 			std::string groupName;
 			for (size_t i = 1; i < line.size() && line[i] != ']'; i++) {
 				groupName.push_back(line[i]);
@@ -148,6 +148,39 @@ namespace prism {
 			ss >> firstWord;
 			if (stringEqualCaseIndependent(firstWord.c_str(), tVariableName)) {
 				return relevantLines[i].second;
+			}
+		}
+
+		return NULL;
+	}
+
+	// insert position right after the header of the tGroupOffset-th group following the tGroupName group, mirroring the search in the offset variant of findExistingVariablePositionOrNullIfNonExistant
+	static BufferPointer findStartOfGroup(ModifiableMugenDefScript* tScript, const char* tGroupName, size_t tGroupOffset) {
+		auto p = getBufferPointer(tScript->mOwnedBuffer);
+
+		int foundOriginal = 0;
+		int index = 0;
+		while (true) {
+			const auto line = readLineOrEOFFromTextStreamBufferPointer(&p, tScript->mOwnedBuffer);
+			if (isBufferPointerOver(p, tScript->mOwnedBuffer)) break;
+			if (line.empty() || line[0] != '[') continue; // only real group headers count towards the offset
+			std::string groupName;
+			for (size_t i = 1; i < line.size() && line[i] != ']'; i++) {
+				groupName.push_back(line[i]);
+			}
+			if (foundOriginal)
+			{
+				if (index == int(tGroupOffset))
+				{
+					return p;
+				}
+				index++;
+			}
+			else
+			{
+				if (stringEqualCaseIndependent(groupName.c_str(), tGroupName)) {
+					foundOriginal = 1;
+				}
 			}
 		}
 
@@ -240,7 +273,7 @@ namespace prism {
 		}
 	}
 
-	void saveMugenDefFloat(ModifiableMugenDefScript* tScript, const char* tGroupName, const char* tVariableName, double tValue)
+	void saveMugenDefFloat(ModifiableMugenDefScript* tScript, const char* tGroupName, const char* tVariableName, float tValue)
 	{
 		saveMugenDefString(tScript, tGroupName, tVariableName, std::to_string(tValue));
 	}
@@ -249,18 +282,99 @@ namespace prism {
 		saveMugenDefString(tScript, tGroupName, tVariableName, std::to_string(tValue));
 	}
 
+	void addMugenDefScriptGroup(const std::string& tPath, const char* tAnchorGroupName, int tAnchorGroupOffset, const char* tNewGroupName, const std::vector<std::pair<std::string, std::string>>& tVariables)
+	{
+		auto script = openModifiableMugenDefScript(tPath);
+
+		// find the start of the anchor group's content (same search as the offset variant of saveMugenDefString)
+		auto p = getBufferPointer(script.mOwnedBuffer);
+		int foundOriginal = 0;
+		int index = 0;
+		int foundAnchor = 0;
+		while (!foundAnchor) {
+			const auto line = readLineOrEOFFromTextStreamBufferPointer(&p, script.mOwnedBuffer);
+			if (isBufferPointerOver(p, script.mOwnedBuffer)) break;
+			if (line.empty() || line[0] != '[') continue; // only real group headers count towards the offset
+			std::string groupName;
+			for (size_t i = 1; i < line.size() && line[i] != ']'; i++) {
+				groupName.push_back(line[i]);
+			}
+			if (foundOriginal)
+			{
+				if (index == tAnchorGroupOffset)
+				{
+					foundAnchor = 1;
+				}
+				index++;
+			}
+			else
+			{
+				if (stringEqualCaseIndependent(groupName.c_str(), tAnchorGroupName)) {
+					foundOriginal = 1;
+					if (tAnchorGroupOffset < 0) foundAnchor = 1;
+				}
+			}
+		}
+
+		if (!foundAnchor) {
+			closeModifiableMugenDefScript(&script);
+			return;
+		}
+
+		// advance to the end of the anchor group's content: the start of the next group header line, or EOF
+		auto writePosition = p;
+		while (true) {
+			auto linePosition = p;
+			if (isBufferPointerOver(p, script.mOwnedBuffer)) {
+				writePosition = (char*)script.mOwnedBuffer.mData + script.mOwnedBuffer.mLength;
+				break;
+			}
+			const auto line = readLineOrEOFFromTextStreamBufferPointer(&p, script.mOwnedBuffer);
+			if (!line.empty() && line[0] == '[') {
+				writePosition = linePosition;
+				break;
+			}
+			if (isBufferPointerOver(p, script.mOwnedBuffer)) {
+				writePosition = (char*)script.mOwnedBuffer.mData + script.mOwnedBuffer.mLength;
+				break;
+			}
+		}
+
+		std::string groupText;
+		const auto isAtEndWithoutNewline = (writePosition == (char*)script.mOwnedBuffer.mData + script.mOwnedBuffer.mLength) && script.mOwnedBuffer.mLength && ((char*)script.mOwnedBuffer.mData)[script.mOwnedBuffer.mLength - 1] != '\n';
+		if (isAtEndWithoutNewline) groupText += "\n";
+		groupText += std::string("[") + tNewGroupName + "]\n";
+		for (const auto& variable : tVariables) {
+			groupText += variable.first + " = " + variable.second + "\n";
+		}
+		groupText += "\n";
+		insertStringIntoModifiableMugenDefScript(&script, writePosition, groupText);
+
+		saveModifiableMugenDefScript(&script, tPath);
+		closeModifiableMugenDefScript(&script);
+	}
+
 	void saveMugenDefString(const std::string& tPath, const char* tGroupName, size_t tGroupOffset, const char* tVariableName, const std::string& tValue)
 	{
 		auto script = openModifiableMugenDefScript(tPath);
 
 		auto sectionStart = findExistingVariablePositionOrNullIfNonExistant(&script, tGroupName, tGroupOffset, tVariableName);
-		if (!sectionStart)
+		if (sectionStart)
 		{
-			closeModifiableMugenDefScript(&script);
-			return;
+			adaptValueAtPosition(&script, sectionStart, tValue, tGroupName, tVariableName);
 		}
-
-		adaptValueAtPosition(&script, sectionStart, tValue, tGroupName, tVariableName);
+		else
+		{
+			// variable not declared in the target group yet: append it right below the group header
+			// if the target group itself cannot be found, leave the file untouched
+			auto writePosition = findStartOfGroup(&script, tGroupName, tGroupOffset);
+			if (!writePosition)
+			{
+				closeModifiableMugenDefScript(&script);
+				return;
+			}
+			writeNewVariableLine(&script, writePosition, tVariableName, tValue);
+		}
 
 		saveModifiableMugenDefScript(&script, tPath);
 		closeModifiableMugenDefScript(&script);

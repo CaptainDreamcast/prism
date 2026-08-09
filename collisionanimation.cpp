@@ -129,9 +129,9 @@ namespace prism {
 
 
 	static void invertPositionRect(HandledCollisionAnimation* tData, const CollisionRect& tRect) {
-		double nposX = tRect.mBottomRight.x;
-		double dx = nposX - tData->mCenter.x;
-		double cx = (tData->mCenter.x - dx) - tRect.mTopLeft.x;
+		float nposX = tRect.mBottomRight.x;
+		float dx = nposX - tData->mCenter.x;
+		float cx = (tData->mCenter.x - dx) - tRect.mTopLeft.x;
 
 		tData->mPosition.x += cx;
 	}

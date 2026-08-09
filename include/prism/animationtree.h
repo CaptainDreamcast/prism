@@ -10,7 +10,7 @@ namespace prism {
 typedef struct {
 	Position mAnchor;
 	Position mTranslation;
-	double mRotationZ;
+	float mRotationZ;
 
 	TextureData* mTextures;
 	Animation mAnimation;

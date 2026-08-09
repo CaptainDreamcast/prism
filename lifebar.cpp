@@ -34,7 +34,7 @@ namespace prism {
 
         void updateInternal()
         {
-            double percentage = ((double)mCurrentValue) / mMaxValue;
+            auto percentage = ((float)mCurrentValue) / mMaxValue;
             if (mType == LifeBarType::STRETCH)
             {
                 setMugenAnimationDrawScale(mFGElement, Vector2D(percentage * mFullSize, 1));
@@ -45,7 +45,7 @@ namespace prism {
             }
         }
 
-        void updateByPercentage(double tPercentage)
+        void updateByPercentage(float tPercentage)
         {
             mCurrentValue = (int)(tPercentage * mMaxValue);
             updateInternal();
@@ -104,7 +104,7 @@ namespace prism {
     {
         return gLifeBarHandlerData.mLifeBars[tID].mCurrentValue / gLifeBarHandlerData.mLifeBars[tID].mMaxValue;
     }
-    void setLifeBarPercentage(int tID, double tPercentage)
+    void setLifeBarPercentage(int tID, float tPercentage)
     {
         gLifeBarHandlerData.mLifeBars[tID].updateByPercentage(tPercentage);
     }

@@ -66,7 +66,7 @@ namespace prism {
 			tAnimation->mFrame++;
 			if (tAnimation->mFrame >= tAnimation->mFrameAmount) {
 				tAnimation->mFrame = tAnimation->mFrameAmount - 1;
-				tAnimation->mNow = getDurationInFrames(tAnimation->mDuration);
+				tAnimation->mNow = (float)getDurationInFrames(tAnimation->mDuration);
 				ret = ANIMATION_OVER;
 			}
 		}
@@ -119,10 +119,10 @@ namespace prism {
 		gPrismAnimationData.mIsPaused = 0;
 	}
 
-	double getDurationPercentage(Duration tNow, Duration tDuration)
+	float getDurationPercentage(Duration tNow, Duration tDuration)
 	{
 		int duration = getDurationInFrames(tDuration);
-		return tNow / (double)duration;
+		return tNow / (float)duration;
 	}
 
 	static struct {
@@ -260,9 +260,9 @@ namespace prism {
 
 		if (cur->mInversionState.x) {
 			Position center = vecAdd(cur->mCenter, p);
-			double deltaX = center.x - p.x;
-			double nRightX = center.x + deltaX;
-			double nLeftX = nRightX - abs(cur->mTexturePosition.bottomRight.x - cur->mTexturePosition.topLeft.x);
+			float deltaX = center.x - p.x;
+			float nRightX = center.x + deltaX;
+			float nLeftX = nRightX - abs(cur->mTexturePosition.bottomRight.x - cur->mTexturePosition.topLeft.x);
 			p.x = nLeftX;
 			texturePos.topLeft.x = cur->mTexturePosition.bottomRight.x;
 			texturePos.bottomRight.x = cur->mTexturePosition.topLeft.x;
@@ -270,9 +270,9 @@ namespace prism {
 
 		if (cur->mInversionState.y) {
 			Position center = vecAdd(cur->mCenter, p);
-			double deltaY = center.y - p.y;
-			double nDownY = center.y + deltaY;
-			double nUpY = nDownY - abs(cur->mTexturePosition.bottomRight.y - cur->mTexturePosition.topLeft.y);
+			float deltaY = center.y - p.y;
+			float nDownY = center.y + deltaY;
+			float nUpY = nDownY - abs(cur->mTexturePosition.bottomRight.y - cur->mTexturePosition.topLeft.y);
 			p.y = nUpY;
 			texturePos.topLeft.y = cur->mTexturePosition.bottomRight.y;
 			texturePos.bottomRight.y = cur->mTexturePosition.topLeft.y;
@@ -362,40 +362,40 @@ namespace prism {
 		e->mIsScaled = 1;
 		e->mScaleEffectCenter = tCenter;
 
-		double dx = tSize.x / e->mTextureData[0].mTextureSize.x;
-		double dy = tSize.y / e->mTextureData[0].mTextureSize.y;
+		float dx = tSize.x / e->mTextureData[0].mTextureSize.x;
+		float dy = tSize.y / e->mTextureData[0].mTextureSize.y;
 		e->mScale = Vector3D(dx, dy, 1);
 	}
 
-	static void setAnimationRotationZ_internal(AnimationHandlerElement* e, double tAngle, const Vector3D& tCenter) {
+	static void setAnimationRotationZ_internal(AnimationHandlerElement* e, float tAngle, const Vector3D& tCenter) {
 		e->mIsRotated = 1;
 		e->mRotationEffectCenter = tCenter;
 		e->mRotationZ = tAngle;
 	}
 
-	void setAnimationRotationZ(AnimationHandlerElement* e, double tAngle, const Position& tCenter) {
+	void setAnimationRotationZ(AnimationHandlerElement* e, float tAngle, const Position& tCenter) {
 
 		setAnimationRotationZ_internal(e, tAngle, tCenter);
 	}
 
-	static void setAnimationColor_internal(AnimationHandlerElement* e, double r, double g, double b) {
+	static void setAnimationColor_internal(AnimationHandlerElement* e, float r, float g, float b) {
 		e->mHasBaseColor = 1;
 		e->mBaseColor = Vector3D(r, g, b);
 	}
 
-	void setAnimationColor(AnimationHandlerElement* e, double r, double g, double b) {
+	void setAnimationColor(AnimationHandlerElement* e, float r, float g, float b) {
 
 		setAnimationColor_internal(e, r, g, b);
 	}
 
 	void setAnimationColorType(AnimationHandlerElement* e, Color tColor)
 	{
-		double r, g, b;
+		float r, g, b;
 		getRGBFromColor(tColor, &r, &g, &b);
 		setAnimationColor(e, r, g, b);
 	}
 
-	void setAnimationTransparency(AnimationHandlerElement* e, double a) {
+	void setAnimationTransparency(AnimationHandlerElement* e, float a) {
 		e->mHasTransparency = 1;
 		e->mTransparency = a;
 	}
@@ -441,7 +441,7 @@ namespace prism {
 	static void increaseAnimationColor(void* tCaller) {
 		AnimationColorIncrease* e = (AnimationColorIncrease*)tCaller;
 
-		e->mColor = vecAdd(e->mColor, Vector3D(1.0 / e->mDuration, 1.0 / e->mDuration, 1.0 / e->mDuration));
+		e->mColor = vecAdd(e->mColor, Vector3D(1.0f / e->mDuration, 1.0f / e->mDuration, 1.0f / e->mDuration));
 
 		if (e->mColor.x >= 1) e->mColor = Vector3D(1, 1, 1);
 
@@ -478,7 +478,7 @@ namespace prism {
 	}
 
 	typedef struct {
-		double mAngle;
+		float mAngle;
 		Vector3D mCenter;
 	} ScreenRotationZ;
 
@@ -490,7 +490,7 @@ namespace prism {
 		setAnimationRotationZ_internal(e, tRot->mAngle, center);
 	}
 
-	void setAnimationHandlerScreenRotationZ(double tAngle, const Vector3D& tCenter)
+	void setAnimationHandlerScreenRotationZ(float tAngle, const Vector3D& tCenter)
 	{
 		ScreenRotationZ rot;
 		rot.mAngle = tAngle;
@@ -499,9 +499,9 @@ namespace prism {
 	}
 
 	typedef struct {
-		double r;
-		double g;
-		double b;
+		float r;
+		float g;
+		float b;
 	} AnimationHandlerScreenTint;
 
 	static void setAnimationHandlerScreenTintSingle(AnimationHandlerScreenTint* tTint, AnimationHandlerElement& tData) {
@@ -509,7 +509,7 @@ namespace prism {
 		setAnimationColor_internal(e, tTint->r, tTint->g, tTint->b);
 	}
 
-	void setAnimationHandlerScreenTint(double r, double g, double b)
+	void setAnimationHandlerScreenTint(float r, float g, float b)
 	{
 		AnimationHandlerScreenTint tint;
 		tint.r = r;
@@ -524,7 +524,7 @@ namespace prism {
 		setAnimationHandlerScreenTint(1, 1, 1);
 	}
 
-	double* getAnimationTransparencyReference(AnimationHandlerElement* e)
+	float* getAnimationTransparencyReference(AnimationHandlerElement* e)
 	{
 		return &e->mTransparency;
 	}

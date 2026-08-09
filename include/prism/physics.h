@@ -16,7 +16,7 @@ typedef struct {
 
 void handlePhysics(PhysicsObject* tObject);
 void setMaxVelocity(const Velocity& tVelocity);
-void setMaxVelocityDouble(double tVelocity);
+void setMaxVelocityDouble(float tVelocity);
 void resetMaxVelocity();
 void setDragCoefficient(const Vector3D& tDragCoefficient);
 void resetDragCoefficient();

@@ -35,7 +35,8 @@ void startScreenHandling(Screen* tScreen);
 void abortScreenHandling();
 void setNewScreen(Screen* tScreen);
 
-void setWrapperTimeDilatation(double tDilatation);
+void setWrapperTimeDilatation(float tDilatation);
+void takePrismWrapperScreenshot();
 void setWrapperBetweenScreensCB(void(*tCB)(void*), void* tCaller);
 void setWrapperIsPausingTracksBetweenScreens(int tIsPausingTracks);
 void setWrapperToExhibitionMode();

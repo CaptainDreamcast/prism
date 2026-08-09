@@ -7,13 +7,13 @@ namespace prism {
 struct PhysicsHandlerElement {
 	int mID;
 	PhysicsObject mObj;
-	double mMaxVelocity;
+	float mMaxVelocity;
 	Vector3D mDragCoefficient;
 	Gravity mGravity;
 	int mIsPaused;
 
-	double mTimeDilatationNow;
-	double mTimeDilatation;
+	float mTimeDilatationNow;
+	float mTimeDilatation;
 };
 
 void setupPhysicsHandler();
@@ -32,10 +32,10 @@ void stopHandledPhysics(PhysicsHandlerElement* tElement);
 void pauseHandledPhysics(PhysicsHandlerElement* tElement);
 void resumeHandledPhysics(PhysicsHandlerElement* tElement);
 
-void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* tElement, double tVelocity);
+void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* tElement, float tVelocity);
 void setHandledPhysicsDragCoefficient(PhysicsHandlerElement* tElement, const Vector3D& tDragCoefficient);
 void setHandledPhysicsGravity(PhysicsHandlerElement* tElement, const Vector3D& tGravity);
-void setHandledPhysicsSpeed(PhysicsHandlerElement* tElement, double tSpeed);
+void setHandledPhysicsSpeed(PhysicsHandlerElement* tElement, float tSpeed);
 
 void imguiPhysicsHandler();
 

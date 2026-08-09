@@ -265,67 +265,67 @@ namespace prism {
 		return getMugenAnimationDrawScale(e->mAnimationElement);
 	}
 
-	double getBlitzMugenAnimationDrawAngle(int tEntityID)
+	float getBlitzMugenAnimationDrawAngle(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationDrawAngle(e->mAnimationElement);
 	}
 
-	double getBlitzMugenAnimationColorRed(int tEntityID)
+	float getBlitzMugenAnimationColorRed(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationColorRed(e->mAnimationElement);
 	}
 
-	double getBlitzMugenAnimationColorGreen(int tEntityID)
+	float getBlitzMugenAnimationColorGreen(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationColorGreen(e->mAnimationElement);
 	}
 
-	double getBlitzMugenAnimationColorBlue(int tEntityID)
+	float getBlitzMugenAnimationColorBlue(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationColorBlue(e->mAnimationElement);
 	}
 
-	double* getBlitzMugenAnimationColorRedReference(int tEntityID)
+	float* getBlitzMugenAnimationColorRedReference(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationColorRedReference(e->mAnimationElement);
 	}
 
-	double* getBlitzMugenAnimationColorGreenReference(int tEntityID)
+	float* getBlitzMugenAnimationColorGreenReference(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationColorGreenReference(e->mAnimationElement);
 	}
 
-	double* getBlitzMugenAnimationColorBlueReference(int tEntityID)
+	float* getBlitzMugenAnimationColorBlueReference(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationColorBlueReference(e->mAnimationElement);
 	}
 
-	double* getBlitzMugenAnimationTransparencyReference(int tEntityID)
+	float* getBlitzMugenAnimationTransparencyReference(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationTransparencyReference(e->mAnimationElement);
 	}
 
-	double* getBlitzMugenAnimationScaleXReference(int tEntityID)
+	float* getBlitzMugenAnimationScaleXReference(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationScaleXReference(e->mAnimationElement);
 	}
 
-	double* getBlitzMugenAnimationScaleYReference(int tEntityID)
+	float* getBlitzMugenAnimationScaleYReference(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationScaleYReference(e->mAnimationElement);
 	}
 
-	double* getBlitzMugenAnimationBaseScaleReference(int tEntityID)
+	float* getBlitzMugenAnimationBaseScaleReference(int tEntityID)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		return getMugenAnimationBaseScaleReference(e->mAnimationElement);
@@ -346,7 +346,7 @@ namespace prism {
 		removeMugenAnimationCameraEffectPositionReference(e->mAnimationElement);
 	}
 
-	void setBlitzMugenAnimationTransparency(int tEntityID, double tTransparency) {
+	void setBlitzMugenAnimationTransparency(int tEntityID, float tTransparency) {
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		setMugenAnimationTransparency(e->mAnimationElement, tTransparency);
 	}
@@ -374,7 +374,7 @@ namespace prism {
 		setMugenAnimationRectangleHeight(e->mAnimationElement, tHeight);
 	}
 
-	void setBlitzMugenAnimationPositionX(int tEntityID, double tX)
+	void setBlitzMugenAnimationPositionX(int tEntityID, float tX)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		Position p = getMugenAnimationPosition(e->mAnimationElement);
@@ -382,7 +382,7 @@ namespace prism {
 		setMugenAnimationPosition(e->mAnimationElement, p);
 	}
 
-	void setBlitzMugenAnimationPositionY(int tEntityID, double tY)
+	void setBlitzMugenAnimationPositionY(int tEntityID, float tY)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		Position p = getMugenAnimationPosition(e->mAnimationElement);
@@ -408,13 +408,13 @@ namespace prism {
 		setMugenAnimationConstraintRectangle(e->mAnimationElement, tConstraintRectangle);
 	}
 
-	void setBlitzMugenAnimationColor(int tEntityID, double tR, double tG, double tB)
+	void setBlitzMugenAnimationColor(int tEntityID, float tR, float tG, float tB)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		setMugenAnimationColor(e->mAnimationElement, tR, tG, tB);
 	}
 
-	void setBlitzMugenAnimationBaseDrawScale(int tEntityID, double tScale)
+	void setBlitzMugenAnimationBaseDrawScale(int tEntityID, float tScale)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		setMugenAnimationBaseDrawScale(e->mAnimationElement, tScale);
@@ -432,7 +432,7 @@ namespace prism {
 		setMugenAnimationDrawSize(e->mAnimationElement, tSize);
 	}
 
-	void setBlitzMugenAnimationAngle(int tEntityID, double tRotation)
+	void setBlitzMugenAnimationAngle(int tEntityID, float tRotation)
 	{
 		BlitzAnimationEntry* e = getBlitzAnimationEntry(tEntityID);
 		setMugenAnimationDrawAngle(e->mAnimationElement, tRotation);

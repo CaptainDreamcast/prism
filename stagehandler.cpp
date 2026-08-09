@@ -46,11 +46,11 @@ namespace prism {
 
 	typedef struct {
 		Vector3D mScrollingFactor;
-		double mMaxVelocity;
+		float mMaxVelocity;
 		PhysicsObject mPhysics;
 		Position mReferencedPosition;
 		Position mTweeningTarget;
-		double mZ;
+		float mZ;
 		int mIsVisible;
 
 		List mPatchList;
@@ -68,8 +68,8 @@ namespace prism {
 
 	typedef struct {
 		Position mDirection;
-		double mStrength;
-		double mMaximum;
+		float mStrength;
+		float mMaximum;
 	} ScreenShake;
 
 	static struct {
@@ -195,10 +195,10 @@ namespace prism {
 	static int isStagePatchOutOfBounds(BackgroundPatchData* tData, SingleBackgroundData* tBackgroundData) {
 		if (gPrismStageHandlerData.mIsLoadingTexturesDirectly) return 0;
 
-		double sl = tBackgroundData->mPhysics.mPosition.x;
-		double sr = sl + 640.0;
+		float sl = tBackgroundData->mPhysics.mPosition.x;
+		float sr = sl + 640.0f;
 
-		double l = tData->mPosition.x;
+		float l = tData->mPosition.x;
 		int size;
 		if (tData->mHasTextureSize) {
 			size = tData->mTextureSize.x;
@@ -206,7 +206,7 @@ namespace prism {
 		else {
 			size = 640;
 		}
-		double r = l + size;
+		float r = l + size;
 
 		int isOut = l > sr || r < sl;
 		return isOut;
@@ -256,7 +256,7 @@ namespace prism {
 	}
 
 	static void setReferencedPosition(SingleBackgroundData* e) {
-		double l = gPrismStageHandlerData.mShake.mStrength * vecLength(e->mScrollingFactor);
+		float l = gPrismStageHandlerData.mShake.mStrength * vecLength(e->mScrollingFactor);
 		e->mReferencedPosition = vecAdd(e->mPhysics.mPosition, vecScale(gPrismStageHandlerData.mShake.mDirection, l));
 	}
 
@@ -272,11 +272,11 @@ namespace prism {
 	}
 
 	static void updateCameraShake() {
-		gPrismStageHandlerData.mShake.mStrength *= 0.9;
+		gPrismStageHandlerData.mShake.mStrength *= 0.9f;
 		if (gPrismStageHandlerData.mShake.mStrength < 0.5) gPrismStageHandlerData.mShake.mStrength = 0;
 		gPrismStageHandlerData.mShake.mStrength = min(gPrismStageHandlerData.mShake.mStrength, gPrismStageHandlerData.mShake.mMaximum);
 
-		double angle = randfrom(0, M_PI * 2);
+		float angle = randfrom(0, (float)(M_PI * 2));
 		gPrismStageHandlerData.mShake.mDirection = getDirectionFromAngleZ(angle);
 	}
 
@@ -295,11 +295,11 @@ namespace prism {
 		gPrismStageHandlerData.mIsLoadingTexturesDirectly = 1;
 	}
 
-	int addScrollingBackground(double tScrollingFactor, double tZ) {
+	int addScrollingBackground(float tScrollingFactor, float tZ) {
 		return addScrollingBackgroundWithMovementIn2D(tScrollingFactor, tScrollingFactor, tZ);
 	}
 
-	int addScrollingBackgroundWithMovementIn2D(double tDeltaX, double tDeltaY, double tZ)
+	int addScrollingBackgroundWithMovementIn2D(float tDeltaX, float tDeltaY, float tZ)
 	{
 		SingleBackgroundData* data = (SingleBackgroundData*)allocMemory(sizeof(SingleBackgroundData));
 		data->mScrollingFactor = Vector3D(tDeltaX, tDeltaY, 0);
@@ -328,7 +328,7 @@ namespace prism {
 		pData->mHasTextureSize = 0;
 		pData->mTextureData = tTextureData;
 		pData->mPosition = tPosition;
-		pData->mPosition.z = data->mZ + list_size(&data->mPatchList) * 0.001;
+		pData->mPosition.z = data->mZ + list_size(&data->mPatchList) * 0.001f;
 		pData->mAnimation = tAnimation;
 		strcpy(pData->mPath, tPath);
 
@@ -380,13 +380,13 @@ namespace prism {
 		gPrismStageHandlerData.mCamera.mAddMovement(data, *sData);
 	}
 
-	void scrollBackgroundRight(double tAccel) {
+	void scrollBackgroundRight(float tAccel) {
 		BackgroundScrollData sData = newBackgroundScrollData(Vector3D(tAccel, 0, 0));
 
 		list_map(&gPrismStageHandlerData.mList, scrollSingleBackground, &sData);
 	}
 
-	void scrollBackgroundDown(double tAccel)
+	void scrollBackgroundDown(float tAccel)
 	{
 		BackgroundScrollData sData = newBackgroundScrollData(Vector3D(0, tAccel, 0));
 		list_map(&gPrismStageHandlerData.mList, scrollSingleBackground, &sData);
@@ -411,7 +411,7 @@ namespace prism {
 		resetScrollingBackgroundPatchLoading(data);
 	}
 
-	void setScrollingBackgroundMaxVelocity(int tID, double tVel) {
+	void setScrollingBackgroundMaxVelocity(int tID, float tVel) {
 		SingleBackgroundData* data = (SingleBackgroundData*)list_get(&gPrismStageHandlerData.mList, tID);
 		data->mMaxVelocity = tVel;
 	}
@@ -459,20 +459,20 @@ namespace prism {
 		list_map(&data->mPatchList, setStagePatchVisible, data);
 	}
 
-	void addStageHandlerScreenShake(double tStrength)
+	void addStageHandlerScreenShake(float tStrength)
 	{
 		gPrismStageHandlerData.mShake.mStrength += tStrength;
 	}
 
-	void setStageHandlerMaximumScreenShake(double tStrength)
+	void setStageHandlerMaximumScreenShake(float tStrength)
 	{
 		gPrismStageHandlerData.mShake.mMaximum = tStrength;
 	}
 
 	typedef struct {
-		double mZ;
-		double mScrollingFactor;
-		double mMaxVelocity;
+		float mZ;
+		float mScrollingFactor;
+		float mMaxVelocity;
 		int mID;
 	} StageScriptLayerData;
 
@@ -583,7 +583,7 @@ namespace prism {
 	}
 
 	static void updatePhysicsCamera(SingleBackgroundData* tData) {
-		setDragCoefficient(Vector3D(0.1, 0.1, 0.1));
+		setDragCoefficient(Vector3D(0.1f, 0.1f, 0.1f));
 		setMaxVelocityDouble(tData->mMaxVelocity);
 		handlePhysics(&tData->mPhysics);
 		resetMaxVelocity();
@@ -595,7 +595,7 @@ namespace prism {
 	}
 
 	static void updateTweeningCamera(SingleBackgroundData* tData) {
-		double tweeningFactor = 0.1;
+		float tweeningFactor = 0.1f;
 		Vector3D delta = vecScale(vecSub(tData->mTweeningTarget, tData->mPhysics.mPosition), tweeningFactor);
 		if (vecLength(delta) > tData->mMaxVelocity) {
 			delta = vecScaleToSize(delta, tData->mMaxVelocity);

@@ -63,7 +63,7 @@ namespace prism {
         return 0;
     }
 
-    static double getScreenFactor() {
+    static float getScreenFactor() {
         ScreenSize sz = getScreenSize();
         return sz.x / 640.0;
     }

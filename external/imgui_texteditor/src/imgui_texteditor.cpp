@@ -8,6 +8,7 @@
 #include "imgui_texteditor/imgui_texteditor.h"
 
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 
 #include <prism/file.h>
 
@@ -714,6 +715,8 @@ void TextEditor::HandleKeyboardInputs()
 
 		io.WantCaptureKeyboard = true;
 		io.WantTextInput = true;
+		ImGui::SetNextFrameWantCaptureKeyboard(true);
+		ImGui::GetCurrentContext()->PlatformImeData.WantTextInput = true;
 
 		if (!IsReadOnly() && ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Z))
 			Undo();

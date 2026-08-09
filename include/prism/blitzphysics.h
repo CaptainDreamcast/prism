@@ -17,12 +17,12 @@ void setBlitzPhysicsDragFactorOnCollision(int tEntityID, const Vector3D& tDragFa
 Velocity getBlitzPhysicsVelocity(int tEntityID);
 Velocity* getBlitzPhysicsVelocityReference(int tEntityID);
 void setBlitzPhysicsVelocity(int tEntityID, const Velocity& tVelocity);
-void setBlitzPhysicsVelocityX(int tEntityID, double tX);
+void setBlitzPhysicsVelocityX(int tEntityID, float tX);
 void addBlitzPhysicsVelocity(int tEntityID, const Velocity& tVelocity);
-void addBlitzPhysicsVelocityX(int tEntityID, double tX);
-double getBlitzPhysicsVelocityY(int tEntityID);
-void setBlitzPhysicsVelocityY(int tEntityID, double tY);
-void addBlitzPhysicsVelocityY(int tEntityID, double tY);
+void addBlitzPhysicsVelocityX(int tEntityID, float tX);
+float getBlitzPhysicsVelocityY(int tEntityID);
+void setBlitzPhysicsVelocityY(int tEntityID, float tY);
+void addBlitzPhysicsVelocityY(int tEntityID, float tY);
 
 void imguiBlitzPhysicsHandler();
 

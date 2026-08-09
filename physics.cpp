@@ -15,7 +15,7 @@ namespace prism {
 
 	static struct {
 		Velocity mMaxVelocity;
-		double mMaxVelocityDouble = INFINITY;
+		float mMaxVelocityDouble = INFINITY;
 		Gravity mGravity;
 		int mIsPaused;
 		Vector3D mOneMinusDragCoefficient;
@@ -43,7 +43,7 @@ namespace prism {
 		gPrismPhysicsData.mMaxVelocity = tVelocity;
 	}
 
-	void setMaxVelocityDouble(double tVelocity) {
+	void setMaxVelocityDouble(float tVelocity) {
 		gPrismPhysicsData.mMaxVelocityDouble = tVelocity;
 	}
 
@@ -72,11 +72,11 @@ namespace prism {
 		return gPrismPhysicsData.mGravity;
 	}
 
-	static double f_min(double a, double b) {
+	static float f_min(float a, float b) {
 		return (a < b) ? a : b;
 	}
 
-	static double f_max(double a, double b) {
+	static float f_max(float a, float b) {
 		return (a > b) ? a : b;
 	}
 
@@ -90,7 +90,7 @@ namespace prism {
 		tObject->mVelocity.y *= gPrismPhysicsData.mOneMinusDragCoefficient.y;
 		tObject->mVelocity.z *= gPrismPhysicsData.mOneMinusDragCoefficient.z;
 
-		double f = getFramerateFactor();
+		float f = getFramerateFactor();
 		tObject->mVelocity.x += tObject->mAcceleration.x * f;
 		tObject->mVelocity.y += tObject->mAcceleration.y * f;
 		tObject->mVelocity.z += tObject->mAcceleration.z * f;

@@ -74,7 +74,7 @@ namespace prism {
 		if (isFile(path)) {
 			fileUnlink(path.c_str());
 		}
-		auto fileHandler = fileOpen(path.c_str(), O_WRONLY);
+		auto fileHandler = fileOpen(path.c_str(), O_WRONLY | O_META);
 		if (fileHandler == FILEHND_INVALID) {
 			logErrorFormat("Error writing VMU file %s. Aborting.\n", path.c_str());
 			free(pkg_out);
@@ -102,13 +102,13 @@ namespace prism {
 			return makeBuffer(NULL, 0);
 		}
 
-		auto fileHandler = fileOpen(path.c_str(), O_RDONLY);
+		auto fileHandler = fileOpen(path.c_str(), O_RDONLY | O_META);
 		if (fileHandler == FILEHND_INVALID) {
 			logErrorFormat("Error reading VMU file %s. Aborting.\n", path.c_str());
 			return makeBuffer(NULL, 0);
 		}
 		vmu_pkg_t pkg;
-		vmu_pkg_parse((uint8_t*)fileMemoryMap(fileHandler), &pkg);
+		vmu_pkg_parse((uint8_t*)fileMemoryMap(fileHandler), fileTotal(fileHandler), &pkg);
 		auto ret = copyBuffer(makeBuffer((void*)pkg.data, pkg.data_len));
 		decompressBufferZSTD(&ret);
 		fileClose(fileHandler);

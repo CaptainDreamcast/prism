@@ -22,13 +22,13 @@ namespace prism {
 
 	static struct {
 
-		double a;
-		double r;
-		double g;
-		double b;
-		double rOffset;
-		double gOffset;
-		double bOffset;
+		float a;
+		float r;
+		float g;
+		float b;
+		float rOffset;
+		float gOffset;
+		float bOffset;
 
 		Vector mMatrixStack;
 
@@ -39,7 +39,19 @@ namespace prism {
 		uint64_t mCurrentFrameTime;
 
 		Vector3DI mInverted;
+
+		int mHeaderCacheValid;
+		void* mLastTextureData;
+		int mLastTextureSizeX;
+		int mLastTextureSizeY;
+		int mLastHasPalette;
+		int mLastPaletteID;
+		BlendType mLastBlendType;
 	} gPrismDreamcastDrawingData;
+
+	static void invalidatePolyHeaderCache() {
+		gPrismDreamcastDrawingData.mHeaderCacheValid = 0;
+	}
 
 	semaphore_t gPVRAccessSemaphore;
 
@@ -49,7 +61,7 @@ namespace prism {
 	}
 
 	static void forceSingleValueToInteger(float* tVal) {
-		*tVal = floor(*tVal);
+		*tVal = std::floor(*tVal);
 	}
 
 	static void forceToInteger(pvr_vertex_t* tVert) {
@@ -83,72 +95,96 @@ namespace prism {
 
 #define PVR_OARGB_FLAG_ACTIVE	4   /**< \brief Taken from: https://dcemulation.org/phpBB/viewtopic.php?f=29&t=104921 */
 
+	static int canReusePolyHeader(const TextureData& tTexture) {
+		return gPrismDreamcastDrawingData.mHeaderCacheValid
+			&& gPrismDreamcastDrawingData.mLastTextureData == tTexture.mTexture->mData
+			&& gPrismDreamcastDrawingData.mLastTextureSizeX == tTexture.mTextureSize.x
+			&& gPrismDreamcastDrawingData.mLastTextureSizeY == tTexture.mTextureSize.y
+			&& gPrismDreamcastDrawingData.mLastHasPalette == tTexture.mHasPalette
+			&& (!tTexture.mHasPalette || gPrismDreamcastDrawingData.mLastPaletteID == tTexture.mPaletteID)
+			&& gPrismDreamcastDrawingData.mLastBlendType == gPrismDreamcastDrawingData.mBlendType;
+	}
+
+	static void updatePolyHeaderCache(const TextureData& tTexture) {
+		gPrismDreamcastDrawingData.mHeaderCacheValid = 1;
+		gPrismDreamcastDrawingData.mLastTextureData = tTexture.mTexture->mData;
+		gPrismDreamcastDrawingData.mLastTextureSizeX = tTexture.mTextureSize.x;
+		gPrismDreamcastDrawingData.mLastTextureSizeY = tTexture.mTextureSize.y;
+		gPrismDreamcastDrawingData.mLastHasPalette = tTexture.mHasPalette;
+		gPrismDreamcastDrawingData.mLastPaletteID = tTexture.mPaletteID;
+		gPrismDreamcastDrawingData.mLastBlendType = gPrismDreamcastDrawingData.mBlendType;
+	}
+
 	static void sendSpriteToPVR(const TextureData& tTexture, const PrismRectangle& tTexturePosition, pvr_vertex_t* vert) {
 		//sem_wait(&gPVRAccessSemaphore);
 
 		referenceTextureMemory(tTexture.mTexture);
 
-		pvr_poly_cxt_t cxt;
-		pvr_poly_hdr_t hdr;
+		if (!canReusePolyHeader(tTexture)) {
+			pvr_poly_cxt_t cxt;
+			pvr_poly_hdr_t hdr;
 
-		uint32_t format;
-		if (tTexture.mHasPalette) {
-			format = (PVR_TXRFMT_PAL8BPP | PVR_TXRFMT_8BPP_PAL(tTexture.mPaletteID));
+			uint32_t format;
+			if (tTexture.mHasPalette) {
+				format = (PVR_TXRFMT_PAL8BPP | PVR_TXRFMT_8BPP_PAL(tTexture.mPaletteID));
+			}
+			else {
+				format = PVR_TXRFMT_ARGB4444;
+			}
+
+			pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, format, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
+
+			cxt.blend.src_enable = PVR_BLEND_DISABLE;
+			cxt.blend.dst_enable = PVR_BLEND_DISABLE;
+
+			switch (gPrismDreamcastDrawingData.mBlendType) {
+			case BLEND_TYPE_NORMAL:
+				cxt.blend.src = PVR_BLEND_SRCALPHA;
+				cxt.blend.dst = PVR_BLEND_INVSRCALPHA;
+				break;
+			case BLEND_TYPE_ADDITION:
+				cxt.blend.src = PVR_BLEND_SRCALPHA;
+				cxt.blend.dst = PVR_BLEND_ONE;
+				break;
+			case BLEND_TYPE_SUBTRACTION:
+				cxt.blend.src = PVR_BLEND_SRCALPHA;
+				cxt.blend.dst = PVR_BLEND_ONE;
+				break;
+			case BLEND_TYPE_ONE:
+				cxt.blend.src = PVR_BLEND_ONE;
+				cxt.blend.dst = PVR_BLEND_ZERO;
+				break;
+			default:
+				logError("Unrecognized blend type.");
+				logErrorInteger(gPrismDreamcastDrawingData.mBlendType);
+				abortSystem();
+				break;
+			}
+
+			pvr_poly_compile(&hdr, &cxt);
+			hdr.cmd |= PVR_OARGB_FLAG_ACTIVE;
+			pvr_prim(&hdr, sizeof(hdr));
+
+			updatePolyHeaderCache(tTexture);
 		}
-		else {
-			format = PVR_TXRFMT_ARGB4444;
-		}
 
-		pvr_poly_cxt_txr(&cxt, PVR_LIST_TR_POLY, format, tTexture.mTextureSize.x, tTexture.mTextureSize.y, tTexture.mTexture->mData, PVR_FILTER_NEAREST);
-
-		cxt.blend.src_enable = PVR_BLEND_DISABLE;
-		cxt.blend.dst_enable = PVR_BLEND_DISABLE;
-
-		switch (gPrismDreamcastDrawingData.mBlendType) {
-		case BLEND_TYPE_NORMAL:
-			cxt.blend.src = PVR_BLEND_SRCALPHA;
-			cxt.blend.dst = PVR_BLEND_INVSRCALPHA;
-			break;
-		case BLEND_TYPE_ADDITION:
-			cxt.blend.src = PVR_BLEND_SRCALPHA;
-			cxt.blend.dst = PVR_BLEND_ONE;
-			break;
-		case BLEND_TYPE_SUBTRACTION:
-			cxt.blend.src = PVR_BLEND_SRCALPHA;
-			cxt.blend.dst = PVR_BLEND_ONE;
-			break;
-		case BLEND_TYPE_ONE:
-			cxt.blend.src = PVR_BLEND_ONE;
-			cxt.blend.dst = PVR_BLEND_ZERO;
-			break;
-		default:
-			logError("Unrecognized blend type.");
-			logErrorInteger(gPrismDreamcastDrawingData.mBlendType);
-			abortSystem();
-			break;
-		}
-
-		pvr_poly_compile(&hdr, &cxt);
-		hdr.cmd |= PVR_OARGB_FLAG_ACTIVE;
-		pvr_prim(&hdr, sizeof(hdr));
-
-		double left, right, up, down;
+		float left, right, up, down;
 		if (tTexturePosition.topLeft.x < tTexturePosition.bottomRight.x) {
-			left = tTexturePosition.topLeft.x / ((double)tTexture.mTextureSize.x);
-			right = (tTexturePosition.bottomRight.x + 1) / ((double)tTexture.mTextureSize.x);
+			left = tTexturePosition.topLeft.x / ((float)tTexture.mTextureSize.x);
+			right = (tTexturePosition.bottomRight.x + 1) / ((float)tTexture.mTextureSize.x);
 		}
 		else {
-			left = (tTexturePosition.topLeft.x + 1) / ((double)tTexture.mTextureSize.x);
-			right = tTexturePosition.bottomRight.x / ((double)tTexture.mTextureSize.x);
+			left = (tTexturePosition.topLeft.x + 1) / ((float)tTexture.mTextureSize.x);
+			right = tTexturePosition.bottomRight.x / ((float)tTexture.mTextureSize.x);
 		}
 
 		if (tTexturePosition.topLeft.y < tTexturePosition.bottomRight.y) {
-			up = tTexturePosition.topLeft.y / ((double)tTexture.mTextureSize.y);
-			down = (tTexturePosition.bottomRight.y + 1) / ((double)tTexture.mTextureSize.y);
+			up = tTexturePosition.topLeft.y / ((float)tTexture.mTextureSize.y);
+			down = (tTexturePosition.bottomRight.y + 1) / ((float)tTexture.mTextureSize.y);
 		}
 		else {
-			up = (tTexturePosition.topLeft.y + 1) / ((double)tTexture.mTextureSize.y);
-			down = tTexturePosition.bottomRight.y / ((double)tTexture.mTextureSize.y);
+			up = (tTexturePosition.topLeft.y + 1) / ((float)tTexture.mTextureSize.y);
+			down = tTexturePosition.bottomRight.y / ((float)tTexture.mTextureSize.y);
 		}
 
 		vert[0].argb = PVR_PACK_COLOR(gPrismDreamcastDrawingData.a, gPrismDreamcastDrawingData.r, gPrismDreamcastDrawingData.g, gPrismDreamcastDrawingData.b);
@@ -239,10 +275,10 @@ namespace prism {
 		applyDrawingMatrix(&vert[3]);
 		forceToInteger(&vert[3]);
 
-		double minX = min(vert[0].x, min(vert[1].x, min(vert[2].x, vert[3].x)));
-		double maxX = max(vert[0].x, max(vert[1].x, max(vert[2].x, vert[3].x)));
-		double minY = min(vert[0].y, min(vert[1].y, min(vert[2].y, vert[3].y)));
-		double maxY = max(vert[0].y, max(vert[1].y, max(vert[2].y, vert[3].y)));
+		float minX = min(vert[0].x, min(vert[1].x, min(vert[2].x, vert[3].x)));
+		float maxX = max(vert[0].x, max(vert[1].x, max(vert[2].x, vert[3].x)));
+		float minY = min(vert[0].y, min(vert[1].y, min(vert[2].y, vert[3].y)));
+		float maxY = max(vert[0].y, max(vert[1].y, max(vert[2].y, vert[3].y)));
 
 		ScreenSize sz = getScreenSize();
 		if (maxX < 0) return;
@@ -258,6 +294,7 @@ namespace prism {
 		//sem_wait(&gPVRAccessSemaphore);
 		pvr_scene_begin();
 		pvr_list_begin(PVR_LIST_TR_POLY);
+		invalidatePolyHeaderCache();
 		//sem_signal(&gPVRAccessSemaphore);
 	}
 
@@ -273,7 +310,7 @@ namespace prism {
 	bool isSkippingDrawing() { return false; }
 	void setDrawingFrameSkippingEnabled(bool /*tIsEnabled*/) {}
 	void resetDrawingFrameStartTime() {}
-	void updateDrawingFrameStartTime(double /*tTimeDelta*/) {}
+	void updateDrawingFrameStartTime(float /*tTimeDelta*/) {}
 
 	void disableDrawing() {
 		gPrismDreamcastDrawingData.mIsDisabled = 1;
@@ -291,7 +328,7 @@ namespace prism {
 		gPrismDreamcastDrawingData.mCurrentFrameTime = getSystemTicks();
 	}
 
-	extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
+	extern void getRGBFromColor(Color tColor, float* tR, float* tG, float* tB);
 
 	void drawMultilineText(const char* tText, const char* tFullText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize) {
 		if (gPrismDreamcastDrawingData.mIsDisabled) return;
@@ -305,7 +342,7 @@ namespace prism {
 		int current = 0;
 		Position pos = tPosition;
 
-		double r, g, b;
+		float r, g, b;
 		getRGBFromColor(tColor, &r, &g, &b);
 
 		TextureData fontData = getFontTexture();
@@ -315,6 +352,7 @@ namespace prism {
 
 		pvr_poly_compile(&hdr, &cxt);
 		pvr_prim(&hdr, sizeof(hdr));
+		invalidatePolyHeaderCache();
 
 		while (tText[current] != '\0') {
 
@@ -366,9 +404,9 @@ namespace prism {
 	}
 
 	// not on dreamcast
-	void drawTruetypeText(const char* /*tText*/, TruetypeFont /*tFont*/, const Position& /*tPosition*/, const Vector3DI& /*tTextSize*/, const Vector3D& /*tColor*/, double /*tTextBoxWidth*/, const GeoRectangle2D& /*tDrawRectangle*/) { }
+	void drawTruetypeText(const char* /*tText*/, TruetypeFont /*tFont*/, const Position& /*tPosition*/, const Vector3DI& /*tTextSize*/, const Vector3D& /*tColor*/, float /*tTextBoxWidth*/, const GeoRectangle2D& /*tDrawRectangle*/) { }
 
-	void scaleDrawing(double tFactor, const Position& tScalePosition) {
+	void scaleDrawing(float tFactor, const Position& tScalePosition) {
 		mat_translate(tScalePosition.x, tScalePosition.y, tScalePosition.z);
 		mat_scale(tFactor, tFactor, 1);
 		mat_translate(-tScalePosition.x, -tScalePosition.y, -tScalePosition.z);
@@ -392,7 +430,7 @@ namespace prism {
 		gPrismDreamcastDrawingData.mInverted.y ^= tFactor.y < 0;
 	}
 
-	void setDrawingBaseColorOffsetAdvanced(double r, double g, double b) {
+	void setDrawingBaseColorOffsetAdvanced(float r, float g, float b) {
 		gPrismDreamcastDrawingData.rOffset = r;
 		gPrismDreamcastDrawingData.gOffset = g;
 		gPrismDreamcastDrawingData.bOffset = b;
@@ -402,7 +440,7 @@ namespace prism {
 		getRGBFromColor(tColor, &gPrismDreamcastDrawingData.r, &gPrismDreamcastDrawingData.g, &gPrismDreamcastDrawingData.b);
 	}
 
-	void setDrawingBaseColorAdvanced(double r, double g, double b) {
+	void setDrawingBaseColorAdvanced(float r, float g, float b) {
 		gPrismDreamcastDrawingData.r = r;
 		gPrismDreamcastDrawingData.g = g;
 		gPrismDreamcastDrawingData.b = b;
@@ -410,25 +448,25 @@ namespace prism {
 
 	void setDrawingColorSolidity(int /*tIsSolid*/) {} // Not implemented for Dreamcast
 	void setDrawingColorInversed(int /*tIsInversed*/) {} // Not implemented for Dreamcast
-	void setDrawingColorFactor(double /*tColorFactor*/) {} // Not implemented for Dreamcast
+	void setDrawingColorFactor(float /*tColorFactor*/) {} // Not implemented for Dreamcast
 
-	void setDrawingTransparency(double tAlpha) {
+	void setDrawingTransparency(float tAlpha) {
 		gPrismDreamcastDrawingData.a = tAlpha;
 	}
 
-	void setDrawingDestinationTransparency(double /*tAlpha*/) {} // Not implemented for Dreamcast
+	void setDrawingDestinationTransparency(float /*tAlpha*/) {} // Not implemented for Dreamcast
 
 	void setDrawingBlendType(BlendType tBlendType) {
 		gPrismDreamcastDrawingData.mBlendType = tBlendType;
 	}
 
-	void setDrawingRotationZ(double tAngle, const Position2D& tPosition) {
+	void setDrawingRotationZ(float tAngle, const Position2D& tPosition) {
 		mat_translate(tPosition.x, tPosition.y, 0);
 		mat_rotate_z(tAngle);
 		mat_translate(-tPosition.x, -tPosition.y, 0);
 	}
 
-	void setDrawingRotationZ(double tAngle, const Position& tPosition) {
+	void setDrawingRotationZ(float tAngle, const Position& tPosition) {
 		mat_translate(tPosition.x, tPosition.y, tPosition.z);
 		mat_rotate_z(tAngle);
 		mat_translate(-tPosition.x, -tPosition.y, -tPosition.z);
@@ -460,7 +498,7 @@ namespace prism {
 		mat_translate(tTranslation.x, tTranslation.y, tTranslation.z);
 	}
 
-	void pushDrawingRotationZ(double tAngle, const Vector3D& tCenter) {
+	void pushDrawingRotationZ(float tAngle, const Vector3D& tCenter) {
 		pushMatrixInternal();
 
 		mat_translate(tCenter.x, tCenter.y, tCenter.z);
@@ -523,7 +561,7 @@ namespace prism {
 		//sem_signal(&gPVRAccessSemaphore);
 	}
 
-	double getRealFramerate() {
+	float getRealFramerate() {
 		uint64_t delta = gPrismDreamcastDrawingData.mCurrentFrameTime - gPrismDreamcastDrawingData.mPreviousFrameTime;
 		return 1000.0 / delta;
 	}

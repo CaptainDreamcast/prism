@@ -18,7 +18,7 @@ namespace prism {
 
 typedef int FileHandler;
 
-#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined VITA
+#elif defined _WIN32 || defined __EMSCRIPTEN__ || defined VITA || defined __linux__
 
 #define O_RDONLY	0x1
 #define O_WRONLY	0x2
@@ -68,7 +68,7 @@ void fileToMemory(void* tDst, int tSize, const char* tPath);
 BufferPointer getBufferPointer(const Buffer& tBuffer);
 void readFromBufferPointer(void* tDst, BufferPointer* tPointer, uint32_t tSize);
 int readIntegerFromTextStreamBufferPointer(BufferPointer* tPointer);
-double readFloatFromTextStreamBufferPointer(BufferPointer* tPointer);
+float readFloatFromTextStreamBufferPointer(BufferPointer* tPointer);
 int hasStringFromTextStreamBufferPointer(BufferPointer tPointer);
 std::string readStringFromTextStreamBufferPointer(BufferPointer* tPointer);
 std::string readLineFromTextStreamBufferPointer(BufferPointer* tPointer);

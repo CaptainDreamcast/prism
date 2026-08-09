@@ -25,6 +25,7 @@
 #include "prism/collisionanimation.h"
 #include "prism/soundeffect.h"
 #include "prism/system.h"
+#include "prism/texture.h"
 #include "prism/texturepool.h"
 #include "prism/texthandler.h"
 #include "prism/screeneffect.h"
@@ -61,6 +62,7 @@ namespace prism {
 	typedef struct {
 		int mIsPaused;
 		int mScreenshotRequested;
+		int mIsScreenshotToClipboard;
 	} WrapperDebug;
 
 	typedef struct {
@@ -75,8 +77,8 @@ namespace prism {
 		int mIsPaused;
 		int mHasFinishedLoading;
 
-		double mUpdateTimeCounter;
-		double mGlobalTimeDilatation;
+		float mUpdateTimeCounter;
+		float mGlobalTimeDilatation;
 
 		int mIsUsingBasicTextHandler;
 		int mIsUsingMugen;
@@ -437,6 +439,26 @@ namespace prism {
 		}
 	}
 
+	void takePrismWrapperScreenshot() {
+		takeWrapperScreenshot();
+	}
+
+	static void performWrapperScreenshot(int tIsToClipboard) {
+		if (tIsToClipboard) copyScreenShotToClipboard();
+		else takeWrapperScreenshot();
+	}
+
+	static void requestWrapperScreenshot(int tIsToClipboard) {
+		if (getPrismDebugSideDisplayVisibility()) {
+			setPrismDebugSideDisplayVisibility(0);
+			gPrismWrapperData.mDebug.mScreenshotRequested = 1;
+			gPrismWrapperData.mDebug.mIsScreenshotToClipboard = tIsToClipboard;
+		}
+		else {
+			performWrapperScreenshot(tIsToClipboard);
+		}
+	}
+
 	static void updateScreenDebug() {
 		if (!isInDevelopMode()) return;
 
@@ -458,20 +480,18 @@ namespace prism {
 			togglePrismDebugSideDisplayVisibility();
 		}
 
-		if (hasPressedKeyboardKeyFlank(KEYBOARD_F11_PRISM)) {
-			if (getPrismDebugSideDisplayVisibility()) {
-				setPrismDebugSideDisplayVisibility(0);
-				gPrismWrapperData.mDebug.mScreenshotRequested = 1;
-			}
-			else {
-				takeWrapperScreenshot();
-			}
+		if (hasPressedKeyboardMultipleKeyFlank(2, KEYBOARD_SHIFT_LEFT_PRISM, KEYBOARD_F11_PRISM)) {
+			requestWrapperScreenshot(1);
+		}
+		else if (hasPressedKeyboardKeyFlank(KEYBOARD_F11_PRISM)) {
+			requestWrapperScreenshot(0);
 		}
 		else if (gPrismWrapperData.mDebug.mScreenshotRequested) {
 			if (gPrismWrapperData.mDebug.mScreenshotRequested >= 3) {
-				takeWrapperScreenshot();
+				performWrapperScreenshot(gPrismWrapperData.mDebug.mIsScreenshotToClipboard);
 				setPrismDebugSideDisplayVisibility(1);
 				gPrismWrapperData.mDebug.mScreenshotRequested = 0;
+				gPrismWrapperData.mDebug.mIsScreenshotToClipboard = 0;
 			}
 			else {
 				gPrismWrapperData.mDebug.mScreenshotRequested++;
@@ -747,7 +767,7 @@ namespace prism {
 #endif
 	}
 
-	void setWrapperTimeDilatation(double tDilatation)
+	void setWrapperTimeDilatation(float tDilatation)
 	{
 		gPrismWrapperData.mGlobalTimeDilatation = tDilatation;
 	}

@@ -61,11 +61,11 @@ namespace prism {
 		return ret;
 	}
 
-	ScriptPosition getNextScriptDouble(const ScriptPosition& tPos, double* tDest) {
+	ScriptPosition getNextScriptDouble(const ScriptPosition& tPos, float* tDest) {
 		int positionsRead;
-		int items = sscanf(tPos.mPointer, "%lf%n", tDest, &positionsRead);
+		int items = sscanf(tPos.mPointer, "%f%n", tDest, &positionsRead);
 		if (items != 1) {
-			logWarningFormat("Unable to parse next script double from: %s", (char*)tPos.mPointer);
+			logWarningFormat("Unable to parse next script float from: %s", (char*)tPos.mPointer);
 		}
 		auto ret = tPos;
 		ret.mPointer += positionsRead;

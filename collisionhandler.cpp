@@ -302,9 +302,9 @@ namespace prism {
 
 #define DEBUG_Z 99
 
-	static void drawCollisionRect(const CollisionRect& tRect, const Position& tBasePosition, const Position& tScreenPositionOffset, const Vector3D& tColor, double tAlpha) {
-		double dx = tRect.mBottomRight.x - tRect.mTopLeft.x;
-		double dy = tRect.mBottomRight.y - tRect.mTopLeft.y;
+	static void drawCollisionRect(const CollisionRect& tRect, const Position& tBasePosition, const Position& tScreenPositionOffset, const Vector3D& tColor, float tAlpha) {
+		float dx = tRect.mBottomRight.x - tRect.mTopLeft.x;
+		float dy = tRect.mBottomRight.y - tRect.mTopLeft.y;
 
 		if (dx < 0 || dy < 0) return;
 
@@ -312,7 +312,7 @@ namespace prism {
 		position = vecSub(position, tScreenPositionOffset);
 		position.z = DEBUG_Z;
 
-		Vector3D scale = Vector3D(dx / 16.0, dy / 16.0, 1);
+		Vector3D scale = Vector3D(dx / 16.0f, dy / 16.0f, 1);
 		scaleDrawing3D(scale, position);
 
 		setDrawingBaseColorAdvanced(tColor.x, tColor.y, tColor.z);
@@ -323,9 +323,9 @@ namespace prism {
 		setDrawingParametersToIdentity();
 	}
 
-	static void drawCollisionCirc(const CollisionCirc& tCirc, const Position& tBasePosition, const Position& tScreenPositionOffset, const Vector3D& tColor, double tAlpha) {
-		double r = tCirc.mRadius;
-		double d = r * 2;
+	static void drawCollisionCirc(const CollisionCirc& tCirc, const Position& tBasePosition, const Position& tScreenPositionOffset, const Vector3D& tColor, float tAlpha) {
+		float r = tCirc.mRadius;
+		float d = r * 2;
 
 		if (r < 0) return;
 
@@ -334,7 +334,7 @@ namespace prism {
 		position = vecSub(position, tScreenPositionOffset);
 		position.z = DEBUG_Z;
 
-		Vector3D scale = Vector3D(d / 16.0, d / 16.0, 1);
+		Vector3D scale = Vector3D(d / 16.0f, d / 16.0f, 1);
 		scaleDrawing3D(scale, position);
 
 		setDrawingBaseColorAdvanced(tColor.x, tColor.y, tColor.z);
@@ -344,7 +344,7 @@ namespace prism {
 		setDrawingParametersToIdentity();
 	}
 
-	void drawColliderSolid(const Collider& tCollider, const Position& tOffset, const Position& tScreenPositionOffset, const Vector3D& tColor, double tAlpha) {
+	void drawColliderSolid(const Collider& tCollider, const Position& tOffset, const Position& tScreenPositionOffset, const Vector3D& tColor, float tAlpha) {
 		Position basePosition;
 		if (tCollider.mBasePosition) basePosition = *tCollider.mBasePosition;
 		else basePosition = Vector3D(0, 0, 0);

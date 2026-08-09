@@ -21,7 +21,7 @@ namespace prism {
 		int id = addMugenText("An error has occured. Log output:", Vector3D(20, 20, 1), -1);
 		setMugenTextColor(id, COLOR_RED);
 
-		double y = 40;
+		float y = 40;
 		int i;
 		for (i = 0; i < vector_size(&logEntries); i++) {
 			LogEntry* entry = (LogEntry*)vector_get(&logEntries, i);

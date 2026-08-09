@@ -6,7 +6,7 @@
 namespace prism {
 
 void convertIntegerToStringFast(std::string& oRet, int tValue);
-void convertFloatToStringFast(std::string& oRet, double tValue);
+void convertFloatToStringFast(std::string& oRet, float tValue);
 
 void turnStringLowercase(char* tString);
 void turnStringLowercase(std::string& tString);

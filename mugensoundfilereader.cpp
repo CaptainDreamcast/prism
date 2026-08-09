@@ -149,7 +149,7 @@ namespace prism {
 		return playSoundEffect(sample->mSoundEffectID);
 	}
 
-	int playMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, double tVolume, int tChannel, double tFrequencyMultiplier, int tIsLooping, double tPanning)
+	int playMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, float tVolume, int tChannel, float tFrequencyMultiplier, int tIsLooping, float tPanning)
 	{
 		setProfilingSectionMarkerCurrentFunction();
 		const auto sample = getMugenSoundSample(tSounds, tGroup, tSample);
@@ -168,7 +168,7 @@ namespace prism {
 		return 1;
 	}
 
-	int tryPlayMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, double tVolume, int tChannel, double tFrequencyMultiplier, int tIsLooping, double tPanning)
+	int tryPlayMugenSoundAdvanced(MugenSounds* tSounds, int tGroup, int tSample, float tVolume, int tChannel, float tFrequencyMultiplier, int tIsLooping, float tPanning)
 	{
 		setProfilingSectionMarkerCurrentFunction();
 		if (!hasMugenSound(tSounds, tGroup, tSample)) {

@@ -33,7 +33,7 @@ namespace prism {
 	} SoundEffectLoaded;
 
 	static struct {
-		double mVolume;
+		float mVolume;
 		map<int, SoundEffectLoaded> mLoaded;
 		std::vector<FMOD::Channel*> mSfxChannels;
 	} gSoundEffectData;
@@ -241,7 +241,7 @@ namespace prism {
 		return 0;
 	}
 
-	int playSoundEffectChannel(int tID, int tChannel, double tVolume, double tFreqMul, int tIsLooping)
+	int playSoundEffectChannel(int tID, int tChannel, float tVolume, float tFreqMul, int tIsLooping)
 	{
 		setProfilingSectionMarkerCurrentFunction();
 		auto e = &gSoundEffectData.mLoaded[tID];
@@ -286,7 +286,7 @@ namespace prism {
 		}
 	}
 
-	void panSoundEffect(int tChannel, double tPanning)
+	void panSoundEffect(int tChannel, float tPanning)
 	{
 		setProfilingSectionMarkerCurrentFunction();
 		if (!isSlotValidAndActive(tChannel)) return;
@@ -298,11 +298,11 @@ namespace prism {
 		return isSlotValidAndActive(tChannel);
 	}
 
-	double getSoundEffectVolume() {
+	float getSoundEffectVolume() {
 		return gSoundEffectData.mVolume;
 	}
 
-	void setSoundEffectVolume(double tVolume) {
+	void setSoundEffectVolume(float tVolume) {
 		setProfilingSectionMarkerCurrentFunction();
 		gSoundEffectData.mVolume = tVolume;
 		for (int channel = 0; channel < int(gSoundEffectData.mSfxChannels.size()); channel++)

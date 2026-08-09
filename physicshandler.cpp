@@ -63,7 +63,7 @@ namespace prism {
 				if (ImGui::Checkbox("##paused", &paused)) e.mIsPaused = paused ? 1 : 0;
 				ImGui::TableNextColumn();
 				ImGui::SetNextItemWidth(80);
-				ImGui::DragScalar("##speed", ImGuiDataType_Double, &e.mTimeDilatation, 0.01f);
+				ImGui::DragScalar("##speed", ImGuiDataType_Float, &e.mTimeDilatation, 0.01f);
 				ImGui::TableNextColumn();
 				if (ImGui::SmallButton("Remove")) gImguiPhysicsToRemove.push_back(&e);
 				ImGui::PopID();
@@ -178,7 +178,7 @@ namespace prism {
 		data->mIsPaused = 0;
 	}
 
-	void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* data, double tVelocity) {
+	void setHandledPhysicsMaxVelocity(PhysicsHandlerElement* data, float tVelocity) {
 		data->mMaxVelocity = tVelocity;
 	}
 
@@ -190,7 +190,7 @@ namespace prism {
 		data->mGravity = tGravity;
 	}
 
-	void setHandledPhysicsSpeed(PhysicsHandlerElement* data, double tSpeed) {
+	void setHandledPhysicsSpeed(PhysicsHandlerElement* data, float tSpeed) {
 		data->mTimeDilatation = tSpeed;
 	}
 

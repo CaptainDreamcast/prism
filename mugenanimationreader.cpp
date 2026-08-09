@@ -136,12 +136,12 @@ namespace prism {
 			const char* sourcePos = strchr(blendFlags.c_str() + 1, 's');
 			if (sourcePos == NULL) {
 				if (blendFlags[1] == '1') {
-					e->mSrcBlendFactor = 256 / double(256);
-					e->mDstBlendFactor = 128 / double(256);
+					e->mSrcBlendFactor = 256 / float(256);
+					e->mDstBlendFactor = 128 / float(256);
 				}
 				else {
-					e->mSrcBlendFactor = 256 / double(256);
-					e->mDstBlendFactor = 256 / double(256);
+					e->mSrcBlendFactor = 256 / float(256);
+					e->mDstBlendFactor = 256 / float(256);
 				}
 			}
 			else {
@@ -156,8 +156,8 @@ namespace prism {
 
 				strcpy(text2, dstPos + 1);
 
-				e->mSrcBlendFactor = atoi(text1) / double(256);
-				e->mDstBlendFactor = atoi(text2) / double(256);
+				e->mSrcBlendFactor = atoi(text1) / float(256);
+				e->mDstBlendFactor = atoi(text2) / float(256);
 			}
 		}
 		else {
@@ -206,8 +206,8 @@ namespace prism {
 
 		e->mGroupNumber = atoi(vectorElement->mVector.mElement[0]);
 		e->mSpriteNumber = atoi(vectorElement->mVector.mElement[1]);
-		e->mDelta.x = vectorElement->mVector.mSize >= 3 ? atof(vectorElement->mVector.mElement[2]) : 0;
-		e->mDelta.y = vectorElement->mVector.mSize >= 4 ? atof(vectorElement->mVector.mElement[3]) : 0;
+		e->mDelta.x = vectorElement->mVector.mSize >= 3 ? (float)atof(vectorElement->mVector.mElement[2]) : 0;
+		e->mDelta.y = vectorElement->mVector.mSize >= 4 ? (float)atof(vectorElement->mVector.mElement[3]) : 0;
 		e->mDuration = vectorElement->mVector.mSize >= 5 ? atoi(vectorElement->mVector.mElement[4]) : 1;
 
 		if (vectorElement->mVector.mSize >= 6) {
@@ -223,9 +223,9 @@ namespace prism {
 			handleNewAnimationStepBlendFlags(e, "");
 		}
 
-		e->mScaleX = vectorElement->mVector.mSize >= 8 ? atof(vectorElement->mVector.mElement[7]) : 1.0;
-		e->mScaleY = vectorElement->mVector.mSize >= 9 ? atof(vectorElement->mVector.mElement[8]) : 1.0;
-		e->mAngleRad = vectorElement->mVector.mSize >= 10 ? degreesToRadians(double(atoi(vectorElement->mVector.mElement[9]))) : 0.0;
+		e->mScaleX = vectorElement->mVector.mSize >= 8 ? (float)atof(vectorElement->mVector.mElement[7]) : 1.0f;
+		e->mScaleY = vectorElement->mVector.mSize >= 9 ? (float)atof(vectorElement->mVector.mElement[8]) : 1.0f;
+		e->mAngleRad = vectorElement->mVector.mSize >= 10 ? degreesToRadians(float(atoi(vectorElement->mVector.mElement[9]))) : 0.0f;
 
 		e->mInterpolateOffset = 0;
 		e->mInterpolateBlend = 0;
@@ -279,10 +279,10 @@ namespace prism {
 
 		MugenDefScriptVectorElement* vectorElement = (MugenDefScriptVectorElement*)tElement->mData;
 
-		double x1 = atof(vectorElement->mVector.mElement[0]);
-		double y1 = atof(vectorElement->mVector.mElement[1]);
-		double x2 = atof(vectorElement->mVector.mElement[2]);
-		double y2 = atof(vectorElement->mVector.mElement[3]);
+		auto x1 = (float)atof(vectorElement->mVector.mElement[0]);
+		auto y1 = (float)atof(vectorElement->mVector.mElement[1]);
+		auto x2 = (float)atof(vectorElement->mVector.mElement[2]);
+		auto y2 = (float)atof(vectorElement->mVector.mElement[3]);
 
 		const auto topLeft = Vector2D(min(x1, x2), min(y1, y2));
 		const auto bottomRight = Vector2D(max(x1, x2), max(y1, y2));

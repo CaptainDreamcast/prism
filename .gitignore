@@ -17,6 +17,9 @@ tools/mugendreamcastoptimizer/Release/*
 tools/mugendreamcastoptimizer/.vs/*
 build/*
 
+linux/README.md
+plans/*
+
 *.aps
 *.exe
 *.idb
@@ -38,6 +41,7 @@ build/*
 *.iobj
 *.cache
 *.psd
+*.md
 
 bin/*
 

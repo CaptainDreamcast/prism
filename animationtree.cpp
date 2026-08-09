@@ -38,7 +38,7 @@ namespace prism {
 
 		int v;
 		auto ret = getNextScriptInteger(tPos, &v);
-		e->mAnimation.mDuration = v;
+		e->mAnimation.mDuration = (float)v;
 		ret = getNextScriptInteger(ret, &v);
 		e->mAnimation.mFrameAmount = v;
 
@@ -114,7 +114,7 @@ namespace prism {
 		}
 		else if (!strcmp("ROTATION", word)) {
 			ret = getNextScriptDouble(ret, &e->mRotationZ);
-			e->mRotationZ = (e->mRotationZ * M_PI) / 180.0;
+			e->mRotationZ = (float)((e->mRotationZ * M_PI) / 180.0);
 		}
 		else {
 			logError("Unrecognized token.");
@@ -134,7 +134,7 @@ namespace prism {
 		if (!strcmp("DURATION", word)) {
 			int v;
 			ret = getNextScriptInteger(ret, &v);
-			e->mDuration = v;
+			e->mDuration = (float)v;
 		}
 		else if (!strcmp("TREE", word)) {
 			initTreeNode(&e->mTree);

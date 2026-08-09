@@ -41,6 +41,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Natvis Include="prism.natvis" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="..\..\include\prism\actorhandler.h">
       <Filter>hdr</Filter>
     </ClInclude>

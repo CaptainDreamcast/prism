@@ -223,20 +223,20 @@ namespace prism {
 #else
 	static int evaluateSDLButtonL(int i) {
 		if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
-		double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
+		float axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0f;
 		return (axis > 0.5);
 	}
 
 	static int evaluateSDLButtonR(int i) {
 		if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
-		double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
+		float axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0f;
 		return (axis > 0.5);
 	}
 #endif
 
 	static int evaluateSDLButtonLeft(int i) {
 		if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
-		double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
+		float axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f;
 		int ret = (axis < -0.5);
 		ret |= SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_LEFT);
 		return ret;
@@ -244,7 +244,7 @@ namespace prism {
 
 	static int evaluateSDLButtonRight(int i) {
 		if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
-		double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
+		float axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f;
 		int ret = (axis > 0.5);
 		ret |= SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
 		return ret;
@@ -252,7 +252,7 @@ namespace prism {
 
 	static int evaluateSDLButtonUp(int i) {
 		if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
-		double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
+		float axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f;
 		int ret = (axis < -0.5);
 		ret |= SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_UP);
 		return ret;
@@ -260,7 +260,7 @@ namespace prism {
 
 	static int evaluateSDLButtonDown(int i) {
 		if (!gPrismWindowsInputData.mControllers[i].mIsUsingController) return 0;
-		double axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
+		float axis = SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f;
 		int ret = (axis > 0.5);
 		ret |= SDL_GameControllerGetButton(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_BUTTON_DPAD_DOWN);
 		return ret;
@@ -693,36 +693,36 @@ namespace prism {
 	}
 
 
-	static double getStickNormalizedBinary(int i, int tCodeMinus, int tCodePlus) {
+	static float getStickNormalizedBinary(int i, int tCodeMinus, int tCodePlus) {
 		if (getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[tCodeMinus]) return -1;
 		else if (getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[tCodePlus]) return 1;
 		else return 0;
 	}
 
-	double getSingleLeftStickNormalizedX(int i) {
+	float getSingleLeftStickNormalizedX(int i) {
 		if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
-			return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0;
+			return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTX) / 32767.0f;
 		}
 		else return getStickNormalizedBinary(i, gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_LEFT_PRISM], gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_RIGHT_PRISM]);
 	}
 
-	double getSingleLeftStickNormalizedY(int i) {
+	float getSingleLeftStickNormalizedY(int i) {
 		if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
-			return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0;
+			return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_LEFTY) / 32767.0f;
 		}
 		else return getStickNormalizedBinary(i, gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_UP_PRISM], gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_DOWN_PRISM]);
 	}
 
-	double getSingleLNormalized(int i) {
+	float getSingleLNormalized(int i) {
 		if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
-			return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0;
+			return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERLEFT) / 32767.0f;
 		}
 		else return getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_L_PRISM]];
 	}
 
-	double getSingleRNormalized(int i) {
+	float getSingleRNormalized(int i) {
 		if (gPrismWindowsInputData.mControllers[i].mIsUsingController) {
-			return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0;
+			return SDL_GameControllerGetAxis(gPrismWindowsInputData.mControllers[i].mController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) / 32767.0f;
 		}
 		else return getKeyStates(gPrismWindowsInputData.mUsedKeyboard[i], -gPrismWindowsInputData.mInputDelay)[gKeys[gPrismWindowsInputData.mUsedKeyboardMapping[i]][CONTROLLER_R_PRISM]];
 	}
@@ -747,7 +747,7 @@ namespace prism {
 		return gPrismWindowsInputData.mControllers[i].mIsUsingController;
 	}
 
-	void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude) {
+	void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, float tAmplitude) {
 		if (!isUsingControllerSingle(i)) return;
 		if (!gPrismWindowsInputData.mControllers[i].mHaptic) return;
 
@@ -942,8 +942,8 @@ namespace prism {
 		SDL_GetMouseState(&x, &y);
 		const auto sz = getScreenSize();
 		const auto displaySize = getDisplayedScreenSize();
-		const auto scaleX = sz.x / (double)displaySize.x;
-		const auto scaleY = sz.y / (double)displaySize.y;
+		const auto scaleX = sz.x / (float)displaySize.x;
+		const auto scaleY = sz.y / (float)displaySize.y;
 		return Vector2D(x * scaleX, y * scaleY);
 	}
 

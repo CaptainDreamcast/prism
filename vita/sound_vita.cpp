@@ -23,7 +23,7 @@ namespace prism {
 
 	static struct {
 
-		double mVolume;
+		float mVolume;
 		int mPanning;
 
 		int mHasLoadedTrack;
@@ -50,20 +50,20 @@ namespace prism {
 
 	void updateSound() {}
 
-	double getVolume() {
+	float getVolume() {
 		return gPrismWindowsSoundData.mVolume;
 	}
 
-	void setVolume(double tVolume) {
+	void setVolume(float tVolume) {
 		gPrismWindowsSoundData.mVolume = tVolume;
 		DrakonSetVolume(gPrismWindowsSoundData.mVolume);
 	}
 
-	double getPanningValue() {
+	float getPanningValue() {
 		return (gPrismWindowsSoundData.mPanning / 128.0) - 1.0;
 	}
 
-	void setPanningValue(double tPanning)
+	void setPanningValue(float tPanning)
 	{
 		//Mix_SetPanning(tChannel, tPanning);
 	}
@@ -201,7 +201,7 @@ namespace prism {
 		return makeActorBlueprint(startMicrophone, stopMicrophone);
 	}
 
-	double getMicrophoneVolume()
+	float getMicrophoneVolume()
 	{
 		return 0.0;
 	}

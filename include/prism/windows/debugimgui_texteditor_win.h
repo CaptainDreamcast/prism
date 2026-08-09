@@ -9,5 +9,6 @@ void updateTextEditorHandler();
 void renderTextEditorHandler();
 
 void openTextEditor(const std::string& path);
+void openTextEditor(const std::string& path, int tLine);
 
 }

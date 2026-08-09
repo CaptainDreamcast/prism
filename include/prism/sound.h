@@ -10,10 +10,10 @@ void initSound();
 void shutdownSound();
 void updateSound();
 
-double getVolume();
-void setVolume(double tVolume);
-double getPanningValue();
-void setPanningValue(double tPanning);
+float getVolume();
+void setVolume(float tVolume);
+float getPanningValue();
+void setPanningValue(float tPanning);
 
 void playTrack(int tTrack);
 void stopTrack();
@@ -32,7 +32,7 @@ void resumeMusic();
 void crossFadeMusicLayer(const char* tNewPath, bool tIsLooping);
 
 ActorBlueprint getMicrophoneHandlerActorBlueprint();
-double getMicrophoneVolume();
+float getMicrophoneVolume();
 
 #ifdef _WIN32
 void imguiSoundHardware();

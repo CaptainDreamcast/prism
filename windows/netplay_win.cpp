@@ -354,7 +354,7 @@ namespace prism {
                 const auto nowMs = int64_t(getUnixTimestampMilliseconds());
                 const auto timeDelayMs = (nowMs - package->mUnixTimestamp) / 2;
 
-                const auto frameTimeMs = (1.0 / double(getFramerate())) * 1000;
+                const auto frameTimeMs = (1.0 / float(getFramerate())) * 1000;
                 auto frameDelay = int((timeDelayMs / frameTimeMs)) + 1;
 
                 if (frameDelay <= 20)

@@ -28,6 +28,7 @@ typedef struct {
 typedef void* TruetypeFont;
 
 TextureData loadTexturePNG(const char* tFileDir);
+Buffer loadPNGARGB32Buffer(const char* tFileDir, int* oWidth, int* oHeight);
 TextureData loadTexturePKG(const char* tFileDir);
 TextureData loadTexture(const char* tFileDir);
 TextureData loadTextureFromARGB16Buffer(const Buffer& b, int tWidth, int tHeight);
@@ -41,7 +42,7 @@ void loadConsecutiveTextures(TextureData* tDst, const char* tBaseFileDir, int tA
 TextureData getFontTexture();
 FontCharacterData getFontCharacterData(char tChar);
 void setFont(const char* tFileDirHeader, const char* tFileDirTexture);
-TruetypeFont loadTruetypeFont(const char* tName, double tSize);
+TruetypeFont loadTruetypeFont(const char* tName, float tSize);
 void unloadTruetypeFont(TruetypeFont tFont);
 
 int getTextureHash(const TextureData& tTexture); 
@@ -56,6 +57,7 @@ Buffer twiddleTextureBuffer8(const Buffer& tBuffer, int tWidth, int tHeight);
 Buffer twiddleTextureBuffer16(const Buffer& tBuffer, int tWidth, int tHeight);
 
 void saveScreenShot(const char* tFileDir);
+void copyScreenShotToClipboard();
 void saveRGB32ToPNG(const Buffer& b, int tWidth, int tHeight, const char* tFileDir);
 
 void imguiTextureData(const std::string_view& tName, const TextureData& tTextureData);

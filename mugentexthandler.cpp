@@ -394,15 +394,15 @@ typedef struct {
 	Position mPosition;
 	MugenFont* mFont;
 
-	double mR;
-	double mG;
-	double mB;
+	float mR;
+	float mG;
+	float mB;
 
-	double mScale;
+	float mScale;
 
 	MugenTextAlignment mAlignment;
 	GeoRectangle2D mRectangle;
-	double mTextBoxWidth;
+	float mTextBoxWidth;
 	Duration mBuildupDurationPerLetter;
 	Duration mBuildupNow;
 
@@ -498,14 +498,14 @@ static void updateMugenTextHandler(void* tData) {
 	stl_int_map_map(gMugenTextHandler.mHandledTexts, updateSingleText);
 }
 
-static double getOriginalMugenFontFactor() {
+static float getOriginalMugenFontFactor() {
 	const auto sz = getScreenSize();
-	return sz.y / 240.0;
+	return sz.y / 240.0f;
 }
 
-static double getNewMugenFontFactor() {
+static float getNewMugenFontFactor() {
 	const auto sz = getScreenSize();
-	return sz.y / 480.0;
+	return sz.y / 480.0f;
 }
 
 typedef struct {
@@ -516,7 +516,7 @@ typedef struct {
 } BitmapDrawCaller;
 
 static void drawSingleBitmapSubSprite(MugenSpriteFileSubSprite& tSubSprite, BitmapDrawCaller& tCaller) {
-	double factor = getNewMugenFontFactor() * tCaller.mText->mScale;
+	float factor = getNewMugenFontFactor() * tCaller.mText->mScale;
 	Position p = tCaller.mBasePosition + (tSubSprite.mOffset * factor);
 	
 	int minHeight = 0;
@@ -532,7 +532,7 @@ static void drawSingleBitmapSubSprite(MugenSpriteFileSubSprite& tSubSprite, Bitm
 	scaleDrawing(1 / factor, p);
 }
 
-static set<int> getBitmapTextLinebreaks(char* tText, const Position& tStart, MugenFont* tFont, MugenSpriteFileGroup& tSpriteGroup, double tRightX, double tFactor) {
+static set<int> getBitmapTextLinebreaks(char* tText, const Position& tStart, MugenFont* tFont, MugenSpriteFileGroup& tSpriteGroup, float tRightX, float tFactor) {
 	if (tRightX >= INF / 2) return set<int>();
 
 	set<int> ret;
@@ -584,7 +584,7 @@ static void drawSingleBitmapText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	auto& bitmapFont = std::get<MugenBitmapFont>(font->mData);
 	auto textLength = int(strlen(e->mDisplayText));
-	double factor = getNewMugenFontFactor() * e->mScale;
+	float factor = getNewMugenFontFactor() * e->mScale;
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 
@@ -593,7 +593,7 @@ static void drawSingleBitmapText(MugenText* e) {
 	int i;
 	Position p = vecAdd2D(e->mPosition, vecScale(Vector3D(font->mOffset.x, font->mOffset.y, 0), factor));
 	Position start = p;
-	double rightX = p.x + e->mTextBoxWidth;
+	float rightX = p.x + e->mTextBoxWidth;
 	const auto breaks = getBitmapTextLinebreaks(e->mText, start, font, spriteGroup, rightX, factor);
 	for (i = 0; i < textLength; i++) {
 
@@ -635,7 +635,7 @@ static void drawSingleTruetypeText(MugenText* e) {
 typedef struct {
 	MugenElecbyteFontMapEntry* mMapEntry;
 	Position mBasePosition;
-	double mStartX;
+	float mStartX;
 	int mPreviousSubSpriteOffsetY;
 	MugenText* mText;
 	MugenFont* mFont;
@@ -655,7 +655,7 @@ static void drawSingleElecbyteSubSprite(MugenSpriteFileSubSprite& tSubSprite, El
 	int leftX = max(minWidth, min(maxWidth, tCaller.mMapEntry->mStartX - tSubSprite.mOffset.x));
 	int rightX = max(minWidth, min(maxWidth, (tCaller.mMapEntry->mStartX + tCaller.mMapEntry->mWidth - 1) - tSubSprite.mOffset.x));
 
-	double factor = getOriginalMugenFontFactor() * tCaller.mText->mScale;
+	float factor = getOriginalMugenFontFactor() * tCaller.mText->mScale;
 	Position p = vecAdd2D(tCaller.mBasePosition, vecScale(Vector3D(0.f, tSubSprite.mOffset.y, 0.f), factor));
 
 	int minHeight = 0;
@@ -673,7 +673,7 @@ static void drawSingleElecbyteSubSprite(MugenSpriteFileSubSprite& tSubSprite, El
 	tCaller.mBasePosition.x += (rightX - leftX + 1) * factor;
 }
 
-static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, MugenFont* tFont, MugenElecbyteFont& tElecbyteFont, double tRightX, double tFactor) {
+static set<int> getElecbyteTextLinebreaks(char* tText, const Position& tStart, MugenFont* tFont, MugenElecbyteFont& tElecbyteFont, float tRightX, float tFactor) {
 	if (tRightX >= INF / 2) return set<int>();
 
 	set<int> ret;
@@ -725,13 +725,13 @@ static void drawSingleElecbyteText(MugenText* e) {
 	MugenFont* font = e->mFont;
 	auto& elecbyteFont = std::get<MugenElecbyteFont>(font->mData);
 	auto textLength = int(strlen(e->mDisplayText));
-	double factor = getOriginalMugenFontFactor() * e->mScale;
+	float factor = getOriginalMugenFontFactor() * e->mScale;
 
 	setDrawingBaseColorAdvanced(e->mR, e->mG, e->mB);
 	int i;
 	Position p = vecAdd2D(e->mPosition, Vector3D(font->mOffset.x, font->mOffset.y, 0));
 	Position start = p;
-	double rightX = p.x + e->mTextBoxWidth;
+	float rightX = p.x + e->mTextBoxWidth;
 	const auto breaks = getElecbyteTextLinebreaks(e->mText, start, font, elecbyteFont, rightX, factor);
 	for (i = 0; i < textLength; i++) {
 		if (elecbyteFont.mMap[(uint8_t)e->mDisplayText[i]].mExists) {
@@ -852,6 +852,16 @@ void removeMugenText(int tID)
 	gMugenTextHandler.mHandledTexts.erase(tID);
 }
 
+int getMugenTextFont(int tID)
+{
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
+	for (auto& fontPair : gMugenFontData.mFonts)
+	{
+		if (&fontPair.second == e->mFont) return fontPair.first;
+	}
+	return -1;
+}
+
 void setMugenTextFont(int tID, int tFont)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
@@ -861,15 +871,15 @@ void setMugenTextFont(int tID, int tFont)
 	e->mPosition = vecSub(e->mPosition, Vector3D(0, e->mFont->mSize.y * e->mScale, 0));
 }
 
-static double getBitmapTextSize(MugenText* e) {
+static float getBitmapTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
 	auto& bitmapFont = std::get<MugenBitmapFont>(font->mData);
 	auto textLength = int(strlen(e->mText));
-	double factor = getOriginalMugenFontFactor() * e->mScale;
+	float factor = getOriginalMugenFontFactor() * e->mScale;
 
 	auto& spriteGroup = bitmapFont.mSprites.mGroups[0];
 
-	double sizeX = 0;
+	float sizeX = 0;
 	int i;
 	for (i = 0; i < textLength; i++) {
 		if (stl_map_contains(spriteGroup.mSprites, (int)e->mText[i])) {
@@ -886,19 +896,19 @@ static double getBitmapTextSize(MugenText* e) {
 	return sizeX;
 }
 
-static double getTruetypeTextSize(MugenText* e) {
+static float getTruetypeTextSize(MugenText* e) {
 	auto textLength = strlen(e->mText);
-	return double(e->mFont->mSize.x*textLength);
+	return float(e->mFont->mSize.x*textLength);
 }
 
-static double getElecbyteTextSize(MugenText* e) {
+static float getElecbyteTextSize(MugenText* e) {
 	MugenFont* font = e->mFont;
 	auto& elecbyteFont = std::get<MugenElecbyteFont>(font->mData);
 	auto textLength = int(strlen(e->mText));
-	double factor = getOriginalMugenFontFactor() * e->mScale;
+	float factor = getOriginalMugenFontFactor() * e->mScale;
 
 	int i;
-	double sizeX = 0;
+	float sizeX = 0;
 	for (i = 0; i < textLength; i++) {
 		if (elecbyteFont.mMap[(uint8_t)e->mText[i]].mExists) {
 			MugenElecbyteFontMapEntry& mapEntry = elecbyteFont.mMap[(uint8_t)e->mText[i]];
@@ -914,7 +924,7 @@ static double getElecbyteTextSize(MugenText* e) {
 	return sizeX;
 }
 
-static double getMugenTextSizeXInternal(MugenText* e) {
+static float getMugenTextSizeXInternal(MugenText* e) {
 
 	if (e->mFont->mType == MUGEN_FONT_TYPE_BITMAP) {
 		return getBitmapTextSize(e);
@@ -933,10 +943,10 @@ static double getMugenTextSizeXInternal(MugenText* e) {
 	}
 }
 
-static double getMugenTextAlignmentOffsetX(MugenText* e, MugenTextAlignment tAlignment) {
-	double sizeX = getMugenTextSizeXInternal(e);
+static float getMugenTextAlignmentOffsetX(MugenText* e, MugenTextAlignment tAlignment) {
+	float sizeX = getMugenTextSizeXInternal(e);
 
-	double ret = 0;
+	float ret = 0;
 	if (e->mAlignment == MUGEN_TEXT_ALIGNMENT_CENTER) {
 		ret += sizeX / 2;
 	}
@@ -967,7 +977,7 @@ void setMugenTextColor(int tID, Color tColor)
 	getRGBFromColor(tColor, &e->mR,&e->mG, &e->mB);
 }
 
-void setMugenTextColorRGB(int tID, double tR, double tG, double tB)
+void setMugenTextColorRGB(int tID, float tR, float tG, float tB)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mR = tR;
@@ -998,7 +1008,13 @@ void addMugenTextPosition(int tID, const Position& tPosition)
 	*pos += tPosition;
 }
 
-void setMugenTextTextBoxWidth(int tID, double tWidth)
+float getMugenTextTextBoxWidth(int tID)
+{
+	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
+	return e->mTextBoxWidth;
+}
+
+void setMugenTextTextBoxWidth(int tID, float tWidth)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	e->mTextBoxWidth = tWidth;
@@ -1036,13 +1052,13 @@ void setMugenTextVisibility(int tID, int tIsVisible)
 	e->mIsVisible = tIsVisible;
 }
 
-double getMugenTextSizeX(int tID)
+float getMugenTextSizeX(int tID)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	return getMugenTextSizeXInternal(e);
 }
 
-void setMugenTextScale(int tID, double tScale)
+void setMugenTextScale(int tID, float tScale)
 {
 	MugenText* e = &gMugenTextHandler.mHandledTexts[tID];
 	Position p = getMugenTextPosition(tID);

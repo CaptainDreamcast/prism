@@ -5,7 +5,7 @@
 
 namespace prism {
 
-	void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB) {
+	void getRGBFromColor(Color tColor, float* tR, float* tG, float* tB) {
 
 		switch (tColor) {
 		case COLOR_BLACK:
@@ -106,7 +106,7 @@ namespace prism {
 	}
 
 	Position getTextureMiddlePosition(const TextureData& tTexture) {
-		return Vector3D(tTexture.mTextureSize.x / 2, tTexture.mTextureSize.y / 2, 0);
+		return Vector3D(tTexture.mTextureSize.x / 2.f, tTexture.mTextureSize.y / 2.f, 0.f);
 	}
 
 	PrismRectangle makeRectangle(int x, int y, int w, int h) {
@@ -137,8 +137,8 @@ namespace prism {
 
 	Vector3D makeFontSize(int x, int y) {
 		Vector3D ret;
-		ret.x = x;
-		ret.y = y;
+		ret.x = (float)x;
+		ret.y = (float)y;
 		ret.z = 1;
 		return ret;
 	}

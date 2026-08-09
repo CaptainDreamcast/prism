@@ -48,8 +48,8 @@ namespace prism {
 
 		int mChannelCount;
 
-		double mVolume;
-		double mPanning;
+		float mVolume;
+		float mPanning;
 
 		int mHasLoadedTrack;
 		int mIsPlayingTrack;
@@ -59,7 +59,7 @@ namespace prism {
 		FMOD::System* mSystem;
 		FMOD::Sound* mTrack;
 		FMOD::Channel* mChannel;
-		Buffer mTrackBuffer; // TODO: fix crash when this is unloaded between screens
+		void* mTrackData;
 
 		uint64_t mTimeWhenMusicPlaybackStarted;
 		int mMusicChannel;
@@ -135,12 +135,19 @@ namespace prism {
 		gPrismWindowsSoundData.mShouldUnloadTrack = false;
 		gPrismWindowsSoundData.mTrack = nullptr;
 		gPrismWindowsSoundData.mChannel = nullptr;
+		gPrismWindowsSoundData.mTrackData = nullptr;
 
-		setVolume(0.2);
+		setVolume(0.2f);
 		gPrismWindowsSoundData.mMicrophone.mIsMicrophoneActive = 0;
 	}
 
+	static void unloadTrack();
+
 	void shutdownSound() {
+		if (gPrismWindowsSoundData.mIsPlayingTrack) stopTrack();
+		if (gPrismWindowsSoundData.mHasLoadedTrack) unloadTrack();
+		gPrismWindowsSoundData.mShouldUnloadTrack = false;
+
 		FMOD_RESULT result = gPrismWindowsSoundData.mSystem->close();
 		if (result != FMOD_OK)
 		{
@@ -163,7 +170,10 @@ namespace prism {
 			logErrorFormat("Unable to unload track: %s", FMOD_ErrorString(result));
 		}
 
-		freeBuffer(gPrismWindowsSoundData.mTrackBuffer);
+		if(gPrismWindowsSoundData.mTrackData) {
+			free(gPrismWindowsSoundData.mTrackData);
+		}
+		gPrismWindowsSoundData.mTrackData = nullptr;
 		gPrismWindowsSoundData.mHasLoadedTrack = 0;
 	}
 
@@ -177,11 +187,11 @@ namespace prism {
 		}
 	}
 
-	double getVolume() {
+	float getVolume() {
 		return gPrismWindowsSoundData.mVolume;
 	}
 
-	void setVolume(double tVolume) {
+	void setVolume(float tVolume) {
 		gPrismWindowsSoundData.mVolume = tVolume;
 		if (gPrismWindowsSoundData.mIsPlayingTrack)
 		{
@@ -189,11 +199,11 @@ namespace prism {
 		}
 	}
 
-	double getPanningValue() {
+	float getPanningValue() {
 		return gPrismWindowsSoundData.mPanning;
 	}
 
-	void setPanningValue(double tPanning)
+	void setPanningValue(float tPanning)
 	{
 		gPrismWindowsSoundData.mPanning = tPanning;
 		if (gPrismWindowsSoundData.mIsPlayingTrack)
@@ -202,26 +212,49 @@ namespace prism {
 		}
 	}
 
+	static void* loadFileToRawTrackBuffer(const char* tPath, unsigned int* oLength) {
+		FileHandler file = fileOpen(tPath, O_RDONLY);
+		if (file == FILEHND_INVALID) return nullptr;
+
+		const auto length = fileTotal(file);
+		auto data = malloc(length);
+		if (data) {
+			fileRead(file, data, length);
+		}
+		fileClose(file);
+
+		if (oLength) *oLength = (unsigned int)length;
+		return data;
+	}
+
 	static void playMusicPath(const char* tPath) {
 		if (gPrismWindowsSoundData.mIsPlayingTrack) stopTrack();
 		if (gPrismWindowsSoundData.mHasLoadedTrack) unloadTrack();
 		gPrismWindowsSoundData.mShouldUnloadTrack = false;
 
-		gPrismWindowsSoundData.mTrackBuffer = fileToBuffer(tPath);
+		unsigned int length = 0;
+		gPrismWindowsSoundData.mTrackData = loadFileToRawTrackBuffer(tPath, &length);
+		if (!gPrismWindowsSoundData.mTrackData) {
+			logErrorFormat("Unable to load music file %s", tPath);
+			return;
+		}
 
 		FMOD_CREATESOUNDEXINFO exInfo = {};
 		exInfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
-		exInfo.length = gPrismWindowsSoundData.mTrackBuffer.mLength;
+		exInfo.length = length;
 
 		FMOD_RESULT result = gPrismWindowsSoundData.mSystem->createStream(
-			(const char*)gPrismWindowsSoundData.mTrackBuffer.mData,
-			FMOD_LOOP_NORMAL | FMOD_2D | FMOD_OPENMEMORY_POINT,
+			(const char*)gPrismWindowsSoundData.mTrackData,
+			FMOD_LOOP_NORMAL | FMOD_2D | FMOD_OPENMEMORY_POINT | FMOD_ACCURATETIME,
 			&exInfo,
 			&gPrismWindowsSoundData.mTrack);
 		if (result != FMOD_OK)
 		{
 			logErrorFormat("Unable to create stream %s: %s", tPath, FMOD_ErrorString(result));
-			freeBuffer(gPrismWindowsSoundData.mTrackBuffer);
+			if(gPrismWindowsSoundData.mTrackData) {
+				free(gPrismWindowsSoundData.mTrackData);
+			}
+			gPrismWindowsSoundData.mTrackData = nullptr;
 			return;
 		}
 
@@ -333,8 +366,14 @@ namespace prism {
 	uint64_t getStreamingSoundTimeElapsedInMilliseconds()
 	{
 		if (!gPrismWindowsSoundData.mIsPlayingTrack) return 0;
-		if (!gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted) return 0;
 
+		unsigned int positionMs = 0;
+		FMOD_RESULT result = gPrismWindowsSoundData.mChannel->getPosition(&positionMs, FMOD_TIMEUNIT_MS);
+		if (result == FMOD_OK) {
+			return (uint64_t)positionMs;
+		}
+
+		if (!gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted) return 0;
 		uint64_t now = SDL_GetTicks();
 		return (uint64_t)(now - gPrismWindowsSoundData.mTimeWhenMusicPlaybackStarted);
 	}
@@ -428,8 +467,8 @@ namespace prism {
 		return makeActorBlueprint(startMicrophone, stopMicrophone);
 	}
 
-	double getMicrophoneVolume()
+	float getMicrophoneVolume()
 	{
-		return gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume / 255.0;
+		return gPrismWindowsSoundData.mMicrophone.mMasterPeakVolume / 255.0f;
 	}
 }

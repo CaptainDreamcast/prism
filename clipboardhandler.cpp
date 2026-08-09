@@ -60,7 +60,7 @@ namespace prism {
 
 	static void initClipboardLines() {
 		static const auto CLIPBOARD_FONT = -1;
-		double deltaY = getMugenFontSizeY(CLIPBOARD_FONT) + getMugenFontSpacingY(CLIPBOARD_FONT);
+		auto deltaY = getMugenFontSizeY(CLIPBOARD_FONT) + getMugenFontSpacingY(CLIPBOARD_FONT);
 		Position pos = Vector3D(20, 20, 90);
 		int i;
 		for (i = 0; i < CLIPBOARD_LINE_AMOUNT; i++) {
@@ -152,7 +152,7 @@ namespace prism {
 		}
 		else if (identifier == 'f' || identifier == 'F') {
 			getArgumentTextAndAdvanceParams(argumentText, tParams);
-			double val = atof(argumentText);
+			auto val = atof(argumentText);
 			sprintf(parsedValue, "%f", val);
 			auto len = strlen(parsedValue);
 			memcpy(*tDst, parsedValue, len);
@@ -160,7 +160,7 @@ namespace prism {
 		}
 		else if (identifier == 'e' || identifier == 'E') {
 			getArgumentTextAndAdvanceParams(argumentText, tParams);
-			double val = atof(argumentText);
+			auto val = atof(argumentText);
 			sprintf(parsedValue, "%e", val);
 			auto len = strlen(parsedValue);
 			memcpy(*tDst, parsedValue, len);
@@ -168,7 +168,7 @@ namespace prism {
 		}
 		else if (identifier == 'g' || identifier == 'G') {
 			getArgumentTextAndAdvanceParams(argumentText, tParams);
-			double val = atof(argumentText);
+			auto val = atof(argumentText);
 			sprintf(parsedValue, "%g", val);
 			auto len = strlen(parsedValue);
 			memcpy(*tDst, parsedValue, len);

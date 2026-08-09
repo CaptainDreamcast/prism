@@ -8,7 +8,8 @@ dc/screeneffect_dc.o dc/logoscreen_dc.o dc/thread_dc.o windows/windowfocusscreen
 defaultall: create_addons_link $(OBJS) subdirs linklib
 
 KOS_CPPFLAGS += -W -Wall -DDREAMCAST -I ./include -I${KOS_PORTS}/zstd/lib -lpng -fpermissive -Wno-format-overflow
-CXXFLAGS += -DNDEBUG -std=c++17 -Wall -O2
+CXXFLAGS += -DNDEBUG -std=c++17 -Wall -O2 -D_GLIBCXX11_USE_C99_STDIO=1 -fsingle-precision-constant -Wdouble-promotion
+# D_GLIBCXX11_USE_C99_STDIO needed or to_string(double) does not exist under GCC15
 
 include $(KOS_BASE)/addons/Makefile.prefab
 

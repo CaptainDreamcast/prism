@@ -20,12 +20,16 @@
 #ifdef DREAMCAST
 
 #include <kos.h>
+#include <dc/sq.h>
 #endif
 
 #if defined _WIN32 || defined __EMSCRIPTEN__
 
 #include <SDL.h>
 #include <GL/glew.h>
+#include "prism/texture.h"
+#elif defined __linux__
+
 #include "prism/texture.h"
 #endif
 
@@ -55,13 +59,32 @@ namespace prism {
 	{
 		decompressMemory(tMem, &tMem->mData);
 		void* textureMemoryBuffer = allocTextureHW(tMem->mSize);
-		memcpy(textureMemoryBuffer, tMem->mData, tMem->mSize);
+		sq_cpy(textureMemoryBuffer, tMem->mData, tMem->mSize);
 		free(tMem->mData);
 		tMem->mData = textureMemoryBuffer;
 	}
 
 #define virtualizeTextureHW virtualizeTextureDreamcast
 #define unvirtualizeTextureHW unvirtualizeTextureDreamcast
+
+#elif defined __linux__
+	void* allocGLTexture(size_t) {
+		GLTextureData* data = (GLTextureData*)malloc(sizeof(GLTextureData));
+		return data;
+	}
+
+	void freeGLTexture(void* tData) {
+		free(tData);
+	}
+
+#define allocTextureHW allocGLTexture
+#define freeTextureHW freeGLTexture
+
+	void virtualizeTextureGL(const TextureMemory&) {}
+	void unvirtualizeTextureGL(const TextureMemory&) {}
+
+#define virtualizeTextureHW virtualizeTextureGL
+#define unvirtualizeTextureHW unvirtualizeTextureGL
 
 #elif defined _WIN32 || defined __EMSCRIPTEN__
 	void* allocGLTexture(size_t) {
@@ -128,37 +151,63 @@ namespace prism {
 	static void removeFromUsageQueue(TextureMemory tMem);
 	static void makeSpaceInTextureMemory(size_t tSize);
 
-	static void* allocTextureFunc(size_t tSize) {
-
-		makeSpaceInTextureMemory(tSize);
-
-		TextureMemory ret = (TextureMemory)malloc(sizeof(struct TextureMemory_internal));
-		ret->mData = allocTextureHW(tSize);
-		ret->mSize = tSize;
-		ret->mIsVirtual = 0;
-		ret->mIsCompressed = 0;
-		addToUsageQueueFront(ret);
-
-		return ret;
-	}
-
-	static void freeTextureFunc(void* tData) {
-		TextureMemory tMem = (TextureMemory)tData;
-		if (tMem->mIsVirtual) {
-			free(tMem->mData);
-		}
-		else {
-			removeFromUsageQueue(tMem);
-			freeTextureHW(tMem->mData);
-		}
-		free(tMem);
-	}
+	static void* allocTextureFunc(size_t tSize);
+	static void freeTextureFunc(void* tData);
+	static void* mainMemoryAllocFunc(size_t tSize);
 
 #define MEMORY_STACK_MAX 10
 
-	typedef struct {
-		set<void*> mMap;
+	typedef struct MemoryHandlerMapEntry_internal {
+		struct MemoryHandlerMapEntry_internal* mPrev;
+		struct MemoryHandlerMapEntry_internal* mNext;
+		struct MemoryHandlerMap_internal* mOwner;
+		uint32_t mMagic;
+	} MemoryHandlerMapEntry;
+
+	static const uint32_t MEMORY_HANDLER_MAGIC = 0x4D454D50; // "MEMP"
+
+	static const size_t MEMORY_HANDLER_ENTRY_ALIGNMENT = 16;
+	static const size_t MEMORY_HANDLER_ENTRY_SIZE = ((sizeof(MemoryHandlerMapEntry) + MEMORY_HANDLER_ENTRY_ALIGNMENT - 1) / MEMORY_HANDLER_ENTRY_ALIGNMENT) * MEMORY_HANDLER_ENTRY_ALIGNMENT;
+
+	typedef struct MemoryHandlerMap_internal {
+		MemoryHandlerMapEntry* mFirst;
+		int mSize;
 	} MemoryHandlerMap;
+
+	static MemoryHandlerMapEntry* getMemoryHandlerEntryFromUserPointer(void* tData) {
+		return (MemoryHandlerMapEntry*)(void*)(((char*)tData) - MEMORY_HANDLER_ENTRY_SIZE);
+	}
+
+	static void* getUserPointerFromMemoryHandlerEntry(MemoryHandlerMapEntry* tEntry) {
+		return (void*)(((char*)(void*)tEntry) + MEMORY_HANDLER_ENTRY_SIZE);
+	}
+
+	static void initMemoryHandlerEntry(MemoryHandlerMapEntry* tEntry) {
+		tEntry->mPrev = NULL;
+		tEntry->mNext = NULL;
+		tEntry->mOwner = NULL;
+		tEntry->mMagic = MEMORY_HANDLER_MAGIC;
+	}
+
+	static void linkMemoryHandlerEntry(MemoryHandlerMap* tMap, MemoryHandlerMapEntry* tEntry) {
+		tEntry->mPrev = NULL;
+		tEntry->mNext = tMap->mFirst;
+		tEntry->mOwner = tMap;
+		if (tMap->mFirst) tMap->mFirst->mPrev = tEntry;
+		tMap->mFirst = tEntry;
+		tMap->mSize++;
+	}
+
+	static void unlinkMemoryHandlerEntry(MemoryHandlerMapEntry* tEntry) {
+		MemoryHandlerMap* map = tEntry->mOwner;
+		if (tEntry->mPrev) tEntry->mPrev->mNext = tEntry->mNext;
+		else map->mFirst = tEntry->mNext;
+		if (tEntry->mNext) tEntry->mNext->mPrev = tEntry->mPrev;
+		tEntry->mPrev = NULL;
+		tEntry->mNext = NULL;
+		tEntry->mOwner = NULL;
+		map->mSize--;
+	}
 
 	typedef struct {
 		int mSize;
@@ -203,7 +252,7 @@ namespace prism {
 #ifdef _WIN32
 	static std::string_view allocationStrategyToString(const AllocationStrategy& allocationStrategy)
 	{
-		if (allocationStrategy.mMalloc == malloc) return "Hash Map Strategy Main Memory";
+		if (allocationStrategy.mMalloc == mainMemoryAllocFunc) return "Hash Map Strategy Main Memory";
 		else return "Hash Map Strategy Texture Memory";
 	}
 
@@ -245,7 +294,7 @@ namespace prism {
 				{
 					if (ImGui::TreeNode(std::to_string(row).c_str()))
 					{
-						ImGui::Text("Size = %d", tMemoryListStack.mMaps[row].mMap.size());
+						ImGui::Text("Size = %d", tMemoryListStack.mMaps[row].mSize);
 						if (ImGui::TreeNode("Elements"))
 						{
 							static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
@@ -256,11 +305,11 @@ namespace prism {
 									ImGui::TableSetupColumn("Address");
 									ImGui::TableHeadersRow();
 
-									for (const auto& pointer : tMemoryListStack.mMaps[row].mMap)
+									for (MemoryHandlerMapEntry* entry = tMemoryListStack.mMaps[row].mFirst; entry != NULL; entry = entry->mNext)
 									{
 										ImGui::TableNextRow();
 										ImGui::TableNextColumn();
-										ImGui::Text("%X", pointer);
+										ImGui::Text("%X", getUserPointerFromMemoryHandlerEntry(entry));
 									}
 									ImGui::EndTable();
 								}
@@ -276,10 +325,10 @@ namespace prism {
 									ImGui::TableSetupColumn("IsCompressed");
 									ImGui::TableHeadersRow();
 
-									for (const auto& pointer : tMemoryListStack.mMaps[row].mMap)
+									for (MemoryHandlerMapEntry* entry = tMemoryListStack.mMaps[row].mFirst; entry != NULL; entry = entry->mNext)
 									{
-										TextureMemory entry = (TextureMemory)pointer;
-										imguiTextureMemoryTableEntry(entry);
+										TextureMemory textureEntry = (TextureMemory)getUserPointerFromMemoryHandlerEntry(entry);
+										imguiTextureMemoryTableEntry(textureEntry);
 									}
 									ImGui::EndTable();
 								}
@@ -348,11 +397,12 @@ namespace prism {
 
 	static void initHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
 		(void)tStrategy;
-		tMap->mMap.clear();
+		tMap->mFirst = NULL;
+		tMap->mSize = 0;
 	}
 
 	static void* addAllocatedMemoryToMemoryHandlerMapHashMapStrategy(MemoryHandlerMap* tMap, void* tData) {
-		tMap->mMap.insert(tData);
+		linkMemoryHandlerEntry(tMap, getMemoryHandlerEntryFromUserPointer(tData));
 
 		return tData;
 	}
@@ -365,10 +415,10 @@ namespace prism {
 	}
 
 	static int removeMemoryFromMemoryHandlerMapWithoutFreeingMemoryHashMapStrategy(MemoryHandlerMap* tMap, void* tData) {
-		set<void*>::iterator it = tMap->mMap.find(tData);
-		if (it == tMap->mMap.end()) return 0;
+		MemoryHandlerMapEntry* entry = getMemoryHandlerEntryFromUserPointer(tData);
+		if (entry->mMagic != MEMORY_HANDLER_MAGIC || entry->mOwner != tMap) return 0;
 
-		tMap->mMap.erase(it);
+		unlinkMemoryHandlerEntry(entry);
 
 		return 1;
 	}
@@ -397,15 +447,59 @@ namespace prism {
 	}
 
 	static void emptyMemoryHandlerMapHashMapStrategy(AllocationStrategy* tStrategy, MemoryHandlerMap* tMap) {
-		typename set<void*>::iterator it = tMap->mMap.begin();
+		MemoryHandlerMapEntry* entry = tMap->mFirst;
 
-		while (it != tMap->mMap.end()) {
-			void* data = *it;
-			it++;
+		while (entry != NULL) {
+			MemoryHandlerMapEntry* next = entry->mNext;
 			gMemoryHandler.mAllocatedMemory--;
-			tStrategy->mFreeFunc(data);
+			tStrategy->mFreeFunc(getUserPointerFromMemoryHandlerEntry(entry));
+			entry = next;
 		}
-		tMap->mMap.clear();
+		tMap->mFirst = NULL;
+		tMap->mSize = 0;
+	}
+
+	static void* mainMemoryAllocFunc(size_t tSize) {
+		char* raw = (char*)malloc(MEMORY_HANDLER_ENTRY_SIZE + tSize);
+		initMemoryHandlerEntry((MemoryHandlerMapEntry*)(void*)raw);
+		return raw + MEMORY_HANDLER_ENTRY_SIZE;
+	}
+
+	static void mainMemoryFreeFunc(void* tData) {
+		free(((char*)tData) - MEMORY_HANDLER_ENTRY_SIZE);
+	}
+
+	static void* mainMemoryReallocFunc(void* tPointer, size_t tSize) {
+		char* raw = (char*)realloc(((char*)tPointer) - MEMORY_HANDLER_ENTRY_SIZE, MEMORY_HANDLER_ENTRY_SIZE + tSize);
+		return raw + MEMORY_HANDLER_ENTRY_SIZE;
+	}
+
+	static void* allocTextureFunc(size_t tSize) {
+
+		makeSpaceInTextureMemory(tSize);
+
+		char* raw = (char*)malloc(MEMORY_HANDLER_ENTRY_SIZE + sizeof(struct TextureMemory_internal));
+		initMemoryHandlerEntry((MemoryHandlerMapEntry*)(void*)raw);
+		TextureMemory ret = (TextureMemory)(void*)(raw + MEMORY_HANDLER_ENTRY_SIZE);
+		ret->mData = allocTextureHW(tSize);
+		ret->mSize = tSize;
+		ret->mIsVirtual = 0;
+		ret->mIsCompressed = 0;
+		addToUsageQueueFront(ret);
+
+		return ret;
+	}
+
+	static void freeTextureFunc(void* tData) {
+		TextureMemory tMem = (TextureMemory)tData;
+		if (tMem->mIsVirtual) {
+			free(tMem->mData);
+		}
+		else {
+			removeFromUsageQueue(tMem);
+			freeTextureHW(tMem->mData);
+		}
+		free(((char*)tData) - MEMORY_HANDLER_ENTRY_SIZE);
 	}
 
 	static AllocationStrategy getHashMapStrategyMainMemory() {
@@ -416,9 +510,9 @@ namespace prism {
 		ret.mResizeMemoryOnMemoryHandlerMap = resizeMemoryOnMemoryHandlerMapHashMapStrategy;
 		ret.mEmptyMemoryHandlerMap = emptyMemoryHandlerMapHashMapStrategy;
 
-		ret.mMalloc = malloc;
-		ret.mFreeFunc = free;
-		ret.mReallocFunc = realloc;
+		ret.mMalloc = mainMemoryAllocFunc;
+		ret.mFreeFunc = mainMemoryFreeFunc;
+		ret.mReallocFunc = mainMemoryReallocFunc;
 
 		return ret;
 	}

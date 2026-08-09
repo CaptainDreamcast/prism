@@ -266,22 +266,22 @@ namespace prism {
 	}
 
 
-	double getSingleLeftStickNormalizedX(int i) {
+	float getSingleLeftStickNormalizedX(int i) {
 		if (!gData.mControllers[i].mState) return 0;
 
 		return gData.mControllers[i].mState->joyx / 128.0;
 	}
-	double getSingleLeftStickNormalizedY(int i) {
+	float getSingleLeftStickNormalizedY(int i) {
 		if (!gData.mControllers[i].mState) return 0;
 
 		return gData.mControllers[i].mState->joyy / 128.0;
 	}
-	double getSingleLNormalized(int i) {
+	float getSingleLNormalized(int i) {
 		if (!gData.mControllers[i].mState) return 0;
 
 		return gData.mControllers[i].mState->ltrig / 128.0;
 	}
-	double getSingleRNormalized(int i) {
+	float getSingleRNormalized(int i) {
 		if (!gData.mControllers[i].mState) return 0;
 		return gData.mControllers[i].mState->rtrig / 128.0;
 	}
@@ -329,12 +329,12 @@ namespace prism {
 		}
 	}
 
-	void addControllerRumbleSingle(int i, Duration tDuration, int /*tFrequency*/, double tAmplitude) {
+	void addControllerRumbleSingle(int i, Duration tDuration, int /*tFrequency*/, float tAmplitude) {
 		const auto dev = getRumbleDeviceOrNull(i);
 		if (!dev) return;
 
 		purupuru_effect_t effect;
-		effect.duration = uint8_t(std::min(255.0, tDuration * 6));
+		effect.duration = uint8_t(std::min(255.0f, tDuration * 6));
 		effect.effect2 = PURUPURU_EFFECT2_UINTENSITY(uint8_t(7 - uint8_t(7 * tAmplitude))) | PURUPURU_EFFECT2_LINTENSITY(uint8_t(7 * tAmplitude));
 		effect.effect1 = PURUPURU_EFFECT1_INTENSITY(uint8_t(7 * tAmplitude));
 		effect.special = PURUPURU_SPECIAL_MOTOR1;

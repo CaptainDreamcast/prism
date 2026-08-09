@@ -328,11 +328,11 @@ namespace prism {
 		return value;
 	}
 
-	double readFloatFromTextStreamBufferPointer(BufferPointer* tPointer)
+	float readFloatFromTextStreamBufferPointer(BufferPointer* tPointer)
 	{
-		double value;
+		float value;
 		int size;
-		int items = sscanf(*tPointer, "%lf%n", &value, &size);
+		int items = sscanf(*tPointer, "%f%n", &value, &size);
 		if (items != 1) {
 			logWarning("Unable to read float value from stream.");
 			value = 0;

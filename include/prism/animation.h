@@ -6,7 +6,7 @@
 
 namespace prism {
 
-typedef double Duration;
+typedef float Duration;
 typedef uint32_t Frame;
 typedef void (*AnimationPlayerCB)(void* caller);
 typedef uint32_t Tick;
@@ -44,14 +44,14 @@ struct AnimationHandlerElement {
 	Position mScaleEffectCenter;
 
 	int mIsRotated;
-	double mRotationZ;
+	float mRotationZ;
 	Position mRotationEffectCenter;
 
 	int mHasBaseColor;
 	Vector3D mBaseColor;
 
 	int mHasTransparency;
-	double mTransparency;
+	float mTransparency;
 
 	Vector3DI mInversionState;
 	int mIsVisible;
@@ -70,7 +70,7 @@ Animation createEmptyAnimation();
 Animation createOneFrameAnimation();
 void pauseDurationHandling();
 void resumeDurationHandling();
-double getDurationPercentage(Duration tNow, Duration tDuration);
+float getDurationPercentage(Duration tNow, Duration tDuration);
 
 void setupAnimationHandler();
 void updateAnimationHandler();
@@ -86,10 +86,10 @@ void setAnimationScreenPositionReference(AnimationHandlerElement* tElement, Posi
 void setAnimationBasePositionReference(AnimationHandlerElement* tElement, Position* tBasePositionReference);
 void setAnimationScale(AnimationHandlerElement* tElement, const Vector3D& tScale, const Position& tCenter);
 void setAnimationSize(AnimationHandlerElement* tElement, const Vector3D& tSize, const Position& tCenter);
-void setAnimationRotationZ(AnimationHandlerElement* tElement, double tAngle, const Position& tCenter);
-void setAnimationColor(AnimationHandlerElement* tElement, double r, double g, double b);
+void setAnimationRotationZ(AnimationHandlerElement* tElement, float tAngle, const Position& tCenter);
+void setAnimationColor(AnimationHandlerElement* tElement, float r, float g, float b);
 void setAnimationColorType(AnimationHandlerElement* tElement, Color tColor);
-void setAnimationTransparency(AnimationHandlerElement* tElement, double a);
+void setAnimationTransparency(AnimationHandlerElement* tElement, float a);
 void setAnimationVisibility(AnimationHandlerElement* tElement, int tIsVisible);
 void setAnimationCB(AnimationHandlerElement* tElement, AnimationPlayerCB tCB, void* tCaller);
 void setAnimationPosition(AnimationHandlerElement* tElement, const Position& tPosition);
@@ -102,11 +102,11 @@ void inverseAnimationVertical(AnimationHandlerElement* tElement);
 void inverseAnimationHorizontal(AnimationHandlerElement* tElement);
 void setAnimationVerticalInversion(AnimationHandlerElement* tElement, int tValue);
 void setAnimationHorizontalInversion(AnimationHandlerElement* tElement, int tValue);
-void setAnimationHandlerScreenRotationZ(double tAngle, const Vector3D& tCenter);
-void setAnimationHandlerScreenTint(double r, double g, double b);
+void setAnimationHandlerScreenRotationZ(float tAngle, const Vector3D& tCenter);
+void setAnimationHandlerScreenTint(float r, float g, float b);
 void resetAnimationHandlerScreenTint();
 
-double* getAnimationTransparencyReference(AnimationHandlerElement* tElement);
+float* getAnimationTransparencyReference(AnimationHandlerElement* tElement);
 Position* getAnimationPositionReference(AnimationHandlerElement* tElement);
 
 void removeHandledAnimation(AnimationHandlerElement* tElement);

@@ -1413,9 +1413,8 @@ static void checkMugenSpriteFileReader() {
 
 static MugenSpriteFile loadMugenSpriteFileGeneral(const char * tPath, int tHasPaletteFile, const char* tOptionalPaletteFile)
 {
-	verboseLog("Loading sprite file.");
-	verboseString(tPath);
-	
+	logFormat("Loading sprite file: %s", tPath);
+
 	if (!isFile(tPath)) {
 		logErrorFormat("Unable to open sprite file %s. Aborting.", tPath);
 		recoverFromError();
@@ -1491,7 +1490,6 @@ MugenSpriteFile loadMugenSpriteFileWithoutPalette(const std::string& tPath)
 
 MugenSpriteFile loadMugenSpriteFileWithoutPalette(const char * tPath)
 {
-	logFormat("Loading sprite file: %s", tPath);
 	return loadMugenSpriteFile(tPath, 0, NULL);
 }
 

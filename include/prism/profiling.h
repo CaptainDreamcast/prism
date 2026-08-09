@@ -26,7 +26,7 @@ namespace prism {
 	} \
 	uint64_t _endTicks = getSystemTicks(); \
 	uint64_t _timeDelta = _endTicks - _startTicks; \
-	double _timePerSample = _timeDelta / double(tSamples); \
+	float _timePerSample = _timeDelta / float(tSamples); \
 	logFormat("Profiling %s: %f ticks (%d samples running for %llu from %llu to %llu)", #x, _timePerSample, tSamples, _timeDelta, _startTicks, _endTicks); \
 }
 

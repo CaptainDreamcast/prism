@@ -207,15 +207,15 @@ int stl_string_map_contains_array(MapType<std::string, V, Alloc, Args...>& tMap,
 	return tMap.find(tID) != tMap.end();
 }
 
-template<class T>
-int stl_set_contains(std::set<T>& tSet, T tID)
+template<class T, class Cmp>
+int stl_set_contains(std::set<T, Cmp>& tSet, T tID)
 {
 	return tSet.find(tID) != tSet.end();
 }
 
-template <class T, class C>
-void stl_set_map(std::set<T> &tSet, void(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
-	typename std::set<T>::iterator it = tSet.begin();
+template <class T, class Cmp, class C>
+void stl_set_map(std::set<T, Cmp> &tSet, void(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
+	typename std::set<T, Cmp>::iterator it = tSet.begin();
 
 	while (it != tSet.end()) {
 		T &val = *it;
@@ -224,9 +224,9 @@ void stl_set_map(std::set<T> &tSet, void(*tFunc)(C* tCaller, T& tData), C* tCall
 	}
 }
 
-template <class T, class C>
-void stl_set_map(std::set<T*> &tSet, void(*tFunc)(C* tCaller, T* tData), C* tCaller = NULL) {
-	typename std::set<T*>::iterator it = tSet.begin();
+template <class T, class Cmp, class C>
+void stl_set_map(std::set<T*, Cmp> &tSet, void(*tFunc)(C* tCaller, T* tData), C* tCaller = NULL) {
+	typename std::set<T*, Cmp>::iterator it = tSet.begin();
 
 	while (it != tSet.end()) {
 		T *val = *it;
@@ -235,13 +235,13 @@ void stl_set_map(std::set<T*> &tSet, void(*tFunc)(C* tCaller, T* tData), C* tCal
 	}
 }
 
-template <class T, class C>
-void stl_set_remove_predicate(std::set<T> &tSet, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
-	typename std::set<T>::iterator it = tSet.begin();
+template <class T, class Cmp, class C>
+void stl_set_remove_predicate(std::set<T, Cmp> &tSet, int(*tFunc)(C* tCaller, T& tData), C* tCaller = NULL) {
+	typename std::set<T, Cmp>::iterator it = tSet.begin();
 
 	while (it != tSet.end()) {
 		T &val = *it;
-		typename std::set<T>::iterator current = it;
+		typename std::set<T, Cmp>::iterator current = it;
 		it++;
 		int isDeleted = tFunc(tCaller, val);
 		if (isDeleted) tSet.erase(current);

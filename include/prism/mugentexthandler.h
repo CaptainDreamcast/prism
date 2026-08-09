@@ -74,21 +74,23 @@ void drawMugenText(char* tText, const Position& tPosition, int tFont);
 int addMugenText(const char* tText, const Position& tPosition, int tFont);
 int addMugenTextMugenStyle(const char* tText, const Position& tPosition, const Vector3DI& tFont);
 void removeMugenText(int tID);
+int getMugenTextFont(int tID);
 void setMugenTextFont(int tID, int tFont);
 void setMugenTextAlignment(int tID, MugenTextAlignment tAlignment);
 void setMugenTextColor(int tID, Color tColor);
-void setMugenTextColorRGB(int tID, double tR, double tG, double tB);
+void setMugenTextColorRGB(int tID, float tR, float tG, float tB);
 void setMugenTextRectangle(int tID, const GeoRectangle2D& tRectangle);
 void setMugenTextPosition(int tID, const Position& tPosition);
 void addMugenTextPosition(int tID, const Position& tPosition);
-void setMugenTextTextBoxWidth(int tID, double tWidth);
+float getMugenTextTextBoxWidth(int tID);
+void setMugenTextTextBoxWidth(int tID, float tWidth);
 void setMugenTextBuildup(int tID, Duration mBuildUpDurationPerLetter);
 void setMugenTextBuiltUp(int tID);
 int isMugenTextBuiltUp(int tID);
 int getMugenTextVisibility(int tID);
 void setMugenTextVisibility(int tID, int tIsVisible);
-double getMugenTextSizeX(int tID);
-void setMugenTextScale(int tID, double tScale); // only for bitmap fonts for now
+float getMugenTextSizeX(int tID);
+void setMugenTextScale(int tID, float tScale); // only for bitmap fonts for now
 
 const char* getMugenTextText(int tID);
 const char* getMugenTextDisplayedText(int tID);

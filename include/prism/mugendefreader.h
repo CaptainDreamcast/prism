@@ -37,7 +37,7 @@ typedef struct {
 } MugenDefScriptNumberElement;
 
 typedef struct {
-	double mValue;
+	float mValue;
 } MugenDefScriptFloatElement;
 
 typedef struct {
@@ -91,11 +91,11 @@ std::string getSTLMugenDefStringVariableAsElementForceAddWhiteSpaces(MugenDefScr
 int isMugenDefVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 
 int isMugenDefFloatVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
-double getMugenDefFloatVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
+float getMugenDefFloatVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 int isMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
-double getMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
+float getMugenDefFloatVariableAsGroup(MugenDefScriptGroup* tGroup, const char* tVariableName);
 int isMugenDefFloatVariableAsElement(MugenDefScriptGroupElement* tElement);
-double getMugenDefFloatVariableAsElement(MugenDefScriptGroupElement* tElement);
+float getMugenDefFloatVariableAsElement(MugenDefScriptGroupElement* tElement);
 
 int isMugenDefNumberVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
 int getMugenDefNumberVariable(MugenDefScript* tScript, const char* tGroupName, const char* tVariableName);
@@ -145,8 +145,8 @@ char* getAllocatedMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, co
 std::string getSTLMugenDefStringOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const char* tDefault);
 std::string getSTLMugenDefStringOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, const char* tDefault);
 
-double getMugenDefFloatOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, double tDefault);
-double getMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, double tDefault);
+float getMugenDefFloatOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, float tDefault);
+float getMugenDefFloatOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, float tDefault);
 int getMugenDefIntegerOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, int tDefault);
 int getMugenDefIntegerOrDefaultAsGroup(MugenDefScriptGroup* tGroup, const char* tVariable, int tDefault);
 Vector3D getMugenDefVectorOrDefault(MugenDefScript* s, const char* tGroup, const char* tVariable, const Vector3D& tDefault);

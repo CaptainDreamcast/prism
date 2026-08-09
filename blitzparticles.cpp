@@ -17,7 +17,7 @@ namespace prism {
 		Velocity mVel;
 		Velocity mGravity;
 
-		double mAngle;
+		float mAngle;
 		Vector3D mColor;
 
 		Duration mNow;
@@ -124,24 +124,24 @@ namespace prism {
 		return makeActorBlueprint(loadParticleHandler, NULL, updateParticleHandler, drawParticleHandler);
 	};
 
-	void addBlitzParticles(int tAmount, const Position& tPosition, const Position& tPositionRange, double tSpeed, double tSpeedRange, double tAngle, double tAngleRange, const Velocity& tGravity, const Vector3D& tColor, const Vector3D& tColorRange, Duration tLifetime, Duration tLifetimeRange) {
+	void addBlitzParticles(int tAmount, const Position& tPosition, const Position& tPositionRange, float tSpeed, float tSpeedRange, float tAngle, float tAngleRange, const Velocity& tGravity, const Vector3D& tColor, const Vector3D& tColorRange, Duration tLifetime, Duration tLifetimeRange) {
 		int i;
 		for (i = 0; i < tAmount; i++) {
 			addBlitzParticle(tPosition, tPositionRange, tSpeed, tSpeedRange, tAngle, tAngleRange, tGravity, tColor, tColorRange, tLifetime, tLifetimeRange);
 		}
 	}
 
-	void addBlitzParticle(const Position& tPosition, const Position& tPositionRange, double tSpeed, double tSpeedRange, double tAngle, double tAngleRange, const Velocity& tGravity, const Vector3D& tColor, const Vector3D& tColorRange, Duration tLifetime, Duration tLifetimeRange)
+	void addBlitzParticle(const Position& tPosition, const Position& tPositionRange, float tSpeed, float tSpeedRange, float tAngle, float tAngleRange, const Velocity& tGravity, const Vector3D& tColor, const Vector3D& tColorRange, Duration tLifetime, Duration tLifetimeRange)
 	{
 		ParticleEntry* e = (ParticleEntry*)allocMemory(sizeof(ParticleEntry));
 
 		e->mPos = vecAdd(vecSub(tPosition, vecScale(tPositionRange, 0.5)), vecScale(tPositionRange, randfrom(0, 1)));
-		double speed = randfrom(tSpeed - tSpeedRange / 2, tSpeed + tSpeedRange / 2);
-		double angle = randfrom(tAngle - tAngleRange / 2, tAngle + tAngleRange / 2);
+		float speed = randfrom(tSpeed - tSpeedRange / 2, tSpeed + tSpeedRange / 2);
+		float angle = randfrom(tAngle - tAngleRange / 2, tAngle + tAngleRange / 2);
 		e->mVel = vecRotateZ(Vector3D(speed, 0, 0), angle);
 
 		e->mGravity = tGravity;
-		e->mAngle = randfrom(0, 2 * M_PI);
+		e->mAngle = randfrom(0, (float)(2 * M_PI));
 		e->mColor = vecAdd(vecSub(tColor, vecScale(tColorRange, 0.5)), vecScale(tColorRange, randfrom(0, 1)));
 
 		e->mNow = 0;

@@ -27,7 +27,7 @@ Script loadScript(const char* tPath);
 void executeOnScriptRegion(const ScriptRegion& tRegion, ScriptExecuteCB tFunc, void* tCaller);
 
 ScriptPosition getNextScriptString(const ScriptPosition& tPos, char* tDest);
-ScriptPosition getNextScriptDouble(const ScriptPosition& tPos, double* tDest);
+ScriptPosition getNextScriptDouble(const ScriptPosition& tPos, float* tDest);
 ScriptPosition getNextScriptInteger(const ScriptPosition& tPos, int* tDest);
 ScriptRegion getScriptRegion(const Script& tScript, const char* tName);
 ScriptPosition getScriptRegionStart(const ScriptRegion& tRegion);

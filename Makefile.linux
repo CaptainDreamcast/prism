@@ -1,0 +1,42 @@
+# Headless Linux build of prism.
+#
+# Requirements: g++ (C++17), libpng dev, zlib dev, libzstd runtime
+# (a shim header in linux/shim covers the missing dev header; if the
+# real libzstd-dev is installed you can drop -Ilinux/shim).
+#
+# Usage: make -f Makefile.linux -j$(nproc)
+
+include Makefile.common
+
+# Portable backend files shared with the Windows/Web builds.
+OBJS += windows/file_win.o windows/math_win.o windows/log_win.o \
+windows/romdisk_win.o windows/saveload_win.o windows/memoryhandler_win.o windows/logoscreen_win.o \
+windows/framerateselect_win.o \
+web/netplay_web.o linux/windowfocusscreen_linux.o
+
+OBJS += linux/system_linux.o linux/drawing_linux.o linux/texture_linux.o \
+linux/input_linux.o linux/screeneffect_linux.o \
+linux/sound_linux.o linux/soundeffect_linux.o linux/thread_linux.o
+
+OBJDIR = build_linux
+BINDIR = bin_linux
+LINUX_OBJS = $(addprefix $(OBJDIR)/,$(OBJS))
+
+CXX ?= g++
+CXXFLAGS = -std=c++17 -fpermissive -O2 -g -Wno-write-strings \
+	-Iinclude -Ilinux/shim $(shell pkg-config --cflags libpng zlib)
+
+all: $(BINDIR)/libprism.a
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BINDIR)/libprism.a: $(LINUX_OBJS)
+	@mkdir -p $(BINDIR)
+	ar rcs $@ $(LINUX_OBJS)
+
+clean:
+	rm -rf $(OBJDIR) $(BINDIR)
+
+.PHONY: all clean

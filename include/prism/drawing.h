@@ -53,7 +53,7 @@ void drawSpriteNoRectangle(const TextureData& tTexture, const Position& tTopLeft
 void drawText(const char* tText, const Position& tPosition, TextSize tSize, Color tColor);
 void drawAdvancedText(const char* tText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, TextSize tBreakSize);
 void drawMultilineText(const char* tText, const char* tFullText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize);
-void drawTruetypeText(const char* tText, TruetypeFont tFont, const Position& tPosition, const Vector3DI& tTextSize, const Vector3D& tColor, double tTextBoxWidth, const GeoRectangle2D& tDrawRectangle);
+void drawTruetypeText(const char* tText, TruetypeFont tFont, const Position& tPosition, const Vector3DI& tTextSize, const Vector3D& tColor, float tTextBoxWidth, const GeoRectangle2D& tDrawRectangle);
 void waitForScreen();
 void startDrawing();
 void stopDrawing();
@@ -61,31 +61,31 @@ void waitForRendering();
 bool isSkippingDrawing();
 void setDrawingFrameSkippingEnabled(bool tIsEnabled);
 void resetDrawingFrameStartTime();
-void updateDrawingFrameStartTime(double tTimeDelta);
+void updateDrawingFrameStartTime(float tTimeDelta);
 
 void disableDrawing();
 void enableDrawing();
 
-void scaleDrawing(double tFactor, const Position& tScalePosition);
+void scaleDrawing(float tFactor, const Position& tScalePosition);
 void scaleDrawing2D(const Vector2D& tFactor, const Position2D& tScalePosition);
 void scaleDrawing3D(const Vector3D& tFactor, const Position& tScalePosition);
-void setDrawingBaseColorOffsetAdvanced(double r, double g, double b);
+void setDrawingBaseColorOffsetAdvanced(float r, float g, float b);
 void setDrawingBaseColor(Color tColor);
-void setDrawingBaseColorAdvanced(double r, double g, double b);
+void setDrawingBaseColorAdvanced(float r, float g, float b);
 void setDrawingColorSolidity(int tIsSolid);
 void setDrawingColorInversed(int tIsInversed);
-void setDrawingColorFactor(double tColorFactor);
-void setDrawingTransparency(double tAlpha);
-void setDrawingDestinationTransparency(double tAlpha);
-void setDrawingRotationZ(double tAngle, const Position2D& tPosition);
-void setDrawingRotationZ(double tAngle, const Position& tPosition);
+void setDrawingColorFactor(float tColorFactor);
+void setDrawingTransparency(float tAlpha);
+void setDrawingDestinationTransparency(float tAlpha);
+void setDrawingRotationZ(float tAngle, const Position2D& tPosition);
+void setDrawingRotationZ(float tAngle, const Position& tPosition);
 void setDrawingParametersToIdentity();
 void setDrawingPunchThrough();
 void setDrawingTransparent();
 void setDrawingBlendType(BlendType tBlendType);
 
 void pushDrawingTranslation(const Vector3D& tTranslation);
-void pushDrawingRotationZ(double tAngle, const Vector3D& tCenter);
+void pushDrawingRotationZ(float tAngle, const Vector3D& tCenter);
 
 void popDrawingRotationZ();
 void popDrawingTranslation();
@@ -99,13 +99,13 @@ void printRectangle(const PrismRectangle& r);
 
 Vector3D makeFontSize(int x, int y);
 
-void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
+void getRGBFromColor(Color tColor, float* tR, float* tG, float* tB);
 int hasToLinebreak(const char* tText, int tCurrent, const Position& tTopLeft, const Position& tPos, const Vector3D& tFontSize, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize);
 
 void setPaletteFromARGB256Buffer(int tPaletteID, const Buffer& tBuffer);
 void setPaletteFromBGR256WithFirstValueTransparentBuffer(int tPaletteID, const Buffer& tBuffer);
 
-double getRealFramerate();
+float getRealFramerate();
 
 #ifdef _WIN32
 void imguiDrawingHardware();

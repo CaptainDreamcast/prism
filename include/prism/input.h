@@ -134,10 +134,10 @@ int hasPressedAbortFlank();
 
 void consumeAbortFlank();
 
-double getLeftStickNormalizedX();
-double getLeftStickNormalizedY();
-double getLNormalized();
-double getRNormalized();
+float getLeftStickNormalizedX();
+float getLeftStickNormalizedY();
+float getLNormalized();
+float getRNormalized();
 
 int hasPressedAnyButton();
 int hasPressedAnyButtonSingle(int i);
@@ -176,10 +176,10 @@ int hasPressedAbortFlankSingle(int i);
 
 void consumeAbortFlankSingle(int i);
 
-double getSingleLeftStickNormalizedX(int i);
-double getSingleLeftStickNormalizedY(int i);
-double getSingleLNormalized(int i);
-double getSingleRNormalized(int i);
+float getSingleLeftStickNormalizedX(int i);
+float getSingleLeftStickNormalizedY(int i);
+float getSingleLNormalized(int i);
+float getSingleRNormalized(int i);
 
 int hasShotGunSingle(int i);
 int hasShotGunFlankSingle(int i);
@@ -194,17 +194,17 @@ void releaseMouseCursorFromWindow();
 int isUsingControllerSingle(int i);
 int isUsingController();
 
-double getFishingRodIntensity();
-double getFishingRodIntensitySingle(int i);
+float getFishingRodIntensity();
+float getFishingRodIntensitySingle(int i);
 
 void addControllerRumbleBasic(Duration tDuration);
-void addControllerRumble(Duration tDuration, int tFrequency, double tAmplitude);
-void turnControllerRumbleOn(int tFrequency, double tAmplitude);
+void addControllerRumble(Duration tDuration, int tFrequency, float tAmplitude);
+void turnControllerRumbleOn(int tFrequency, float tAmplitude);
 void turnControllerRumbleOff();
 
 void addControllerRumbleBasicSingle(int i, Duration tDuration);
-void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude);
-void turnControllerRumbleOnSingle(int i, int tFrequency, double tAmplitude);
+void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, float tAmplitude);
+void turnControllerRumbleOnSingle(int i, int tFrequency, float tAmplitude);
 void turnControllerRumbleOffSingle(int i);
 
 int hasPressedRawButton(int i, ControllerButtonPrism tButton);

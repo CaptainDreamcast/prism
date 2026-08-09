@@ -13,20 +13,20 @@ void removeMugenEffectText(int tID);
 void setMugenEffectTextFont(int tID, int tFont);
 void setMugenEffectTextAlignment(int tID, MugenTextAlignment tAlignment);
 void setMugenEffectTextColor(int tID, Color tColor);
-void setMugenEffectTextColorRGB(int tID, double tR, double tG, double tB);
+void setMugenEffectTextColorRGB(int tID, float tR, float tG, float tB);
 void setMugenEffectTextRectangle(int tID, const GeoRectangle2D& tRectangle);
 void setMugenEffectTextPosition(int tID, const Position& tPosition);
 void addMugenEffectTextPosition(int tID, const Position& tPosition);
-void setMugenEffectTextTextBoxWidth(int tID, double tWidth);
+void setMugenEffectTextTextBoxWidth(int tID, float tWidth);
 void setMugenEffectTextBuildup(int tID, Duration mBuildUpDurationPerLetter);
 void setMugenEffectTextBuiltUp(int tID);
 int isMugenEffectTextBuiltUp(int tID);
 int getMugenEffectTextVisibility(int tID);
 void setMugenEffectTextVisibility(int tID, int tIsVisible);
-double getMugenEffectTextSizeX(int tID);
-void setMugenEffectTextScale(int tID, double tScale); // only for bitmap fonts for now
-double getMugenEffectTextTransparency(int tID);
-void setMugenEffectTextTransparency(int tID, double tOpacity);
+float getMugenEffectTextSizeX(int tID);
+void setMugenEffectTextScale(int tID, float tScale); // only for bitmap fonts for now
+float getMugenEffectTextTransparency(int tID);
+void setMugenEffectTextTransparency(int tID, float tOpacity);
 
 const char* getMugenEffectTextText(int tID);
 const char* getMugenEffectTextDisplayedText(int tID);

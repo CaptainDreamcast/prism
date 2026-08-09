@@ -8,6 +8,7 @@ dc-tool_*
 *.pkg
 *.psd
 *.ogg
+*.md
 
 filesystem
 concept
@@ -25,6 +26,7 @@ web/*
 windows/.vs/*
 windows/Release/*
 windows/Debug/*
+.vscode/*
 *.aps
 *.exe
 *.dll

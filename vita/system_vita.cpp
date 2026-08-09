@@ -61,7 +61,7 @@ namespace prism {
 		// UNSUPPORTED
 	}
 
-	extern void setDrawingScreenScale(double tScaleX, double tScaleY);
+	extern void setDrawingScreenScale(float tScaleX, float tScaleY);
 
 	void initSystem() {
 

@@ -9,6 +9,16 @@
 namespace prism {
 typedef pvr_ptr_t Texture;
 
+#elif defined __linux__
+
+namespace prism {
+
+typedef struct {
+	unsigned int mTexture;
+} GLTextureData;
+
+typedef GLTextureData* Texture;
+
 #elif defined _WIN32 || defined __EMSCRIPTEN__
 #include <SDL.h>
 #include <GL/glew.h>

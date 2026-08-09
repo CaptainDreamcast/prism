@@ -4,7 +4,7 @@
 
 namespace prism {
 
-#ifdef _WIN32
+#if defined _WIN32 || defined __linux__
 #define PERFORMANCE_FACTOR_INVERTED 1
 
 #elif defined __EMSCRIPTEN__
@@ -54,8 +54,8 @@ void setScreenFramerate(int tFramerate);
 
 void setFramerate(Framerate tFramerate);
 Framerate getFramerate();
-double getFramerateFactor();
-double getInverseFramerateFactor();
+float getFramerateFactor();
+float getInverseFramerateFactor();
 
 void setVGA();
 int isOnDreamcast();

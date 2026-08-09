@@ -32,12 +32,12 @@ typedef struct {
 	int mDuration;
 
 	uint32_t mFlags;
-	double mSrcBlendFactor;
-	double mDstBlendFactor;
+	float mSrcBlendFactor;
+	float mDstBlendFactor;
 
-	double mScaleX;
-	double mScaleY;
-	double mAngleRad;
+	float mScaleX;
+	float mScaleY;
+	float mAngleRad;
 
 	int mInterpolateOffset;
 	int mInterpolateBlend;

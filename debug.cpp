@@ -26,7 +26,7 @@ using namespace std;
 namespace prism {
 
 	typedef struct SideDisplay_t {
-		double mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT];
+		float mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT];
 		int mFPSCounterTextID;
 
 		uint64_t mStartDrawingTime;
@@ -210,7 +210,7 @@ namespace prism {
 		setProfilingSectionMarkerCurrentFunction();
 
 		ScreenSize sz = getScreenSize();
-		double offset = (sz.y / 480.0) * 20;
+		float offset = (sz.y / 480.0f) * 20;
 		int dy = 10;
 
 		gPrismDebug.mSideDisplay.mFPSCounterTextID = addMugenTextMugenStyle("00.0", Vector3D(sz.x - offset, offset, 95), Vector3DI(-1, 1, -1));
@@ -254,8 +254,8 @@ namespace prism {
 
 	static void updatePrismDebugSideDisplay() {
 		const auto fps = getRealFramerate();
-		const auto time = (1.0 / fps) * 1000.0;
-		double timeSum = time + gPrismDebug.mSideDisplay.mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT - 1];
+		const float time = (float)((1.0 / fps) * 1000.0);
+		float timeSum = time + gPrismDebug.mSideDisplay.mPreviousFrameTimes[PREVIOUS_FPS_AMOUNT - 1];
 		for (int i = 1; i < PREVIOUS_FPS_AMOUNT; i++) {
 			timeSum += gPrismDebug.mSideDisplay.mPreviousFrameTimes[i - 1];
 			gPrismDebug.mSideDisplay.mPreviousFrameTimes[i - 1] = gPrismDebug.mSideDisplay.mPreviousFrameTimes[i];
@@ -267,7 +267,7 @@ namespace prism {
 
 		if (gPrismDebug.mSideDisplay.mIsVisible) {
 			char text[200];
-			sprintf(text, "%.1f fps", fpsSum);
+			sprintf(text, "%.1f fps", (double)fpsSum);
 			changeMugenText(gPrismDebug.mSideDisplay.mFPSCounterTextID, text);
 
 			sprintf(text, "%lu drw", (unsigned long)(gPrismDebug.mSideDisplay.mEndDrawingTime - gPrismDebug.mSideDisplay.mStartDrawingTime));
@@ -329,7 +329,7 @@ namespace prism {
 
 	static void updateConsoleText()
 	{
-		double offset;
+		float offset;
 		if (!gPrismDebug.mConsole.mPointerPosition) {
 			offset = 0;
 		}
@@ -436,13 +436,13 @@ namespace prism {
 	static void setConsoleVisible() {
 		gPrismDebug.mConsole.mBackgroundAnimationElement = playOneFrameAnimationLoop(Vector3D(0, 0, CONSOLE_Z), &gPrismDebug.mConsole.mWhiteTexture);
 		ScreenSize sz = getScreenSize();
-		setAnimationSize(gPrismDebug.mConsole.mBackgroundAnimationElement, Vector3D(sz.x, 100, 1), Vector3D(0, 0, 0));
-		setAnimationColor(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.3, 0.3, 0.3);
-		setAnimationTransparency(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.7);
+		setAnimationSize(gPrismDebug.mConsole.mBackgroundAnimationElement, Vector3D(float(sz.x), 100.f, 1.f), Vector3D(0.f, 0.f, 0.f));
+		setAnimationColor(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.3f, 0.3f, 0.3f);
+		setAnimationTransparency(gPrismDebug.mConsole.mBackgroundAnimationElement, 0.7f);
 
 		for (int i = 0; i < CONSOLE_ARCHIVE_AMOUNT; i++)
 		{
-			gPrismDebug.mConsole.mConsoleArchiveTextID[i] = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleArchiveText[i].data(), Vector3D(20, 75 - 10 * i, CONSOLE_Z + 1), Vector3DI(-2, 4, 1));
+			gPrismDebug.mConsole.mConsoleArchiveTextID[i] = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleArchiveText[i].data(), Vector3D(20.f, float(75 - 10 * i), float(CONSOLE_Z + 1)), Vector3DI(-2, 4, 1));
 		}
 
 		gPrismDebug.mConsole.mConsoleTextID = addMugenTextMugenStyle(gPrismDebug.mConsole.mConsoleText.data(), Vector3D(20, 91, CONSOLE_Z + 1), Vector3DI(-2, 0, 1));

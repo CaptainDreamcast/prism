@@ -26,7 +26,7 @@ namespace prism {
 	{
         bool mIsPaused;
         bool mIsClampedToScreen = false;
-        double mGravity = 3.0;
+        float mGravity = 3.0;
 
 		std::unordered_map<int, BlitzPlatformingPlayerData> mPlayerEntries;
 		std::unordered_map<int, BlitzPlatformingTileData> mTileEntries;
@@ -133,17 +133,17 @@ namespace prism {
         auto pos = getBlitzEntityPositionReference(tPlayerEntity);
         if (isCollidingWithTiles(pos->xy(), tPlayerData.mCollisionRect)) return false;
         if (tPlayerData.mVelocity.y < 0 || tPlayerData.mAcceleration.y < 0) return false;
-        const auto delta = (tPlayerData.mIsJumping && tPlayerData.mVelocity.y > 1) ? Vector2D(0, int(tPlayerData.mVelocity.y) + 1) : Vector2D(0, 1);
+        const auto delta = (tPlayerData.mIsJumping && tPlayerData.mVelocity.y > 1) ? Vector2D(0.f, float(int(tPlayerData.mVelocity.y) + 1)) : Vector2D(0.f, 1.f);
         for (int i = 1; i <= blitzPlatformingCheckIterations; i++)
         {
-            const auto newPos = pos->xy() + delta * (i / double(blitzPlatformingCheckIterations));
+            const auto newPos = pos->xy() + delta * (i / float(blitzPlatformingCheckIterations));
             int targetTile = -1;
             if (isCollidingWithFloorTiles(pos->xy(), newPos, tPlayerData.mCollisionRect, &targetTile))
             {
                 const auto tilePos = getBlitzEntityPosition(targetTile).xy();
                 const auto tileData = getBlitzPlatformingTileData(targetTile);
                 const auto tileCollision = tileData->mCollisionRect + tilePos;
-                pos->y = tileCollision.mTopLeft.y - tPlayerData.mCollisionRect.mBottomRight.y - 0.5;
+                pos->y = tileCollision.mTopLeft.y - tPlayerData.mCollisionRect.mBottomRight.y - 0.5f;
                 return true;
             }
         }
@@ -155,17 +155,17 @@ namespace prism {
         auto pos = getBlitzEntityPositionReference(tPlayerEntity);
         if (isCollidingWithTiles(pos->xy(), tPlayerData.mCollisionRect)) return false;
         if (tPlayerData.mVelocity.y > 0) return false;
-        const auto delta = (tPlayerData.mIsJumping  && tPlayerData.mVelocity.y < -1) ? Vector2D(0, int(tPlayerData.mVelocity.y) - 1) : Vector2D(0, -1);
+        const auto delta = (tPlayerData.mIsJumping  && tPlayerData.mVelocity.y < -1) ? Vector2D(0.f, float(int(tPlayerData.mVelocity.y) - 1)) : Vector2D(0.f, -1.f);
         for (int i = 1; i <= blitzPlatformingCheckIterations; i++)
         {
-            const auto newPos = pos->xy() + delta * (i / double(blitzPlatformingCheckIterations));
+            const auto newPos = pos->xy() + delta * (i / float(blitzPlatformingCheckIterations));
             int targetTile = -1;
             if (isCollidingWithCeilingTiles(pos->xy(), newPos, tPlayerData.mCollisionRect, &targetTile))
             {
                 const auto tilePos = getBlitzEntityPosition(targetTile).xy();
                 const auto tileData = getBlitzPlatformingTileData(targetTile);
                 const auto tileCollision = tileData->mCollisionRect + tilePos;
-                pos->y = tileCollision.mBottomRight.y - tPlayerData.mCollisionRect.mTopLeft.y + 0.5;
+                pos->y = tileCollision.mBottomRight.y - tPlayerData.mCollisionRect.mTopLeft.y + 0.5f;
 
                 return true;
             }
@@ -178,17 +178,17 @@ namespace prism {
         auto pos = getBlitzEntityPositionReference(tPlayerEntity);
         if (isCollidingWithTiles(pos->xy(), tPlayerData.mCollisionRect)) return false;
         if (tPlayerData.mVelocity.x > 0) return false;
-        const auto delta = (tPlayerData.mVelocity.x < -1) ? Vector2D(int(tPlayerData.mVelocity.x) - 1, 0) : Vector2D(-1, 0);
+        const auto delta = (tPlayerData.mVelocity.x < -1) ? Vector2D(float(int(tPlayerData.mVelocity.x) - 1), 0.f) : Vector2D(-1.f, 0.f);
         for (int i = 1; i <= blitzPlatformingCheckIterations; i++)
         {
-            const auto newPos = pos->xy() + delta * (i / double(blitzPlatformingCheckIterations));
+            const auto newPos = pos->xy() + delta * (i / float(blitzPlatformingCheckIterations));
             int targetTile = -1;
             if (isCollidingWithWallLeftTiles(pos->xy(), newPos, tPlayerData.mCollisionRect, &targetTile))
             {
                 const auto tilePos = getBlitzEntityPosition(targetTile).xy();
                 const auto tileData = getBlitzPlatformingTileData(targetTile);
                 const auto tileCollision = tileData->mCollisionRect + tilePos;
-                pos->x = tileCollision.mBottomRight.x - tPlayerData.mCollisionRect.mTopLeft.x + 0.5;
+                pos->x = tileCollision.mBottomRight.x - tPlayerData.mCollisionRect.mTopLeft.x + 0.5f;
 
                 return true;
             }
@@ -201,17 +201,17 @@ namespace prism {
         auto pos = getBlitzEntityPositionReference(tPlayerEntity);
         if (isCollidingWithTiles(pos->xy(), tPlayerData.mCollisionRect)) return false;
         if (tPlayerData.mVelocity.x < 0) return false;
-        const auto delta = (tPlayerData.mVelocity.x > 1) ? Vector2D(int(tPlayerData.mVelocity.x) + 1, 0) : Vector2D(1, 0);
+        const auto delta = (tPlayerData.mVelocity.x > 1) ? Vector2D(float(int(tPlayerData.mVelocity.x) + 1), 0.f) : Vector2D(1.f, 0.f);
         for (int i = 1; i <= blitzPlatformingCheckIterations; i++)
         {
-            const auto newPos = pos->xy() + delta * (i / double(blitzPlatformingCheckIterations));
+            const auto newPos = pos->xy() + delta * (i / float(blitzPlatformingCheckIterations));
             int targetTile = -1;
             if (isCollidingWithWallRightTiles(pos->xy(), newPos, tPlayerData.mCollisionRect, &targetTile))
             {
                 const auto tilePos = getBlitzEntityPosition(targetTile).xy();
                 const auto tileData = getBlitzPlatformingTileData(targetTile);
                 const auto tileCollision = tileData->mCollisionRect + tilePos;
-                pos->x = tileCollision.mTopLeft.x - tPlayerData.mCollisionRect.mBottomRight.x - 0.5;
+                pos->x = tileCollision.mTopLeft.x - tPlayerData.mCollisionRect.mBottomRight.x - 0.5f;
 
                 return true;
             }
@@ -238,18 +238,18 @@ namespace prism {
         pos->y += e.mVelocity.y;
         if (gBlitzPlatformingData.mIsClampedToScreen)
         {
-            pos->x = std::clamp(pos->x, 0.0, 320.0);
+            pos->x = std::clamp(pos->x, 0.0f, 320.0f);
         }
-        e.mVelocity.x *= 0.85;
+        e.mVelocity.x *= 0.85f;
         e.mAcceleration = Vector2D(0, 0);
     }
 
     static void updatePlayerGravity(BlitzPlatformingPlayerData& e) {
         if (e.mIsJumping)
         {
-            if (e.mVelocity.y < -0.5) e.mAcceleration.y += 0.1;
-            else if (e.mVelocity.y > 1) e.mAcceleration.y += 0.1;
-            else e.mAcceleration.y += 0.2;
+            if (e.mVelocity.y < -0.5f) e.mAcceleration.y += 0.1f;
+            else if (e.mVelocity.y > 1) e.mAcceleration.y += 0.1f;
+            else e.mAcceleration.y += 0.2f;
         }
     }
 
@@ -359,10 +359,10 @@ namespace prism {
         e->mIsJumping = true;
 	}
 
-	void addBlitzPlatformingPlayerMovement(int tEntityID, double t)
+	void addBlitzPlatformingPlayerMovement(int tEntityID, float t)
 	{
         auto e = getBlitzPlatformingPlayerData(tEntityID);
-        static constexpr auto ACCELERATION_SPEED = 0.4;
+        static constexpr auto ACCELERATION_SPEED = 0.4f;
         e->mAcceleration.x = t * ACCELERATION_SPEED;
 	}
 
@@ -383,7 +383,7 @@ namespace prism {
     {
         gBlitzPlatformingData.mIsClampedToScreen = tIsClamped;
     }
-	void setBlitzPlatformGravity(double tGravity)
+	void setBlitzPlatformGravity(float tGravity)
     {
         gBlitzPlatformingData.mGravity = tGravity;
     }

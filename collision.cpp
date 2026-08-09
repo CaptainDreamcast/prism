@@ -25,7 +25,7 @@ namespace prism {
 
 	void resolveCollisionColliderColliderMovableStatic(Position* tPos1, const Velocity& tVel1, const Collider& tCollider1, const Collider& tCollider2) {
 		if (isEmptyVelocity(tVel1)) return;
-		double scale = 0.01;
+		float scale = 0.01f;
 		const auto scaledVel = vecScale(normalizeVelocity(tVel1), scale);
 
 		Position deltas[8];
@@ -74,7 +74,7 @@ namespace prism {
 		delta.x = tCirc1.mCenter.x - tCirc2.mCenter.x;
 		delta.y = tCirc1.mCenter.y - tCirc2.mCenter.y;
 		delta.z = 0;
-		double l = vecLength(delta);
+		float l = vecLength(delta);
 
 		return l < tCirc1.mRadius + tCirc2.mRadius;
 	}
@@ -94,7 +94,7 @@ namespace prism {
 		return ret;
 	}
 
-	CollisionObjectCirc makeCollisionObjectCirc(const Position2D& tCenter, double tRadius, PhysicsObject* tPhysics) {
+	CollisionObjectCirc makeCollisionObjectCirc(const Position2D& tCenter, float tRadius, PhysicsObject* tPhysics) {
 		CollisionObjectCirc ret;
 
 		ret.mIsPositionInColRelative = 1;
@@ -114,7 +114,7 @@ namespace prism {
 		return ret;
 	}
 
-	CollisionCirc makeCollisionCirc(const Position2D& tCenter, double tRadius) {
+	CollisionCirc makeCollisionCirc(const Position2D& tCenter, float tRadius) {
 		CollisionCirc ret;
 		ret.mCenter = tCenter;
 		ret.mRadius = tRadius;
@@ -231,7 +231,7 @@ namespace prism {
 		(void)tCollider;
 	}
 
-	double getColliderUp(const Collider& tCollider)
+	float getColliderUp(const Collider& tCollider)
 	{
 		Position pos = *tCollider.mBasePosition;
 		if (tCollider.mType == COLLISION_RECT) {
@@ -251,7 +251,7 @@ namespace prism {
 		return pos.y;
 	}
 
-	double getColliderDown(const Collider& tCollider)
+	float getColliderDown(const Collider& tCollider)
 	{
 		Position pos = *tCollider.mBasePosition;
 		if (tCollider.mType == COLLISION_RECT) {
@@ -271,7 +271,7 @@ namespace prism {
 		return pos.y;
 	}
 
-	double getColliderRight(const Collider& tCollider)
+	float getColliderRight(const Collider& tCollider)
 	{
 		Position pos = *tCollider.mBasePosition;
 		if (tCollider.mType == COLLISION_RECT) {
@@ -291,7 +291,7 @@ namespace prism {
 		return pos.x;
 	}
 
-	double getColliderLeft(const Collider& tCollider)
+	float getColliderLeft(const Collider& tCollider)
 	{
 		Position pos = *tCollider.mBasePosition;
 		if (tCollider.mType == COLLISION_RECT) {

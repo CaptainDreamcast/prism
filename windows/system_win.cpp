@@ -119,15 +119,15 @@ namespace prism {
 #endif
 	}
 
-	extern void setDrawingScreenScale(double tScaleX, double tScaleY);
+	extern void setDrawingScreenScale(float tScaleX, float tScaleY);
 
 	static void setWindowSize(int tX, int tY) {
 		ScreenSize sz = getScreenSize();
-		double scaleX = tX / (double)sz.x;
-		double scaleY = tY / (double)sz.y;
+		auto scaleX = tX / (float)sz.x;
+		auto scaleY = tY / (float)sz.y;
 
-		scaleX = fmin(scaleX, scaleY);
-		scaleY = fmin(scaleX, scaleY);
+		scaleX = std::fmin(scaleX, scaleY);
+		scaleY = std::fmin(scaleX, scaleY);
 
 		setDrawingScreenScale(scaleX, scaleY);
 		gPrismWindowsSystemData.mDisplayedWindowSizeX = (int)(scaleX * sz.x);
@@ -143,6 +143,13 @@ namespace prism {
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+#ifndef __EMSCRIPTEN__
+		// for Renderdoc
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+#endif
 
 		gGLContext = SDL_GL_CreateContext(gSDLWindow);
 	}
@@ -189,8 +196,8 @@ namespace prism {
 
 	Vector3D correctSDLWindowPosition(const Vector3D& v) {
 		ScreenSize sz = getScreenSize();
-		double scaleX = gPrismWindowsSystemData.mDisplayedWindowSizeX / (double)sz.x;
-		double scaleY = gPrismWindowsSystemData.mDisplayedWindowSizeY / (double)sz.y;
+		auto scaleX = gPrismWindowsSystemData.mDisplayedWindowSizeX / (float)sz.x;
+		auto scaleY = gPrismWindowsSystemData.mDisplayedWindowSizeY / (float)sz.y;
 		return vecScale3D(v, Vector3D(1 / scaleX, 1 / scaleY, 1));
 	}
 

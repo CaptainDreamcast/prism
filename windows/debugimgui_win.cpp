@@ -1,5 +1,6 @@
 #include "prism/windows/debugimgui_win.h"
 
+#include <algorithm>
 #include <fstream>
 
 #include <imgui/imgui.h>
@@ -21,7 +22,9 @@ namespace prism {
     static struct {
         bool mIsActive;
         bool mIsShowingTaskbar;
+        bool mIsFrameStarted;
         imgui_texteditor::TextEditor editor;
+        std::vector<std::string> mCustomTabNames;
     } gImguiPrismData;
 
     bool isImguiPrismActive()
@@ -78,21 +81,24 @@ namespace prism {
 
     void imguiPrismStartFrame()
     {
+        // StartFrame is called once per logic update, RenderEnd once per drawn frame. With time dilatation > 1 there are multiple logic updates per drawn frame, keep the already-open imgui frame instead of calling NewFrame twice without a Render in between.
+        if (gImguiPrismData.mIsFrameStarted) return;
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
+        gImguiPrismData.mIsFrameStarted = true;
     }
 
 
     void imguiPrismRenderStart()
     {
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-        static bool showDemoWindow = false; // TODO: remove after familiar enough with imgui?
-        if (showDemoWindow)
+        // With time dilatation < 1 some drawn frames have no logic update at all, so no NewFrame was called this frame, open the imgui frame here instead of asserting inside BeginMainMenuBar
+        if (!gImguiPrismData.mIsFrameStarted)
         {
-            ImGui::ShowDemoWindow(&showDemoWindow);
+            imguiPrismStartFrame();
         }
+
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
 
         if (gImguiPrismData.mIsShowingTaskbar)
         {
@@ -115,6 +121,15 @@ namespace prism {
                     ImGui::EndMenu();
                 }
 
+                // Pre-create custom tabs registered via imguiPrismAddTab, so that later same-named BeginMenu calls merge into menus positioned before the FPS text instead of appending new menus past the right edge of the bar
+                for (const auto& customTabName : gImguiPrismData.mCustomTabNames)
+                {
+                    if (ImGui::BeginMenu(customTabName.c_str()))
+                    {
+                        ImGui::EndMenu();
+                    }
+                }
+
                 ImGui::SameLine(ImGui::GetWindowWidth() - 140);
                 ImGui::Text("%.1f ms (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
@@ -127,6 +142,8 @@ namespace prism {
 
     void imguiPrismRenderEnd()
     {
+        if (!gImguiPrismData.mIsFrameStarted) return;
+        gImguiPrismData.mIsFrameStarted = false;
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -152,6 +169,13 @@ namespace prism {
     void imguiPrismAddTab(const std::string_view& tTabName, const std::string_view& tEntryName, bool* tBool)
     {
         if (!gImguiPrismData.mIsShowingTaskbar) return;
+
+        static const char* fixedTabNames[] = { "Prism", "Mugen", "Screen", "Blitz" };
+        const auto isFixedTab = std::any_of(std::begin(fixedTabNames), std::end(fixedTabNames), [&tTabName](const char* tFixedName) { return tTabName == tFixedName; });
+        if (!isFixedTab && std::find(gImguiPrismData.mCustomTabNames.begin(), gImguiPrismData.mCustomTabNames.end(), tTabName) == gImguiPrismData.mCustomTabNames.end())
+        {
+            gImguiPrismData.mCustomTabNames.push_back(std::string(tTabName));
+        }
 
         if (ImGui::BeginMainMenuBar())
         {

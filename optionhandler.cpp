@@ -150,7 +150,7 @@ namespace prism {
 	static void drawSelector() {
 
 		Position p = gPrismOptionHandlerData.mSelectorBasePosition;
-		double selectorFactor = gPrismOptionHandlerData.mTextSize / (double)gPrismOptionHandlerData.mSelector.mTextureSize.x;
+		auto selectorFactor = gPrismOptionHandlerData.mTextSize / (float)gPrismOptionHandlerData.mSelector.mTextureSize.x;
 
 		p = vecAdd(p, Vector3D(-gPrismOptionHandlerData.mTextSize, 0, 0));
 		PrismRectangle r = makeRectangleFromTexture(gPrismOptionHandlerData.mSelector);

@@ -1,10 +1,15 @@
 #include "prism/math.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 #include <time.h>
 
 namespace prism {
+
+	static struct {
+		uint32_t mState = 1;
+	} gPrismRandomData;
 
 	void setTimeBasedRandomSeed()
 	{
@@ -13,15 +18,59 @@ namespace prism {
 
 	void setRandomSeed(unsigned int tSeed)
 	{
-		srand(tSeed);
+		uint32_t z = tSeed + 0x9E3779B9u;
+		z = (z ^ (z >> 16)) * 0x85EBCA6Bu;
+		z = (z ^ (z >> 13)) * 0xC2B2AE35u;
+		z = z ^ (z >> 16);
+		gPrismRandomData.mState = z ? z : 1;
 	}
 
-	double randfrom(double tMin, double tMax) {
-		double range = (tMax - tMin);
+	// for rollback determinism tests
+#if !defined(DREAMCAST) && !defined(VITA) && !defined(__EMSCRIPTEN__)
+#define PRISM_COUNT_RANDOM_CALLS 1
+#endif
+
+#ifdef PRISM_COUNT_RANDOM_CALLS
+	static uint64_t gPrismRandomCallAmount = 0;
+#endif
+
+	unsigned long long getRandomCallAmount()
+	{
+#ifdef PRISM_COUNT_RANDOM_CALLS
+		return gPrismRandomCallAmount;
+#else
+		return 0;
+#endif
+	}
+
+	static uint32_t getNextRandomInteger()
+	{
+#ifdef PRISM_COUNT_RANDOM_CALLS
+		gPrismRandomCallAmount++;
+#endif
+		uint32_t x = gPrismRandomData.mState;
+		x ^= x << 13;
+		x ^= x >> 17;
+		x ^= x << 5;
+		gPrismRandomData.mState = x;
+		return x;
+	}
+
+	unsigned int getRandomState()
+	{
+		return gPrismRandomData.mState;
+	}
+
+	void setRandomState(unsigned int tState)
+	{
+		gPrismRandomData.mState = tState ? tState : 1;
+	}
+
+	float randfrom(float tMin, float tMax) {
+		const float range = (tMax - tMin);
 		if (range == 0) return tMin;
 
-		double div = RAND_MAX / range;
-		return tMin + (rand() / div);
+		return tMin + range * (getNextRandomInteger() * (1.0f / 4294967296.0f));
 	}
 
 	int randfromInteger(int tMin, int tMax)
@@ -29,7 +78,7 @@ namespace prism {
 		int val = tMin - 1;
 		int iters = 0;
 		while (val < tMin || val > tMax) {
-			val = (int)randfrom(tMin, tMax + 0.99);
+			val = (int)randfrom(float(tMin), tMax + 0.99f);
 			if (iters++ > 100) break;
 		}
 		return val;
@@ -43,7 +92,7 @@ namespace prism {
 #define PI_FLOAT     3.14159265f
 #define PIBY2_FLOAT  1.5707963f
 
-	double fatan2(double y, double x) {
+	float fatan2(float y, float x) {
 		if (x == 0.0f)
 		{
 			if (y > 0.0f) return PIBY2_FLOAT;
@@ -52,7 +101,7 @@ namespace prism {
 		}
 		float atan;
 		float z = (float)(y / x);
-		if (fabs(z) < 1.0f)
+		if (std::fabs(z) < 1.0f)
 		{
 			atan = z / (1.0f + 0.28f * z * z);
 			if (x < 0.0f)
@@ -69,11 +118,11 @@ namespace prism {
 		return atan;
 	}
 
-	double getLinearInterpolationFactor(double a, double b, double p) {
+	float getLinearInterpolationFactor(float a, float b, float p) {
 		return (p - a) / (b - a);
 	}
 
-	double interpolateLinear(double a, double b, double t) {
+	float interpolateLinear(float a, float b, float t) {
 		return a + t * (b - a);
 	}
 
@@ -182,16 +231,16 @@ namespace prism {
 		return ret;
 	}
 
-	Matrix4D createRotationZMatrix4D(double tAngle)
+	Matrix4D createRotationZMatrix4D(float tAngle)
 	{
 		Matrix4D ret;
-		ret.m[0][0] = cos(tAngle);
-		ret.m[0][1] = sin(tAngle);
+		ret.m[0][0] = std::cos(tAngle);
+		ret.m[0][1] = std::sin(tAngle);
 		ret.m[0][2] = 0;
 		ret.m[0][3] = 0;
 
-		ret.m[1][0] = -sin(tAngle);
-		ret.m[1][1] = cos(tAngle);
+		ret.m[1][0] = -std::sin(tAngle);
+		ret.m[1][1] = std::cos(tAngle);
 		ret.m[1][2] = 0;
 		ret.m[1][3] = 0;
 
@@ -208,7 +257,7 @@ namespace prism {
 		return ret;
 	}
 
-	Matrix4D createOrthographicProjectionMatrix4D(double tLeft, double tRight, double tUp, double tBottom, double tNear, double tFar)
+	Matrix4D createOrthographicProjectionMatrix4D(float tLeft, float tRight, float tUp, float tBottom, float tNear, float tFar)
 	{
 		Matrix4D ret;
 		ret.m[0][0] = 2 / (tRight - tLeft);

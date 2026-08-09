@@ -51,7 +51,7 @@ int isHandledCollisionRightOfOtherCollision(CollisionListElement* tElement1, Col
 int isHandledCollisionValid(CollisionListElement* tElement);
 int isHandledCollisionScheduledForDeletion(CollisionListElement* tElement);
 
-void drawColliderSolid(const Collider& tCollider, const Position& tOffset, const Position& tScreenPositionOffset, const Vector3D& tColor, double tAlpha);
+void drawColliderSolid(const Collider& tCollider, const Position& tOffset, const Position& tScreenPositionOffset, const Vector3D& tColor, float tAlpha);
 void setCollisionHandlerDebuggingScreenPositionReference(Position* tPosition);
 void drawHandledCollisions();
 void activateCollisionHandlerDebugMode();

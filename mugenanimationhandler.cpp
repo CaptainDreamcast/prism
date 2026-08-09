@@ -145,12 +145,12 @@ static void addSingleHitbox(void* tCaller, void* tData) {
 	scaledRectangle = scaleGeoRectangleByFactor(scaledRectangle, caller->mElement->mDrawScale);
 	scaledRectangle = scaleGeoRectangleByFactor2D(scaledRectangle, caller->mElement->mBaseDrawScale);
 	if (!caller->mElement->mIsFacingRight) {
-		double xBuffer = scaledRectangle.mTopLeft.x;
+		float xBuffer = scaledRectangle.mTopLeft.x;
 		scaledRectangle.mTopLeft.x = -scaledRectangle.mBottomRight.x;
 		scaledRectangle.mBottomRight.x = -xBuffer;
 	}
 	if (!caller->mElement->mIsFacingDown) {
-		double yBuffer = scaledRectangle.mTopLeft.y;
+		float yBuffer = scaledRectangle.mTopLeft.y;
 		scaledRectangle.mTopLeft.y = -scaledRectangle.mBottomRight.y;
 		scaledRectangle.mBottomRight.y = -yBuffer;
 	}
@@ -463,12 +463,12 @@ void removeMugenAnimationCameraScaleReference(MugenAnimationHandlerElement* e)
 	e->mHasCameraScaleReference = 0;
 }
 
-void setMugenAnimationCameraScaleFactor(MugenAnimationHandlerElement* e, double tScaleFactor)
+void setMugenAnimationCameraScaleFactor(MugenAnimationHandlerElement* e, float tScaleFactor)
 {
 	e->mCameraScaleFactor = tScaleFactor;
 }
 
-void setMugenAnimationCameraAngleReference(MugenAnimationHandlerElement* e, double * tCameraAngle)
+void setMugenAnimationCameraAngleReference(MugenAnimationHandlerElement* e, float * tCameraAngle)
 {
 	e->mHasCameraAngleReference = 1;
 	e->mCameraAngleReference = tCameraAngle;
@@ -510,17 +510,17 @@ void setMugenAnimationDrawSize(MugenAnimationHandlerElement* e, const Vector2D& 
 		logWarning("Trying to set draw size on element without sprite. Ignoring.");
 		return;
 	}
-	double scaleX = tSize.x / e->mSprite->mOriginalTextureSize.x;
-	double scaleY = tSize.y / e->mSprite->mOriginalTextureSize.y;
+	float scaleX = tSize.x / e->mSprite->mOriginalTextureSize.x;
+	float scaleY = tSize.y / e->mSprite->mOriginalTextureSize.y;
 	setMugenAnimationDrawScale(e, Vector2D(scaleX, scaleY));
 }
 
-void setMugenAnimationDrawAngle(MugenAnimationHandlerElement* e, double tAngle)
+void setMugenAnimationDrawAngle(MugenAnimationHandlerElement* e, float tAngle)
 {
 	e->mBaseDrawAngle = tAngle;
 }
 
-void setMugenAnimationBaseDrawScale(MugenAnimationHandlerElement* e, double tScale)
+void setMugenAnimationBaseDrawScale(MugenAnimationHandlerElement* e, float tScale)
 {
 	e->mDrawScale = tScale;
 }
@@ -537,35 +537,35 @@ void setMugenAnimationScaleReference(MugenAnimationHandlerElement* e, Vector3D *
 	e->mScaleReference = tScale;
 }
 
-void setMugenAnimationAngleReference(MugenAnimationHandlerElement* e, double * tAngle)
+void setMugenAnimationAngleReference(MugenAnimationHandlerElement* e, float * tAngle)
 {
 	e->mHasAngleReference = 1;
 	e->mAngleReference = tAngle;
 }
 
-void setMugenAnimationColorOffset(MugenAnimationHandlerElement* e, double tR, double tG, double tB) {
+void setMugenAnimationColorOffset(MugenAnimationHandlerElement* e, float tR, float tG, float tB) {
 	e->mOffsetR = tR;
 	e->mOffsetG = tG;
 	e->mOffsetB = tB;
 }
 
-void setMugenAnimationColor(MugenAnimationHandlerElement* e, double tR, double tG, double tB) {
+void setMugenAnimationColor(MugenAnimationHandlerElement* e, float tR, float tG, float tB) {
 	e->mR = tR;
 	e->mG = tG;
 	e->mB = tB;
 }
 
-void setMugenAnimationColorSolid(MugenAnimationHandlerElement* e, double tR, double tG, double tB)
+void setMugenAnimationColorSolid(MugenAnimationHandlerElement* e, float tR, float tG, float tB)
 {
 	setMugenAnimationColor(e, tR, tG, tB);
 	e->mIsColorSolid = 1;
 }
 
-void setMugenAnimationTransparency(MugenAnimationHandlerElement* e, double tOpacity) {
+void setMugenAnimationTransparency(MugenAnimationHandlerElement* e, float tOpacity) {
 	e->mAlpha = tOpacity;
 }
 
-void setMugenAnimationDestinationTransparency(MugenAnimationHandlerElement* e, double tOpacity)
+void setMugenAnimationDestinationTransparency(MugenAnimationHandlerElement* e, float tOpacity)
 {
 	e->mDestinationAlpha = tOpacity;
 }
@@ -603,7 +603,7 @@ void setMugenAnimationConstraintRectangle(MugenAnimationHandlerElement* e, const
 	e->mHasConstraintRectangle = 1;
 }
 
-void setMugenAnimationSpeed(MugenAnimationHandlerElement* tElement, double tSpeed)
+void setMugenAnimationSpeed(MugenAnimationHandlerElement* tElement, float tSpeed)
 {
 	tElement->mTimeDilatation = tSpeed;
 }
@@ -611,6 +611,56 @@ void setMugenAnimationSpeed(MugenAnimationHandlerElement* tElement, double tSpee
 Position getMugenAnimationPosition(MugenAnimationHandlerElement* e)
 {
 	return e->mOffset;
+}
+
+int getMugenAnimationScreenBoundingBox(MugenAnimationHandlerElement* e, GeoRectangle2D* oBoundingBox)
+{
+	if (e->mIsInvisible) return 0;
+	if (!e->mHasSprite || !e->mSprite) return 0;
+	MugenAnimationStep* step = getCurrentAnimationStep(e);
+	if (!step) return 0;
+
+	const auto playerPos = e->mHasBasePositionReference ? (*e->mBasePositionReference + e->mOffset) : e->mOffset;
+
+	auto drawScale = e->mBaseDrawScale * e->mDrawScale;
+	if (e->mHasScaleReference) {
+		drawScale.x *= e->mScaleReference->x;
+		drawScale.y *= e->mScaleReference->y;
+	}
+	drawScale.x *= step->mScaleX;
+	drawScale.y *= step->mScaleY;
+
+	const auto size = Vector2D(e->mSprite->mOriginalTextureSize.x, e->mSprite->mOriginalTextureSize.y);
+	const auto axis = e->mIsSpriteOffsetForcedToCenter ? Vector2D(size.x / 2, e->mSprite->mAxisOffset.y) : e->mSprite->mAxisOffset;
+
+	int isFacingRight = e->mIsFacingRight;
+	if (hasPrismFlagDynamic(step->mFlags, MugenAnimationStepFlags::IS_FLIPPING_HORIZONTALLY)) isFacingRight ^= 1;
+	int isFacingDown = e->mIsFacingDown;
+	if (hasPrismFlagDynamic(step->mFlags, MugenAnimationStepFlags::IS_FLIPPING_VERTICALLY)) isFacingDown ^= 1;
+
+	// unscaled corner offsets relative to the player position; flipping mirrors around the player position
+	auto left = isFacingRight ? -axis.x : (axis.x - size.x);
+	auto top = isFacingDown ? -axis.y : (axis.y - size.y);
+	auto delta = step->mDelta * e->mCoordinateSystemScale;
+	if (!e->mIsFacingRight) delta.x = -delta.x;
+	left += delta.x;
+	top += delta.y;
+
+	// scaling happens around the player position at draw time
+	auto x1 = playerPos.x + left * drawScale.x;
+	auto y1 = playerPos.y + top * drawScale.y;
+	auto x2 = playerPos.x + (left + size.x) * drawScale.x;
+	auto y2 = playerPos.y + (top + size.y) * drawScale.y;
+	if (e->mHasCameraPositionReference) {
+		x1 -= e->mCameraPositionReference->x;
+		x2 -= e->mCameraPositionReference->x;
+		y1 -= e->mCameraPositionReference->y;
+		y2 -= e->mCameraPositionReference->y;
+	}
+	if (x1 > x2) std::swap(x1, x2);
+	if (y1 > y2) std::swap(y1, y2);
+	*oBoundingBox = GeoRectangle2D(x1, y1, x2 - x1, y2 - y1);
+	return 1;
 }
 
 int getMugenAnimationIsFacingRight(MugenAnimationHandlerElement* e) {
@@ -640,27 +690,27 @@ BlendType getMugenAnimationBlendType(MugenAnimationHandlerElement* e)
 	}
 }
 
-double getMugenAnimationTransparency(MugenAnimationHandlerElement* e)
+float getMugenAnimationTransparency(MugenAnimationHandlerElement* e)
 {
 	return e->mAlpha;
 }
 
-double getMugenAnimationDrawAngle(MugenAnimationHandlerElement* e) 
+float getMugenAnimationDrawAngle(MugenAnimationHandlerElement* e) 
 {
 	return e->mBaseDrawAngle;
 }
 
-double getMugenAnimationColorRed(MugenAnimationHandlerElement* e)
+float getMugenAnimationColorRed(MugenAnimationHandlerElement* e)
 {
 	return e->mR;
 }
 
-double getMugenAnimationColorGreen(MugenAnimationHandlerElement* e)
+float getMugenAnimationColorGreen(MugenAnimationHandlerElement* e)
 {
 	return e->mG;
 }
 
-double getMugenAnimationColorBlue(MugenAnimationHandlerElement* e)
+float getMugenAnimationColorBlue(MugenAnimationHandlerElement* e)
 {
 	return e->mB;
 }
@@ -671,36 +721,36 @@ Position* getMugenAnimationBasePosition(MugenAnimationHandlerElement* e)
 	return e->mBasePositionReference;
 }
 
-double * getMugenAnimationColorRedReference(MugenAnimationHandlerElement* e)
+float * getMugenAnimationColorRedReference(MugenAnimationHandlerElement* e)
 {
 	return &e->mR;
 }
 
-double * getMugenAnimationColorGreenReference(MugenAnimationHandlerElement* e)
+float * getMugenAnimationColorGreenReference(MugenAnimationHandlerElement* e)
 {
 	return &e->mG;
 }
 
-double * getMugenAnimationColorBlueReference(MugenAnimationHandlerElement* e)
+float * getMugenAnimationColorBlueReference(MugenAnimationHandlerElement* e)
 {
 	return &e->mB;
 }
 
-double * getMugenAnimationTransparencyReference(MugenAnimationHandlerElement* e)
+float * getMugenAnimationTransparencyReference(MugenAnimationHandlerElement* e)
 {
 	return &e->mAlpha;
 }
 
-double * getMugenAnimationScaleXReference(MugenAnimationHandlerElement* e)
+float * getMugenAnimationScaleXReference(MugenAnimationHandlerElement* e)
 {
 	return &e->mBaseDrawScale.x;
 }
 
-double* getMugenAnimationScaleYReference(MugenAnimationHandlerElement* e) {
+float* getMugenAnimationScaleYReference(MugenAnimationHandlerElement* e) {
 	return &e->mBaseDrawScale.y;
 }
 
-double * getMugenAnimationBaseScaleReference(MugenAnimationHandlerElement* e)
+float * getMugenAnimationBaseScaleReference(MugenAnimationHandlerElement* e)
 {
 	return &e->mDrawScale;
 }
@@ -893,7 +943,7 @@ void unpauseMugenAnimation(MugenAnimationHandlerElement* e)
 	e->mIsPaused = 0;
 }
 
-void setMugenAnimationColorFactor(MugenAnimationHandlerElement* e, double tColorFactor) {
+void setMugenAnimationColorFactor(MugenAnimationHandlerElement* e, float tColorFactor) {
 	e->mColorFactor = tColorFactor;
 }
 
@@ -901,13 +951,13 @@ void setMugenAnimationColorInverted(MugenAnimationHandlerElement* e, int tIsInve
 	e->mIsColorInverted = tIsInverted;
 }
 
-double getMugenAnimationShearLowerOffsetX(MugenAnimationHandlerElement* e)
+float getMugenAnimationShearLowerOffsetX(MugenAnimationHandlerElement* e)
 {
 	if (!e->mHasShear) return 0;
 	return e->mShearLowerOffsetX;
 }
 
-void setMugenAnimationShearX(MugenAnimationHandlerElement* e, double tLowerScaleDeltaX, double tLowerScaleOffsetX)
+void setMugenAnimationShearX(MugenAnimationHandlerElement* e, float tLowerScaleDeltaX, float tLowerScaleOffsetX)
 {
 	e->mHasShear = 1;
 	e->mShearLowerScaleDeltaX = tLowerScaleDeltaX;
@@ -988,12 +1038,12 @@ typedef struct {
 	Vector2D mScalePosition;
 	Vector2D mScale;
 	Vector2D mDelta;
-	double mAngle;
-	double mSrcBlendFactor;
-	double mDstBlendFactor;
-	double mStepScaleX;
-	double mStepScaleY;
-	double mStepAngleRad;
+	float mAngle;
+	float mSrcBlendFactor;
+	float mDstBlendFactor;
+	float mStepScaleX;
+	float mStepScaleY;
+	float mStepAngleRad;
 
 	Position mBasePosition;
 
@@ -1056,9 +1106,9 @@ static void drawSingleMugenAnimationSprite(MugenSpriteFileSubSprite& tSprite, Dr
 	if (!isFacingRight) {
 		PrismRectangle originalTexturePos = texturePos;
 		const auto& center = e->mPlayerPositionReference;
-		double deltaX = center.x - p.x;
-		double nRightX = center.x + deltaX;
-		double nLeftX = nRightX - abs(originalTexturePos.bottomRight.x - originalTexturePos.topLeft.x);
+		float deltaX = center.x - p.x;
+		float nRightX = center.x + deltaX;
+		float nLeftX = nRightX - abs(originalTexturePos.bottomRight.x - originalTexturePos.topLeft.x);
 		p.x = nLeftX;
 		texturePos.topLeft.x = originalTexturePos.bottomRight.x;
 		texturePos.bottomRight.x = originalTexturePos.topLeft.x;
@@ -1070,9 +1120,9 @@ static void drawSingleMugenAnimationSprite(MugenSpriteFileSubSprite& tSprite, Dr
 	if (!isFacingDown) {
 		PrismRectangle originalTexturePos = texturePos;
 		const auto& center = e->mPlayerPositionReference;
-		double deltaY = center.y - p.y;
-		double nRightY = center.y + deltaY;
-		double nLeftY = nRightY - abs(originalTexturePos.bottomRight.y - originalTexturePos.topLeft.y);
+		float deltaY = center.y - p.y;
+		float nRightY = center.y + deltaY;
+		float nLeftY = nRightY - abs(originalTexturePos.bottomRight.y - originalTexturePos.topLeft.y);
 		p.y = nLeftY;
 		texturePos.topLeft.y = originalTexturePos.bottomRight.y;
 		texturePos.bottomRight.y = originalTexturePos.topLeft.y;
@@ -1134,12 +1184,12 @@ static void drawSingleMugenAnimationSprite(MugenSpriteFileSubSprite& tSprite, Dr
 		const auto dRightTotalTop = ((p.x + sizeX) - scaleCenterX);
 		const auto dLeftTotalBottom = dLeftTotalTop * e->mShearLowerScaleDeltaX;
 		const auto dRightTotalBottom = dRightTotalTop * e->mShearLowerScaleDeltaX;
-		const auto parallaxTUp = tSprite.mOffset.y / double(e->mSprite->mOriginalTextureSize.y);
-		const auto parallaxTDown = (tSprite.mOffset.y + realSpriteSize.y) / double(e->mSprite->mOriginalTextureSize.y);
-		const auto dLeftDeltaPosTop = parallaxTUp * dLeftTotalBottom + (1.0 - parallaxTUp) * dLeftTotalTop;
-		const auto dRightDeltaPosTop = parallaxTUp * dRightTotalBottom + (1.0 - parallaxTUp) * dRightTotalTop;
-		const auto dLeftDeltaPosBottom = parallaxTDown * dLeftTotalBottom + (1.0 - parallaxTDown) * dLeftTotalTop;
-		const auto dRightDeltaPosBottom = parallaxTDown * dRightTotalBottom + (1.0 - parallaxTDown) * dRightTotalTop;
+		const auto parallaxTUp = tSprite.mOffset.y / float(e->mSprite->mOriginalTextureSize.y);
+		const auto parallaxTDown = (tSprite.mOffset.y + realSpriteSize.y) / float(e->mSprite->mOriginalTextureSize.y);
+		const auto dLeftDeltaPosTop = parallaxTUp * dLeftTotalBottom + (1.0f - parallaxTUp) *dLeftTotalTop;
+		const auto dRightDeltaPosTop = parallaxTUp * dRightTotalBottom + (1.0f - parallaxTUp) *dRightTotalTop;
+		const auto dLeftDeltaPosBottom = parallaxTDown * dLeftTotalBottom + (1.0f - parallaxTDown) *dLeftTotalTop;
+		const auto dRightDeltaPosBottom = parallaxTDown * dRightTotalBottom + (1.0f - parallaxTDown) *dRightTotalTop;
 		const auto leftTop = e->mShearLowerOffsetX * parallaxTUp + scaleCenterX + dLeftDeltaPosTop;
 		const auto rightTop = e->mShearLowerOffsetX * parallaxTUp + scaleCenterX + dRightDeltaPosTop;
 		const auto leftBottom = e->mShearLowerOffsetX * parallaxTDown + scaleCenterX + dLeftDeltaPosBottom;
@@ -1177,7 +1227,7 @@ static void drawSingleAnimationSingleDebugCollisionHitbox(DebugCollisionHitboxDr
 		color = Vector3D(1, 0, 0);
 	}
 
-	double alpha = 0.3;
+	float alpha = 0.3f;
 
 
 	drawColliderSolid(element->mCollider, tCaller->e->mPlayerPositionReference, cameraOffset, color, alpha);
@@ -1254,7 +1304,7 @@ static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement
 		cameraCenter = effectPosition;
 	}
 
-	double angle = e->mBaseDrawAngle;
+	float angle = e->mBaseDrawAngle;
 	if (e->mHasAngleReference) {
 		angle += *e->mAngleReference;
 	}
@@ -1268,11 +1318,11 @@ static void drawSingleMugenAnimation(void* tCaller, MugenAnimationHandlerElement
 	caller.mAngle = angle;
 	caller.mCameraCenter = cameraCenter;
 	
-	double t = 1.0;
+	float t = 1.0;
 	MugenAnimationStep* nextStep = step;
 	if (step->mInterpolateOffset || step->mInterpolateBlend || step->mInterpolateScale || step->mInterpolateAngle)
 	{
-		t = (e->mStepTime - 1) / double(step->mDuration - 1);
+		t = (e->mStepTime - 1) / float(step->mDuration - 1);
 		nextStep = getNextAnimationStep(e);
 	}
 

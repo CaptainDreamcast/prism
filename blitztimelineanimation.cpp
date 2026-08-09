@@ -78,15 +78,15 @@ namespace prism {
 		gBlitzTimelineAnimationData.mEntries = new_int_map();
 	}
 
-	static void interpolateFloatAnimationStep(BlitzTimelineAnimationStep* tStep, double t, int tEntityID, void(*tFunc)(int, double)) {
-		double val1 = atof(tStep->mStartValue);
-		double val2 = atof(tStep->mEndValue);
+	static void interpolateFloatAnimationStep(BlitzTimelineAnimationStep* tStep, float t, int tEntityID, void(*tFunc)(int, float)) {
+		auto val1 = (float)atof(tStep->mStartValue);
+		auto val2 = (float)atof(tStep->mEndValue);
 
-		double trueVal = val1 + t * (val2 - val1);
+		float trueVal = val1 + t * (val2 - val1);
 		tFunc(tEntityID, trueVal);
 	}
 
-	static void interpolateIntegerAnimationStep(BlitzTimelineAnimationStep* tStep, double t, int tEntityID, void(*tFunc)(int, int)) {
+	static void interpolateIntegerAnimationStep(BlitzTimelineAnimationStep* tStep, float t, int tEntityID, void(*tFunc)(int, int)) {
 		int val1 = atoi(tStep->mStartValue);
 		int val2 = atoi(tStep->mEndValue);
 
@@ -104,7 +104,7 @@ namespace prism {
 		}
 	}
 
-	static void updateSingleActiveAnimationStepTarget(BlitzTimelineAnimationStep* tStep, double t, int tEntityID, ActiveAnimation* tActiveAnimation) {
+	static void updateSingleActiveAnimationStepTarget(BlitzTimelineAnimationStep* tStep, float t, int tEntityID, ActiveAnimation* tActiveAnimation) {
 		if (tStep->mTargetType == BLITZ_TIMELINE_ANIMATION_STEP_TARGET_TYPE_POSITION_X) {
 			interpolateFloatAnimationStep(tStep, t, tEntityID, setBlitzEntityPositionX);
 		}
@@ -178,9 +178,9 @@ namespace prism {
 		if (activeAnimation->mTime > endTime) return;
 
 		Tick timeOffset = activeAnimation->mTime - step->mTime;
-		double t;
+		float t;
 		if (step->mDuration <= 1) t = 1;
-		else t = timeOffset / (double)(step->mDuration - 1);
+		else t = timeOffset / (float)(step->mDuration - 1);
 
 		updateSingleActiveAnimationStepTarget(step, t, caller->mEntry->mEntityID, activeAnimation);
 	}

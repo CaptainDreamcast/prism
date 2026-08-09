@@ -60,7 +60,7 @@ namespace prism {
 				ImGui::TableNextRow(); ImGui::TableNextColumn();
 				ImGui::Text("%d", e.mEntityID); ImGui::TableNextColumn();
 				ImGui::SetNextItemWidth(140);
-				ImGui::DragScalarN("##vel", ImGuiDataType_Double, &e.mVelocity.x, 2, 0.1f); ImGui::TableNextColumn();
+				ImGui::DragScalarN("##vel", ImGuiDataType_Float, &e.mVelocity.x, 2, 0.1f); ImGui::TableNextColumn();
 				ImGui::Text("%.2f %.2f", e.mGravity.x, e.mGravity.y); ImGui::TableNextColumn();
 				if (ImGui::SmallButton("Stop")) e.mVelocity = Vector3D(0, 0, 0);
 				ImGui::PopID();
@@ -86,16 +86,16 @@ namespace prism {
 		Position* pos = getBlitzEntityPositionReference(e->mEntityID);
 
 		if (hasBlitzCollidedBottom(e->mEntityID)) {
-			e->mVelocity.y = min(0.0, e->mVelocity.y);
+			e->mVelocity.y = min(0.0f, e->mVelocity.y);
 		}
 		if (hasBlitzCollidedTop(e->mEntityID)) {
-			e->mVelocity.y = max(0.0, e->mVelocity.y);
+			e->mVelocity.y = max(0.0f, e->mVelocity.y);
 		}
 		if (hasBlitzCollidedRight(e->mEntityID)) {
-			e->mVelocity.x = min(0.0, e->mVelocity.x);
+			e->mVelocity.x = min(0.0f, e->mVelocity.x);
 		}
 		if (hasBlitzCollidedLeft(e->mEntityID)) {
-			e->mVelocity.x = max(0.0, e->mVelocity.x);
+			e->mVelocity.x = max(0.0f, e->mVelocity.x);
 		}
 		if (e->mOneMinusDragOnCollision.x != 1)
 		{
@@ -190,7 +190,7 @@ namespace prism {
 		e->mVelocity = tVelocity;
 	}
 
-	void setBlitzPhysicsVelocityX(int tEntityID, double tX)
+	void setBlitzPhysicsVelocityX(int tEntityID, float tX)
 	{
 		PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 		e->mVelocity.x = tX;
@@ -202,25 +202,25 @@ namespace prism {
 		e->mVelocity += tVelocity;
 	}
 
-	void addBlitzPhysicsVelocityX(int tEntityID, double tX)
+	void addBlitzPhysicsVelocityX(int tEntityID, float tX)
 	{
 		PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 		e->mVelocity.x += tX;
 	}
 
-	double getBlitzPhysicsVelocityY(int tEntityID)
+	float getBlitzPhysicsVelocityY(int tEntityID)
 	{
 		PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 		return e->mVelocity.y;
 	}
 
-	void setBlitzPhysicsVelocityY(int tEntityID, double tY)
+	void setBlitzPhysicsVelocityY(int tEntityID, float tY)
 	{
 		PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 		e->mVelocity.y = tY;
 	}
 
-	void addBlitzPhysicsVelocityY(int tEntityID, double tY)
+	void addBlitzPhysicsVelocityY(int tEntityID, float tY)
 	{
 		PhysicsEntry* e = getBlitzPhysicsEntry(tEntityID);
 		e->mVelocity.y += tY;

@@ -89,6 +89,9 @@
     <None Include="..\..\README.md" />
   </ItemGroup>
   <ItemGroup>
+    <Natvis Include="prism.natvis" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="..\..\external\imgui_texteditor\inc\imgui_texteditor\imgui_texteditor.h" />
     <ClInclude Include="..\..\external\imgui\inc\imgui\imgui.h" />
     <ClInclude Include="..\..\external\imgui\inc\imgui\imgui_impl_opengl2.h" />

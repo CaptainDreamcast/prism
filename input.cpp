@@ -307,19 +307,19 @@ namespace prism {
 		return hasPressedAbortSingle(getMainController());
 	}
 
-	double getLeftStickNormalizedX() {
+	float getLeftStickNormalizedX() {
 		return getSingleLeftStickNormalizedX(getMainController());
 	}
 
-	double getLeftStickNormalizedY() {
+	float getLeftStickNormalizedY() {
 		return getSingleLeftStickNormalizedY(getMainController());
 	}
 
-	double getLNormalized() {
+	float getLNormalized() {
 		return getSingleLNormalized(getMainController());
 	}
 
-	double getRNormalized() {
+	float getRNormalized() {
 		return getSingleRNormalized(getMainController());
 	}
 
@@ -376,11 +376,11 @@ namespace prism {
 		return isUsingControllerSingle(getMainController());
 	}
 
-	double getFishingRodIntensity() {
+	float getFishingRodIntensity() {
 		return getFishingRodIntensitySingle(getMainController());
 	}
 
-	double getFishingRodIntensitySingle(int i) {
+	float getFishingRodIntensitySingle(int i) {
 		return getSingleRNormalized(i);
 	}
 
@@ -389,11 +389,11 @@ namespace prism {
 		addControllerRumbleBasicSingle(getMainController(), tDuration);
 	}
 
-	void addControllerRumble(Duration tDuration, int tFrequency, double tAmplitude) {
+	void addControllerRumble(Duration tDuration, int tFrequency, float tAmplitude) {
 		addControllerRumbleSingle(getMainController(), tDuration, tFrequency, tAmplitude);
 	}
 
-	void turnControllerRumbleOn(int tFrequency, double tAmplitude) {
+	void turnControllerRumbleOn(int tFrequency, float tAmplitude) {
 		turnControllerRumbleOnSingle(getMainController(), tFrequency, tAmplitude);
 	}
 
@@ -406,7 +406,7 @@ namespace prism {
 		addControllerRumbleSingle(i, tDuration, 10, 1);
 	}
 
-	void turnControllerRumbleOnSingle(int i, int tFrequency, double tAmplitude) {
+	void turnControllerRumbleOnSingle(int i, int tFrequency, float tAmplitude) {
 		addControllerRumbleSingle(i, INF, tFrequency, tAmplitude);
 	}
 

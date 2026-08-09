@@ -204,7 +204,7 @@ namespace prism {
 		Position* pos = &getPhysicsFromHandler(e->mState.mTextures[slot].mPhysicsElement)->mPosition;
 		setAnimationBasePositionReference(e->mState.mTextures[slot].mElement, pos);
 
-		Vector3D scale = Vector3D(tTexture->SizeX / (double)e->mState.mTextures[slot].mTextures[0].mTextureSize.x, tTexture->SizeY / (double)e->mState.mTextures[slot].mTextures[0].mTextureSize.y, 1);
+		auto scale = Vector3D(tTexture->SizeX / (float)e->mState.mTextures[slot].mTextures[0].mTextureSize.x, tTexture->SizeY / (float)e->mState.mTextures[slot].mTextures[0].mTextureSize.y, 1);
 		setAnimationScale(e->mState.mTextures[slot].mElement, scale, Vector3D(0, 0, 0));
 	}
 

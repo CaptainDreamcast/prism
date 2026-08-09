@@ -27,13 +27,13 @@ namespace prism {
 
 	typedef struct {
 
-		double a;
-		double r;
-		double g;
-		double b;
-		double rOffset;
-		double gOffset;
-		double bOffset;
+		float a;
+		float r;
+		float g;
+		float b;
+		float rOffset;
+		float gOffset;
+		float bOffset;
 
 		Matrix4D mTransformationMatrix;
 
@@ -44,8 +44,8 @@ namespace prism {
 		BlendType mBlendType;
 		int mIsColorSolid;
 		int mIsColorInversed;
-		double mDestAlpha;
-		double mColorFactor;
+		float mDestAlpha;
+		float mColorFactor;
 
 		VitaPalette mPalettes[4];
 	} DrawingData;
@@ -59,7 +59,7 @@ namespace prism {
 		PrismRectangle mTexturePosition;
 
 		DrawingData mData;
-		double mZ;
+		float mZ;
 	};
 
 	struct DrawListTruetypeElement {
@@ -68,11 +68,11 @@ namespace prism {
 		Position2D mPos;
 		Vector3DI mTextSize;
 		Vector3D mColor;
-		double mTextBoxWidth;
+		float mTextBoxWidth;
 		GeoRectangle2D mDrawRectangle;
 
 		DrawingData mData;
-		double mZ;
+		float mZ;
 	};
 
 	class DrawListElement {
@@ -101,7 +101,7 @@ namespace prism {
 			}
 		}
 
-		double getZ() const {
+		float getZ() const {
 			if (mType == DRAW_LIST_ELEMENT_TYPE_SPRITE) {
 				return impl_.mSprite.mZ;
 			}
@@ -163,7 +163,7 @@ namespace prism {
 	static multiset<DrawListElement> gDrawVector;
 	static DrawingData gPrismWindowsDrawingData;
 
-	void setDrawingScreenScale(double tScaleX, double tScaleY);
+	void setDrawingScreenScale(float tScaleX, float tScaleY);
 
 	static void initPalettes()
 	{
@@ -280,8 +280,8 @@ namespace prism {
 		clearDrawVector();
 	}
 
-	static void forceSingleValueToInteger(double* tVal) {
-		*tVal = floor(*tVal);
+	static void forceSingleValueToInteger(float* tVal) {
+		*tVal = std::floor(*tVal);
 	}
 
 	static void applyDrawingMatrixAndSetVertex(vita2d_texture_vertex* vertex, const Vector3D& tPos, const Matrix4D* tMatrix) {
@@ -294,7 +294,7 @@ namespace prism {
 	}
 
 	// tSrcRect in relative coords to texturesize, tDstRect in pixels
-	static void drawVitaTextureUniversal(vita2d_texture* tTexture, int tPaletteID, const GeoRectangle2D& tSrcRect, const Position2D& tTopLeft, const Position2D& tTopRight, const Position2D& tBottomLeft, const Position2D& tBottomRight, const DrawingData* tData, ShaderBlendType tShaderBlendType, int tHasPalette, double tZ) {
+	static void drawVitaTextureUniversal(vita2d_texture* tTexture, int tPaletteID, const GeoRectangle2D& tSrcRect, const Position2D& tTopLeft, const Position2D& tTopRight, const Position2D& tBottomLeft, const Position2D& tBottomRight, const DrawingData* tData, ShaderBlendType tShaderBlendType, int tHasPalette, float tZ) {
 		const Matrix4D* finalMatrix = &tData->mTransformationMatrix;
 
 		const auto vertexCount = 4;
@@ -328,21 +328,21 @@ namespace prism {
 	static void drawSortedSprite(const DrawListSpriteElement* e) {
 		GeoRectangle2D srcRect;
 		if (e->mTexturePosition.topLeft.x < e->mTexturePosition.bottomRight.x) {
-			srcRect.mTopLeft.x = e->mTexturePosition.topLeft.x / (double)(e->mTexture.mTextureSize.x);
-			srcRect.mBottomRight.x = (e->mTexturePosition.bottomRight.x + 1) / (double)(e->mTexture.mTextureSize.x);
+			srcRect.mTopLeft.x = e->mTexturePosition.topLeft.x / (float)(e->mTexture.mTextureSize.x);
+			srcRect.mBottomRight.x = (e->mTexturePosition.bottomRight.x + 1) / (float)(e->mTexture.mTextureSize.x);
 		}
 		else {
-			srcRect.mTopLeft.x = (e->mTexturePosition.topLeft.x + 1) / (double)(e->mTexture.mTextureSize.x);
-			srcRect.mBottomRight.x = e->mTexturePosition.bottomRight.x / (double)(e->mTexture.mTextureSize.x);
+			srcRect.mTopLeft.x = (e->mTexturePosition.topLeft.x + 1) / (float)(e->mTexture.mTextureSize.x);
+			srcRect.mBottomRight.x = e->mTexturePosition.bottomRight.x / (float)(e->mTexture.mTextureSize.x);
 		}
 
 		if (e->mTexturePosition.topLeft.y < e->mTexturePosition.bottomRight.y) {
-			srcRect.mTopLeft.y = e->mTexturePosition.topLeft.y / (double)(e->mTexture.mTextureSize.y);
-			srcRect.mBottomRight.y = (e->mTexturePosition.bottomRight.y + 1) / (double)(e->mTexture.mTextureSize.y);
+			srcRect.mTopLeft.y = e->mTexturePosition.topLeft.y / (float)(e->mTexture.mTextureSize.y);
+			srcRect.mBottomRight.y = (e->mTexturePosition.bottomRight.y + 1) / (float)(e->mTexture.mTextureSize.y);
 		}
 		else {
-			srcRect.mTopLeft.y = (e->mTexturePosition.topLeft.y + 1) / (double)(e->mTexture.mTextureSize.y);
-			srcRect.mBottomRight.y = e->mTexturePosition.bottomRight.y / (double)(e->mTexture.mTextureSize.y);
+			srcRect.mTopLeft.y = (e->mTexturePosition.topLeft.y + 1) / (float)(e->mTexture.mTextureSize.y);
+			srcRect.mBottomRight.y = e->mTexturePosition.bottomRight.y / (float)(e->mTexture.mTextureSize.y);
 		}
 
 		Texture texture = (Texture)e->mTexture.mTexture->mData;
@@ -404,7 +404,7 @@ namespace prism {
 
 	}
 
-	extern void getRGBFromColor(Color tColor, double* tR, double* tG, double* tB);
+	extern void getRGBFromColor(Color tColor, float* tR, float* tG, float* tB);
 
 	void drawMultilineText(const char* tText, const char* tFullText, const Position& tPosition, const Vector3D& tFontSize, Color tColor, const Vector3D& tBreakSize, const Vector3D& tTextBoxSize) {
 		int current = 0;
@@ -423,8 +423,8 @@ namespace prism {
 			tTexturePosition.bottomRight.x = (int)(fontData.mTextureSize.x * charData.mFilePositionX2);
 			tTexturePosition.bottomRight.y = (int)(fontData.mTextureSize.y * charData.mFilePositionY2);
 
-			double dx = (double)abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x);
-			double dy = (double)abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y);
+			auto dx = (float)abs(tTexturePosition.bottomRight.x - tTexturePosition.topLeft.x);
+			auto dy = (float)abs(tTexturePosition.bottomRight.y - tTexturePosition.topLeft.y);
 			Vector3D scale = Vector3D(1 / dx, 1 / dy, 1);
 			scaleDrawing3D(vecScale3D(tFontSize, scale), pos);
 
@@ -442,7 +442,7 @@ namespace prism {
 		setDrawingParametersToIdentity();
 	}
 
-	void drawTruetypeText(const char* tText, TruetypeFont tFont, const Position& tPosition, const Vector3DI& tTextSize, const Vector3D& tColor, double tTextBoxWidth, const GeoRectangle2D& tDrawRectangle)
+	void drawTruetypeText(const char* tText, TruetypeFont tFont, const Position& tPosition, const Vector3DI& tTextSize, const Vector3D& tColor, float tTextBoxWidth, const GeoRectangle2D& tDrawRectangle)
 	{
 		/*
 		DrawListTruetypeElement e;
@@ -460,7 +460,7 @@ namespace prism {
 		*/
 	}
 
-	void scaleDrawing(double tFactor, const Position& tScalePosition) {
+	void scaleDrawing(float tFactor, const Position& tScalePosition) {
 		scaleDrawing3D(Vector3D(tFactor, tFactor, 1), tScalePosition);
 	}
 
@@ -471,12 +471,13 @@ namespace prism {
 
 	void scaleDrawing3D(const Vector3D& tFactor, const Position& tScalePosition) {
 		setProfilingSectionMarkerCurrentFunction();
-		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(tScalePosition));
+		const auto scalePosition2D = Vector3D(tScalePosition.x, tScalePosition.y, 0);
+		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(scalePosition2D));
 		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createScaleMatrix4D(Vector3D(tFactor.x, tFactor.y, tFactor.z)));
-		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tScalePosition, -1)));
+		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(vecScale(scalePosition2D, -1)));
 	}
 
-	void setDrawingBaseColorOffsetAdvanced(double r, double g, double b) {
+	void setDrawingBaseColorOffsetAdvanced(float r, float g, float b) {
 		gPrismWindowsDrawingData.rOffset = r;
 		gPrismWindowsDrawingData.gOffset = g;
 		gPrismWindowsDrawingData.bOffset = b;
@@ -486,7 +487,7 @@ namespace prism {
 		getRGBFromColor(tColor, &gPrismWindowsDrawingData.r, &gPrismWindowsDrawingData.g, &gPrismWindowsDrawingData.b);
 	}
 
-	void setDrawingBaseColorAdvanced(double r, double g, double b) {
+	void setDrawingBaseColorAdvanced(float r, float g, float b) {
 		gPrismWindowsDrawingData.r = r;
 		gPrismWindowsDrawingData.g = g;
 		gPrismWindowsDrawingData.b = b;
@@ -502,29 +503,30 @@ namespace prism {
 		gPrismWindowsDrawingData.mIsColorInversed = tIsInversed;
 	}
 
-	void setDrawingColorFactor(double tColorFactor) {
+	void setDrawingColorFactor(float tColorFactor) {
 		gPrismWindowsDrawingData.mColorFactor = tColorFactor;
 	}
 
-	void setDrawingTransparency(double tAlpha) {
+	void setDrawingTransparency(float tAlpha) {
 		gPrismWindowsDrawingData.a = tAlpha;
 	}
 
-	void setDrawingDestinationTransparency(double tAlpha) {
+	void setDrawingDestinationTransparency(float tAlpha) {
 		gPrismWindowsDrawingData.mDestAlpha = tAlpha;
 	}
 
-	void setDrawingRotationZ(double tAngle, const Position2D& tPosition) {
+	void setDrawingRotationZ(float tAngle, const Position2D& tPosition) {
 		setProfilingSectionMarkerCurrentFunction();
 		setDrawingRotationZ(tAngle, tPosition.xyz(0.0));
 	}
 
-	void setDrawingRotationZ(double tAngle, const Position& tPosition) {
+	void setDrawingRotationZ(float tAngle, const Position& tPosition) {
 		setProfilingSectionMarkerCurrentFunction();
 		tAngle = (2 * M_PI - tAngle);
-		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(tPosition));
+		const auto rotationPosition2D = Vector3D(tPosition.x, tPosition.y, 0);
+		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(rotationPosition2D));
 		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createRotationZMatrix4D(tAngle));
-		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(vecScale(tPosition, -1)));
+		gPrismWindowsDrawingData.mTransformationMatrix = matMult4D(gPrismWindowsDrawingData.mTransformationMatrix, createTranslationMatrix4D(vecScale(rotationPosition2D, -1)));
 	}
 
 	void setDrawingParametersToIdentity() {
@@ -550,7 +552,7 @@ namespace prism {
 	}
 
 	typedef struct {
-		double mAngle;
+		float mAngle;
 		Position mCenter;
 	} RotationZEffect;
 
@@ -567,7 +569,7 @@ namespace prism {
 		e->mTranslation = tTranslation;
 		vector_push_back_owned(&gPrismWindowsDrawingData.mEffectStack, e);
 	}
-	void pushDrawingRotationZ(double tAngle, const Vector3D& tCenter) {
+	void pushDrawingRotationZ(float tAngle, const Vector3D& tCenter) {
 		setDrawingRotationZ(tAngle, tCenter);
 
 		RotationZEffect* e = (RotationZEffect*)allocMemory(sizeof(RotationZEffect));
@@ -601,7 +603,7 @@ namespace prism {
 		gPrismWindowsDrawingData.mIsDisabled = 0;
 	}
 
-	void setDrawingScreenScale(double tScaleX, double tScaleY) {
+	void setDrawingScreenScale(float tScaleX, float tScaleY) {
 
 		gVitaDrawingHeaderData.mScreenScale = Vector3D(tScaleX, tScaleY, 1);
 
@@ -631,7 +633,7 @@ namespace prism {
 		}
 	}
 
-	double getRealFramerate() {
+	float getRealFramerate() {
 		return gBookkeepingData.mRealFramerate;
 	}
 }

@@ -41,7 +41,7 @@ namespace prism {
 		readFromBufferPointer(outBytes, &caller->p, byteCountToRead);
 	}
 
-	TextureData loadTexturePNG(const char* tFileDir) {
+	Buffer loadPNGARGB32Buffer(const char* tFileDir, int* oWidth, int* oHeight) {
 		Buffer rawPNGBuffer = fileToBuffer(tFileDir);
 		BufferPointer p = getBufferPointer(rawPNGBuffer);
 
@@ -140,8 +140,15 @@ namespace prism {
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		freeBuffer(rawPNGBuffer);
 
-		Buffer b = makeBufferOwned(dst, length);
-		auto ret = loadTextureFromARGB32Buffer(b, int(width), int(height));
+		*oWidth = int(width);
+		*oHeight = int(height);
+		return makeBufferOwned(dst, length);
+	}
+
+	TextureData loadTexturePNG(const char* tFileDir) {
+		int width, height;
+		Buffer b = loadPNGARGB32Buffer(tFileDir, &width, &height);
+		auto ret = loadTextureFromARGB32Buffer(b, width, height);
 		freeBuffer(b);
 		return ret;
 	}
@@ -263,7 +270,7 @@ namespace prism {
 		return (!strcmp("pkg", fileExt) && isFile(tPath));
 	}
 
-	TruetypeFont loadTruetypeFont(const char* tName, double tSize) {
+	TruetypeFont loadTruetypeFont(const char* tName, float tSize) {
 		(void)tName;
 		(void)tSize;
 
@@ -283,5 +290,9 @@ namespace prism {
 		sprintf(ppmPath, "%s.ppm", fullPath);
 
 		vid_screen_shot(ppmPath);
+	}
+
+	void copyScreenShotToClipboard() {
+		// UNSUPPORTED
 	}
 }

@@ -1,5 +1,6 @@
 #include "prism/windows/debugimgui_texteditor_win.h"
 
+#include <algorithm>
 #include <map>
 #include <fstream>
 #include <imgui_texteditor/imgui_texteditor.h>
@@ -118,6 +119,22 @@ namespace prism::imgui {
 			renderSingleTextEditor(editorPair.first, editorPair.second);
 		}
 	}
+
+    void openTextEditor(const std::string& path, int tLine) {
+        openTextEditor(path);
+        const auto it = gTextEditorHandlerData.mTextEditors.find(path);
+        if (it == gTextEditorHandlerData.mTextEditors.end()) return;
+        auto& e = it->second;
+        e.isActive = true;
+        const auto totalLines = e.editor.GetTotalLines();
+        if (totalLines > 0)
+        {
+            const auto line = (std::max)(0, (std::min)(tLine, totalLines - 1));
+            e.editor.SetCursorPosition(imgui_texteditor::TextEditor::Coordinates(line, 0));
+        }
+        // no-ops while the window does not exist yet (first frame after opening), new windows get focus anyway
+        ImGui::SetWindowFocus(path.c_str());
+    }
 
     void openTextEditor(const std::string& path) {
         if (gTextEditorHandlerData.mTextEditors.find(path) != gTextEditorHandlerData.mTextEditors.end()) return;

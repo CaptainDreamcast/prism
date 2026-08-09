@@ -23,7 +23,7 @@ namespace prism {
 	} SoundEffectEntry;
 
 	static struct {
-		double mVolume;
+		float mVolume;
 		map<int, SoundEffectEntry> mAllocatedChunks;
 		map<int, DrakonAudioHandler> mChunks;
 	} gSoundEffectData;
@@ -211,7 +211,7 @@ namespace prism {
 		return -1;
 	}
 
-	int playSoundEffectChannel(int tID, int tChannel, double tVolume, double /*tFreqMul*/, int /*tIsLooping*/)
+	int playSoundEffectChannel(int tID, int tChannel, float tVolume, float /*tFreqMul*/, int /*tIsLooping*/)
 	{
 		setProfilingSectionMarkerCurrentFunction();
 		if (tChannel == -1)
@@ -252,10 +252,10 @@ namespace prism {
 		stl_int_map_map(gSoundEffectData.mChunks, stopSingleSoundEffectCB);
 	}
 
-	void panSoundEffect(int tChannel, double tPanning)
+	void panSoundEffect(int tChannel, float tPanning)
 	{
 		setProfilingSectionMarkerCurrentFunction();
-		const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0), 1.0) * 255);
+		const uint8_t right = uint8_t(std::min(std::max(tPanning, 0.0f), 1.0f) * 255);
 	}
 
 	int isSoundEffectPlayingOnChannel(int tChannel) {
@@ -266,11 +266,11 @@ namespace prism {
 		return !DrakonGetAudioStatus(&audioHandler);
 	}
 
-	double getSoundEffectVolume() {
+	float getSoundEffectVolume() {
 		return gSoundEffectData.mVolume;
 	}
 
-	void setSoundEffectVolume(double tVolume) {
+	void setSoundEffectVolume(float tVolume) {
 		setProfilingSectionMarkerCurrentFunction();
 		gSoundEffectData.mVolume = tVolume;
 	}

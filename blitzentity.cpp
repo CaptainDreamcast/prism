@@ -20,7 +20,7 @@ namespace prism {
 		int mID;
 		Position mPosition;
 		Vector3D mScale;
-		double mAngle;
+		float mAngle;
 
 		int mHasParent;
 
@@ -56,9 +56,9 @@ namespace prism {
 			sprintf(header, "Entity %d%s", e.mID, e.mID == cameraID ? " (camera)" : "");
 			if (ImGui::TreeNode(header))
 			{
-				ImGui::DragScalarN("Position", ImGuiDataType_Double, &e.mPosition.x, 3, 0.5f);
-				ImGui::DragScalarN("Scale", ImGuiDataType_Double, &e.mScale.x, 3, 0.01f);
-				ImGui::DragScalar("Angle", ImGuiDataType_Double, &e.mAngle, 0.01f);
+				ImGui::DragScalarN("Position", ImGuiDataType_Float, &e.mPosition.x, 3, 0.5f);
+				ImGui::DragScalarN("Scale", ImGuiDataType_Float, &e.mScale.x, 3, 0.01f);
+				ImGui::DragScalar("Angle", ImGuiDataType_Float, &e.mAngle, 0.01f);
 				ImGui::Text("HasParent = %d", e.mHasParent);
 				if (e.mHasParent && e.mParent) ImGui::Text("Parent ID = %d", e.mParent->mID);
 				ImGui::Text("Components = %d", (int)e.mComponents.size());
@@ -185,7 +185,7 @@ namespace prism {
 		else e->mPosition = tPos;
 	}
 
-	void setBlitzEntityPositionX(int tID, double tX)
+	void setBlitzEntityPositionX(int tID, float tX)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			setBlitzCameraHandlerPositionX(tX);
@@ -197,7 +197,7 @@ namespace prism {
 		else e->mPosition.x = tX;
 	}
 
-	void setBlitzEntityPositionY(int tID, double tY)
+	void setBlitzEntityPositionY(int tID, float tY)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			setBlitzCameraHandlerPositionY(tY);
@@ -209,7 +209,7 @@ namespace prism {
 		else e->mPosition.y = tY;
 	}
 
-	void setBlitzEntityPositionZ(int tID, double tZ)
+	void setBlitzEntityPositionZ(int tID, float tZ)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			logWarning("[BlitzEntity] Trying to set z position of 2D camera. Ignoring.");
@@ -247,14 +247,14 @@ namespace prism {
 	void addBlitzEntityPosition(int tID, const Position& tPos) {
 		setBlitzEntityPosition(tID, getBlitzEntityPosition(tID) + tPos);
 	}
-	void addBlitzEntityPositionX(int tID, double tX) {
+	void addBlitzEntityPositionX(int tID, float tX) {
 		setBlitzEntityPositionX(tID, getBlitzEntityPositionX(tID) + tX);
 	}
-	void addBlitzEntityPositionY(int tID, double tY) {
+	void addBlitzEntityPositionY(int tID, float tY) {
 		setBlitzEntityPositionY(tID, getBlitzEntityPositionY(tID) + tY);
 	}
 
-	void setBlitzEntityScale2D(int tID, double tScale)
+	void setBlitzEntityScale2D(int tID, float tScale)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			setBlitzCameraHandlerScale2D(tScale);
@@ -265,7 +265,7 @@ namespace prism {
 		e->mScale = Vector3D(tScale, tScale, 1);
 	}
 
-	void setBlitzEntityScaleX(int tID, double tScaleX)
+	void setBlitzEntityScaleX(int tID, float tScaleX)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			setBlitzCameraHandlerScaleX(tScaleX);
@@ -276,7 +276,7 @@ namespace prism {
 		e->mScale.x = tScaleX;
 	}
 
-	void setBlitzEntityScaleY(int tID, double tScaleY)
+	void setBlitzEntityScaleY(int tID, float tScaleY)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			setBlitzCameraHandlerScaleY(tScaleY);
@@ -287,7 +287,7 @@ namespace prism {
 		e->mScale.x = tScaleY;
 	}
 
-	void setBlitzEntityRotationZ(int tID, double tAngle)
+	void setBlitzEntityRotationZ(int tID, float tAngle)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			setBlitzCameraHandlerRotationZ(tAngle);
@@ -298,7 +298,7 @@ namespace prism {
 		e->mAngle = tAngle;
 	}
 
-	void addBlitzEntityRotationZ(int tID, double tAngle) {
+	void addBlitzEntityRotationZ(int tID, float tAngle) {
 		setBlitzEntityRotationZ(tID, getBlitzEntityRotationZ(tID) + tAngle);
 	}
 
@@ -328,17 +328,17 @@ namespace prism {
 		return e->mPosition;
 	}
 
-	double getBlitzEntityPositionX(int tID)
+	float getBlitzEntityPositionX(int tID)
 	{
 		return getBlitzEntityPosition(tID).x;
 	}
 
-	double getBlitzEntityPositionY(int tID)
+	float getBlitzEntityPositionY(int tID)
 	{
 		return getBlitzEntityPosition(tID).y;
 	}
 
-	double getBlitzEntityPositionZ(int tID)
+	float getBlitzEntityPositionZ(int tID)
 	{
 		return getBlitzEntityPosition(tID).z;
 	}
@@ -353,7 +353,7 @@ namespace prism {
 		return e->mScale;
 	}
 
-	double getBlitzEntityRotationZ(int tID)
+	float getBlitzEntityRotationZ(int tID)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			return getBlitzCameraHandlerRotationZ();
@@ -362,7 +362,7 @@ namespace prism {
 		return e->mAngle;
 	}
 
-	double getBlitzEntityDistance2D(int tID1, int tID2)
+	float getBlitzEntityDistance2D(int tID1, int tID2)
 	{
 		return vecLength2D(getBlitzEntityPosition(tID1) - getBlitzEntityPosition(tID2));
 	}
@@ -387,7 +387,7 @@ namespace prism {
 		return &e->mScale;
 	}
 
-	double* getBlitzEntityRotationZReference(int tID)
+	float* getBlitzEntityRotationZReference(int tID)
 	{
 		if (tID == getBlitzCameraHandlerEntityID()) {
 			return getBlitzCameraHandlerRotationZReference();

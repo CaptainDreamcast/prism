@@ -2,7 +2,7 @@
 
 #include <kos.h>
 #include <dc/sound/sound.h>
-#include <vorbis/sndoggvorbis.h>
+#include <oggvorbis/sndoggvorbis.h>
 
 #include "prism/file.h"
 #include "prism/thread.h"
@@ -16,7 +16,7 @@ namespace prism {
 	static struct {
 
 		int mVolume;
-		double mPanning;
+		float mPanning;
 
 		int mIsStreamingSoundFile;
 
@@ -39,20 +39,20 @@ namespace prism {
 
 	void updateSound() {}
 
-	double getVolume() {
+	float getVolume() {
 		return gData.mVolume;
 	}
 
-	void setVolume(double tVolume) {
+	void setVolume(float tVolume) {
 		gData.mVolume = (int)(15 * tVolume);
 		spu_cdda_volume(gData.mVolume, gData.mVolume);
 	}
 
-	double getPanningValue() {
+	float getPanningValue() {
 		return gData.mPanning;
 	}
 
-	void setPanningValue(double tPanning) {
+	void setPanningValue(float tPanning) {
 		gData.mPanning = tPanning;
 	}
 
@@ -139,7 +139,7 @@ namespace prism {
 		return MicrophoneHandler;
 	}
 
-	double getMicrophoneVolume()
+	float getMicrophoneVolume()
 	{
 		return 0; // TODO: implement microphone
 	}

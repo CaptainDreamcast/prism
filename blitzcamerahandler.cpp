@@ -19,15 +19,15 @@ namespace prism {
 		Position mBaseCameraPosition;
 		Position mCameraPosition;
 		Vector3D mScale;
-		double mAngle;
+		float mAngle;
 		Position2D mEffectOffset;
 
 		GeoRectangle2D mCameraRange;
 
 		int mScreenShakeDurationLeft = 0;
-		double mScreenShakeFrequency;
+		float mScreenShakeFrequency;
 		int mScreenShakeAmplitude;
-		double mScreenShakePhaseOffset;
+		float mScreenShakePhaseOffset;
 		Vector2D mScreenShakeOffset;
 	} gBlitzCameraHandlerData;
 
@@ -42,10 +42,10 @@ namespace prism {
 		ImGui::Begin("Blitz Camera Handler", &isWindowShown);
 		ImGui::Text("IsActive = %d", d.mIsActive);
 		Position basePos = d.mBaseCameraPosition;
-		if (ImGui::DragScalarN("Base Position", ImGuiDataType_Double, &basePos.x, 2, 0.5f)) setBlitzCameraHandlerPosition(basePos);
+		if (ImGui::DragScalarN("Base Position", ImGuiDataType_Float, &basePos.x, 2, 0.5f)) setBlitzCameraHandlerPosition(basePos);
 		ImGui::Text("Camera Position = %.1f, %.1f", d.mCameraPosition.x, d.mCameraPosition.y);
-		ImGui::DragScalarN("Scale", ImGuiDataType_Double, &d.mScale.x, 2, 0.01f);
-		ImGui::DragScalar("Angle", ImGuiDataType_Double, &d.mAngle, 0.01f);
+		ImGui::DragScalarN("Scale", ImGuiDataType_Float, &d.mScale.x, 2, 0.01f);
+		ImGui::DragScalar("Angle", ImGuiDataType_Float, &d.mAngle, 0.01f);
 		ImGui::Text("Effect Offset = %.1f, %.1f", d.mEffectOffset.x, d.mEffectOffset.y);
 		ImGui::Separator();
 		ImGui::Text("Screen Shake Left = %d", d.mScreenShakeDurationLeft);
@@ -65,13 +65,13 @@ namespace prism {
 		gBlitzCameraHandlerData.mScale = Vector3D(1, 1, 1);
 		gBlitzCameraHandlerData.mAngle = 0;
 		ScreenSize sz = getScreenSize();
-		gBlitzCameraHandlerData.mEffectOffset = Vector2D(sz.x / 2, sz.y / 2);
+		gBlitzCameraHandlerData.mEffectOffset = Vector2D(sz.x / 2.f, sz.y / 2.f);
 		gBlitzCameraHandlerData.mCameraRange = GeoRectangle2D(-INF / 2, -INF / 2, INF, INF);
 		gBlitzCameraHandlerData.mIsActive = 1;
 	}
 
-	static double calculateShake(int t, double tPhaseOffset, double tFrequency, int tAmplitude) {
-		return sin(tPhaseOffset + t * (tFrequency / 360.0) * 2.0 * M_PI) * tAmplitude;
+	static float calculateShake(int t, float tPhaseOffset, float tFrequency, int tAmplitude) {
+		return (float)(std::sin(tPhaseOffset + t * (tFrequency / 360.0) * 2.0 * M_PI) * tAmplitude);
 	}
 
 	static void calculateAndSetFinalCameraPosition() {
@@ -122,14 +122,14 @@ namespace prism {
 		calculateAndSetFinalCameraPosition();
 	}
 
-	void setBlitzCameraHandlerPositionX(double tX)
+	void setBlitzCameraHandlerPositionX(float tX)
 	{
 		gBlitzCameraHandlerData.mBaseCameraPosition.x = tX;
 		gBlitzCameraHandlerData.mBaseCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mBaseCameraPosition, gBlitzCameraHandlerData.mCameraRange);
 		calculateAndSetFinalCameraPosition();
 	}
 
-	void setBlitzCameraHandlerPositionY(double tY)
+	void setBlitzCameraHandlerPositionY(float tY)
 	{
 		gBlitzCameraHandlerData.mBaseCameraPosition.y = tY;
 		gBlitzCameraHandlerData.mBaseCameraPosition = clampPositionToGeoRectangle(gBlitzCameraHandlerData.mBaseCameraPosition, gBlitzCameraHandlerData.mCameraRange);
@@ -146,32 +146,32 @@ namespace prism {
 		return gBlitzCameraHandlerData.mScale;
 	}
 
-	void setBlitzCameraHandlerScale2D(double tScale)
+	void setBlitzCameraHandlerScale2D(float tScale)
 	{
 		gBlitzCameraHandlerData.mScale = Vector3D(tScale, tScale, 1);
 	}
 
-	void setBlitzCameraHandlerScaleX(double tScaleX)
+	void setBlitzCameraHandlerScaleX(float tScaleX)
 	{
 		gBlitzCameraHandlerData.mScale.x = tScaleX;
 	}
 
-	void setBlitzCameraHandlerScaleY(double tScaleY)
+	void setBlitzCameraHandlerScaleY(float tScaleY)
 	{
 		gBlitzCameraHandlerData.mScale.y = tScaleY;
 	}
 
-	double* getBlitzCameraHandlerRotationZReference()
+	float* getBlitzCameraHandlerRotationZReference()
 	{
 		return &gBlitzCameraHandlerData.mAngle;
 	}
 
-	double getBlitzCameraHandlerRotationZ()
+	float getBlitzCameraHandlerRotationZ()
 	{
 		return gBlitzCameraHandlerData.mAngle;
 	}
 
-	void setBlitzCameraHandlerRotationZ(double tAngle)
+	void setBlitzCameraHandlerRotationZ(float tAngle)
 	{
 		gBlitzCameraHandlerData.mAngle = tAngle;
 	}
@@ -204,7 +204,7 @@ namespace prism {
 	{
 		const auto sz = getScreenSize();
 		auto finalRectangle = tRectangle;
-		finalRectangle.mBottomRight = finalRectangle.mBottomRight - Vector2D(sz.x, sz.y);
+		finalRectangle.mBottomRight = finalRectangle.mBottomRight - Vector2D((float)sz.x, (float)sz.y);
 		gBlitzCameraHandlerData.mCameraRange = finalRectangle;
 	}
 
@@ -215,7 +215,7 @@ namespace prism {
 		setBlitzCameraHandlerPosition(topLeft);
 	}
 
-	void setBlitzCameraScreenShake(int tDuration, double tFrequency, int tAmplitude, double tPhaseOffset)
+	void setBlitzCameraScreenShake(int tDuration, float tFrequency, int tAmplitude, float tPhaseOffset)
 	{
 		gBlitzCameraHandlerData.mScreenShakeDurationLeft = tDuration;
 		gBlitzCameraHandlerData.mScreenShakeFrequency = tFrequency;
@@ -227,7 +227,7 @@ namespace prism {
 		setBlitzCameraScreenShake(10, 60.0, -4, 0.0);
 	}
 
-	void setBlitzCameraZoom(const Vector2D& tPosition, double tZoomFactor)
+	void setBlitzCameraZoom(const Vector2D& tPosition, float tZoomFactor)
 	{
 		setBlitzCameraHandlerEffectPositionOffset(tPosition);
 		setBlitzCameraHandlerScale2D(tZoomFactor);

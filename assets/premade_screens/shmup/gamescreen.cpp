@@ -18,6 +18,7 @@
 
 - Enemy 30
 - Enemy explosion 31
+- Enemy pickup 32
 
 - Enemy bullet 42
 
@@ -88,6 +89,7 @@ public:
         loadBG();
         loadPlayer();
         loadEnemyHandler();
+        loadPickupHandler();
         loadBoss();
         loadShotHandler();
         loadScoreUI();
@@ -106,6 +108,7 @@ public:
         if (!isPaused())
         {
             updateEnemyHandler();
+            updatePickupHandler();
             updateBoss();
             updateShotHandler();
         }
@@ -125,15 +128,20 @@ public:
     CollisionListData* enemyShotCollisionList;
     CollisionListData* enemyCollisionListShots;
     CollisionListData* playerShotCollisionList;
+    CollisionListData* pickupCollisionList;
+    CollisionListData* playerPickupCollisionList;
 
     void loadCollisions() {
         playerCollisionListShots = addCollisionListToHandler();
         enemyShotCollisionList = addCollisionListToHandler();
         enemyCollisionListShots = addCollisionListToHandler();
         playerShotCollisionList = addCollisionListToHandler();
+        pickupCollisionList = addCollisionListToHandler();
+        playerPickupCollisionList = addCollisionListToHandler();
         addCollisionHandlerCheck(playerCollisionListShots, enemyShotCollisionList);
         addCollisionHandlerCheck(enemyCollisionListShots, playerShotCollisionList);
         addCollisionHandlerCheck(playerCollisionListShots, enemyCollisionListShots);
+        addCollisionHandlerCheck(playerPickupCollisionList, pickupCollisionList);
     }
 
     bool isPaused()
@@ -171,12 +179,14 @@ public:
     // PLAYER
     int playerEntityId;
     int playerCollisionId;
+    int playerPickupCollisionId;
     int shotCooldown = 0;
     int playerIsDying = 0;
     void loadPlayer() {
         playerEntityId = addBlitzEntity(Vector3D(160, 200, 10));
         addBlitzMugenAnimationComponent(playerEntityId, &mSprites, &mAnimations, 10);
         playerCollisionId = addBlitzCollisionRect(playerEntityId, playerCollisionListShots, CollisionRect(-3, -3, 6, 6));
+        playerPickupCollisionId = addBlitzCollisionRect(playerEntityId, playerPickupCollisionList, CollisionRect(-7, -7, 14, 14));
     }
     void updatePlayer() {
         if (isPaused()) return;
@@ -377,6 +387,7 @@ public:
             auto enemyExplodeEntity = addBlitzEntity(*pos);
             addBlitzMugenAnimationComponent(enemyExplodeEntity, &mSprites, &mAnimations, 31);
             setBlitzMugenAnimationNoLoop(enemyExplodeEntity);
+            addPickup(pos->xy());
             e.isToBeRemoved = true;
             return;
         }
@@ -640,6 +651,80 @@ public:
         addGeneralShot(pos, enemyShotCollisionList, 42, 9, speed, direction);
     }
 
+    // PICKUP HANDLER
+    struct Pickup
+    {
+        int entityId;
+        int collisionId;
+        Vector2D direction;
+        double speed;
+        bool isToBeRemoved = false;
+    };
+    std::map<int, Pickup> mPickups;
+
+    void loadPickupHandler() {}
+    void updatePickupHandler() {
+        auto it = mPickups.begin();
+        while (it != mPickups.end())
+        {
+            updateSinglePickup(it->second);
+            if (it->second.isToBeRemoved)
+            {
+                removeBlitzEntity(it->second.entityId);
+                it = mPickups.erase(it);
+            }
+            else
+            {
+                it++;
+            }
+        }
+    }
+
+    void removeAllPickups()
+    {
+        for (auto& kv : mPickups)
+        {
+            removeBlitzEntity(kv.second.entityId);
+        }
+        mPickups.clear();
+    }
+
+    void addPickup(const Vector2D& pos) {
+        auto entityId = addBlitzEntity(pos.xyz(14));
+        addBlitzMugenAnimationComponent(entityId, &mSprites, &mAnimations, 32);
+        auto collisionId = addBlitzCollisionRect(entityId, pickupCollisionList, CollisionRect(-8, -8, 16, 16));
+        Pickup p;
+        p.entityId = entityId;
+        p.collisionId = collisionId;
+        p.direction = Vector2D(0, 1);
+        p.speed = 1.0;
+        mPickups[entityId] = p;
+    }
+
+    void updateSinglePickup(Pickup& p) {
+        auto pos = getBlitzEntityPositionReference(p.entityId);
+        *pos += p.direction * p.speed;
+
+        if (hasBlitzCollidedThisFrame(p.entityId, p.collisionId))
+        {
+            collectPickup(p);
+            p.isToBeRemoved = true;
+            return;
+        }
+
+        if (pos->y > 260)
+        {
+            p.isToBeRemoved = true;
+        }
+    }
+
+    void collectPickup(Pickup& p) {
+        Vector2D pos = getBlitzEntityPosition(p.entityId).xy();
+        gGameScreenData.mScore += 100;
+        addPrismNumberPopup(100, pos.xyz(50), 1, Vector3D(0, -1, 0), 2.0, 1, 20);
+        // pickup reward here
+    }
+
     // SCORE UI
     MugenAnimationHandlerElement* uiBgElement;
     int scoreTextId;
@@ -728,6 +813,7 @@ public:
         pauseMusic();
         removeAllShots();
         removeAllEnemies();
+        removeAllPickups();
         setPlayerIdle();
         uiAnimationTicks = 0;
         hasShownVictory = true;
@@ -777,6 +863,7 @@ public:
         pauseMusic();
         removeAllShots();
         removeAllEnemies();
+        removeAllPickups();
         tryPlayMugenSoundAdvanced(&mSounds, 100, 2, jingleVol);
         uiAnimationTicks = 0;
         hasShownLoss = true;

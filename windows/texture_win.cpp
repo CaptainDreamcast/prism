@@ -381,7 +381,7 @@ namespace prism {
 	}
 #endif
 
-	TruetypeFont loadTruetypeFont(const char* tName, double tSize)
+	TruetypeFont loadTruetypeFont(const char* tName, float tSize)
 	{
 		char path[1024];
 		if (isFile(tName)) {
@@ -413,10 +413,122 @@ namespace prism {
 	typedef unsigned char BYTE;
 #endif
 
+	static std::vector<BYTE> readScreenPixelsRGB(int tWidth, int tHeight) {
+		std::vector<BYTE> pixels(size_t(3) * tWidth * tHeight);
+		GLint previousPackAlignment = 4;
+		glGetIntegerv(GL_PACK_ALIGNMENT, &previousPackAlignment);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glReadPixels(0, 0, tWidth, tHeight, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
+		glPixelStorei(GL_PACK_ALIGNMENT, previousPackAlignment);
+		return pixels;
+	}
+
 	void saveScreenShot(const char* tFileDir) {
 		const auto sz = getDisplayedScreenSize();
-		std::vector<BYTE> pixels(3 * sz.x * sz.y);
-		glReadPixels(0, 0, sz.x, sz.y, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
-		saveRGB32ToPNG(makeBuffer(pixels.data(), uint32_t(pixels.size())), sz.x, sz.y, tFileDir);
+		const auto pixels = readScreenPixelsRGB(sz.x, sz.y);
+		saveRGB32ToPNG(makeBuffer((void*)pixels.data(), uint32_t(pixels.size())), sz.x, sz.y, tFileDir);
 	}
+
+#if defined _WIN32 && !defined __EMSCRIPTEN__
+	static std::vector<BYTE> downscaleRGB(const std::vector<BYTE>& tSource, int tSourceWidth, int tSourceHeight, int tTargetWidth, int tTargetHeight) {
+		if (tSourceWidth == tTargetWidth && tSourceHeight == tTargetHeight) return tSource;
+
+		std::vector<BYTE> target(size_t(3) * tTargetWidth * tTargetHeight);
+		for (int y = 0; y < tTargetHeight; y++) {
+			int sourceY1 = int((int64_t(y) * tSourceHeight) / tTargetHeight);
+			int sourceY2 = int((int64_t(y + 1) * tSourceHeight) / tTargetHeight);
+			if (sourceY2 <= sourceY1) sourceY2 = sourceY1 + 1;
+			if (sourceY2 > tSourceHeight) sourceY2 = tSourceHeight;
+			for (int x = 0; x < tTargetWidth; x++) {
+				int sourceX1 = int((int64_t(x) * tSourceWidth) / tTargetWidth);
+				int sourceX2 = int((int64_t(x + 1) * tSourceWidth) / tTargetWidth);
+				if (sourceX2 <= sourceX1) sourceX2 = sourceX1 + 1;
+				if (sourceX2 > tSourceWidth) sourceX2 = tSourceWidth;
+
+				uint32_t sumR = 0, sumG = 0, sumB = 0, amount = 0;
+				for (int sourceY = sourceY1; sourceY < sourceY2; sourceY++) {
+					const BYTE* sourceRow = tSource.data() + (size_t(sourceY) * tSourceWidth + sourceX1) * 3;
+					for (int sourceX = sourceX1; sourceX < sourceX2; sourceX++) {
+						sumR += sourceRow[0];
+						sumG += sourceRow[1];
+						sumB += sourceRow[2];
+						sourceRow += 3;
+						amount++;
+					}
+				}
+				if (!amount) amount = 1;
+				BYTE* targetPixel = target.data() + (size_t(y) * tTargetWidth + x) * 3;
+				targetPixel[0] = BYTE(sumR / amount);
+				targetPixel[1] = BYTE(sumG / amount);
+				targetPixel[2] = BYTE(sumB / amount);
+			}
+		}
+		return target;
+	}
+
+	static void copyRGB24ToWindowsClipboard(const std::vector<BYTE>& tPixels, int tWidth, int tHeight) {
+		const int targetStride = ((tWidth * 3) + 3) & ~3;
+		const size_t imageSize = size_t(targetStride) * tHeight;
+
+		HGLOBAL clipboardHandle = GlobalAlloc(GMEM_MOVEABLE, sizeof(BITMAPINFOHEADER) + imageSize);
+		if (!clipboardHandle) {
+			logError("Unable to allocate clipboard memory for screenshot.");
+			return;
+		}
+
+		auto* header = (BITMAPINFOHEADER*)GlobalLock(clipboardHandle);
+		if (!header) {
+			GlobalFree(clipboardHandle);
+			logError("Unable to lock clipboard memory for screenshot.");
+			return;
+		}
+		ZeroMemory(header, sizeof(BITMAPINFOHEADER));
+		header->biSize = sizeof(BITMAPINFOHEADER);
+		header->biWidth = tWidth;
+		header->biHeight = tHeight;
+		header->biPlanes = 1;
+		header->biBitCount = 24;
+		header->biCompression = BI_RGB;
+		header->biSizeImage = DWORD(imageSize);
+
+		auto* targetPixels = (BYTE*)(header + 1);
+		for (int y = 0; y < tHeight; y++) {
+			const BYTE* sourceRow = tPixels.data() + size_t(y) * tWidth * 3;
+			BYTE* targetRow = targetPixels + size_t(y) * targetStride;
+			for (int x = 0; x < tWidth; x++) {
+				targetRow[x * 3 + 0] = sourceRow[x * 3 + 2];
+				targetRow[x * 3 + 1] = sourceRow[x * 3 + 1];
+				targetRow[x * 3 + 2] = sourceRow[x * 3 + 0];
+			}
+			memset(targetRow + size_t(tWidth) * 3, 0, targetStride - tWidth * 3);
+		}
+		GlobalUnlock(clipboardHandle);
+
+		if (!OpenClipboard(NULL)) {
+			GlobalFree(clipboardHandle);
+			logError("Unable to open clipboard for screenshot.");
+			return;
+		}
+		EmptyClipboard();
+		if (!SetClipboardData(CF_DIB, clipboardHandle)) {
+			logError("Unable to set clipboard data for screenshot.");
+			CloseClipboard();
+			GlobalFree(clipboardHandle);
+			return;
+		}
+		CloseClipboard();
+	}
+
+	void copyScreenShotToClipboard() {
+		const auto displayedSize = getDisplayedScreenSize();
+		const auto gameSize = getScreenSize();
+		const auto displayedPixels = readScreenPixelsRGB(displayedSize.x, displayedSize.y);
+		const auto gamePixels = downscaleRGB(displayedPixels, displayedSize.x, displayedSize.y, gameSize.x, gameSize.y);
+		copyRGB24ToWindowsClipboard(gamePixels, gameSize.x, gameSize.y);
+	}
+#else
+	void copyScreenShotToClipboard() {
+		logWarning("Copying screenshots to the clipboard is not supported on web.");
+	}
+#endif
 }

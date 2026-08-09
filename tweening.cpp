@@ -18,11 +18,11 @@ using namespace std;
 namespace prism {
 
 	typedef struct {
-		double* mDst;
+		float* mDst;
 		TweeningFunction mFunc;
 
-		double mStart;
-		double mEnd;
+		float mStart;
+		float mEnd;
 
 		Duration mNow;
 		Duration mDuration;
@@ -111,8 +111,8 @@ namespace prism {
 
 		int isOver = handleDurationAndCheckIfOver(&e->mNow, e->mDuration);
 
-		double baseT = getDurationPercentage(e->mNow, e->mDuration);
-		double t = e->mFunc(baseT);
+		float baseT = getDurationPercentage(e->mNow, e->mDuration);
+		float t = e->mFunc(baseT);
 
 		*e->mDst = e->mStart + t * (e->mEnd - e->mStart);
 
@@ -133,7 +133,7 @@ namespace prism {
 		return makeActorBlueprint(loadTweening, unloadTweening, updateTweening);
 	}
 
-	int tweenDouble(double* tDst, double tStart, double tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void* tCaller)
+	int tweenDouble(float* tDst, float tStart, float tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void* tCaller)
 	{
 		Tween e;
 		e.mDst = tDst;
@@ -155,29 +155,29 @@ namespace prism {
 		gTweening.mTweens.erase(tID);
 	}
 
-	double linearTweeningFunction(double t) {
+	float linearTweeningFunction(float t) {
 		return t;
 	}
 
-	double quadraticTweeningFunction(double t) {
+	float quadraticTweeningFunction(float t) {
 		return t * t;
 	}
 
-	double inverseQuadraticTweeningFunction(double t) {
+	float inverseQuadraticTweeningFunction(float t) {
 		return 1 - quadraticTweeningFunction(1 - t);
 	}
 
-	double squareRootTweeningFunction(double t) {
-		return sqrt(t);
+	float squareRootTweeningFunction(float t) {
+		return std::sqrt(t);
 	}
 
-	double overshootTweeningFunction(double t) {
-		double overshoot = 1.5;
-		if (t < 0.8) return linearTweeningFunction((t / 0.8) * overshoot);
-		else return linearTweeningFunction(overshoot + ((t - 0.8) / 0.2) * (1.0 - overshoot));
+	float overshootTweeningFunction(float t) {
+		float overshoot = 1.5;
+		if (t < 0.8f) return linearTweeningFunction((t / 0.8f) * overshoot);
+		else return linearTweeningFunction(overshoot + ((t - 0.8f) / 0.2f) * (1.0f - overshoot));
 	}
 
-	double transformAtEndTweeningFunction(double t)
+	float transformAtEndTweeningFunction(float t)
 	{
 		if (t >= 1) return 1;
 		else return 0;

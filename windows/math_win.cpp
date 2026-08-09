@@ -4,8 +4,8 @@
 
 namespace prism {
 
-	double fstsqrt(double x) {
-		return sqrt(x);
+	float fstsqrt(float x) {
+		return std::sqrt(x);
 	}
 
 }

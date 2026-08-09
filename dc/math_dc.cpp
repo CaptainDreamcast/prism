@@ -4,7 +4,7 @@
 
 namespace prism {
 
-	double fstsqrt(double x) {
+	float fstsqrt(float x) {
 		return fsqrt(x);
 	}
 

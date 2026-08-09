@@ -14,7 +14,7 @@ namespace prism {
 	void setScreenColor(Color tColor) {
 		if (gData.mIsScreenColored) return;
 
-		double r, g, b;
+		float r, g, b;
 		getRGBFromColor(tColor, &r, &g, &b);
 
 		setScreenBackgroundColorRGB(r, g, b);
@@ -23,7 +23,7 @@ namespace prism {
 		gData.mIsScreenColored = 1;
 	}
 
-	void setScreenBackgroundColorRGB(double tR, double tG, double tB) {
+	void setScreenBackgroundColorRGB(float tR, float tG, float tB) {
 		pvr_set_bg_color(tR, tG, tB);
 	}
 

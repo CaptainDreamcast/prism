@@ -18,6 +18,9 @@
 
 #ifdef __EMSCRIPTEN__
 #define SDL_strncasecmp SDL_strncasecmp
+#elif defined __linux__
+#include <strings.h>
+#define SDL_strncasecmp strncasecmp
 #elif defined (VITA)
 static int caseIndependentCompareForRomdisk(const char* str1, const char* str2, size_t len) {
 	for (size_t i = 0; i < len; i++) {

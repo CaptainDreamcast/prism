@@ -108,9 +108,13 @@ namespace prism {
 		return hdr;
 	}
 
-	static TextureData loadTexturePKGWindows(const char* tFileDir) {
-		assert(false);
-		return TextureData();
+	static TextureData loadTexturePKGVita(const char* tFileDir) {
+		Buffer b = fileToBuffer(tFileDir);
+		decompressBufferZSTD(&b);
+		KMGHeader hdr = untwiddleKMGBufferAndReturnHeader(&b);
+		TextureData ret = loadTextureFromARGB16Buffer(b, hdr.width, hdr.height);
+		freeBuffer(b);
+		return ret;
 	}
 
 	TextureData loadTexturePKG(const char* tFileDir) {
@@ -130,7 +134,7 @@ namespace prism {
 			return loadTexturePNG(fullFileNamePNG);
 		}
 		else {
-			return loadTexturePKGWindows(fullFileName);
+			return loadTexturePKGVita(fullFileName);
 		}
 
 
@@ -279,7 +283,7 @@ namespace prism {
 		return "C:/Windows/Fonts/" + tFaceName;
 	}
 
-	TruetypeFont loadTruetypeFont(const char*, double)
+	TruetypeFont loadTruetypeFont(const char*, float)
 	{
 		return nullptr;
 	}
@@ -292,6 +296,10 @@ namespace prism {
 	typedef unsigned char BYTE;
 
 	void saveScreenShot(const char* tFileDir) {
+		// UNSUPPORTED
+	}
+
+	void copyScreenShotToClipboard() {
 		// UNSUPPORTED
 	}
 }

@@ -5,20 +5,20 @@
 
 namespace prism {
 
-typedef double(*TweeningFunction)(double t);
+typedef float(*TweeningFunction)(float t);
 typedef void(*TweeningCBFunction)(void* tCaller);
 
 ActorBlueprint getTweeningHandler();
 
-int tweenDouble(double* tDst, double tStart, double tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void* tCaller);
+int tweenDouble(float* tDst, float tStart, float tEnd, TweeningFunction tFunc, Duration tDuration, TweeningCBFunction tCB, void* tCaller);
 void removeTween(int tID);
 
-double linearTweeningFunction(double t);
-double quadraticTweeningFunction(double t);
-double inverseQuadraticTweeningFunction(double t);
-double squareRootTweeningFunction(double t);
-double overshootTweeningFunction(double t);
-double transformAtEndTweeningFunction(double t);
+float linearTweeningFunction(float t);
+float quadraticTweeningFunction(float t);
+float inverseQuadraticTweeningFunction(float t);
+float squareRootTweeningFunction(float t);
+float overshootTweeningFunction(float t);
+float transformAtEndTweeningFunction(float t);
 
 void imguiTweeningHandler();
 

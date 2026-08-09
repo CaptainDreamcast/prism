@@ -32,15 +32,15 @@ namespace prism {
 		return gSystemDataGeneral.mFramerate;
 	}
 
-	double getFramerateFactor() {
+	float getFramerateFactor() {
 		if (!gSystemDataGeneral.mFramerate) return 1;
 		else {
-			return 60.0 / gSystemDataGeneral.mFramerate;
+			return 60.0f / gSystemDataGeneral.mFramerate;
 		}
 	}
 
-	double getInverseFramerateFactor() {
-		return 1.0 / getFramerateFactor();
+	float getInverseFramerateFactor() {
+		return 1.0f / getFramerateFactor();
 	}
 
 }

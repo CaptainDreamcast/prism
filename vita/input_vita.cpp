@@ -4,10 +4,12 @@
 #include <stdarg.h>
 #include <queue>
 
-#include <psp2/ctrl.h> 
+#include <psp2/ctrl.h>
+#include <psp2/touch.h>
 
 #include "prism/log.h"
 #include "prism/math.h"
+#include "prism/system.h"
 #include "prism/clipboardhandler.h"
 
 using namespace std;
@@ -19,13 +21,17 @@ namespace prism {
 
 	static struct {
 		Controller mController;
+		SceTouchData mTouchState;
+		Vector2D mLastTouchPositionDisplay;
 	} gPrismVitaInputData;
-	
+
 	static void updateController();
 
 	static void initControllerState()
 	{
 		memset(&gPrismVitaInputData.mController.mState, 0, sizeof(SceCtrlData));
+		memset(&gPrismVitaInputData.mTouchState, 0, sizeof(SceTouchData));
+		gPrismVitaInputData.mLastTouchPositionDisplay = Vector2D(0, 0);
 		updateController();
 	}
 
@@ -144,11 +150,23 @@ namespace prism {
 
 	void initInput() {
 		sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG);
+		sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
 		initControllerState();
+	}
+
+	static void updateTouch() {
+		sceTouchPeek(SCE_TOUCH_PORT_FRONT, &gPrismVitaInputData.mTouchState, 1);
+		if (gPrismVitaInputData.mTouchState.reportNum > 0) {
+			// front touch panel reports coordinates in 1920x1088, display is 960x544
+			gPrismVitaInputData.mLastTouchPositionDisplay = Vector2D(
+				gPrismVitaInputData.mTouchState.report[0].x / 2.0,
+				gPrismVitaInputData.mTouchState.report[0].y / 2.0);
+		}
 	}
 
 	static void updateController() {
 		sceCtrlPeekBufferPositive2(0, &gPrismVitaInputData.mController.mState, 1);
+		updateTouch();
 	}
 
 	void updateInputPlatform() {
@@ -203,32 +221,41 @@ namespace prism {
 		return hasPressedASingle(i) && hasPressedBSingle(i) && hasPressedXSingle(i) && hasPressedYSingle(i) && hasPressedStartSingle(i);
 	}
 
-	int hasShotGunSingle(int /*i*/)
+	static Vector2D getTouchPositionLogical() {
+		const auto sz = getScreenSize();
+		const auto displaySize = getDisplayedScreenSize();
+		const auto scaleX = sz.x / (float)displaySize.x;
+		const auto scaleY = sz.y / (float)displaySize.y;
+		return Vector2D(gPrismVitaInputData.mLastTouchPositionDisplay.x * scaleX, gPrismVitaInputData.mLastTouchPositionDisplay.y * scaleY);
+	}
+
+	int hasShotGunSingle(int i)
 	{
-		// UNSUPPORTED
-		return 0;
+		if (i) return 0;
+		return gPrismVitaInputData.mTouchState.reportNum > 0;
 	}
 
 
-	Vector3D getShotPositionSingle(int /*i*/) {
-		// UNSUPPORTED
-		return Vector3D(0, 0, 0);
+	Vector3D getShotPositionSingle(int i) {
+		if (i) return Vector3D(0, 0, 0);
+		const auto pos = getTouchPositionLogical();
+		return Vector3D(pos.x, pos.y, 0);
 	}
 
 
-	double getSingleLeftStickNormalizedX(int /*i*/) {
+	float getSingleLeftStickNormalizedX(int /*i*/) {
 		return (((int)gPrismVitaInputData.mController.mState.lx) - 127) / 128.0;
 	}
 
-	double getSingleLeftStickNormalizedY(int /*i*/) {
+	float getSingleLeftStickNormalizedY(int /*i*/) {
 		return (((int)gPrismVitaInputData.mController.mState.ly) - 127) / 128.0;
 	}
 
-	double getSingleLNormalized(int i) {
+	float getSingleLNormalized(int i) {
 		return evaluateVitaButtonL(i) ? 1.0 : 0.0;
 	}
 
-	double getSingleRNormalized(int i) {
+	float getSingleRNormalized(int i) {
 		return evaluateVitaButtonR(i) ? 1.0 : 0.0;
 	}
 
@@ -244,7 +271,7 @@ namespace prism {
 		return !i;
 	}
 
-	void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, double tAmplitude) {
+	void addControllerRumbleSingle(int i, Duration tDuration, int tFrequency, float tAmplitude) {
 		// UNSUPPORTED
 	}
 
@@ -317,8 +344,7 @@ namespace prism {
 
 	Vector2D getMousePointerPosition()
 	{
-		// UNSUPPORTED
-		return Vector2D(0, 0);
+		return getTouchPositionLogical();
 	}
 
 	bool isMouseInRectangle(const GeoRectangle2D& tRectangle)
@@ -332,10 +358,10 @@ namespace prism {
 		return hasPressedMouseLeftSingle(0);
 	}
 
-	bool hasPressedMouseLeftSingle(int)
+	bool hasPressedMouseLeftSingle(int i)
 	{
-		// TODO
-		return 0;
+		if (i) return 0;
+		return gPrismVitaInputData.mTouchState.reportNum > 0;
 	}
 
 	bool hasPressedMouseRight()
@@ -343,9 +369,10 @@ namespace prism {
 		return hasPressedMouseRightSingle(0);
 	}
 
-	bool hasPressedMouseRightSingle(int)
+	bool hasPressedMouseRightSingle(int i)
 	{
-		// TODO
-		return 0;
+		// two-finger touch = right click
+		if (i) return 0;
+		return gPrismVitaInputData.mTouchState.reportNum > 1;
 	}
 }

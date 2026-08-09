@@ -9,8 +9,8 @@ namespace prism {
 
 ActorBlueprint getBlitzParticleHandler();
 
-void addBlitzParticles(int tAmount, const Position& tPosition, const Position& tPositionRange, double tSpeed, double tSpeedRange, double tAngle, double tAngleRange, const Velocity& tGravity, const Vector3D& tColor, const Vector3D& tColorRange, Duration tLifetime, Duration tLifetimeRange);
-void addBlitzParticle(const Position& tPosition, const Position& tPositionRange, double tSpeed, double tSpeedRange, double tAngle, double tAngleRange, const Velocity& tGravity, const Vector3D& tColor, const Vector3D& tColorRange, Duration tLifetime, Duration tLifetimeRange);
+void addBlitzParticles(int tAmount, const Position& tPosition, const Position& tPositionRange, float tSpeed, float tSpeedRange, float tAngle, float tAngleRange, const Velocity& tGravity, const Vector3D& tColor, const Vector3D& tColorRange, Duration tLifetime, Duration tLifetimeRange);
+void addBlitzParticle(const Position& tPosition, const Position& tPositionRange, float tSpeed, float tSpeedRange, float tAngle, float tAngleRange, const Velocity& tGravity, const Vector3D& tColor, const Vector3D& tColorRange, Duration tLifetime, Duration tLifetimeRange);
 
 void imguiBlitzParticleHandler();
 

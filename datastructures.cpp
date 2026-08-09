@@ -50,10 +50,10 @@ void convertIntegerToStringFast(std::string& oRet, int tValue)
 	oRet = std::string(ptr, buffer - ptr + BUFFER_SIZE - 1);
 }
 
-void convertFloatToStringFast(std::string& oRet, double tValue) {
+void convertFloatToStringFast(std::string& oRet, float tValue) {
 	static const auto BUFFER_SIZE = 50;
 	char buffer[BUFFER_SIZE];
-	sprintf(buffer, "%lf", tValue);
+	sprintf(buffer, "%f", tValue);
 	oRet = buffer;
 }
 
