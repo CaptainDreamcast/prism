@@ -350,23 +350,22 @@ static Buffer decodeRLE5BufferAndReturnOwnedBuffer(const Buffer& b, int tFinalSi
 
 	int ip;
 	int op = 0;
-	for (ip = 0; ip < (int)b.mLength; ip++) {
+	for (ip = 0; ip < (int)b.mLength && op < tFinalSize; ip++) {
 		uint8_t cur = input[ip];
 	
 		if ((cur & 0xC0) == 0xC0) { // decode
 			int steps = cur & 0x3F;
 			ip++;
+			if (ip >= (int)b.mLength) break;
 			uint8_t val = input[ip];
 			int k;
 			
-			for (k = 0; k < steps; k++) {
+			for (k = 0; k < steps && op < tFinalSize; k++) {
 				output[op++] = val;
 			}
-			if (op >= tFinalSize + 1) break;
 		}
 		else {
 			output[op++] = cur;
-			if (op >= tFinalSize + 1) break;
 		}
 
 		
@@ -382,12 +381,14 @@ static Buffer decodeRLE8BufferAndReturnOwnedBuffer(const Buffer& b, int tFinalSi
 	uint32_t dstpos = 0;
 	uint32_t srcpos = 0;
 
-	while (srcpos < (uint32_t)b.mLength)
+	while (srcpos < (uint32_t)b.mLength && dstpos < (uint32_t)tFinalSize)
 	{
 		if (((input[srcpos] & 0xC0) == 0x40))
 		{
+			if (srcpos + 1 >= (uint32_t)b.mLength) break;
+			const int runLength = input[srcpos] & 0x3F;
 			int run;
-			for (run = 0; run < (input[srcpos] & 0x3F); run++)
+			for (run = 0; run < runLength && dstpos < (uint32_t)tFinalSize; run++)
 			{
 				output[dstpos] = input[srcpos + 1];
 				dstpos++;
@@ -458,9 +459,14 @@ static SubImageBuffer getSingleAllocatedBufferFromSource(const Buffer& b, int x,
 	return ret;
 }
 
+#if defined(VITA)
+// GXM cannot address a texture dimension above this, so those still have to be tiled
+static const int VITA_MAXIMUM_TEXTURE_DIMENSION = 4096;
+#endif
+
 static int getMaximumSizeFit(int tVal) {
 #if defined(VITA)
-	return tVal;
+	return min(tVal, VITA_MAXIMUM_TEXTURE_DIMENSION);
 #else
 	const int mini = gPrismMugenSpriteFileReaderData.mSubTextureSplitMin;
 	const int maxi = gPrismMugenSpriteFileReaderData.mSubTextureSplitMax;
@@ -884,7 +890,14 @@ static void insertTextureIntoSpriteFile(MugenSpriteFile* tDst, MugenSpriteFileSp
 
 static int gPreviousGroup;
 
+static int gLoadedSubFileAmount;
+
+static void logSingleSFFSubFile(const SFFSubFileHeader& tSubHeader) {
+	debugFormat("[MugenSpriteFileReader] sff sprite %d: group %d image %d length %d linkedTo %d", gLoadedSubFileAmount++, (int)tSubHeader.mGroup, (int)tSubHeader.mImage, (int)tSubHeader.mSubfileLength, (int)tSubHeader.mIndexOfPreciousSpriteCopy);
+}
+
 static void loadSingleSFFFileAndInsertIntoSpriteFile(const SFFSubFileHeader& subHeader, MugenSpriteFile* tDst) {
+	logSingleSFFSubFile(subHeader);
 
 	MugenSpriteFileSprite texture;
 
@@ -986,6 +999,7 @@ static MugenSpriteFile loadMugenSpriteFile1(int tHasPaletteFile, const char* tOp
 	verboseInteger(header.mFirstFileOffset);
 
 	gPreviousGroup = -1;
+	gLoadedSubFileAmount = 0;
 
 	gPrismMugenSpriteFileReaderData.mReader.mSeek(&gPrismMugenSpriteFileReaderData.mReader, header.mFirstFileOffset);
 	while (!gPrismMugenSpriteFileReaderData.mReader.mIsOver(&gPrismMugenSpriteFileReaderData.mReader)) {
@@ -1526,6 +1540,8 @@ void unloadMugenSpriteFileSprite(MugenSpriteFileSprite* tSprite) {
 	}
 }
 
+static MugenSpriteFileSprite* getLinkedSpriteTargetOrNullOnBrokenLink(MugenSpriteFile* tFile, MugenSpriteFileSprite* tSprite);
+
 MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile, int tGroup, int tSprite)
 {
 	if (!tFile) return NULL;
@@ -1536,14 +1552,34 @@ MugenSpriteFileSprite* getMugenSpriteFileTextureReference(MugenSpriteFile* tFile
 
 	auto& original = g.mSprites[tSprite];
 	if (original.mIsLinked) {
-		MugenSpriteFileSprite* e = &original;
-		while (e->mIsLinked) {
-			e = tFile->mAllSprites[e->mIsLinkedTo];
+		MugenSpriteFileSprite* e = getLinkedSpriteTargetOrNullOnBrokenLink(tFile, &original);
+		if (e) {
+			original.mOriginalTextureSize = e->mOriginalTextureSize;
+			original.mTextures = e->mTextures;
 		}
-		original.mOriginalTextureSize = e->mOriginalTextureSize;
-		original.mTextures = e->mTextures;
+		else {
+			original.mIsLinked = 0;
+		}
 	}
 	return &g.mSprites[tSprite];
+}
+
+static MugenSpriteFileSprite* getLinkedSpriteTargetOrNullOnBrokenLink(MugenSpriteFile* tFile, MugenSpriteFileSprite* tSprite) {
+	const auto spriteAmount = tFile->mAllSprites.size();
+	MugenSpriteFileSprite* e = tSprite;
+	size_t followedLinkAmount = 0;
+	while (e->mIsLinked) {
+		if (e->mIsLinkedTo < 0 || size_t(e->mIsLinkedTo) >= spriteAmount) {
+			logWarningFormat("[MugenSpriteFileReader] Sprite links to out-of-range index %d of %d. Ignoring link.", e->mIsLinkedTo, int(spriteAmount));
+			return NULL;
+		}
+		if (followedLinkAmount++ >= spriteAmount) {
+			logWarningFormat("[MugenSpriteFileReader] Cyclic sprite link reaching index %d. Ignoring link.", e->mIsLinkedTo);
+			return NULL;
+		}
+		e = tFile->mAllSprites[e->mIsLinkedTo];
+	}
+	return e;
 }
 
 void setMugenSpriteFileReaderToBuffer()

@@ -48,6 +48,7 @@ typedef VitaTextureData* Texture;
 
 void* vitaGpuAlloc(SceKernelMemBlockType type, unsigned int size, unsigned int alignment, unsigned int attribs, SceUID* uid);
 void vitaGpuFree(SceUID uid);
+void releaseVitaTextureDataFromSlab(vita2d_texture* tTexture);
 
 #endif
 

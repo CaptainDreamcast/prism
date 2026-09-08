@@ -109,6 +109,10 @@ LogType getMinimumLogType();
 void setMinimumLogType(LogType tType);
 Vector getLogEntries(); // contains LogEntry
 
+typedef void (*LogCallback)(void* tCaller, const LogEntry& tEntry);
+void setLogCallback(LogCallback tCallback, void* tCaller);
+void resetLogCallback();
+
 void printLogColorStart(LogType tType);
 void printLogColorEnd(LogType tType);
 

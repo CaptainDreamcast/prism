@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <sstream>
+#include <vector>
 #include <cassert>
 
 #include "prism/file.h"
@@ -12,6 +13,8 @@
 #include "prism/system.h"
 #include "prism/math.h"
 #include "prism/compression.h"
+
+#include <psp2/kernel/sysmem.h>
 
 namespace prism {
 
@@ -178,6 +181,131 @@ namespace prism {
 		return 0;
 	}
 
+	// vita2d gives every texture its own memblock and its own sceGxmMapMemory. 
+	// If we don't use these slabs, we might run out of GPU mappings, which caused failures with lots of sprites
+	static const uint32_t VITA_TEXTURE_SLAB_SIZE = 8 * 1024 * 1024;
+	static const uint32_t VITA_TEXTURE_SLAB_ALIGNMENT = 64;
+
+	typedef struct {
+		SceUID mUID;
+		uint8_t* mBase;
+		uint32_t mSize;
+		uint32_t mOffset;
+		int mLiveTextureAmount;
+	} VitaTextureSlab;
+
+	static struct {
+		int mCreatedTextureAmount;
+		int mFreedPaletteAmount;
+		std::vector<VitaTextureSlab> mSlabs;
+	} gPrismVitaTextureData;
+
+	static void freeUnusedVita2dPalette(vita2d_texture* tTexture);
+
+	static vita2d_texture* createVitaTextureFromSlab(int tWidth, int tHeight, SceGxmTextureFormat tFormat);
+
+	static vita2d_texture* createVitaTextureOrAbort(int tWidth, int tHeight, SceGxmTextureFormat tFormat) {
+		auto ret = createVitaTextureFromSlab(tWidth, tHeight, tFormat);
+		if (!ret) {
+			logErrorFormat("[Texture] Out of Vita texture memory creating %dx%d texture (format %d) after %d textures.", tWidth, tHeight, (int)tFormat, gPrismVitaTextureData.mCreatedTextureAmount);
+			abortSystem();
+		}
+		freeUnusedVita2dPalette(ret);
+		return ret;
+	}
+
+	static int getBytesPerPixelForVitaTextureFormat(SceGxmTextureFormat tFormat) {
+		switch (tFormat & 0x9f000000U) {
+		case SCE_GXM_TEXTURE_BASE_FORMAT_U8:
+		case SCE_GXM_TEXTURE_BASE_FORMAT_P8:
+			return 1;
+		case SCE_GXM_TEXTURE_BASE_FORMAT_U4U4U4U4:
+		case SCE_GXM_TEXTURE_BASE_FORMAT_U1U5U5U5:
+		case SCE_GXM_TEXTURE_BASE_FORMAT_U5U6U5:
+			return 2;
+		default:
+			return 4;
+		}
+	}
+
+	static void logVitaTextureSlabAllocation(uint32_t tSlabSize) {
+		SceKernelFreeMemorySizeInfo info;
+		info.size = sizeof(info);
+		if (sceKernelGetFreeMemorySize(&info) < 0) return;
+		debugFormat("[Texture] Texture slab %d allocated (%d bytes, free cdram %d, user %d)", (int)gPrismVitaTextureData.mSlabs.size(), (int)tSlabSize, info.size_cdram, info.size_user);
+	}
+
+	static uint8_t* allocateFromTextureSlabsOrNull(uint32_t tSize) {
+		const auto alignedSize = (tSize + VITA_TEXTURE_SLAB_ALIGNMENT - 1) & ~(VITA_TEXTURE_SLAB_ALIGNMENT - 1);
+		for (auto& slab : gPrismVitaTextureData.mSlabs) {
+			if (slab.mOffset + alignedSize > slab.mSize) continue;
+			uint8_t* ret = slab.mBase + slab.mOffset;
+			slab.mOffset += alignedSize;
+			slab.mLiveTextureAmount++;
+			return ret;
+		}
+
+		VitaTextureSlab slab;
+		const auto slabSize = (alignedSize > VITA_TEXTURE_SLAB_SIZE) ? alignedSize : VITA_TEXTURE_SLAB_SIZE;
+		// CDRAM first: it is the faster pool for GPU texture reads, and vitaGpuAlloc falls back to main memory when it fills.
+		slab.mBase = (uint8_t*)vitaGpuAlloc(SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW, slabSize, VITA_TEXTURE_SLAB_ALIGNMENT, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE, &slab.mUID);
+		if (!slab.mBase) return NULL;
+		slab.mSize = slabSize;
+		slab.mOffset = alignedSize;
+		slab.mLiveTextureAmount = 1;
+		gPrismVitaTextureData.mSlabs.push_back(slab);
+		logVitaTextureSlabAllocation(slabSize);
+		return slab.mBase;
+	}
+
+	// sceGxmTextureInitLinear rejects dimensions above this and leaves the texture unusable, so don't try to allocate them
+	static const int VITA_MAXIMUM_TEXTURE_DIMENSION = 4096;
+
+	static vita2d_texture* createVitaTextureFromSlab(int tWidth, int tHeight, SceGxmTextureFormat tFormat) {
+		if (tWidth > VITA_MAXIMUM_TEXTURE_DIMENSION || tHeight > VITA_MAXIMUM_TEXTURE_DIMENSION) return NULL;
+
+		const uint32_t stride = (uint32_t(tWidth) + 7) & ~7u;
+		const uint32_t textureSize = stride * uint32_t(tHeight) * uint32_t(getBytesPerPixelForVitaTextureFormat(tFormat));
+		uint8_t* data = allocateFromTextureSlabsOrNull(textureSize);
+		if (!data) return NULL;
+
+		auto ret = (vita2d_texture*)malloc(sizeof(vita2d_texture));
+		if (!ret) return NULL;
+		memset(data, 0, textureSize);
+		sceGxmTextureInitLinear(&ret->gxm_tex, data, tFormat, tWidth, tHeight, 0);
+		ret->data_UID = 0;
+		ret->palette_UID = 0;
+		ret->depth_UID = 0;
+		ret->gxm_rtgt = 0;
+		return ret;
+	}
+
+	// Textures whose data came from a slab carry data_UID 0, so vita2d_free_texture leaves the pixels alone; the slab itself goes back once its last texture is released 
+	// Textures vita2d allocated itself (the PNG paths) are not in any slab and are left untouched
+	void releaseVitaTextureDataFromSlab(vita2d_texture* tTexture) {
+		if (!tTexture) return;
+		const uint8_t* data = (const uint8_t*)vita2d_texture_get_datap(tTexture);
+		for (size_t i = 0; i < gPrismVitaTextureData.mSlabs.size(); i++) {
+			auto& slab = gPrismVitaTextureData.mSlabs[i];
+			if (data < slab.mBase || data >= slab.mBase + slab.mSize) continue;
+
+			slab.mLiveTextureAmount--;
+			if (!slab.mLiveTextureAmount) {
+				vitaGpuFree(slab.mUID);
+				gPrismVitaTextureData.mSlabs.erase(gPrismVitaTextureData.mSlabs.begin() + i);
+			}
+			return;
+		}
+	}
+
+	static void freeUnusedVita2dPalette(vita2d_texture* tTexture) {
+		if (!tTexture->palette_UID) return;
+
+		vitaGpuFree(tTexture->palette_UID);
+		tTexture->palette_UID = 0;
+		gPrismVitaTextureData.mFreedPaletteAmount++;
+	}
+
 	TextureData loadTextureFromARGB16Buffer(const Buffer& b, int tWidth, int tHeight)
 	{
 		TextureData returnData;
@@ -186,7 +314,7 @@ namespace prism {
 		returnData.mTextureSize.y = tHeight;
 		returnData.mHasPalette = 0;
 		Texture texture = (Texture)returnData.mTexture->mData;
-		texture->mTexture = vita2d_create_empty_texture_format(tWidth, tHeight, SCE_GXM_TEXTURE_FORMAT_A4R4G4B4);
+		texture->mTexture = createVitaTextureOrAbort(tWidth, tHeight, SCE_GXM_TEXTURE_FORMAT_A4R4G4B4);
 
 		auto data = vita2d_texture_get_datap(texture->mTexture);
 		auto textureStride = vita2d_texture_get_stride(texture->mTexture);
@@ -219,7 +347,7 @@ namespace prism {
 		returnData.mTextureSize.y = tHeight;
 		returnData.mHasPalette = 0;
 		Texture texture = (Texture)returnData.mTexture->mData;
-		texture->mTexture = vita2d_create_empty_texture_format(tWidth, tHeight, SCE_GXM_TEXTURE_FORMAT_A8R8G8B8);
+		texture->mTexture = createVitaTextureOrAbort(tWidth, tHeight, SCE_GXM_TEXTURE_FORMAT_A8R8G8B8);
 
 		auto data = vita2d_texture_get_datap(texture->mTexture);
 		auto textureStride = vita2d_texture_get_stride(texture->mTexture);
@@ -242,6 +370,10 @@ namespace prism {
 		(void)tWidth;
 		(void)tHeight;
 		auto vitaTexture = vita2d_load_PNG_buffer(b.mData);
+		if (!vitaTexture) {
+			logErrorFormat("[Texture] Out of Vita texture memory loading PNG buffer of %d bytes after %d live memory blocks.", (int)b.mLength, getAllocatedMemoryBlockAmount());
+			abortSystem();
+		}
 		TextureData returnData;
 		returnData.mTexture = allocTextureMemory(sizeof(VitaTextureData));
 		returnData.mTextureSize.x = vita2d_texture_get_width(vitaTexture);
@@ -260,7 +392,7 @@ namespace prism {
 		returnData.mHasPalette = 1;
 		returnData.mPaletteID = tPaletteID;
 		Texture texture = (Texture)returnData.mTexture->mData;
-		texture->mTexture = vita2d_create_empty_texture_format(tWidth, tHeight, SCE_GXM_TEXTURE_FORMAT_P8_RGBA);
+		texture->mTexture = createVitaTextureOrAbort(tWidth, tHeight, SCE_GXM_TEXTURE_FORMAT_P8_RGBA);
 
 		auto data = vita2d_texture_get_datap(texture->mTexture);
 		auto textureStride = vita2d_texture_get_stride(texture->mTexture);

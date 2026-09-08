@@ -2,23 +2,30 @@
 
 #include <malloc.h>
 
+#include <psp2/kernel/sysmem.h>
+
 #include <prism/debug.h>
 
 namespace prism {
 
 	void logTextureMemoryState() {
-		// UNSUPPORTED YET
+		SceKernelFreeMemorySizeInfo info;
+		info.size = sizeof(info);
+		if (sceKernelGetFreeMemorySize(&info) < 0) return;
+		logFormat("Free memory: cdram %d, phycont %d, user %d", info.size_cdram, info.size_phycont, info.size_user);
 	}
 
 	void logMemoryState() {
-		// UNSUPPORTED YET
+		const auto info = mallinfo();
+		logFormat("Heap: %d used, %d free, %d reserved", (int)info.uordblks, (int)info.fordblks, (int)info.arena);
+		logTextureMemoryState();
 	}
 
 	void printLogColorStart(LogType /*tType*/) {}
 	void printLogColorEnd(LogType /*tType*/) {}
 
 	void hardwareLogToFile(FileHandler& tFileHandler, const char* tText) {
-		if (!isInDevelopMode()) return;
+		if (getMinimumLogType() == LOG_TYPE_NONE) return;
 
 		auto prevLogType = getMinimumLogType();
 		setMinimumLogType(LOG_TYPE_NONE);

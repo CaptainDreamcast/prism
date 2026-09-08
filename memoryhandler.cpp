@@ -122,6 +122,7 @@ namespace prism {
 
 	void freeVitaTexture(void* tData) {
 		VitaTextureData* e = (VitaTextureData*)tData;
+		releaseVitaTextureDataFromSlab(e->mTexture);
 		e->mTexture->palette_UID = 0; // we do not allocate palettes inside vita2d
 		e->mTexture->depth_UID = 0; // not zeroed in vita2d apparently
 		e->mTexture->gxm_rtgt = 0;
@@ -459,8 +460,11 @@ namespace prism {
 		tMap->mSize = 0;
 	}
 
+	static void abortOnFailedMainMemoryAllocation(size_t tSize);
+
 	static void* mainMemoryAllocFunc(size_t tSize) {
 		char* raw = (char*)malloc(MEMORY_HANDLER_ENTRY_SIZE + tSize);
+		if (!raw) abortOnFailedMainMemoryAllocation(tSize);
 		initMemoryHandlerEntry((MemoryHandlerMapEntry*)(void*)raw);
 		return raw + MEMORY_HANDLER_ENTRY_SIZE;
 	}
@@ -471,7 +475,13 @@ namespace prism {
 
 	static void* mainMemoryReallocFunc(void* tPointer, size_t tSize) {
 		char* raw = (char*)realloc(((char*)tPointer) - MEMORY_HANDLER_ENTRY_SIZE, MEMORY_HANDLER_ENTRY_SIZE + tSize);
+		if (!raw) abortOnFailedMainMemoryAllocation(tSize);
 		return raw + MEMORY_HANDLER_ENTRY_SIZE;
+	}
+
+	static void abortOnFailedMainMemoryAllocation(size_t tSize) {
+		logErrorFormat("[MemoryHandler] Out of main memory requesting %d bytes with %d blocks already live.", (int)tSize, gMemoryHandler.mAllocatedMemory);
+		abortSystem();
 	}
 
 	static void* allocTextureFunc(size_t tSize) {

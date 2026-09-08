@@ -606,11 +606,16 @@ namespace prism {
 		updateScreenAbort();
 	}
 
+	static void drawScreenWithoutWaitingForFramePacing();
+
 	static void drawScreen() {
 		setProfilingSectionMarkerCurrentFunction();
 		setPrismDebugWaitingStartTime();
 		waitForScreen();
+		drawScreenWithoutWaitingForFramePacing();
+	}
 
+	static void drawScreenWithoutWaitingForFramePacing() {
 		setPrismDebugDrawingStartTime();
 		if (!isSkippingDrawing())
 		{
@@ -840,6 +845,17 @@ namespace prism {
 		while (tIterations--) {
 			updateScreen();
 		}
+	}
+
+	void updatePrismWrapperScreenForDebugWithIterationsAndRender(int tIterations) {
+		while (tIterations--) {
+			updateScreen();
+			drawScreenWithoutWaitingForFramePacing();
+		}
+	}
+
+	void renderPrismWrapperScreenForDebugOnce() {
+		drawScreenWithoutWaitingForFramePacing();
 	}
 
 	void unloadPrismWrapperScreenForDebug() {

@@ -72,6 +72,7 @@ namespace prism {
 
 		map<string, ConsoleCommand> mConsoleCommands;
 
+		int mIsUserScriptDisabled;
 		int mHasUserScript;
 		Buffer mUserScript;
 		BufferPointer mUserScriptPointer;
@@ -188,7 +189,14 @@ namespace prism {
 		return "";
 	}
 
+	void setPrismDebugUserScriptEnabled(int tIsEnabled)
+	{
+		gPrismDebug.mConsole.mIsUserScriptDisabled = !tIsEnabled;
+	}
+
 	static void initDebugScript() {
+		if (gPrismDebug.mConsole.mIsUserScriptDisabled) return;
+
 		gPrismDebug.mConsole.mHasUserScript = isFile("debug/user.cfg");
 		if (!gPrismDebug.mConsole.mHasUserScript) return;
 
@@ -355,7 +363,7 @@ namespace prism {
 		if (!gPrismDebug.mConsole.mConsoleText.size()) return;
 
 		const auto firstWord = gPrismDebug.mConsole.mConsoleText.substr(0, gPrismDebug.mConsole.mConsoleText.find(' '));
-		if (firstWord.size() > 0 && firstWord[0] == '#') return;
+		if (firstWord.size() > 0 && (firstWord[0] == '#' || firstWord[0] == ';')) return;
 
 		auto it = gPrismDebug.mConsole.mConsoleCommands.find(firstWord);
 		if (it != gPrismDebug.mConsole.mConsoleCommands.end()) {

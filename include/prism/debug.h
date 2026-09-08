@@ -20,6 +20,7 @@ void setPrismDebugWaitingStartTime();
 void setPrismDebugDropFrameCounter(int tDropFrameCounter);
 int getPrismDebugSideDisplayVisibility();
 void setPrismDebugSideDisplayVisibility(int tIsVisible);
+void setPrismDebugUserScriptEnabled(int tIsEnabled);
 void togglePrismDebugSideDisplayVisibility();
 
 int isPrismDebugConsoleVisible();

@@ -124,7 +124,7 @@ namespace prism::imgui {
 				break;
 			case FileUsageType::UNKNOWN:
 			default:
-				logErrorFormat("Unable to parse file type from: %s", tPath);
+				logWarningFormat("Unable to parse file type from: %s", tPath);
 				break;
 			}
 		}

@@ -24,6 +24,9 @@ namespace prism {
 		LogEntry mLog[MAX_LOG_ENTRY_AMOUNT];
 
 		FileHandler mLogFile = FILEHND_INVALID;
+
+		LogCallback mCallback = NULL;
+		void* mCallbackCaller = NULL;
 	} gPrismLogData;
 
 	void logprintf(const char* tFormatString, ...) {
@@ -35,14 +38,25 @@ namespace prism {
 		va_end(args);
 	}
 
-	void logCommit(LogType tType) {
-		gPrismLogData.mLog[gPrismLogData.mPointer].mType = tType;
+	static void notifyLogCallback(const LogEntry& tEntry) {
+		if (!gPrismLogData.mCallback) return;
+		gPrismLogData.mCallback(gPrismLogData.mCallbackCaller, tEntry);
+	}
 
+	static void printLogEntry(const LogEntry& tEntry) {
+		printLogColorStart(tEntry.mType);
+		printf("%s", tEntry.mText);
+		printLogColorEnd(tEntry.mType);
+		hardwareLogToFile(gPrismLogData.mLogFile, tEntry.mText);
+	}
+
+	void logCommit(LogType tType) {
+		LogEntry& entry = gPrismLogData.mLog[gPrismLogData.mPointer];
+		entry.mType = tType;
+
+		notifyLogCallback(entry);
 		if (tType >= gPrismLogData.mMinimumLogType) {
-			printLogColorStart(tType);
-			printf("%s", gPrismLogData.mLog[gPrismLogData.mPointer].mText);
-			printLogColorEnd(tType);
-			hardwareLogToFile(gPrismLogData.mLogFile, gPrismLogData.mLog[gPrismLogData.mPointer].mText);
+			printLogEntry(entry);
 		}
 
 		gPrismLogData.mPointer = (gPrismLogData.mPointer + 1) % MAX_LOG_ENTRY_AMOUNT;
@@ -67,6 +81,17 @@ namespace prism {
 
 	void setMinimumLogType(LogType tType) {
 		gPrismLogData.mMinimumLogType = tType;
+	}
+
+	void setLogCallback(LogCallback tCallback, void* tCaller)
+	{
+		gPrismLogData.mCallback = tCallback;
+		gPrismLogData.mCallbackCaller = tCaller;
+	}
+
+	void resetLogCallback()
+	{
+		setLogCallback(NULL, NULL);
 	}
 
 	Vector getLogEntries()

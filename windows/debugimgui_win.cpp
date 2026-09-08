@@ -32,10 +32,19 @@ namespace prism {
         return gImguiPrismData.mIsActive;
     }
 
+    static void resetImguiPrismContextState()
+    {
+        gImguiPrismData.mIsFrameStarted = false;
+        gImguiPrismData.mIsShowingTaskbar = false;
+        gImguiPrismData.mCustomTabNames.clear();
+    }
+
     void imguiPrismInitAfterDrawingSetup()
     {
         if (isInDevelopMode())
         {
+            resetImguiPrismContextState();
+
             // Setup Dear ImGui context
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
@@ -53,7 +62,6 @@ namespace prism {
 
             prism::imgui::initTextEditorHandler();
 
-            gImguiPrismData.mIsShowingTaskbar = false;
             gImguiPrismData.mIsActive = true;
         }
     }
@@ -164,6 +172,8 @@ namespace prism {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
+        resetImguiPrismContextState();
+        gImguiPrismData.mIsActive = false;
     }
 
     void imguiPrismAddTab(const std::string_view& tTabName, const std::string_view& tEntryName, bool* tBool)

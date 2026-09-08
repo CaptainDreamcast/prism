@@ -51,6 +51,8 @@ void disableWrapperErrorRecovery();
 
 void initPrismWrapperScreenForDebug(Screen* tScreen);
 void updatePrismWrapperScreenForDebugWithIterations(int tIterations);
+void updatePrismWrapperScreenForDebugWithIterationsAndRender(int tIterations);
+void renderPrismWrapperScreenForDebugOnce();
 void unloadPrismWrapperScreenForDebug();
 
 #define EXPORT_TEST(ScreenName) { void func_##ScreenName(); }

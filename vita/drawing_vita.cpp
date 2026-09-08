@@ -6,6 +6,7 @@
 #include <thread>
 
 #include <vita2d.h>
+#include <psp2/kernel/sysmem.h>
 
 #include "prism/log.h"
 #include "prism/system.h"
@@ -191,6 +192,8 @@ namespace prism {
 
 		vita2d_init();
 		vita2d_set_clear_color(RGBA8(0x0, 0x0, 0x0, 0xFF));
+		// vita2d gives every texture its own memblock, and USER_CDRAM_RW blocks round up to 256KB, which sucks for prism's use case, we use USER_RW instead for now, which is slower but doesn't throw away too much memory with its 4KB blocks
+		vita2d_texture_set_alloc_memblock_type(SCE_KERNEL_MEMBLOCK_TYPE_USER_RW);
 
 		initPalettes();
 

@@ -1,5 +1,8 @@
 #include "gamescreen.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include <prism/numberpopuphandler.h>
 #include "storyscreen.h"
 
@@ -13,6 +16,7 @@
 - Player banking left 11
 - Player banking right 12
 - Player dying 13
+- Player hitbox dot 14
 
 - Player bullet 20
 
@@ -36,6 +40,7 @@
 - BG 1
 - Bullets 9
 - Player 10
+- Player hitbox dot 11
 - Enemy 15
 - Boss 20
 - Explosions 45
@@ -178,6 +183,7 @@ public:
 
     // PLAYER
     int playerEntityId;
+    int playerHitboxEntityId;
     int playerCollisionId;
     int playerPickupCollisionId;
     int shotCooldown = 0;
@@ -187,14 +193,28 @@ public:
         addBlitzMugenAnimationComponent(playerEntityId, &mSprites, &mAnimations, 10);
         playerCollisionId = addBlitzCollisionRect(playerEntityId, playerCollisionListShots, CollisionRect(-3, -3, 6, 6));
         playerPickupCollisionId = addBlitzCollisionRect(playerEntityId, playerPickupCollisionList, CollisionRect(-7, -7, 14, 14));
+        loadPlayerHitboxIndicator();
+    }
+    void loadPlayerHitboxIndicator() {
+        playerHitboxEntityId = addBlitzEntity(Vector3D(160, 200, 11));
+        addBlitzMugenAnimationComponent(playerHitboxEntityId, &mSprites, &mAnimations, 14);
+        setBlitzMugenAnimationVisibility(playerHitboxEntityId, 0);
     }
     void updatePlayer() {
         if (isPaused()) return;
 
         gGameScreenData.mGameTicks++;
         updatePlayerMovement();
+        updatePlayerHitboxIndicator();
         updatePlayerShoot();
         updatePlayerGetHit();
+    }
+    void updatePlayerHitboxIndicator() {
+        setBlitzEntityPosition(playerHitboxEntityId, getBlitzEntityPosition(playerEntityId).xy().xyz(11));
+        setBlitzMugenAnimationVisibility(playerHitboxEntityId, isPlayerHitboxIndicatorVisible());
+    }
+    bool isPlayerHitboxIndicatorVisible() {
+        return isPlayerFocusing() && !playerIsDying;
     }
     void updatePlayerGetHit() {
         if (playerIsDying) return;
@@ -209,7 +229,6 @@ public:
     void updatePlayerMovement() {
         if (playerIsDying) return;
         auto pos = getBlitzEntityPositionReference(playerEntityId);
-        double speed = 2;
         Vector2D dir = Vector2D(0, 0);
 
         if (hasPressedLeft())
@@ -247,8 +266,14 @@ public:
             return;
         }
 
-        *pos += dir * speed;
+        *pos += vecNormalize(dir) * getPlayerMovementSpeed();
         *pos = clampPositionToGeoRectangle(*pos, GeoRectangle2D(0, 0, 320, 240));
+    }
+    double getPlayerMovementSpeed() {
+        return isPlayerFocusing() ? 0.9 : 2.0;
+    }
+    bool isPlayerFocusing() {
+        return hasPressedRawKeyboardKey(KEYBOARD_SHIFT_LEFT_PRISM) || hasPressedL() || hasPressedR();
     }
     void updatePlayerShoot()
     {
@@ -372,7 +397,7 @@ public:
         }
 
         auto pos = getBlitzEntityPositionReference(e.entityId);
-        addEnemyShotAimed(pos->xy(), randfrom(1.5, 3));
+        fireShotAtPlayer(pos->xy(), randfrom(1.5, 3));
         e.shootingTicks = randfromInteger(60, 120);
     }
 
@@ -486,29 +511,15 @@ public:
     void fireBossPattern(const Vector2D& origin) {
         if (bossPatternIndex == 0)
         {
-            const int n = 16;
-            for (int i = 0; i < n; i++)
-            {
-                double a = (2.0 * M_PI * i) / n;
-                addEnemyShot(origin, Vector2D(cos(a), sin(a)), 1.6);
-            }
+            fireShotRing(origin, 16, 1.6, 0.0);
         }
         else if (bossPatternIndex == 1)
         {
-            auto pp = getBlitzEntityPositionReference(playerEntityId);
-            Vector2D toPlayer = vecNormalize(Vector2D(pp->x - origin.x, pp->y - origin.y));
-            for (int i = -2; i <= 2; i++)
-            {
-                addEnemyShot(origin, vecRotateZ2D(toPlayer, i * 0.18), 2.2);
-            }
+            fireShotFanAtPlayer(origin, 5, 0.72, 2.2);
         }
         else
         {
-            for (int i = 0; i < 7; i++)
-            {
-                double a = (M_PI / 2.0) - 0.6 + i * 0.2;
-                addEnemyShot(origin, Vector2D(cos(a), sin(a)), 1.8);
-            }
+            fireShotFan(origin, Vector2D(0, 1), 7, 1.2, 1.8);
         }
         bossPatternIndex = (bossPatternIndex + 1) % 3;
     }
@@ -645,10 +656,75 @@ public:
         addGeneralShot(pos, enemyShotCollisionList, 42, 9, speed, direction);
     }
 
-    void addEnemyShotAimed(const Vector2D& pos, double speed) {
-        auto playerPos = getBlitzEntityPositionReference(playerEntityId);
-        Vector2D direction = vecNormalize(Vector2D(playerPos->x - pos.x, playerPos->y - pos.y));
-        addGeneralShot(pos, enemyShotCollisionList, 42, 9, speed, direction);
+    // SHOT PATTERNS
+    double patternAngle = 0.0;
+
+    bool isGameTick(int tInterval) {
+        return (gGameScreenData.mGameTicks % tInterval) == 0;
+    }
+    bool isGameTickWithOffset(int tInterval, int tOffset) {
+        return (gGameScreenData.mGameTicks % tInterval) == tOffset;
+    }
+    void advancePatternAngle(double tAngleStep) {
+        patternAngle += tAngleStep;
+    }
+    Vector2D getRandomTopPosition() {
+        return Vector2D(randfrom(10, 310), -8);
+    }
+    Vector2D getDirectionTowardsPlayer(const Vector2D& tOrigin) {
+        return vecNormalize(getBlitzEntityPosition(playerEntityId).xy() - tOrigin);
+    }
+
+    void fireShotAtPlayer(const Vector2D& tOrigin, double tSpeed) {
+        addEnemyShot(tOrigin, getDirectionTowardsPlayer(tOrigin), tSpeed);
+    }
+    void fireShotRing(const Vector2D& tOrigin, int tShotAmount, double tSpeed, double tAngleOffset) {
+        for (int i = 0; i < tShotAmount; i++)
+        {
+            const auto angle = tAngleOffset + (2.0 * M_PI * i) / tShotAmount;
+            addEnemyShot(tOrigin, Vector2D(cos(angle), sin(angle)), tSpeed);
+        }
+    }
+    void fireShotFan(const Vector2D& tOrigin, const Vector2D& tDirection, int tShotAmount, double tSpreadAngle, double tSpeed) {
+        for (int i = 0; i < tShotAmount; i++)
+        {
+            const auto angle = -tSpreadAngle / 2 + (tSpreadAngle * i) / std::max(1, tShotAmount - 1);
+            addEnemyShot(tOrigin, vecRotateZ2D(tDirection, angle), tSpeed);
+        }
+    }
+    void fireShotFanAtPlayer(const Vector2D& tOrigin, int tShotAmount, double tSpreadAngle, double tSpeed) {
+        fireShotFan(tOrigin, getDirectionTowardsPlayer(tOrigin), tShotAmount, tSpreadAngle, tSpeed);
+    }
+    void fireShotFanWithRandomOffset(const Vector2D& tOrigin, const Vector2D& tDirection, int tShotAmount, double tSpreadAngle, double tSpeed) {
+        const auto direction = vecRotateZ2D(tDirection, getRandomFanAngleOffset(tSpreadAngle, tShotAmount));
+        fireShotFan(tOrigin, direction, tShotAmount, tSpreadAngle, tSpeed);
+    }
+    double getRandomFanAngleOffset(double tSpreadAngle, int tShotAmount) {
+        const auto angleBetweenShots = tSpreadAngle / std::max(1, tShotAmount - 1);
+        return randfrom(-angleBetweenShots / 2, angleBetweenShots / 2);
+    }
+    void fireShotStar(const Vector2D& tOrigin, int tPointAmount, double tOuterRadius, double tInnerRadius, double tAngle, double tSpeed) {
+        for (int i = 0; i < tPointAmount * 2; i++)
+        {
+            const auto angle = tAngle + (M_PI * i) / tPointAmount;
+            const auto radius = (i % 2) ? tInnerRadius : tOuterRadius;
+            addEnemyShot(tOrigin + Vector2D(cos(angle), sin(angle)) * radius, Vector2D(0, 1), tSpeed);
+        }
+    }
+    void fireShotLine(double tFirstX, int tShotAmount, double tSpacing, double tSpeed) {
+        for (int i = 0; i < tShotAmount; i++)
+        {
+            addEnemyShot(Vector2D(tFirstX + i * tSpacing, -8), Vector2D(0, 1), tSpeed);
+        }
+    }
+    void fireShotGridRow(int tShotAmount, double tSpacing, const Vector2D& tDirection) {
+        for (int i = 0; i < tShotAmount; i++)
+        {
+            addEnemyShot(Vector2D(i * tSpacing + getGridRowOffsetX(tDirection.x, tSpacing), -8), tDirection, 1.0);
+        }
+    }
+    double getGridRowOffsetX(double tDriftSpeed, double tSpacing) {
+        return fmod(tDriftSpeed * gGameScreenData.mGameTicks, tSpacing);
     }
 
     // PICKUP HANDLER
